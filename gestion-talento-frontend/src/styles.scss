@@ -1,26 +1,71 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$cyan-palette,
+      tertiary: mat.$orange-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
 /* ==========================================================================
    ESTILOS GLOBALES Y VARIABLES DE DISEÑO
    ========================================================================== */
 
-   :root {
-    --color-primary: #3f51b5;         /* Un azul corporativo y sobrio (Índigo) */
-    --color-primary-dark: #303f9f;
-    --color-primary-light: #c5cae9;
-    
-    --color-accent: #ff4081;          /* Un color de acento para botones y alertas (Rosa) */
-    
-    --color-text-primary: #212121;    /* Color principal para textos (Casi negro) */
-    --color-text-secondary: #757575;  /* Color para textos secundarios y placeholders */
-    
-    --color-background: #f5f5f5;      /* Un gris muy claro para el fondo */
-    --color-surface: #ffffff;         /* Blanco para tarjetas, modales y superficies */
-    --color-border: #e0e0e0;          /* Color para bordes y separadores */
-    
-    --font-family-base: 'Poppins', sans-serif;
-    
-    --border-radius: 8px;             /* Bordes redondeados para un look moderno */
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
+/* ==========================================================================
+   ESTILOS GLOBALES Y VARIABLES DE DISEÑO
+   ========================================================================== */
+
+:root {
+  // Colores extraídos del logo y sus variantes
+  --color-primary: #E74C3C;         /* Rojo del logo (Pymes) */
+  --color-primary-dark: #C0392B;    /* Un rojo un poco más oscuro para interacción */
+  --color-primary-light: #FADBD8;   /* Un rojo muy claro para fondos sutiles */
+  
+  --color-secondary: #555555;       /* Gris oscuro del logo (Punto, texto secundario) */
+  --color-secondary-light: #BBBBBB; /* Gris claro del ícono o para bordes */
+  
+  --color-accent: #3498DB;          /* Mantenemos un azul vibrante como acento para llamadas a la acción o elementos destacables */
+  
+  --color-text-primary: #333333;    /* Un gris muy oscuro para el texto principal (casi negro) */
+  --color-text-secondary: #7F8C8D;  /* Un gris más claro para textos auxiliares */
+  
+  --color-background: #F8F9FA;      /* Un blanco-grisáceo muy sutil para el fondo general */
+  --color-surface: #ffffff;         /* Blanco puro para tarjetas, modales, etc. */
+  --color-border: #EBEBEB;          /* Un gris muy claro para bordes y separadores */
+  
+  --font-family-base: 'Poppins', sans-serif;
+  
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08); /* Sombra ligeramente más sutil */
+}
+
+/* ... el resto de tus estilos globales ... */
   
   /* Reseteo y configuración base */
   *, *::before, *::after {
@@ -46,3 +91,6 @@
     font-weight: 600;
     margin-bottom: 0.75rem;
   }
+  
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

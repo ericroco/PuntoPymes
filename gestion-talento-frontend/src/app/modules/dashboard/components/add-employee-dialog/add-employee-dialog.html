@@ -1,0 +1,28 @@
+<h1 mat-dialog-title>Añadir Nuevo Empleado</h1>
+
+<div mat-dialog-content [formGroup]="employeeForm">
+  <mat-form-field appearance="outline">
+    <mat-label>Nombre Completo</mat-label>
+    <input matInput formControlName="name" placeholder="Ej: Jeimy Torres">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Cargo</mat-label>
+    <input matInput formControlName="role" placeholder="Ej: Desarrolladora Frontend">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Departamento</mat-label>
+    <input matInput formControlName="department" placeholder="Ej: Tecnología">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Correo Electrónico</mat-label>
+    <input matInput type="email" formControlName="email" placeholder="ejemplo@correo.com">
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="employeeForm.invalid">Guardar</button>
+</div>

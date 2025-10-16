@@ -1,0 +1,102 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+// Estilos para botones genéricos que podemos reutilizar
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    &:hover {
+      background-color: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Contenedor y estilos de la tabla
+.table-container {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  thead {
+    background-color: var(--color-background);
+    th {
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+  }
+
+  tbody tr {
+    transition: background-color 0.2s ease;
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+
+  &.status-active { background-color: #4CAF50; } // Verde
+  &.status-vacation { background-color: #FFC107; } // Ámbar
+  &.status-inactive { background-color: #757575; } // Gris
+}
+
+.actions {
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--color-border);
+    }
+    &.btn-danger:hover {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary-dark);
+    }
+  }
+}
