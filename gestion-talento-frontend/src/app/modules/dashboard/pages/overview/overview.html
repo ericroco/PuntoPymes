@@ -1,0 +1,17 @@
+<div class="overview-container">
+  <section class="summary-cards" [@cardAnimation]>
+    <div *ngFor="let card of summaryCards" class="card card-{{card.color}}">
+      <div class="card-content">
+        <p class="card-title">{{ card.title }}</p>
+        <h3 class="card-value">{{ card.value }}</h3>
+      </div>
+      <div class="card-footer">
+        <span class="trend" [class.positive]="card.isPositive" [class.negative]="!card.isPositive">
+          <svg *ngIf="card.trend !== 'Hoy'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd" [attr.d]="card.isPositive ? 'M10 17a.75.75 0 01-.75-.75V5.612L5.03 9.77a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z' : 'M10 3a.75.75 0 01.75.75v10.638l4.22-4.158a.75.75 0 111.06 1.06l-5.25 5.25a.75.75 0 01-1.06 0l-5.25-5.25a.75.75 0 111.06-1.06l4.22 4.158V3.75A.75.75 0 0110 3z'"/>          </svg>
+          {{ card.trend }}
+        </span>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,10 @@
+<div class="layout-container">
+  <app-sidebar class="sidebar"></app-sidebar>
+
+  <main class="main-content">
+    <app-navbar></app-navbar>
+    <div class="page-wrapper" [@routeAnimations]="o.isActivated ? o.activatedRoute : ''">
+      <router-outlet #o="outlet"></router-outlet>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,48 @@
+/* ==========================================================================
+   ESTILOS GLOBALES Y VARIABLES DE DISEÑO
+   ========================================================================== */
+
+   :root {
+    --color-primary: #3f51b5;         /* Un azul corporativo y sobrio (Índigo) */
+    --color-primary-dark: #303f9f;
+    --color-primary-light: #c5cae9;
+    
+    --color-accent: #ff4081;          /* Un color de acento para botones y alertas (Rosa) */
+    
+    --color-text-primary: #212121;    /* Color principal para textos (Casi negro) */
+    --color-text-secondary: #757575;  /* Color para textos secundarios y placeholders */
+    
+    --color-background: #f5f5f5;      /* Un gris muy claro para el fondo */
+    --color-surface: #ffffff;         /* Blanco para tarjetas, modales y superficies */
+    --color-border: #e0e0e0;          /* Color para bordes y separadores */
+    
+    --font-family-base: 'Poppins', sans-serif;
+    
+    --border-radius: 8px;             /* Bordes redondeados para un look moderno */
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Reseteo y configuración base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html, body {
+    height: 100%;
+  }
+  
+  body {
+    font-family: var(--font-family-base);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
