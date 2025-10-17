@@ -5,12 +5,27 @@ import { EmployeeManagement } from './pages/employee-management/employee-managem
 const routes: Routes = [
   {
     path: 'overview',
-    // Usamos loadComponent para cargar un componente standalone
     loadComponent: () => import('./pages/overview/overview').then(c => c.Overview)
   },
   {
     path: 'employees',
     loadComponent: () => import('./pages/employee-management/employee-management').then(c => c.EmployeeManagement)
+  },
+  {
+    path: 'tasks',
+    loadComponent: () => import('./pages/tasks-productivity/tasks-productivity').then(c => c.TasksProductivity)
+  },
+  {
+    path: 'reports',
+    loadComponent: () => import('./pages/reports/reports').then(c => c.Reports)
+  },
+  {
+    path: 'goals',
+    loadComponent: () => import('./pages/goals/goals').then(c => c.Goals)
+  },
+  {
+    path: 'employee/:id',
+    loadComponent: () => import('./pages/employee-profile/employee-profile').then(c => c.EmployeeProfile)
   },
   {
     path: '**',

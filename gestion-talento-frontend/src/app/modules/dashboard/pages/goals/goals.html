@@ -1,0 +1,41 @@
+<div class="page-container" @listAnimation>
+  <header class="page-header">
+    <h2>Metas y Objetivos</h2>
+    <button class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+      </svg>
+      <span>Nueva Meta</span>
+    </button>
+  </header>
+
+  <section class="goals-section">
+    <h3>Metas Departamentales</h3>
+    <div class="goals-grid">
+      <div *ngFor="let goal of departmentGoals" class="goal-card">
+        <div class="goal-header">
+          <span class="goal-owner">{{ goal.owner }}</span>
+          <span class="goal-status" [style.background-color]="goal.statusColor">{{ goal.status.replace('-', ' ') }}</span>
+        </div>
+        <h4 class="goal-title">{{ goal.title }}</h4>
+        <div class="progress-bar-container">
+          <div class="progress-bar" [style.width.%]="goal.progress" [style.background-color]="goal.statusColor"></div>
+        </div>
+        <span class="progress-text">{{ goal.progress }}% completado</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="goals-section">
+    <h3>Mis Metas Personales</h3>
+    <div class="goals-grid">
+      <div *ngFor="let goal of personalGoals" class="goal-card">
+        <h4 class="goal-title">{{ goal.title }}</h4>
+        <div class="progress-bar-container">
+          <div class="progress-bar" [style.width.%]="goal.progress" [style.background-color]="goal.statusColor"></div>
+        </div>
+        <span class="progress-text">{{ goal.progress }}% completado</span>
+      </div>
+    </div>
+  </section>
+</div>

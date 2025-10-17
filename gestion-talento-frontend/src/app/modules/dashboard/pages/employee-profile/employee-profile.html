@@ -1,0 +1,48 @@
+<div class="page-container">
+  <header class="profile-header">
+    <img [src]="employee.avatar" alt="Avatar" class="avatar">
+    <div class="info">
+      <h1>{{ employee.name }}</h1>
+      <p>{{ employee.role }} | {{ employee.department }}</p>
+    </div>
+    <button class="btn btn-secondary">Exportar Perfil a PDF</button>
+  </header>
+
+  <section class="kpi-grid">
+    <div *ngFor="let kpi of kpis" class="kpi-card">
+      <span class="kpi-label">{{ kpi.label }}</span>
+      <span class="kpi-value">{{ kpi.value }}</span>
+    </div>
+  </section>
+
+  <div class="details-grid">
+    <div class="details-section">
+      <h3>Metas Asignadas</h3>
+      <div class="goals-list">
+        <div *ngFor="let goal of goals" class="goal-card">
+          <h4 class="goal-title">{{ goal.title }}</h4>
+          <div class="progress-bar-container">
+            <div class="progress-bar" [style.width.%]="goal.progress" [style.background-color]="goal.statusColor"></div>
+          </div>
+          <span class="progress-text">{{ goal.progress }}% completado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="details-section">
+      <h3>Evaluación del Administrador</h3>
+      <div class="evaluation-form">
+        <textarea placeholder="Añadir notas sobre el desempeño..."></textarea>
+        <div class="recommendation">
+          <label>Recomendación:</label>
+          <select>
+            <option>Mantener Posición</option>
+            <option>Considerar para Aumento</option>
+            <option>Considerar para Ascenso</option>
+          </select>
+        </div>
+        <button class="btn btn-primary">Guardar Evaluación</button>
+      </div>
+    </div>
+  </div>
+</div>

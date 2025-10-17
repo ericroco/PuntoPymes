@@ -1,0 +1,55 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+// Reutilizamos el estilo del botón secundario
+.btn.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--color-background);
+    border-color: #dcdcdc;
+  }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.report-container {
+  background-color: var(--color-surface);
+  padding: 1.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.chart-wrapper {
+  height: 350px; // Damos una altura fija para que los gráficos se vean bien
+}

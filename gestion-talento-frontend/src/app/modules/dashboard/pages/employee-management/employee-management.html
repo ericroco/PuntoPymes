@@ -3,8 +3,9 @@
     <h2>Gestión de Personal</h2>
     <button class="btn btn-primary" (click)="openAddEmployeeDialog()">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M11 5a1 1 0 00-2 0v2H7a1 1 0 000 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V5z"/>
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM2 10a8 8 0 1116 0 8 8 0 01-16 0z" clip-rule="evenodd"/>
+        <path d="M11 5a1 1 0 00-2 0v2H7a1 1 0 000 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V5z" />
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM2 10a8 8 0 1116 0 8 8 0 01-16 0z"
+          clip-rule="evenodd" />
       </svg>
       Añadir Empleado
     </button>
@@ -30,10 +31,18 @@
           <td>{{ employee.email }}</td>
           <td>
             <span class="status-badge" [ngClass]="'status-' + employee.status">
-              {{ employee.status === 'active' ? 'Activo' : (employee.status === 'vacation' ? 'De Vacaciones' : 'Inactivo') }}
+              {{ employee.status === 'active' ? 'Activo' : (employee.status === 'vacation' ? 'De Vacaciones' :
+              'Inactivo') }}
             </span>
           </td>
           <td class="actions">
+            <button class="btn-icon btn-primary" [routerLink]="['/dashboard/employee', employee.id]"
+              title="Ver Desempeño">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zM10 3a1.5 1.5 0 011.5 1.5v2.541a1.5 1.5 0 01-3 0V4.5A1.5 1.5 0 0110 3zM10 10a3 3 0 100 6 3 3 0 000-6z" />
+              </svg>
+            </button>
             <button class="btn-icon">✏️</button>
             <button class="btn-icon btn-danger">🗑️</button>
           </td>

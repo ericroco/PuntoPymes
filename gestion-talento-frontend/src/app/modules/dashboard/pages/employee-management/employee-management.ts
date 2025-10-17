@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
-
-// 1. IMPORTACIONES NECESARIAS
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AddEmployeeDialog } from '../../components/add-employee-dialog/add-employee-dialog';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-employee-management',
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule // 2. AÑADE MatDialogModule A LOS IMPORTS
+    MatDialogModule,
+    RouterModule,
   ],
   templateUrl: './employee-management.html',
   styleUrls: ['./employee-management.scss'],

@@ -20,10 +20,11 @@
   &.btn-primary {
     background-color: var(--color-primary);
     color: white;
+
     &:hover {
       background-color: var(--color-primary-dark);
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
   }
 
@@ -45,7 +46,8 @@ table {
   width: 100%;
   border-collapse: collapse;
 
-  th, td {
+  th,
+  td {
     padding: 1rem 1.5rem;
     text-align: left;
     border-bottom: 1px solid var(--color-border);
@@ -53,6 +55,7 @@ table {
 
   thead {
     background-color: var(--color-background);
+
     th {
       font-weight: 600;
       color: var(--color-text-secondary);
@@ -63,6 +66,7 @@ table {
 
   tbody tr {
     transition: background-color 0.2s ease;
+
     &:hover {
       background-color: #f5f5f5;
     }
@@ -76,27 +80,58 @@ table {
   font-weight: 600;
   color: white;
 
-  &.status-active { background-color: #4CAF50; } // Verde
-  &.status-vacation { background-color: #FFC107; } // Ámbar
-  &.status-inactive { background-color: #757575; } // Gris
+  &.status-active {
+    background-color: #4CAF50;
+  }
+
+  // Verde
+  &.status-vacation {
+    background-color: #FFC107;
+  }
+
+  // Ámbar
+  &.status-inactive {
+    background-color: #757575;
+  }
+
+  // Gris
 }
 
 .actions {
+  // Estilo base para TODOS los botones de ícono en la tabla
   .btn-icon {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.2rem; // Para los emojis ✏️ y 🗑️
     padding: 0.5rem;
     border-radius: 50%;
     transition: background-color 0.2s ease;
+    vertical-align: middle; // Ayuda a alinear todo
+    line-height: 1; // Evita espacios extra
+
+    // Estilo para el SVG dentro del botón
+    svg {
+      width: 20px;
+      height: 20px;
+    }
 
     &:hover {
       background-color: var(--color-border);
     }
-    &.btn-danger:hover {
+  }
+
+  // Estilo específico para el botón de "Ver Desempeño"
+  .btn-icon.btn-primary {
+    color: var(--color-primary); // ¡Esta es la línea clave que le da color al ícono!
+    &:hover {
       background-color: var(--color-primary-light);
-      color: var(--color-primary-dark);
     }
+  }
+
+  // Estilo específico para el botón de "Eliminar"
+  .btn-icon.btn-danger:hover {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
   }
 }
