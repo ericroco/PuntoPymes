@@ -29,8 +29,10 @@ export class EmployeeProfile {
     { title: 'Mentorear a nuevo integrante del equipo', progress: 100, status: 'completada', statusColor: '#2ECC71' }
   ];
 
-  achievements = [
-    { title: 'Certificado de Scrum Master', date: '2025-08-15' },
-    { title: 'Reconocimiento "Empleado del Mes"', date: '2025-07-01' }
+  unifiedDocuments = [
+    { name: 'Contrato Firmado.pdf', type: 'Documento Legal', origin: 'Empresa', date: '2024-01-15', canDelete: false },
+    { name: 'Certificado de Scrum Master', type: 'Certificación Externa', origin: 'Empleado', date: '2025-08-15', canDelete: true },
+    { name: 'Certificado AWS Cloud Practitioner.pdf', type: 'Certificación Externa', origin: 'Empresa', date: '2025-09-20', canDelete: false },
+    { name: 'Reconocimiento "Empleado del Mes"', type: 'Reconocimiento Interno', origin: 'Empleado', date: '2025-07-01', canDelete: true }
   ];
 }

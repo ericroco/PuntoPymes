@@ -1,0 +1,146 @@
+// Reusable styles
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.btn.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  font-weight: 500;
+
+  &:hover {
+    background-color: var(--color-background);
+    border-color: #dcdcdc;
+    color: var(--color-text-primary);
+  }
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  span {
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+  }
+}
+
+// Main chart styles
+.org-chart-container {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  overflow-x: auto; // Allows horizontal scrolling for large charts
+}
+
+.org-chart ul {
+  padding-top: 20px;
+  position: relative;
+  transition: all 0.5s;
+}
+
+.org-chart li {
+  float: left;
+  text-align: center;
+  list-style-type: none;
+  position: relative;
+  padding: 20px 5px 0 5px;
+  transition: all 0.5s;
+}
+
+// We use ::before and ::after to draw the connectors
+.org-chart li::before, .org-chart li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  border-top: 2px solid var(--color-border);
+  width: 50%;
+  height: 20px;
+}
+
+.org-chart li::after {
+  right: auto;
+  left: 50%;
+  border-left: 2px solid var(--color-border);
+}
+
+// Remove left border from first child and right border from last child
+.org-chart li:only-child::after, .org-chart li:only-child::before {
+  display: none;
+}
+.org-chart li:first-child::before, .org-chart li:last-child::after {
+  border: 0 none;
+}
+.org-chart li:last-child::before {
+  border-right: 2px solid var(--color-border);
+  border-radius: 0 5px 0 0;
+}
+.org-chart li:first-child::after {
+  border-radius: 5px 0 0 0;
+}
+
+// Add arrows to the connectors
+.org-chart ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid var(--color-border);
+  width: 0;
+  height: 20px;
+}
+
+// Node styles
+.node-content {
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--color-border);
+  background-color: #fff;
+  min-width: 250px;
+  transition: all 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  }
+}
+
+.node-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.node-info {
+  text-align: left;
+}
+
+.node-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.node-title {
+  color: var(--color-text-secondary);
+}
+
+// Styles for different levels
+.level-ceo {
+  border-top: 4px solid var(--color-primary);
+}
+.level-manager {
+  border-top: 4px solid var(--color-secondary);
+}
+.level-employee {
+  border-top: 4px solid #3498DB;
+}

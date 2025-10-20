@@ -1,0 +1,35 @@
+<div class="page-container">
+  <header class="page-header">
+    <h2>Organigrama de la Empresa</h2>
+    <div class="zoom-controls">
+      <button class="btn btn-secondary">-</button>
+      <span>100%</span>
+      <button class="btn btn-secondary">+</button>
+    </div>
+  </header>
+
+  <div class="org-chart-container">
+    <div class="org-chart">
+      <ng-template #nodeTemplate let-node>
+        <div class="node-content" [ngClass]="node.cssClass">
+          <img [src]="node.image" class="node-image" alt="Avatar">
+          <div class="node-info">
+            <div class="node-name">{{ node.name }}</div>
+            <div class="node-title">{{ node.title }}</div>
+          </div>
+        </div>
+        <ul *ngIf="node.childs && node.childs.length > 0">
+          <li *ngFor="let child of node.childs">
+            <ng-container *ngTemplateOutlet="nodeTemplate; context:{$implicit: child}"></ng-container>
+          </li>
+        </ul>
+      </ng-template>
+
+      <ul>
+        <li *ngFor="let node of chartData">
+          <ng-container *ngTemplateOutlet="nodeTemplate; context:{$implicit: node}"></ng-container>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

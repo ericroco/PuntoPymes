@@ -28,6 +28,22 @@ const routes: Routes = [
     loadComponent: () => import('./pages/employee-profile/employee-profile').then(c => c.EmployeeProfile)
   },
   {
+    path: 'recruitment',
+    loadComponent: () => import('./pages/recruitment/recruitment').then(c => c.Recruitment)
+  },
+  {
+    path: 'surveys',
+    loadComponent: () => import('./pages/surveys/surveys').then(c => c.Surveys)
+  },
+  {
+    path: 'organization-chart',
+    loadComponent: () => import('./pages/organization-chart/organization-chart').then(c => c.OrganizationChart)
+  },
+  {
+    path: 'courses',
+    loadComponent: () => import('./pages/course-catalog/course-catalog').then(c => c.CourseCatalog)
+  },
+  {
     path: '**',
     redirectTo: 'overview'
   }

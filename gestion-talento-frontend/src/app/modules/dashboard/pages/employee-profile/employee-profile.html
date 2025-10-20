@@ -28,21 +28,63 @@
         </div>
       </div>
     </div>
-
-    <div class="details-section">
-      <h3>Evaluación del Administrador</h3>
-      <div class="evaluation-form">
-        <textarea placeholder="Añadir notas sobre el desempeño..."></textarea>
-        <div class="recommendation">
-          <label>Recomendación:</label>
-          <select>
-            <option>Mantener Posición</option>
-            <option>Considerar para Aumento</option>
-            <option>Considerar para Ascenso</option>
-          </select>
-        </div>
-        <button class="btn btn-primary">Guardar Evaluación</button>
+    <section class="details-section">
+      <div class="section-header">
+        <h3>Gestión de Documentos</h3>
+        <button class="btn btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+          </svg>
+          <span>Añadir Documento</span>
+        </button>
       </div>
+      <div class="document-list">
+        <div class="document-item header">
+          <span>Nombre del Archivo / Certificado</span>
+          <span>Tipo</span>
+          <span>Origen</span>
+          <span>Fecha</span>
+          <span>Acciones</span>
+        </div>
+        <div *ngFor="let doc of unifiedDocuments" class="document-item">
+          <div class="file-info">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5A1.5 1.5 0 0115.5 18h-11A1.5 1.5 0 013 16.5v-13zM11.5 2.5v1.625c0 .414.336.75.75.75H14.5v.001l-3-3z"
+                clip-rule="evenodd" />
+            </svg>
+            <span>{{ doc.name }}</span>
+          </div>
+          <span>{{ doc.type }}</span>
+          <td>
+            <span class="origin-badge" [ngClass]="doc.origin === 'Empresa' ? 'origin-empresa' : 'origin-empleado'">
+              {{ doc.origin }}
+            </span>
+          </td>
+          <span>{{ doc.date | date:'dd MMM, yyyy' }}</span>
+          <div class="actions">
+            <button class="btn-icon" title="Descargar">📥</button>
+            <button *ngIf="doc.canDelete" class="btn-icon btn-danger" title="Eliminar">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="details-section">
+    <h3>Evaluación del Administrador</h3>
+    <div class="evaluation-form">
+      <textarea placeholder="Añadir notas sobre el desempeño..."></textarea>
+      <div class="recommendation">
+        <label>Recomendación:</label>
+        <select>
+          <option>Mantener Posición</option>
+          <option>Considerar para Aumento</option>
+          <option>Considerar para Ascenso</option>
+        </select>
+      </div>
+      <button class="btn btn-primary">Guardar Evaluación</button>
     </div>
   </div>
 </div>

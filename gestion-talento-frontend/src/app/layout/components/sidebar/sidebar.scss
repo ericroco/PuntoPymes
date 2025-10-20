@@ -18,10 +18,12 @@
   align-items: center;
   padding: 0 0.5rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
+
   .logo {
     width: 32px;
     height: 32px;
   }
+
   .logo-text {
     margin-left: 0.75rem;
     font-size: 1.25rem;
@@ -35,6 +37,15 @@
   flex-grow: 1;
 }
 
+.nav-title {
+  display: block;
+  padding: 1.5rem 1rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 .nav-item {
   display: flex;
   align-items: center;
@@ -46,7 +57,12 @@
   font-weight: 500;
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 
-  svg { width: 20px; height: 20px; margin-right: 1rem; fill: currentColor; }
+  svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 1rem;
+    fill: currentColor;
+  }
 
   &:hover {
     background-color: var(--color-primary-light);
@@ -59,4 +75,5 @@
     color: white;
     box-shadow: 0 4px 10px rgba(63, 81, 181, 0.4);
   }
+
 }

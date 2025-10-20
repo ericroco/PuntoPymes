@@ -1,0 +1,27 @@
+<div class="page-container">
+  <header class="page-header">
+    <h2>Catálogo de Cursos</h2>
+    <div class="filters">
+      <input type="text" class="search-input" placeholder="Buscar curso...">
+      <button class="btn btn-primary">
+        <span>Sugerir un Curso</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="course-grid" @cardAnimation>
+    <div *ngFor="let course of courses" class="course-card">
+      <div class="course-image" [style.background-image]="'url(' + course.image + ')'">
+        <span class="course-category">{{ course.category }}</span>
+      </div>
+      <div class="course-content">
+        <h3 class="course-title">{{ course.title }}</h3>
+        <div class="course-details">
+          <span>Instructor: <strong>{{ course.instructor }}</strong></span>
+          <span>Duración: <strong>{{ course.duration }}</strong></span>
+        </div>
+        <button class="btn btn-secondary">Ver Detalles</button>
+      </div>
+    </div>
+  </div>
+</div>
