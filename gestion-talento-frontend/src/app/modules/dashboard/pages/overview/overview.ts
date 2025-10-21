@@ -10,7 +10,7 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
   styleUrl: './overview.scss',
   animations: [
     trigger('cardAnimation', [
-      transition('* => *', [ // Se activa cada vez que se carga la vista
+      transition('* => *', [
         query(':enter', [
           style({ opacity: 0, transform: 'translateY(30px)' }),
           stagger('100ms', [
@@ -22,7 +22,6 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
   ]
 })
 export class Overview {
-  // Datos de ejemplo para las tarjetas
   summaryCards = [
     { title: 'Empleados Activos', value: '74', trend: '+2.5%', isPositive: true, color: 'blue' },
     { title: 'Tareas Completadas (Mes)', value: '248', trend: '+10%', isPositive: true, color: 'green' },

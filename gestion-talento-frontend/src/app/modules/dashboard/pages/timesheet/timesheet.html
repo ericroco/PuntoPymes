@@ -1,0 +1,59 @@
+<div class="page-container" @fadeIn>
+  <header class="page-header">
+    <h2>Mi Hoja de Horas</h2>
+    <div class="week-selector">
+      <button class="btn btn-secondary">Semana Anterior</button>
+      <strong>Semana del 20 Oct - 26 Oct, 2025</strong>
+      <button class="btn btn-secondary">Semana Siguiente</button>
+    </div>
+  </header>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Proyecto / Tarea</th>
+          <th>Lun 20</th>
+          <th>Mar 21</th>
+          <th>Mié 22</th>
+          <th>Jue 23</th>
+          <th>Vie 24</th>
+          <th>Sáb 25</th>
+          <th>Dom 26</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let project of projects">
+          <td>{{ project.name }}</td>
+          <td><input type="number" [(ngModel)]="project.hours[0]" min="0" max="24"></td>
+          <td><input type="number" [(ngModel)]="project.hours[1]" min="0" max="24"></td>
+          <td><input type="number" [(ngModel)]="project.hours[2]" min="0" max="24"></td>
+          <td><input type="number" [(ngModel)]="project.hours[3]" min="0" max="24"></td>
+          <td><input type="number" [(ngModel)]="project.hours[4]" min="0" max="24"></td>
+          <td><input type="number" [(ngModel)]="project.hours[5]" min="0" max="24"></td>
+          <td><input type="number" [(ngModel)]="project.hours[6]" min="0" max="24"></td>
+          <td class="total">{{ getProjectTotal(project) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total Diario</td>
+          <td>{{ getDayTotal(0) }}</td>
+          <td>{{ getDayTotal(1) }}</td>
+          <td>{{ getDayTotal(2) }}</td>
+          <td>{{ getDayTotal(3) }}</td>
+          <td>{{ getDayTotal(4) }}</td>
+          <td>{{ getDayTotal(5) }}</td>
+          <td>{{ getDayTotal(6) }}</td>
+          <td class="grand-total">{{ getGrandTotal() }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <footer class="page-footer">
+    <button class="btn btn-secondary">Guardar Borrador</button>
+    <button class="btn btn-primary">Enviar para Aprobación</button>
+  </footer>
+</div>

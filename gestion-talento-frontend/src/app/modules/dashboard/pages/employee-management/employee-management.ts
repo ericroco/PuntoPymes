@@ -37,16 +37,14 @@ export class EmployeeManagement {
   ];
   constructor(public dialog: MatDialog) {}
 
-  // 4. CREA LA FUNCIÓN PARA ABRIR EL MODAL
   openAddEmployeeDialog(): void {
     const dialogRef = this.dialog.open(AddEmployeeDialog, {
-      width: '500px', // Ancho del modal
-      disableClose: true // Evita que se cierre al hacer clic fuera
+      width: '500px',
+      disableClose: true
     });
 
     dialogRef.afterClosed().subscribe(result => {
       console.log('El modal se cerró');
-      // Aquí iría la lógica para añadir el nuevo empleado a la tabla si el resultado es exitoso
     });
 }
 }

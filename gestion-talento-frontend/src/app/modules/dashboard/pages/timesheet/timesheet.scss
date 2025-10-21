@@ -1,0 +1,199 @@
+// Reutilizamos estilos de páginas anteriores
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: var(--font-family-base);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-out;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.btn.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+        background-color: var(--color-primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.btn.btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: var(--color-background);
+        border-color: #dcdcdc;
+    }
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+.table-container {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+        vertical-align: middle;
+    }
+
+    thead {
+        background-color: var(--color-background);
+
+        th {
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+    }
+
+    tbody tr {
+        transition: background-color 0.2s ease;
+
+        &:last-child {
+            td {
+                border-bottom: none;
+            }
+        }
+
+        &:hover {
+            background-color: #f8f8f8;
+        }
+    }
+}
+
+th,
+td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+thead {
+    background-color: var(--color-background);
+
+    th {
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+}
+
+// Estilos específicos de la Hoja de Horas
+.week-selector {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    strong {
+        color: var(--color-text-primary);
+    }
+}
+
+// Estilos para los inputs dentro de la tabla
+tbody td {
+    padding: 0.5rem; // Menos padding para que los inputs se vean bien
+
+    input {
+        width: 100%;
+        padding: 0.75rem 0.5rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius);
+        font-family: var(--font-family-base);
+        font-size: 1rem;
+        text-align: center;
+        -moz-appearance: textfield;
+        appearance: textfield;
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        &:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+        }
+    }
+}
+
+td.total {
+    font-weight: 700;
+    text-align: center;
+}
+
+// Estilos para el pie de tabla
+tfoot {
+    tr {
+        background-color: var(--color-background);
+        border-top: 2px solid var(--color-border);
+    }
+
+    td {
+        font-weight: 700;
+        text-align: center;
+        padding: 1rem 0.5rem;
+    }
+
+    .grand-total {
+        font-size: 1.2rem;
+        color: var(--color-primary);
+    }
+}
+
+.page-footer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}

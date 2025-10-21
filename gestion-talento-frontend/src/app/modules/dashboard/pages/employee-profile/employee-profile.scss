@@ -192,8 +192,8 @@
    ========================================================================== */
 
 .details-section {
-  grid-column: 1 / -1; // Ocupa todo el ancho
-  margin-bottom: 2rem; // Añadimos un margen inferior
+  grid-column: 1 / -1;
+  margin-bottom: 2rem;
 
   .section-header {
     display: flex;
@@ -203,56 +203,104 @@
   }
 }
 
-.document-list {
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  overflow: hidden;
-}
-
-.document-item {
-  display: grid;
-  // Cambiamos de 4 a 5 columnas
-  grid-template-columns: 2.5fr 1.5fr 1fr 1fr 100px;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-
-  &:last-child {
-    border-bottom: none;
+.document-section {
+  .document-list {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
   }
 
-  // Estilo para el encabezado de la lista
-  &.header {
-    background-color: var(--color-background);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
+  .document-item {
+    display: grid;
+    grid-template-columns: 2.5fr 1.5fr 1fr 1fr 100px;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.header {
+      background-color: var(--color-background);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      padding: 0.75rem 1.5rem;
+    }
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      color: var(--color-primary);
+    }
+  }
+
+  .origin-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
     font-size: 0.8rem;
-    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-align: center;
+
+    &.origin-empresa {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary-dark);
+    }
+
+    &.origin-empleado {
+      background-color: #E8F5E9;
+      color: #2E7D32;
+    }
   }
 }
 
-.file-info {
+.filter-controls {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-weight: 500;
+  margin-left: auto; // Empuja los filtros hacia la izquierda, antes del botón
+  margin-right: 1rem; // Espacio antes del botón "Añadir"
 
-  svg {
-    width: 24px;
-    height: 24px;
-    color: var(--color-primary);
+  label {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  .filter-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background-color: var(--color-surface);
+    font-family: var(--font-family-base);
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    min-width: 200px; // Ancho mínimo para el dropdown
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2); // Sombra de foco
+    }
   }
 }
-
 .actions {
   display: flex;
   gap: 0.5rem;
 }
 
-// Reutilizamos los estilos de btn-icon que ya creamos en otra parte
 .btn-icon {
   background: none;
   border: none;
@@ -276,22 +324,46 @@
     background-color: var(--color-primary-light);
     color: var(--color-primary-dark);
   }
+}
 
-  .origin-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.8rem;
+.salary-section {
+  .document-list {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+  }
+
+  .document-item {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr 3fr;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.header {
+      background-color: var(--color-background);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      padding: 0.75rem 1.5rem;
+    }
+  }
+
+  .salary {
     font-weight: 600;
-    text-align: center;
+  }
 
-    &.origin-empresa {
-      background-color: var(--color-primary-light);
-      color: var(--color-primary-dark);
-    }
-
-    &.origin-empleado {
-      background-color: #E8F5E9; // Un verde claro
-      color: #2E7D32; // Un verde oscuro
-    }
+  .comments {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-secondary);
   }
 }

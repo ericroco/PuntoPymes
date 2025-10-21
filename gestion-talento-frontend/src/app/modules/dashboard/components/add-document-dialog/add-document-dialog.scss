@@ -1,0 +1,79 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: var(--font-family-base);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-out;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.btn.btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    font-weight: 500;
+
+    &:hover {
+        background-color: var(--color-background);
+        border-color: #dcdcdc;
+        color: var(--color-text-primary);
+    }
+}
+
+[mat-dialog-content] {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; // Espacio entre campos
+}
+
+mat-form-field {
+    width: 100%;
+}
+
+.file-input-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px dashed var(--color-border); // Borde punteado
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    flex-wrap: wrap; // Permite que el nombre del archivo pase abajo si es largo
+}
+
+.file-upload-label {
+    // Hereda estilos de .btn, ajustamos padding si es necesario
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+}
+
+.file-name {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    flex-grow: 1; // Ocupa el espacio restante
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.placeholder {
+        color: #bdbdbd; // Gris más claro para el placeholder
+    }
+}
+
+mat-error {
+    font-size: 0.75rem;
+    margin-top: -10px; // Ajusta posición del mensaje de error
+    width: 100%; // Asegura que ocupe todo el ancho
+}

@@ -28,10 +28,20 @@
         </div>
       </div>
     </div>
-    <section class="details-section">
+    <section class="details-section document-section">
       <div class="section-header">
         <h3>Gestión de Documentos</h3>
-        <button class="btn btn-secondary">
+        <div class="filter-controls">
+          <label for="doc-type-filter">Filtrar por tipo:</label>
+          <select id="doc-type-filter" class="filter-select">
+            <option value="todos">Todos los tipos</option>
+            <option value="Certificación Externa">Certificación Externa</option>
+            <option value="Capacitación Interna">Capacitación Interna</option>
+            <option value="Documento Legal">Documento Legal</option>
+            <option value="Reconocimiento Interno">Reconocimiento Interno</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" (click)="openAddDocumentDialog()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path
               d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
@@ -70,7 +80,25 @@
         </div>
       </div>
     </section>
+
   </div>
+  <section class="details-section salary-section">
+    <h3>Historial Salarial y Compensación</h3>
+    <div class="document-list">
+      <div class="document-item header">
+        <span>Fecha</span>
+        <span>Tipo de Movimiento</span>
+        <span>Monto (USD)</span>
+        <span class="comments">Comentarios</span>
+      </div>
+      <div *ngFor="let item of salaryHistory" class="document-item">
+        <span>{{ item.date | date:'dd MMM, yyyy' }}</span>
+        <span>{{ item.type }}</span>
+        <span class="salary">{{ item.amount | currency:'USD':'symbol':'1.2-2' }}</span>
+        <span class="comments">{{ item.comments }}</span>
+      </div>
+    </div>
+  </section>
 
   <div class="details-section">
     <h3>Evaluación del Administrador</h3>
@@ -87,4 +115,5 @@
       <button class="btn btn-primary">Guardar Evaluación</button>
     </div>
   </div>
+
 </div>

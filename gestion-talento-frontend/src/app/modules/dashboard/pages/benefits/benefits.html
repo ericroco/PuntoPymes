@@ -1,0 +1,33 @@
+<div class="page-container">
+  <header class="page-header">
+    <h2>Administración de Beneficios</h2>
+    <button class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+      </svg>
+      <span>Añadir Nuevo Beneficio</span>
+    </button>
+  </header>
+
+  <div class="benefits-grid" @cardAnimation>
+    <div *ngFor="let benefit of benefits" class="benefit-card">
+      <div class="card-header">
+        <span class="category-badge">{{ benefit.category }}</span>
+        <button class="btn-icon" title="Configurar">⚙️</button>
+      </div>
+      <div class="card-content">
+        <h3 class="benefit-title">{{ benefit.title }}</h3>
+        <p class="benefit-description">{{ benefit.description }}</p>
+      </div>
+      <div class="card-footer">
+        <div class="enrolled-info">
+          <span>Inscritos:</span>
+          <strong>{{ benefit.employeesEnrolled }}</strong>
+        </div>
+        <div class="provider-info">
+          <span>Proveedor: <strong>{{ benefit.provider }}</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

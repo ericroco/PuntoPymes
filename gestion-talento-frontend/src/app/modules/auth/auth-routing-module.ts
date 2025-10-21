@@ -4,12 +4,10 @@ import { Login } from './pages/login/login';
 
 const routes: Routes = [
   {
-    // Cuando la ruta sea /auth/login, muestra el componente de Login
     path: 'login',
     component: Login
   },
   {
-    // Si alguien entra a /auth, redirígelo a /auth/login
     path: '**',
     redirectTo: 'login'
   }

@@ -1,0 +1,33 @@
+<div class="page-container">
+  <header class="page-header">
+    <h2>Planes de Carrera</h2>
+    <button class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+      </svg>
+      <span>Crear Nuevo Plan</span>
+    </button>
+  </header>
+
+  <div class="list-container" @listAnimation>
+    <div class="list-item header">
+      <span>Título del Plan</span>
+      <span>Descripción Corta</span>
+      <span>Niveles</span>
+      <span>Empleados Asignados</span>
+      <span>Acciones</span>
+    </div>
+
+    <div *ngFor="let path of careerPaths" class="list-item">
+      <span class="path-title">{{ path.title }}</span>
+      <span class="path-description">{{ path.description }}</span>
+      <span>{{ path.levels }}</span>
+      <span>{{ path.employeesAssigned }}</span>
+      <td class="actions">
+        <button class="btn-icon" title="Ver Detalles">👁️</button>
+        <button class="btn-icon" title="Editar">✏️</button>
+        <button class="btn-icon btn-danger" title="Eliminar">🗑️</button>
+      </td>
+    </div>
+  </div>
+</div>

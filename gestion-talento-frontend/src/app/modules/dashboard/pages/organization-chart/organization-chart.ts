@@ -9,8 +9,6 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./organization-chart.scss']
 })
 export class OrganizationChart {
-  // Sample hierarchical data
-  // In a real app, this would come from an API
   chartData = [
     {
       name: 'Erick Rodas',

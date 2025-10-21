@@ -44,6 +44,22 @@ const routes: Routes = [
     loadComponent: () => import('./pages/course-catalog/course-catalog').then(c => c.CourseCatalog)
   },
   {
+    path: 'payroll',
+    loadComponent: () => import('./pages/payroll/payroll').then(c => c.Payroll)
+  },
+  {
+    path: 'benefits',
+    loadComponent: () => import('./pages/benefits/benefits').then(c => c.Benefits)
+  },
+  {
+    path: 'timesheet',
+    loadComponent: () => import('./pages/timesheet/timesheet').then(c => c.Timesheet)
+  },
+  {
+    path: 'career-paths',
+    loadComponent: () => import('./pages/career-paths/career-paths').then(c => c.CareerPaths)
+  },
+  {
     path: '**',
     redirectTo: 'overview'
   }
