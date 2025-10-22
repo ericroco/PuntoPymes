@@ -60,6 +60,14 @@ const routes: Routes = [
     loadComponent: () => import('./pages/career-paths/career-paths').then(c => c.CareerPaths)
   },
   {
+    path: 'policies', // Asegúrate que el path sea 'policies'
+    loadComponent: () => import('./pages/policy-library/policy-library').then(c => c.PolicyLibrary) // Asegúrate que cargue el componente correcto
+  },
+  {
+    path: 'sprints/:sprintId', // URL será /dashboard/sprints/sprint-oct-25, etc.
+    loadComponent: () => import('./pages/sprint-board/sprint-board').then(c => c.SprintBoard) // Carga el NUEVO componente
+  },
+  {
     path: '**',
     redirectTo: 'overview'
   }

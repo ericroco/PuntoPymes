@@ -1,0 +1,169 @@
+<div class="page-container sprint-board">
+  <header class="sprint-header">
+    <div class="sprint-info">
+      <h1>{{ sprintName }}</h1>
+      <p>{{ sprintDescription }}</p>
+      <div class="sprint-dates-header" *ngIf="startDate && endDate">
+        🗓️ {{ startDate | date:'longDate' }} - {{ endDate | date:'longDate' }}
+      </div>
+      <div class="assigned-team">
+        <h4>Equipo Asignado:</h4>
+        <div class="team-avatars" *ngIf="assignedEmployees.length > 0; else noTeam">
+          <img *ngFor="let emp of assignedEmployees" [src]="emp.avatar" [alt]="emp.name" matTooltip="{{emp.name}}"
+            matTooltipPosition="above" class="avatar">
+        </div>
+        <ng-template #noTeam>
+          <span class="no-team-text">Aún no hay empleados asignados a este sprint.</span>
+        </ng-template>
+      </div>
+    </div>
+    <div class="sprint-actions">
+      <button *ngIf="sprintStatus === 'Planificado'" class="btn btn-success" (click)="startSprint()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.027l3.5 2.5a.75.75 0 010 1.162l-3.5 2.5A.75.75 0 018 13.125V6.875a.75.75 0 01.39-.683z"
+            clip-rule="evenodd" />
+        </svg>
+        <span>Iniciar Sprint</span>
+      </button>
+
+      <button *ngIf="sprintStatus === 'Activo'" class="btn btn-warning" (click)="completeSprint()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+            clip-rule="evenodd" />
+        </svg>
+        <span>Completar Sprint</span>
+      </button>
+      <button class="btn btn-secondary" (click)="openAssignEmployeeDialog()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96c.023.222.014.442-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span>Asignar Empleados</span>
+      </button>
+      <button class="btn btn-primary" (click)="openAddTaskDialog()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        <span>Nueva Tarea</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="board-columns" cdkDropListGroup>
+
+    <div class="board-column">
+      <h3 class="column-title">Pendiente ({{pendingTasks.length}})</h3>
+      <div class="task-list" id="pendingList" cdkDropList [cdkDropListData]="pendingTasks"
+        (cdkDropListDropped)="drop($event)">
+        <div class="task-card" *ngFor="let task of pendingTasks" cdkDrag @taskAnimation>
+          <div class="task-card-main">
+            <div class="task-priority priority-{{task.priority}}"></div>
+            <div class="task-content">
+              <p class="task-title">{{ task.title }}</p>
+              <div class="task-meta">
+                <span>{{ task.assignedTo }}</span>
+                <span class="due-date">{{ task.dueDate | date:'dd MMM' }}</span>
+              </div>
+            </div>
+            <div class="task-card-actions">
+              <button class="btn-icon task-edit" (click)="openEditTaskDialog(task)" title="Editar Tarea">✏️</button>
+              <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                  [class.rotated]="expandedTaskId === task.id">
+                  <path fill-rule="evenodd"
+                    d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                    clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
+            <p *ngIf="task.description; else noDescription">{{ task.description }}</p>
+            <ng-template #noDescription>
+              <p><i>No hay descripción para esta tarea.</i></p>
+            </ng-template>
+          </div>
+        </div>
+        <div class="empty-list-placeholder" *ngIf="pendingTasks.length === 0">No hay tareas</div>
+      </div>
+    </div>
+
+    <div class="board-column">
+      <h3 class="column-title">En Progreso ({{inProgressTasks.length}})</h3>
+      <div class="task-list" id="inProgressList" cdkDropList [cdkDropListData]="inProgressTasks"
+        (cdkDropListDropped)="drop($event)">
+        <div class="task-card" *ngFor="let task of inProgressTasks" cdkDrag @taskAnimation>
+          <div class="task-card-main">
+            <div class="task-priority priority-{{task.priority}}"></div>
+            <div class="task-content">
+              <p class="task-title">{{ task.title }}</p>
+              <div class="task-meta">
+                <span>{{ task.assignedTo }}</span>
+                <span class="due-date">{{ task.dueDate | date:'dd MMM' }}</span>
+              </div>
+            </div>
+            <div class="task-card-actions">
+              <button class="btn-icon task-edit" (click)="openEditTaskDialog(task)" title="Editar Tarea">✏️</button>
+              <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                  [class.rotated]="expandedTaskId === task.id">
+                  <path fill-rule="evenodd"
+                    d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                    clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
+            <p *ngIf="task.description; else noDescription">{{ task.description }}</p>
+            <ng-template #noDescription>
+              <p><i>No hay descripción para esta tarea.</i></p>
+            </ng-template>
+          </div>
+        </div>
+        <div class="empty-list-placeholder" *ngIf="inProgressTasks.length === 0">No hay tareas</div>
+      </div>
+    </div>
+
+    <div class="board-column">
+      <h3 class="column-title">Completada ({{completedTasks.length}})</h3>
+      <div class="task-list" id="completedList" cdkDropList [cdkDropListData]="completedTasks"
+        (cdkDropListDropped)="drop($event)">
+        <div class="task-card" *ngFor="let task of completedTasks" cdkDrag @taskAnimation>
+          <div class="task-card-main">
+            <div class="task-priority priority-{{task.priority}}"></div>
+            <div class="task-content">
+              <p class="task-title">{{ task.title }}</p>
+              <div class="task-meta">
+                <span>{{ task.assignedTo }}</span>
+                <span class="due-date">{{ task.dueDate | date:'dd MMM' }}</span>
+              </div>
+            </div>
+            <div class="task-card-actions">
+              <button class="btn-icon task-edit" (click)="openEditTaskDialog(task)" title="Editar Tarea">✏️</button>
+              <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                  [class.rotated]="expandedTaskId === task.id">
+                  <path fill-rule="evenodd"
+                    d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                    clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
+            <p *ngIf="task.description; else noDescription">{{ task.description }}</p>
+            <ng-template #noDescription>
+              <p><i>No hay descripción para esta tarea.</i></p>
+            </ng-template>
+          </div>
+        </div>
+        <div class="empty-list-placeholder" *ngIf="completedTasks.length === 0">No hay tareas</div>
+      </div>
+    </div>
+
+  </div>
+</div>

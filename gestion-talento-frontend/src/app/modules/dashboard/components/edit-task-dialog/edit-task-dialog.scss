@@ -1,0 +1,24 @@
+[mat-dialog-content] {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; // Space between fields/rows
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+// Row for side-by-side fields
+.form-row {
+  display: flex;
+  gap: 15px; // Space between fields in the row
+}
+
+.form-field {
+   flex: 1; // Make fields in a row share space equally
+}
+
+// Adjust action button alignment
+[mat-dialog-actions] {
+  padding-top: 10px; // Add some space above actions
+}

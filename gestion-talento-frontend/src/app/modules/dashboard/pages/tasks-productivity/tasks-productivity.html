@@ -1,57 +1,31 @@
 <div class="page-container">
-    <header class="page-header">
-        <h2>Tareas y Productividad</h2>
-        <div class="filters">
-            <button class="btn btn-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.59L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z"
-                        clip-rule="evenodd" />
-                </svg>
-                <span>Filtrar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="chevron">
-                    <path fill-rule="evenodd"
-                        d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-                        clip-rule="evenodd" />
-                </svg>
-            </button>
+  <header class="page-header">
+    <h2>Sprints de Proyecto</h2>
+    <button class="btn btn-primary" (click)="openAddSprintDialog()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+      <span>Crear Nuevo Sprint</span>
+    </button>
+  </header>
 
-            <button class="btn btn-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                        d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1z" />
-                </svg>
-                <span>Agrupar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="chevron">
-                    <path fill-rule="evenodd"
-                        d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-                        clip-rule="evenodd" />
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <div class="tasks-grid" @cardStagger>
-        <div *ngFor="let task of tasks" class="task-card">
-            <div class="card-header">
-                <span class="priority-badge" [ngClass]="'priority-' + task.priority">
-                    {{ task.priority }}
-                </span>
-                <span class="status-badge" [ngClass]="'status-' + task.status">
-                    {{ task.status.replace('-', ' ') }}
-                </span>
-            </div>
-            <h3 class="task-title">{{ task.title }}</h3>
-            <div class="task-details">
-                <div class="detail-item">
-                    <span>Asignado a:</span>
-                    <strong>{{ task.assignedTo }}</strong>
-                </div>
-                <div class="detail-item">
-                    <span>Fecha Límite:</span>
-                    <strong>{{ task.dueDate | date:'dd MMM, yyyy' }}</strong>
-                </div>
-            </div>
+  <div class="sprints-grid" @listAnimation>
+    <div *ngFor="let sprint of sprints" class="sprint-card">
+      <div class="card-header">
+        <h3 class="sprint-name">{{ sprint.name }}</h3>
+        <span class="status-badge" [ngClass]="'status-' + sprint.status.toLowerCase()">
+          {{ sprint.status }}
+        </span>
+      </div>
+      <p class="sprint-description">{{ sprint.description }}</p>
+      <span class="sprint-dates">
+        🗓️ {{ sprint.startDate | date:'dd MMM' }} - {{ sprint.endDate | date:'dd MMM, yyyy' }}
+      </span>
+      <div class="card-footer">
+        <button class="btn-icon" title="Editar Sprint" (click)="openEditSprintDialog(sprint)">✏️</button>
+        <button class="btn btn-secondary" [routerLink]="['/dashboard/sprints', sprint.id]">Ver Tablero</button>
         </div>
     </div>
+    <div *ngIf="sprints.length === 0" class="empty-list-placeholder">
+      No hay sprints creados todavía.
+    </div>
+  </div>
 </div>

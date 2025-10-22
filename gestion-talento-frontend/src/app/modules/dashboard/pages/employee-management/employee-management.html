@@ -1,53 +1,64 @@
 <div class="page-container">
   <header class="page-header">
     <h2>Gestión de Personal</h2>
+    <div class="view-controls">
+      <input type="text" placeholder="Buscar empleado..." class="search-input">
+      <select class="filter-select">
+        <option value="">Todos los Departamentos</option>
+        <option value="Tecnología">Tecnología</option>
+        <option value="Diseño">Diseño</option>
+        <option value="Contabilidad">Contabilidad</option>
+      </select>
+      <button class="btn btn-secondary">Ordenar</button>
+    </div>
     <button class="btn btn-primary" (click)="openAddEmployeeDialog()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M11 5a1 1 0 00-2 0v2H7a1 1 0 000 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V5z" />
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM2 10a8 8 0 1116 0 8 8 0 01-16 0z"
-          clip-rule="evenodd" />
-      </svg>
+      <svg></svg>
       Añadir Empleado
     </button>
   </header>
 
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Cargo</th>
-          <th>Departamento</th>
-          <th>Email</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody @listAnimation>
-        <tr *ngFor="let employee of employees">
-          <td>{{ employee.name }}</td>
-          <td>{{ employee.role }}</td>
-          <td>{{ employee.department }}</td>
-          <td>{{ employee.email }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="'status-' + employee.status">
-              {{ employee.status === 'active' ? 'Activo' : (employee.status === 'vacation' ? 'De Vacaciones' :
-              'Inactivo') }}
-            </span>
-          </td>
-          <td class="actions">
-            <button class="btn-icon btn-primary" [routerLink]="['/dashboard/employee', employee.id]"
-              title="Ver Desempeño">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zM10 3a1.5 1.5 0 011.5 1.5v2.541a1.5 1.5 0 01-3 0V4.5A1.5 1.5 0 0110 3zM10 10a3 3 0 100 6 3 3 0 000-6z" />
-              </svg>
-            </button>
-            <button class="btn-icon">✏️</button>
-            <button class="btn-icon btn-danger">🗑️</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="employee-grid" @cardAnimation>
+    <div *ngFor="let employee of employees" class="employee-card">
+      <div class="card-header">
+        <img [src]="employee.avatar" alt="{{employee.name}}" class="avatar">
+        <div class="name-role">
+          <span class="employee-name">{{ employee.name }}</span>
+          <span class="employee-role">{{ employee.role }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="'status-' + employee.status">
+          {{ employee.status === 'active' ? 'Activo' : (employee.status === 'vacation' ? 'Vacaciones' : 'Inactivo') }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">Departamento:</span>
+          <span class="value">{{ employee.department }}</span>
+        </div>
+        <div class="info-row kpi-row">
+          <span class="label">Progreso Metas:</span>
+          <div class="progress-bar-container">
+            <div class="progress-bar" [style.width.%]="employee.goalProgress"></div>
+          </div>
+          <span class="kpi-value">{{ employee.goalProgress }}%</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-icon btn-primary" [routerLink]="['/dashboard/employee', employee.id]" title="Ver Perfil">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+            <path fill-rule="evenodd"
+              d="M.664 10.59a1.651 1.651 0 010-1.18l.877-.5d9a2.081 2.081 0 011.666.877l.745.986a1.125 1.125 0 001.357.51l1.118-.372a2.25 2.25 0 011.838.385l.794.556a1.125 1.125 0 001.036 0l.794-.556a2.25 2.25 0 011.838-.385l1.118.372a1.125 1.125 0 001.357-.51l.745-.986a2.081 2.081 0 011.666-.877l.877.5d9a1.651 1.651 0 010 1.18l-.877.5d9a2.081 2.081 0 01-1.666-.877l-.745-.986a1.125 1.125 0 00-1.357-.51l-1.118.372a2.25 2.25 0 01-1.838-.385l-.794-.556a1.125 1.125 0 00-1.036 0l-.794.556a2.25 2.25 0 01-1.838.385l-1.118-.372a1.125 1.125 0 00-1.357.51l-.745.986a2.081 2.081 0 01-1.666.877l-.877-.5d9z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+        <button class="btn-icon" title="Editar (Placeholder)">✏️</button>
+        <button class="btn-icon btn-danger" title="Desactivar (Placeholder)">🗑️</button>
+      </div>
+    </div>
+    <div *ngIf="employees.length === 0" class="empty-list-placeholder">
+      No hay empleados registrados.
+    </div>
   </div>
 </div>
