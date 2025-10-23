@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { EmployeeManagement } from './pages/employee-management/employee-management';
 
+
 const routes: Routes = [
   {
     path: 'overview',
@@ -12,7 +13,7 @@ const routes: Routes = [
     loadComponent: () => import('./pages/employee-management/employee-management').then(c => c.EmployeeManagement)
   },
   {
-    path: 'tasks',
+    path: 'sprints',
     loadComponent: () => import('./pages/tasks-productivity/tasks-productivity').then(c => c.TasksProductivity)
   },
   {
@@ -65,8 +66,33 @@ const routes: Routes = [
   },
   {
     path: 'sprints/:sprintId', // URL será /dashboard/sprints/sprint-oct-25, etc.
-    loadComponent: () => import('./pages/sprint-board/sprint-board').then(c => c.SprintBoard) // Carga el NUEVO componente
+    loadComponent: () => import('./pages/sprint-board/sprint-board').then(c => c.SprintBoard)
   },
+  {
+    path: 'settings',
+    loadComponent: () => import('./pages/settings/settings').then(c => c.Settings)
+    // SIN 'children' aquí
+  },
+
+  // --- RUTAS PARA CADA SUB-PÁGINA DE CONFIGURACIÓN (HERMANAS) ---
+  {
+    path: 'settings/branding', // Ruta completa
+    loadComponent: () => import('./pages/settings/branding-settings/branding-settings').then(c => c.BrandingSettings)
+  },
+  {
+    path: 'settings/modules', // Ruta completa
+    loadComponent: () => import('./pages/settings/module-settings/module-settings').then(c => c.ModuleSettings)
+  },
+  {
+    path: 'settings/users', // Ruta completa
+    loadComponent: () => import('./pages/settings/user-settings/user-settings').then(c => c.UserSettings)
+  },
+  /*
+  {
+    path: 'settings/profile-fields', // Ruta completa
+    loadComponent: () => import('./pages/settings/profile-settings/profile-settings').then(c => c.ProfileSettings)
+  },*/
+  // ...
   {
     path: '**',
     redirectTo: 'overview'

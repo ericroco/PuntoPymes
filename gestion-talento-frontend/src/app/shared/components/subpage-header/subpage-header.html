@@ -1,0 +1,10 @@
+<div class="subpage-header-container">
+    <button *ngIf="backRoute" mat-icon-button class="back-button" [routerLink]="backRoute" [title]="backTooltip">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+  
+    <h3 class="subpage-title">{{ title }}</h3>
+  
+    <div class="subpage-actions">
+      <ng-content></ng-content> </div>
+  </div>

@@ -1,0 +1,31 @@
+<div class="branding-settings-container">
+  <app-subpage-header title="Apariencia de la Empresa" backRoute="/dashboard/settings">
+  </app-subpage-header>
+  <p class="description">Personaliza el logo y el color principal que verán tus empleados.</p>
+
+  <div class="setting-item">
+      <label>Logo de la Empresa</label>
+      <div class="logo-preview-container">
+          <img [src]="companyLogo" alt="Logo Actual" class="logo-preview" *ngIf="companyLogo">
+          <div class="logo-placeholder" *ngIf="!companyLogo">Sin Logo</div>
+          <button class="btn btn-secondary btn-small" (click)="logoInput.click()">Cambiar Logo</button>
+          <input type="file" accept="image/png, image/jpeg, image/svg+xml" #logoInput
+              (change)="onLogoSelected($event)" hidden>
+      </div>
+      <span class="hint">Recomendado: SVG o PNG transparente, máx 1MB.</span>
+  </div>
+
+  <div class="setting-item">
+      <label for="primary-color">Color Principal</label>
+      <div class="color-picker-container">
+          <input type="color" id="primary-color" [(ngModel)]="primaryColor" class="color-input">
+          <span class="color-hex">{{ primaryColor }}</span>
+      </div>
+      <span class="hint">Este color se usará en botones principales, enlaces y elementos activos.</span>
+  </div>
+
+  <div class="actions-footer">
+      <button mat-stroked-button>Restablecer Predeterminados</button>
+      <button mat-flat-button color="primary" (click)="saveBranding()">Guardar Cambios</button>
+  </div>
+</div>

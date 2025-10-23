@@ -1,0 +1,120 @@
+// Import button styles if needed or define locally
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
+  border: none; border-radius: var(--border-radius); font-weight: 600; font-size: 0.95rem;
+  font-family: var(--font-family-base); cursor: pointer; text-decoration: none; transition: all 0.2s ease-out;
+  svg { width: 20px; height: 20px; }
+}
+.btn.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+.btn.btn-secondary {
+  background-color: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border); font-weight: 500;
+  padding: 0.6rem 1.2rem; // Slightly smaller for card buttons
+  &:hover { background-color: var(--color-background); border-color: #dcdcdc; color: var(--color-text-primary); }
+}
+
+.branding-settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; // Space between setting items
+}
+
+h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  margin: 0 0 1rem 0;
+}
+
+.setting-item {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1.5rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .hint {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+  }
+}
+
+.logo-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-preview {
+  max-height: 50px; // Limit logo preview height
+  max-width: 150px; // Limit logo preview width
+  border: 1px dashed var(--color-border);
+  padding: 5px;
+  border-radius: var(--border-radius);
+}
+
+.logo-placeholder {
+  height: 50px;
+  width: 100px;
+  border: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  border-radius: var(--border-radius);
+}
+
+.btn-small { // Modifier for smaller buttons
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.color-input {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 2px; // Small padding around the color picker itself
+  cursor: pointer;
+}
+
+.color-hex {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.actions-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end; // Buttons to the right
+  gap: 1rem;
+}

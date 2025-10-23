@@ -1,0 +1,42 @@
+<div class="settings-subpage-container">
+    <app-subpage-header title="Gestionar Usuarios Administradores" backRoute="/dashboard/settings">
+       <button mat-flat-button color="primary" (click)="inviteAdminUser()">
+         <mat-icon>person_add</mat-icon>
+         Invitar Usuario Admin
+       </button>
+    </app-subpage-header>
+  
+    <p class="description">
+      Gestiona quién tiene acceso para configurar la plataforma y qué roles administrativos poseen.
+      Estos usuarios son distintos de los empleados generales.
+    </p>
+  
+    <div class="admin-user-list">
+      <div class="user-item header">
+        <span>Usuario</span>
+        <span>Email</span>
+        <span>Rol Administrativo</span>
+        <span>Acciones</span>
+      </div>
+  
+      <div *ngFor="let user of adminUsers" class="user-item">
+        <div class="user-info-cell">
+          <img [src]="user.avatar" alt="{{user.name}}" class="avatar-small">
+          <span class="user-name">{{ user.name }}</span>
+        </div>
+        <span>{{ user.email }}</span>
+        <span class="user-role">{{ user.role }}</span>
+        <td class="actions">
+          <button mat-icon-button matTooltip="Editar Rol" (click)="editAdminUserRole(user)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" matTooltip="Revocar Acceso Admin" (click)="removeAdminAccess(user)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </td>
+      </div>
+       <div *ngIf="adminUsers.length === 0" class="empty-list-placeholder">
+         No hay usuarios administradores definidos.
+       </div>
+    </div>
+  </div>

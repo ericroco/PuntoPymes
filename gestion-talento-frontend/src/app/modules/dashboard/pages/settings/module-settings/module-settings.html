@@ -1,0 +1,31 @@
+<div class="settings-subpage-container">
+    <app-subpage-header title="Gestionar Módulos" backRoute="/dashboard/settings"></app-subpage-header>
+
+    <p class="description">
+        Activa o desactiva las funcionalidades principales de la plataforma según las necesidades de tu empresa.
+        Los módulos desactivados no aparecerán en el menú lateral ni serán accesibles para los usuarios.
+        Algunos módulos no pueden desactivarse si otros módulos activos dependen de ellos.
+    </p>
+
+    <div class="module-toggle-list">
+
+        <div *ngFor="let module of moduleSettings" class="module-item">
+            <div class="module-info">
+                <mat-slide-toggle [(ngModel)]="module.isActive" color="primary" [disabled]="isToggleDisabled(module)"
+                    [matTooltip]="isToggleDisabled(module) ? getDisabledTooltip(module) : null">
+                    {{ module.label }}
+                </mat-slide-toggle>
+                <span class="module-hint">{{ module.hint }}</span>
+            </div>
+
+            <button *ngIf="module.configRoute" mat-icon-button [routerLink]="module.configRoute"
+                matTooltip="Configuración Específica" class="config-button">
+                <mat-icon>settings</mat-icon>
+            </button>
+            <div *ngIf="!module.configRoute" class="config-placeholder"></div>
+        </div>
+    </div>
+    <div class="actions-footer">
+        <button mat-flat-button color="primary" (click)="saveModuleSettings()">Guardar Cambios</button>
+    </div>
+</div>

@@ -1,0 +1,178 @@
+/* ==========================================================================
+   STYLES FOR MODULE SETTINGS SUB-PAGE
+   ========================================================================== */
+
+// --- Reusable Button Styles (Include if needed globally or define here) ---
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: var(--font-family-base);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-out;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.btn.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+        background-color: var(--color-primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.btn.btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    font-weight: 500;
+    padding: 0.6rem 1.2rem; // Slightly smaller for card buttons
+
+    &:hover {
+        background-color: var(--color-background);
+        border-color: #dcdcdc;
+        color: var(--color-text-primary);
+    }
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    vertical-align: middle;
+    line-height: 1;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        background-color: var(--color-border);
+    }
+}
+.config-placeholder {
+  width: 36px; // Mismo ancho que el botón mat-icon-button
+  height: 36px;
+  flex-shrink: 0; // Evita que se encoja
+}
+
+.description {
+    color: var(--color-text-secondary);
+    margin-bottom: 2rem; // Space below description
+    font-size: 0.95rem;
+    max-width: 700px; // Limit width for readability
+    line-height: 1.6;
+}
+
+// --- List container for the toggles ---
+.module-toggle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; // Space between items
+    max-width: 800px; // Limit width of the toggle section
+}
+
+// --- Styling for each toggle item row ---
+.module-item {
+    display: flex;
+    align-items: center; // Vertically align items
+    justify-content: space-between; // Push info and config button apart
+    padding: 1rem 0; // Vertical padding for spacing
+    border-bottom: 1px solid var(--color-border); // Separator line
+
+    &:last-child {
+        border-bottom: none; // No border on the last item
+    }
+}
+
+// --- Left side content (Toggle + Hint) ---
+.module-info {
+    display: flex;
+    flex-direction: column; // Stack toggle and hint vertically
+    gap: 0.25rem; // Small gap between toggle and hint
+    flex-grow: 1; // Allow this section to take available space
+    padding-right: 1rem; // Add space before the config button
+
+    // Style the slide toggle component
+    mat-slide-toggle {
+        margin-bottom: 0.25rem; // Ensure hint aligns correctly below
+
+        // Style the label text within the toggle
+        // Using ::ng-deep might be necessary but use cautiously
+        ::ng-deep .mdc-label {
+            font-weight: 500 !important;
+            color: var(--color-text-primary) !important;
+            font-size: 1rem !important; // Slightly larger label
+        }
+    }
+
+    // Style for disabled toggle label
+    mat-slide-toggle.mat-disabled {
+        ::ng-deep .mdc-label {
+            color: var(--color-text-secondary) !important; // Grey out label when disabled
+            cursor: not-allowed;
+        }
+    }
+
+    // Hint text styling
+    .module-hint {
+        font-size: 0.8rem; // Smaller hint text
+        color: var(--color-text-secondary);
+        // Indent hint text to align roughly with the start of the label text
+        // Adjust padding-left based on your toggle's visual size
+        padding-left: 45px;
+    }
+}
+
+// --- Right side content (Config Button) ---
+.config-button {
+    color: var(--color-text-secondary); // Default color
+    width: 36px;
+    height: 36px;
+    line-height: 36px; // Size
+    flex-shrink: 0; // Prevent button from shrinking
+
+    mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+    }
+
+    // Icon size
+
+    &:hover {
+        color: var(--color-primary); // Highlight on hover
+        background-color: var(--color-primary-light); // Background on hover
+    }
+}
+
+// --- Footer with action buttons ---
+.actions-footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border); // Separator line above footer
+    display: flex;
+    justify-content: flex-end; // Align buttons to the right
+    gap: 1rem; // Space between buttons
+}
