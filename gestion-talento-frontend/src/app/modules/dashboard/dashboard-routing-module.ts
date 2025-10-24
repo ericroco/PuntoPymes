@@ -87,12 +87,23 @@ const routes: Routes = [
     path: 'settings/users', // Ruta completa
     loadComponent: () => import('./pages/settings/user-settings/user-settings').then(c => c.UserSettings)
   },
-  /*
+  {
+    path: 'settings/roles', // Ruta completa
+    loadComponent: () => import('./pages/settings/role-settings/role-settings').then(c => c.RoleSettings)
+  },
+
   {
     path: 'settings/profile-fields', // Ruta completa
     loadComponent: () => import('./pages/settings/profile-settings/profile-settings').then(c => c.ProfileSettings)
-  },*/
-  // ...
+  },
+  {
+    path: 'settings/attendance', // URL: /dashboard/settings/attendance
+    loadComponent: () => import('./pages/settings/attendance-settings/attendance-settings').then(c => c.AttendanceSettings)
+  },
+  {
+    path: 'settings/payroll', // Ruta completa
+    loadComponent: () => import('./pages/settings/payroll-settings/payroll-settings').then(c => c.PayrollSettings)
+  },
   {
     path: '**',
     redirectTo: 'overview'

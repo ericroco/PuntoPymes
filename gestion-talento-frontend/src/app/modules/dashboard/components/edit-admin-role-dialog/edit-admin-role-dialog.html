@@ -1,0 +1,21 @@
+<h1 mat-dialog-title>Editar Rol para {{ user.name }}</h1>
+
+<div mat-dialog-content>
+  <p>Selecciona el nuevo rol administrativo para este usuario.</p>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Rol Administrativo</mat-label>
+    <mat-select [(ngModel)]="selectedRoleId" required>
+       <mat-option *ngIf="availableRoles.length === 0" disabled>No hay roles</mat-option>
+       <mat-option *ngFor="let role of availableRoles" [value]="role.id">
+        {{ role.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  </div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="!selectedRoleId">Guardar Rol</button>
+</div>

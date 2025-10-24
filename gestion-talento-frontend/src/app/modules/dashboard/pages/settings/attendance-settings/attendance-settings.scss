@@ -1,0 +1,224 @@
+/* ==========================================================================
+   STYLES FOR ATTENDANCE SETTINGS SUB-PAGE (attendance-settings.scss)
+   ========================================================================== */
+
+// --- Reusable Button Styles (Defined Locally) ---
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-out;
+
+  svg, mat-icon { // Include mat-icon here
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.btn.btn-primary { // Assuming MatButton with color="primary" is used
+  // Styles might be handled by Material Theme, but you can override
+  background-color: var(--color-primary);
+  color: white;
+  &:hover {
+    background-color: var(--color-primary-dark);
+  }
+}
+
+.btn.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  font-weight: 500;
+  padding: 0.6rem 1.2rem; // Slightly smaller
+
+  &:hover {
+    background-color: var(--color-background);
+    border-color: #dcdcdc;
+    color: var(--color-text-primary);
+  }
+}
+
+.btn-icon, button[mat-icon-button] { // Include Material's icon button selector
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  vertical-align: middle;
+  line-height: 1;
+  color: var(--color-text-secondary);
+
+  // Styles for Material Icon specifically
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 20px;
+    display: block; // Or inline-flex if needed
+  }
+   // Styles for SVG icons if used within btn-icon
+   svg {
+     width: 20px;
+     height: 20px;
+     display: block;
+   }
+
+  &:hover {
+    background-color: var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  // Specific hover for danger/warn color
+  &[color="warn"]:hover {
+      background-color: var(--color-primary-light); // Use primary light for red hover bg
+      color: var(--color-primary-dark); // Use primary dark for red icon hover color
+  }
+}
+
+// --- Basic container styles ---
+.settings-subpage-container {
+    padding: 2rem;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  max-width: 700px;
+}
+
+// --- Section styling ---
+.setting-section {
+  padding: 1.5rem 0;
+
+  h4 {
+    margin: 0 0 1.5rem 0; // Increased bottom margin
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--color-text-primary);
+  }
+}
+
+// Row for side-by-side fields
+.form-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start; // Align top
+
+  // Ensure Material fields take up space correctly
+  mat-form-field {
+     flex: 1; // Share space equally
+  }
+}
+
+// Specific field widths if needed
+.tolerance-field {
+   max-width: 300px;
+}
+
+// Checkbox options layout
+.restriction-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; // Increased gap
+  margin-bottom: 1.5rem;
+
+  // Style the map link button
+  a[mat-button] {
+     margin-left: 20px; // Indent slightly below checkbox
+     color: var(--color-primary);
+     text-decoration: none;
+     font-weight: 500; // Make link text bolder
+     padding: 0; // Reset default button padding
+     min-width: auto; // Reset default button min-width
+     line-height: normal; // Reset default button line-height
+
+     mat-icon {
+        font-size: 18px; width: 18px; height: 18px;
+        vertical-align: text-bottom; // Align icon better with text
+        margin-right: 4px;
+     }
+     &:hover {
+        text-decoration: underline;
+     }
+  }
+}
+
+// Wi-Fi List Container
+.wifi-list-container {
+  margin-top: 2rem; // More space above Wi-Fi list
+  padding-left: 20px; // Indent Wi-Fi section under the checkbox
+  max-width: 500px;
+
+  h5 {
+    font-weight: 600; // Bolder heading
+    color: var(--color-text-secondary);
+    margin: 0 0 1rem 0; // More space below heading
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  mat-list { // Remove default padding from mat-list
+     padding-top: 0;
+  }
+
+  mat-list-item {
+     height: 48px !important; // Consistent height
+     // Remove default padding if needed, apply custom
+     // ::ng-deep .mdc-list-item__content { padding: 0 !important; }
+
+     // Style the text within the list item
+     span[matListItemTitle] {
+        font-size: 0.95rem;
+        color: var(--color-text-primary);
+     }
+  }
+
+  .empty-list {
+     font-style: italic;
+     color: var(--color-text-secondary);
+     padding: 1rem 0;
+  }
+}
+
+// Form to add Wi-Fi
+.add-wifi-form {
+  display: flex;
+  align-items: center; // Vertically align input and button
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+// Reduce padding/margin for form fields inside lists/tight spaces
+.condensed-field {
+   flex-grow: 1; // Take available space
+  // Remove bottom space
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+  // Adjust vertical padding for density
+  ::ng-deep .mat-mdc-form-field-flex { padding-top: 8px !important; padding-bottom: 8px !important; }
+}
+
+// Divider styling
+mat-divider {
+  margin: 1.5rem 0; // Increase margin around dividers
+}
+
+// --- Action Footer ---
+.actions-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end; // Align button(s) to the right
+}

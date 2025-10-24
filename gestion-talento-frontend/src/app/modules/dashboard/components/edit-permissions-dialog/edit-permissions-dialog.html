@@ -1,0 +1,23 @@
+<h1 mat-dialog-title>Editar Permisos para Rol: {{ role.name }}</h1>
+
+<div mat-dialog-content class="permissions-content">
+  <p>Selecciona las acciones que los usuarios con este rol podrán realizar.</p>
+
+  <mat-tab-group>
+    <mat-tab *ngFor="let group of permissionGroups" [label]="group">
+      <div class="permission-group-content">
+        <div *ngFor="let perm of getPermissionsByGroup(group)" class="permission-item">
+          <mat-checkbox [(ngModel)]="selectedPermissions[perm.id]">
+            {{ perm.label }}
+          </mat-checkbox>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()">Guardar Permisos</button>
+</div>

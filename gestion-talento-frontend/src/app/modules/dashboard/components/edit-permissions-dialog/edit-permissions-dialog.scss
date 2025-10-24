@@ -1,0 +1,22 @@
+.permissions-content {
+  min-height: 300px; // Asegura espacio para las pestañas
+  max-height: 60vh;
+  overflow-y: auto; // Scroll si hay muchos permisos
+}
+
+.permission-group-content {
+  padding: 1rem 0; // Espacio dentro de cada pestaña
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; // Espacio entre checkboxes
+}
+
+.permission-item {
+  mat-checkbox {
+    width: 100%; // Asegura que el texto no se corte fácilmente
+  }
+}
+
+[mat-dialog-actions] {
+  padding: 16px 24px;
+}

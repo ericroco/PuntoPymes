@@ -1,0 +1,29 @@
+<h1 mat-dialog-title>Invitar Nuevo Usuario Administrador</h1>
+
+<div mat-dialog-content [formGroup]="inviteForm">
+  <p>Ingresa el correo electrónico del usuario y asigna un rol administrativo inicial.</p>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Correo Electrónico</mat-label>
+    <input matInput type="email" formControlName="email" placeholder="ejemplo@tuempresa.com" required>
+    <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">El correo es obligatorio.</mat-error>
+    <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">Correo inválido.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Asignar Rol Administrativo</mat-label>
+    <mat-select formControlName="roleId" required>
+      <mat-option *ngIf="availableRoles.length === 0" disabled>No hay roles disponibles</mat-option>
+      <mat-option *ngFor="let role of availableRoles" [value]="role.id">
+        {{ role.name }}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="inviteForm.get('roleId')?.hasError('required')">Debes seleccionar un rol.</mat-error>
+  </mat-form-field>
+
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onInvite()" [disabled]="inviteForm.invalid">Enviar Invitación</button>
+</div>

@@ -1,0 +1,78 @@
+<div class="settings-subpage-container">
+  <app-subpage-header title="Configuración de Asistencia y Tiempo" backRoute="/dashboard/settings"></app-subpage-header>
+
+  <p class="description">
+    Define las reglas y parámetros para el registro de asistencia de los empleados a través de la aplicación móvil.
+  </p>
+
+  <div class="setting-section">
+    <h4>Horario Laboral Estándar</h4>
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Hora de Entrada</mat-label>
+        <input matInput type="time" [(ngModel)]="settings.standardStartTime">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Hora de Salida</mat-label>
+        <input matInput type="time" [(ngModel)]="settings.standardEndTime">
+      </mat-form-field>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="setting-section">
+    <h4>Reglas de Puntualidad</h4>
+    <mat-form-field appearance="outline" class="tolerance-field">
+      <mat-label>Tolerancia de Retraso (minutos)</mat-label>
+      <input matInput type="number" [(ngModel)]="settings.latenessToleranceMinutes" min="0">
+      <mat-hint>Minutos permitidos después de la hora de entrada antes de marcar retraso.</mat-hint>
+    </mat-form-field>
+    </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="setting-section">
+    <h4>Restricciones de Registro Móvil</h4>
+    <div class="restriction-options">
+      <mat-checkbox [(ngModel)]="settings.requireGeofence" color="primary">
+        Requerir estar dentro de la Geocerca de la oficina
+      </mat-checkbox>
+      <a mat-button [href]="settings.geofenceLink" target="_blank" *ngIf="settings.requireGeofence">
+          <mat-icon>edit_location</mat-icon> Ver/Editar Geocerca (Mapa)
+      </a>
+
+      <mat-checkbox [(ngModel)]="settings.requireWifi" color="primary">
+        Requerir conexión a una Red Wi-Fi autorizada
+      </mat-checkbox>
+    </div>
+
+    <div *ngIf="settings.requireWifi" class="wifi-list-container">
+      <h5>Redes Wi-Fi Autorizadas (SSID)</h5>
+      <mat-list role="list">
+        <mat-list-item *ngFor="let network of settings.allowedWifiNetworks" role="listitem">
+          <span matListItemTitle>{{ network }}</span>
+          <button mat-icon-button color="warn" (click)="removeWifiNetwork(network)" matListItemMeta matTooltip="Eliminar Red">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </mat-list-item>
+        <mat-list-item *ngIf="settings.allowedWifiNetworks.length === 0">
+           <span matListItemTitle class="empty-list">No hay redes autorizadas.</span>
+        </mat-list-item>
+      </mat-list>
+      <div class="add-wifi-form">
+        <mat-form-field appearance="outline" class="condensed-field">
+          <mat-label>Añadir SSID de Red Wi-Fi</mat-label>
+          <input matInput [(ngModel)]="newWifiNetwork" placeholder="Ej: NombreDeTuWifi">
+        </mat-form-field>
+        <button mat-stroked-button color="primary" (click)="addWifiNetwork()" [disabled]="!newWifiNetwork">
+          <mat-icon>add</mat-icon> Añadir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-footer">
+    <button mat-flat-button color="primary" (click)="saveAttendanceSettings()">Guardar Configuración de Asistencia</button>
+  </div>
+</div>

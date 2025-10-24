@@ -1,0 +1,23 @@
+<h1 mat-dialog-title>Crear Nuevo Rol Personalizado</h1>
+
+<div mat-dialog-content [formGroup]="roleForm">
+  <p>Define un nombre y una descripción para el nuevo rol. Podrás configurar sus permisos específicos después de crearlo.</p>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Nombre del Rol</mat-label>
+    <input matInput formControlName="name" placeholder="Ej: Reclutador Junior" required>
+    <mat-error *ngIf="roleForm.get('name')?.hasError('required')">El nombre es obligatorio.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Descripción</mat-label>
+    <textarea matInput formControlName="description" placeholder="Describe brevemente qué puede hacer este rol..." rows="3" required></textarea>
+    <mat-error *ngIf="roleForm.get('description')?.hasError('required')">La descripción es obligatoria.</mat-error>
+  </mat-form-field>
+
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="roleForm.invalid">Crear Rol</button>
+</div>

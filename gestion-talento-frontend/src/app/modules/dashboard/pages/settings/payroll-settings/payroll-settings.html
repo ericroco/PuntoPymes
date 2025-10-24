@@ -1,0 +1,75 @@
+<div class="settings-subpage-container">
+  <app-subpage-header title="Configuración de Nómina y Compensación" backRoute="/dashboard/settings"></app-subpage-header>
+
+  <p class="description">
+    Define las reglas básicas para el cálculo de nómina y los tipos de pagos o descuentos personalizados.
+    La exportación final se realizará a tu sistema contable.
+  </p>
+
+  <div class="setting-section">
+    <h4>Frecuencia de Pago</h4>
+    <mat-form-field appearance="outline" class="frequency-field">
+      <mat-label>Período de Nómina</mat-label>
+      <mat-select [(ngModel)]="settings.payFrequency">
+        <mat-option *ngFor="let freq of payFrequencies" [value]="freq.value">
+          {{ freq.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="setting-section">
+    <h4>Reglas de Horas Extras</h4>
+    <mat-form-field appearance="outline" class="overtime-field">
+      <mat-label>Multiplicador Hora Extra</mat-label>
+      <input matInput type="number" [(ngModel)]="settings.overtimeMultiplier" min="1" step="0.1">
+      <mat-hint>Factor por el cual se multiplica el valor de la hora normal (ej: 1.5 para 150%).</mat-hint>
+    </mat-form-field>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="setting-section">
+    <h4>Tipos de Ingresos/Descuentos Personalizados</h4>
+    <p class="description">Define conceptos comunes (bonos, comisiones, anticipos) para registrar novedades.</p>
+    <div class="payroll-items-container">
+      <mat-list role="list">
+        <div mat-subheader>Items Definidos</div>
+        <mat-list-item *ngFor="let item of payrollItems" role="listitem">
+          <mat-icon matListItemIcon>{{ item.type === 'Ingreso' ? 'add_card' : 'credit_card_off' }}</mat-icon>
+          <div matListItemTitle>{{ item.name }}</div>
+          <div matListItemLine>{{ item.type }} {{ item.isRecurring ? '(Recurrente)' : ''}}</div>
+          <button mat-icon-button color="warn" (click)="removePayrollItem(item.id)" matListItemMeta matTooltip="Eliminar Item">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </mat-list-item>
+        <mat-list-item *ngIf="payrollItems.length === 0">
+           <span matListItemTitle class="empty-list">No hay items personalizados.</span>
+        </mat-list-item>
+      </mat-list>
+
+      <div class="add-item-form">
+        <mat-form-field appearance="outline" class="condensed-field item-name-field">
+          <mat-label>Nuevo Item</mat-label>
+          <input matInput [(ngModel)]="newItemName" placeholder="Ej: Bono Trimestral">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="condensed-field item-type-field">
+          <mat-label>Tipo</mat-label>
+          <mat-select [(ngModel)]="newItemType">
+            <mat-option value="Ingreso">Ingreso</mat-option>
+            <mat-option value="Descuento">Descuento</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-stroked-button color="primary" (click)="addPayrollItem()" [disabled]="!newItemName">
+          <mat-icon>add</mat-icon> Añadir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-footer">
+    <button mat-flat-button color="primary" (click)="savePayrollSettings()">Guardar Configuración de Nómina</button>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<h1 mat-dialog-title>Usuarios con Rol: {{ roleName }}</h1>
+
+<div class="search-container">
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Buscar por nombre o email</mat-label>
+    <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Buscar...">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-content class="user-list-container">
+  <mat-list role="list">
+    <mat-list-item *ngFor="let user of filteredUsers" role="listitem">
+      <img matListItemAvatar [src]="user.avatar" [alt]="user.name" class="avatar-small">
+      <div matListItemTitle>{{ user.name }}</div>
+      <div matListItemLine>{{ user.email }}</div>
+    </mat-list-item>
+  </mat-list>
+  <p *ngIf="filteredUsers.length === 0 && allUsersForRole.length > 0" class="empty-list">
+    No se encontraron usuarios con ese filtro.
+  </p>
+  <p *ngIf="allUsersForRole.length === 0" class="empty-list">
+    No hay usuarios asignados a este rol.
+  </p>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" (click)="close()">Cerrar</button>
+</div>

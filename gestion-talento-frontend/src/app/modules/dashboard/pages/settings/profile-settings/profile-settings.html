@@ -1,0 +1,63 @@
+<div class="settings-subpage-container">
+  <app-subpage-header title="Campos Personalizados del Perfil" backRoute="/dashboard/settings"></app-subpage-header>
+
+  <p class="description">
+    Define campos adicionales que aparecerán en el perfil de cada empleado.
+    Estos campos complementan la información estándar.
+  </p>
+
+  <div class="custom-fields-list">
+    <div class="field-item header">
+      <span>Etiqueta del Campo (Visible para el usuario)</span>
+      <span>Tipo de Dato</span>
+      <span>Placeholder (Opcional)</span>
+      <span>Requerido</span>
+      <span>Acciones</span>
+    </div>
+
+    <div *ngFor="let field of customFields; let i = index" class="field-item">
+      <mat-form-field appearance="outline" class="condensed-field">
+        <mat-label>Etiqueta</mat-label>
+        <input matInput [(ngModel)]="field.label" placeholder="Ej: Talla de Camisa" required>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="condensed-field">
+         <mat-label>Tipo</mat-label>
+        <mat-select [(ngModel)]="field.type">
+          <mat-option *ngFor="let type of fieldTypes" [value]="type">{{ type | titlecase }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="condensed-field">
+         <mat-label>Opciones (si es Lista)</mat-label>
+         <input matInput [(ngModel)]="field.options" placeholder="Ej: Opción1, Opción2">
+         <mat-hint *ngIf="field.type === 'select'">Separar con comas</mat-hint>
+       </mat-form-field>
+
+       <mat-form-field appearance="outline" class="condensed-field">
+         <mat-label>Texto de Ayuda</mat-label>
+         <input matInput [(ngModel)]="field.placeholder" placeholder="Ej: Selecciona talla">
+       </mat-form-field>
+
+
+      <div class="checkbox-container">
+        <mat-checkbox [(ngModel)]="field.required" labelPosition="before"></mat-checkbox>
+      </div>
+
+
+      <div class="actions">
+        <button mat-icon-button color="warn" (click)="removeCustomField(field.id)" matTooltip="Eliminar Campo">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <button mat-stroked-button (click)="addCustomField()" class="add-field-button">
+    <mat-icon>add</mat-icon> Añadir Campo Personalizado
+  </button>
+
+  <div class="actions-footer">
+    <button mat-flat-button color="primary" (click)="saveCustomFields()">Guardar Cambios</button>
+  </div>
+</div>
