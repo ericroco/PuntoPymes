@@ -1,12 +1,52 @@
 /* ==========================================================================
-   ESTILOS PARA LA PÁGINA DE NÓMINA Y SALARIOS
+   ESTILOS PARA LA PÁGINA DE NÓMINA (payroll.scss)
    ========================================================================== */
 
+// --- Estilos Globales (Copiados para este archivo) ---
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem; // Menos margen
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-out;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.btn.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .btn.btn-secondary {
@@ -14,13 +54,100 @@
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   font-weight: 500;
+  // Propiedades como display, align-items, gap, etc., se heredan de .btn
 
   &:hover {
     background-color: var(--color-background);
-    border-color: #ccc;
+    border-color: #dcdcdc;
+    color: var(--color-text-primary);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:disabled {
+    color: var(--color-secondary-light); // Texto gris claro (apagado)
+    border-color: var(--color-border); // Borde gris claro (apagado)
+    background-color: var(--color-surface); // Fondo blanco (igual que activo)
+    // Quita efectos
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+
+    // El texto y el icono heredarán el color gris claro
   }
 }
 
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  vertical-align: middle;
+  line-height: 1;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background-color: var(--color-border);
+  }
+
+  &.btn-primary {
+    color: var(--color-primary);
+
+    &:hover {
+      background-color: var(--color-primary-light);
+    }
+  }
+}
+
+.no-data-placeholder {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+// --- ESTILOS PARA FILTROS ---
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .filter-field {
+    min-width: 200px;
+
+    // Ajusta la densidad
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 48px;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+  }
+
+  .search-field {
+    flex-grow: 1;
+    min-width: 250px;
+  }
+}
+
+// --- ESTILOS DE LA TABLA ---
 .table-container {
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
@@ -32,7 +159,8 @@ table {
   width: 100%;
   border-collapse: collapse;
 
-  th, td {
+  th,
+  td {
     padding: 1rem 1.5rem;
     text-align: left;
     border-bottom: 1px solid var(--color-border);
@@ -41,6 +169,7 @@ table {
 
   thead {
     background-color: var(--color-background);
+
     th {
       font-weight: 600;
       color: var(--color-text-secondary);
@@ -51,48 +180,111 @@ table {
 
   tbody tr {
     transition: background-color 0.2s ease;
+
     &:last-child {
       td {
         border-bottom: none;
       }
     }
+
     &:hover {
       background-color: #f8f8f8;
     }
+
+    // Resalta la fila cuando está seleccionada
+    &.selected-row {
+      background-color: var(--color-primary-light) !important;
+    }
+  }
+
+  // --- Columnas Específicas ---
+  th.checkbox-col,
+  td.checkbox-col {
+    width: 60px;
+    text-align: center;
+    padding-right: 0.5rem;
+    padding-left: 1rem;
+  }
+
+  td.salary {
+    font-weight: 600;
+    color: var(--color-secondary);
+    font-size: 1.05rem;
+  }
+
+  .actions {
+    text-align: right;
+    white-space: nowrap;
+
+    .btn-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+  }
+
+  // --- Pie de Tabla (Totales) ---
+  tfoot {
+    tr {
+      background-color: var(--color-background);
+      border-top: 2px solid var(--color-border);
+    }
+
+    td {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .total-label {
+      text-align: right;
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+
+    .total-value {
+      color: var(--color-primary);
+      font-size: 1.15rem;
+    }
   }
 }
 
-td.salary {
-  font-weight: 600;
-  color: var(--color-secondary);
-  font-size: 1.05rem;
+.add-item-form {
+  display: flex;
+  align-items: center; // Centra verticalmente todos los elementos
+  flex-wrap: wrap; // Permite que baje si no cabe
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--color-background);
+  border-top: 1px solid var(--color-border);
 }
 
-.actions {
-  .btn-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-    vertical-align: middle;
-    line-height: 1;
-    font-size: 1.5rem;
+.item-name-field {
+  flex: 1 1 200px; // Crece y tiene base de 200px
+}
 
-    svg {
-      width: 20px;
-      height: 20px;
-    }
+.item-type-field {
+  flex: 1 1 120px; // Crece y tiene base de 120px
+}
 
-    &:hover {
-      background-color: var(--color-border);
-    }
+// --- NUEVO ESTILO PARA EL CHECKBOX ---
+.recurring-checkbox {
+  flex-shrink: 0; // Evita que se encoja
+  margin-right: 1rem; // Espacio a la derecha
+}
+
+// --- FIN NUEVO ESTILO ---
+
+.add-button {
+  flex-shrink: 0; // Evita que el botón se encoja
+}
+
+// Reduce padding/margin for form fields inside add form
+.condensed-field {
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none;
   }
-  .btn-icon.btn-primary {
-    color: var(--color-primary);
-    &:hover {
-      background-color: var(--color-primary-light);
-    }
+
+  ::ng-deep .mat-mdc-form-field-flex {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
   }
 }

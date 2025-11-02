@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// Material Imports
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,10 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
-// Shared Header
-import { SubpageHeader} from '../../../../../shared/components/subpage-header/subpage-header'; // Adjust path
-
-// Interface for custom payroll items
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header';
 interface PayrollItem {
   id: number;
   name: string;
@@ -27,7 +25,7 @@ interface PayrollItem {
   imports: [
     CommonModule, FormsModule, MatButtonModule, MatFormFieldModule,
     MatInputModule, MatSelectModule, MatIconModule, MatDividerModule,
-    MatListModule, MatTooltipModule, SubpageHeader
+    MatListModule, MatTooltipModule, SubpageHeader, MatCheckboxModule
   ],
   templateUrl: './payroll-settings.html',
   styleUrls: ['./payroll-settings.scss']
@@ -49,6 +47,7 @@ export class PayrollSettings {
 
   newItemName: string = '';
   newItemType: 'Ingreso' | 'Descuento' = 'Ingreso';
+  newItemIsRecurring: boolean = false;
 
   payFrequencies = [
     { value: 'semanal', label: 'Semanal' },
@@ -56,7 +55,7 @@ export class PayrollSettings {
     { value: 'mensual', label: 'Mensual' }
   ];
 
-  constructor() {}
+  constructor() { }
 
   addPayrollItem(): void {
     if (this.newItemName) {
@@ -64,10 +63,15 @@ export class PayrollSettings {
         id: Date.now(), // Temp ID
         name: this.newItemName,
         type: this.newItemType,
-        isRecurring: false // Default for now
+        isRecurring: this.newItemIsRecurring // <-- Usar la nueva propiedad
       };
       this.payrollItems.push(newItem);
-      this.newItemName = ''; // Clear input
+
+      // Resetear formulario
+      this.newItemName = '';
+      this.newItemType = 'Ingreso';
+      this.newItemIsRecurring = false; // <-- Resetear el checkbox
+
       // TODO: Call API
     }
   }

@@ -1,0 +1,34 @@
+<h1 mat-dialog-title>Actualizar Progreso</h1>
+<p class="goal-title">{{ data.goalTitle }}</p>
+<div *ngIf="data.completedTaskTitle" class="task-context">
+  <mat-icon color="primary">check_circle</mat-icon>
+  <div>
+    <span>¡Tarea completada!</span>
+    <strong>{{ data.completedTaskTitle }}</strong>
+  </div>
+</div>
+<form [formGroup]="progressForm" (ngSubmit)="onSave()">
+  <div mat-dialog-content class="progress-form-content">
+
+    <div class="progress-input-group">
+      <mat-slider min="0" max="100" step="5" discrete class="progress-slider">
+        <input matSliderThumb formControlName="progress" (input)="onInputChange($event)">
+      </mat-slider>
+      <mat-form-field appearance="outline" class="progress-input">
+        <input matInput type="number" formControlName="progress" min="0" max="100">
+        <span matSuffix>%</span>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="comment-field">
+      <mat-label>Comentario de Actualización (Opcional)</mat-label>
+      <textarea matInput formControlName="comment" rows="3" placeholder="Ej: Terminé la fase de diseño..."></textarea>
+    </mat-form-field>
+
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-flat-button color="primary" [disabled]="progressForm.invalid">Actualizar</button>
+  </div>
+</form>

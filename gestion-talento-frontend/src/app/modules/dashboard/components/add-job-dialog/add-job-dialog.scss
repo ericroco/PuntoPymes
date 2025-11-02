@@ -1,0 +1,33 @@
+/* ==========================================================================
+   ESTILOS PARA EL MODAL DE AÑADIR/EDITAR CARGO
+   ========================================================================== */
+
+.job-form-content {
+  display: flex;
+  flex-direction: column; // Apila los campos verticalmente
+  gap: 15px;             // Espacio entre los campos y la fila
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+// Estilo para todos los campos de formulario de Material
+mat-form-field {
+  width: 100%; // Hace que los campos ocupen todo el ancho disponible
+}
+
+// Contenedor para la fila de salarios
+.form-row {
+  display: flex;       // Coloca los campos uno al lado del otro
+  gap: 15px;           // Espacio entre los campos
+  align-items: flex-start;
+}
+
+// Estilo para cada campo dentro de la fila
+.form-field {
+  flex: 1; // Hace que cada campo ocupe la mitad del espacio
+}
+
+// Contenedor de los botones de acción (Cancelar, Guardar)
+[mat-dialog-actions] {
+  padding: 16px 24px;
+}

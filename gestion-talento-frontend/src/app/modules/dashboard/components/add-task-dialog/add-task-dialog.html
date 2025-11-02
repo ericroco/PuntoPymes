@@ -10,7 +10,8 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Descripción (Opcional)</mat-label>
-    <textarea matInput formControlName="description" placeholder="Detalles adicionales sobre la tarea..." rows="3"></textarea>
+    <textarea matInput formControlName="description" placeholder="Detalles adicionales sobre la tarea..."
+      rows="3"></textarea>
   </mat-form-field>
 
   <div class="form-row"> <mat-form-field appearance="outline" class="form-field">
@@ -32,6 +33,15 @@
       </mat-select>
     </mat-form-field>
   </div>
+      <mat-form-field appearance="outline">
+      <mat-label>Vincular a Meta (Opcional)</mat-label>
+      <mat-select formControlName="linkedGoal">
+        <mat-option [value]="null">-- Ninguna --</mat-option>
+        <mat-option *ngFor="let goal of availableGoals" [value]="goal">
+          {{ goal.title }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
   <mat-form-field appearance="outline">
     <mat-label>Fecha Límite (Opcional)</mat-label>

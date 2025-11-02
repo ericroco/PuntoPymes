@@ -1,24 +1,28 @@
 <div class="page-container">
   <header class="page-header">
     <h2>Gestión de Personal</h2>
+
     <div class="view-controls">
-      <input type="text" placeholder="Buscar empleado..." class="search-input">
-      <select class="filter-select">
+      <input type="text" placeholder="Buscar por nombre o cargo..." class="search-input" [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFiltersAndSort()"> <select class="filter-select" [(ngModel)]="selectedDepartment"
+        (ngModelChange)="applyFiltersAndSort()">
         <option value="">Todos los Departamentos</option>
-        <option value="Tecnología">Tecnología</option>
-        <option value="Diseño">Diseño</option>
-        <option value="Contabilidad">Contabilidad</option>
+        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
       </select>
-      <button class="btn btn-secondary">Ordenar</button>
+
+      <button class="btn btn-secondary" (click)="toggleSort()">
+        Ordenar Por: {{ sortBy.startsWith('name') ? 'Nombre' : 'Progreso' }}
+        {{ sortBy.endsWith('-asc') ? '▲' : '▼' }} </button>
     </div>
+
     <button class="btn btn-primary" (click)="openAddEmployeeDialog()">
-      <svg></svg>
+      <mat-icon>add_circle_outline</mat-icon>
       Añadir Empleado
     </button>
   </header>
 
   <div class="employee-grid" @cardAnimation>
-    <div *ngFor="let employee of employees" class="employee-card">
+    <div *ngFor="let employee of filteredEmployees" class="employee-card">
       <div class="card-header">
         <img [src]="employee.avatar" alt="{{employee.name}}" class="avatar">
         <div class="name-role">
@@ -57,8 +61,9 @@
         <button class="btn-icon btn-danger" title="Desactivar (Placeholder)">🗑️</button>
       </div>
     </div>
-    <div *ngIf="employees.length === 0" class="empty-list-placeholder">
-      No hay empleados registrados.
+
+    <div *ngIf="filteredEmployees.length === 0" class="empty-list-placeholder">
+      No se encontraron empleados con los filtros aplicados.
     </div>
   </div>
 </div>

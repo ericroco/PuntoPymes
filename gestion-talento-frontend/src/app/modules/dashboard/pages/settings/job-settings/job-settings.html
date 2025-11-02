@@ -1,0 +1,40 @@
+<div class="settings-subpage-container">
+  <app-subpage-header title="Cargos y Salarios" backRoute="/dashboard/settings">
+     <button mat-flat-button color="primary" (click)="openJobDialog()">
+       <mat-icon>add_circle_outline</mat-icon>
+       Crear Nuevo Cargo
+     </button>
+  </app-subpage-header>
+
+  <p class="description">
+    Define los cargos oficiales de tu empresa, el departamento al que pertenecen y los rangos salariales (bandas) asociados.
+  </p>
+
+  <div class="list-container">
+    <div class="list-item header">
+      <span>Nombre del Cargo</span>
+      <span>Departamento</span>
+      <span>Salario Mínimo (USD)</span>
+      <span>Salario Máximo (USD)</span>
+      <span>Acciones</span>
+    </div>
+
+    <div *ngFor="let job of jobs" class="list-item">
+      <span class="job-name">{{ job.name }}</span>
+      <span>{{ job.department }}</span>
+      <span class="salary">{{ job.minSalary | currency:'USD':'symbol':'1.0-0' }}</span>
+      <span class="salary">{{ job.maxSalary | currency:'USD':'symbol':'1.0-0' }}</span>
+      <td class="actions">
+        <button mat-icon-button matTooltip="Editar Cargo" (click)="openJobDialog(job)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" matTooltip="Eliminar Cargo" (click)="deleteJob(job)">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </td>
+    </div>
+     <div *ngIf="jobs.length === 0" class="empty-list-placeholder">
+       No hay cargos definidos.
+     </div>
+  </div>
+</div>

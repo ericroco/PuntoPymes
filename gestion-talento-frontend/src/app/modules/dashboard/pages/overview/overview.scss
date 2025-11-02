@@ -1,3 +1,30 @@
+/* ==========================================================================
+   OVERVIEW DASHBOARD STYLES (Admin & Employee Views) - CORRECTED COLORS
+   ========================================================================== */
+
+// --- Estilos Globales para la Página ---
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+mat-divider {
+  margin: 2rem 0;
+  // Asegura que el divider use tu color de borde
+  border-top-color: var(--color-border) !important;
+}
+
+.no-data-placeholder {
+  text-align: center;
+  padding: 1rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  min-height: 50px; // Evita que el widget colapse
+}
+
+// --- Estilos para las Tarjetas de KPI (Admin) ---
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -11,46 +38,332 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  border-left: 5px solid;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left-width: 4px;
+  border-left-style: solid;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+  // Colores de borde usando variables semánticas
+  &.card-blue {
+    border-left-color: var(--color-info);
+  }
+
+  &.card-green {
+    border-left-color: var(--color-success);
+  }
+
+  &.card-orange {
+    border-left-color: var(--color-warning);
+  }
+
+  .card-content {
+    flex-grow: 1;
+  }
+
+  .card-title {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  .card-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text-primary);
+  }
+
+  .card-footer {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+
+    .trend {
+      font-weight: 600;
+
+      // Colores de tendencia usando variables semánticas
+      &.positive {
+        color: var(--color-success-dark);
+      }
+
+      &.negative {
+        color: var(--color-danger-dark);
+      }
+    }
+
+    .details-link {
+      color: var(--color-text-secondary);
+      font-size: 0.8rem;
+    }
   }
 }
 
-.card-title {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-weight: 500;
+// --- Grid principal para Widgets ---
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
-.card-value {
-  font-size: 2.5rem;
-  margin: 0.5rem 0;
-  font-weight: 700;
-}
-
-.card-footer {
-  margin-top: 1rem;
-}
-
-.trend {
-  display: inline-flex;
-  align-items: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  svg {
-    width: 16px;
-    height: 16px;
-    margin-right: 0.25rem;
+// Grid específico para Empleado
+.employee-grid {
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr;
   }
-  &.positive { color: #4caf50; } 
-  &.negative { color: #f44336; }
 }
-.card-blue { border-color: var(--color-primary); }
-.card-green { border-color: #4caf50; }
-.card-orange { border-color: #ff9800; }
-.card-red { border-color: #f44336; }
+
+// Estilo base para los widgets (MatCard)
+.overview-widget {
+  display: flex;
+  flex-direction: column;
+
+  mat-card-header {
+    padding-bottom: 0.5rem;
+  }
+
+  mat-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  mat-card-content {
+    flex-grow: 1;
+    padding-top: 0;
+
+    p {
+      margin-bottom: 0.5rem;
+      color: var(--color-text-secondary);
+
+      strong {
+        color: var(--color-text-primary);
+        font-weight: 600;
+      }
+    }
+  }
+
+  mat-list {
+    padding-top: 0;
+  }
+
+  mat-list-item {
+    height: auto !important;
+    padding: 0.5rem 0 !important;
+
+    ::ng-deep .mat-mdc-list-item__content {
+      // Target Material v15+ internal class
+      padding: 0 !important;
+    }
+  }
+
+  mat-card-actions {
+    padding: 8px 16px 8px 0 !important;
+  }
+}
+
+// --- Estilos Específicos Empleado ---
+.kpi-widget {
+  .kpi-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    label {
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+
+    .kpi-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-primary);
+
+      span {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-left: 0.25rem;
+      }
+    }
+
+    // --- CORRECCIÓN BARRA DE PROGRESO ---
+    mat-progress-bar {
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+      --mdc-linear-progress-active-indicator-color: var(--color-primary);
+      --mdc-linear-progress-track-color: var(--color-primary-light);
+    }
+  }
+}
+
+.leave-request-form {
+  mat-card-actions {
+
+    button[mat-flat-button][color="primary"]:not(:disabled) {
+      background-color: var(--color-primary); // Opcional, por si acaso
+
+      color: --mat-sys-on-primary !important;
+
+
+      mat-icon {
+        color: white !important;
+        // O: color: var(--mat-sys-on-primary) !important;
+      }
+
+      // Estilo hover (sin cambios)
+      &:hover {
+        background-color: var(--color-primary-dark);
+      }
+    }
+
+    // Estilo cuando está deshabilitado (sin cambios)
+    button[mat-flat-button][color="primary"]:disabled {
+      // Material suele manejar bien los colores deshabilitados,
+      // pero puedes forzarlos si es necesario.
+      // background-color: rgba(0, 0, 0, 0.12);
+      // color: rgba(0, 0, 0, 0.38);
+    }
+  }
+}
+
+// Colores de prioridad para iconos (usando variables semánticas)
+.priority-alta {
+  color: var(--color-danger);
+}
+
+.priority-media {
+  color: var(--color-warning);
+}
+
+.priority-baja {
+  color: var(--color-success-dark);
+}
+
+// --- Estilos Específicos Admin ---
+.approval-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  margin-left: 1rem;
+
+  // Botones de aprobación/rechazo usando variables semánticas
+  button[color="primary"] {
+    // Aprobar (check)
+    color: var(--color-success-dark);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-success-light);
+    }
+  }
+
+  button[color="warn"] {
+    // Rechazar (cruz)
+    color: var(--color-danger-dark);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-danger-light);
+    }
+  }
+}
+
+// --- CORRECCIÓN COLORES CALENDARIO (::ng-deep necesario y aplicado globalmente) ---
+// Es mejor poner esto en styles.scss global para consistencia, pero funciona aquí también.
+::ng-deep {
+
+  // Color del día seleccionado (círculo)
+  .mat-datepicker-content .mat-calendar-body-selected {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+  }
+
+  // Color del rango seleccionado (fondo entre inicio y fin)
+  .mat-datepicker-content .mat-calendar-body-cell.mat-calendar-body-in-range::before {
+    background: var(--color-primary-light) !important;
+    opacity: 0.6; // Ajusta opacidad si deseas
+  }
+
+  // Color de inicio/fin del rango (círculo en los extremos)
+  .mat-datepicker-content .mat-calendar-body-cell.mat-calendar-body-range-start:not(.mat-calendar-body-range-end)::after,
+  .mat-datepicker-content .mat-calendar-body-cell.mat-calendar-body-range-end:not(.mat-calendar-body-range-start)::after {
+    background: var(--color-primary) !important;
+  }
+
+  // Color del día actual (contorno)
+  .mat-datepicker-content .mat-calendar-body-today {
+    border-color: var(--color-primary) !important;
+
+    // Si el día actual también está seleccionado, asegura el color correcto
+    &.mat-calendar-body-selected {
+      background-color: var(--color-primary) !important;
+      color: white !important;
+    }
+  }
+}
+
+// --- CORRECCIÓN BOTÓN "Ver todas mis tareas" ---
+// Asumiendo que el botón en HTML tiene color="primary"
+.overview-widget mat-card-actions button[color="primary"] {
+  color: var(--color-primary); // Fuerza el color del texto
+
+  &:hover:not(:disabled) {
+    background-color: rgba(var(--color-primary-rgb, 231, 76, 60), 0.08); // Usa un fondo muy ligero en hover
+  }
+}
+
+.chart-widget {
+  mat-card-content.chart-container {
+    height: 250px; // Altura fija para los contenedores de gráficos
+    display: flex; // Ayuda a centrar/ajustar el gráfico
+    justify-content: center;
+    align-items: center;
+    padding-top: 1rem !important; // Añadir padding si es necesario
+  }
+
+  // Sobrescribe estilos de ngx-charts si es necesario
+  // Ejemplo: Hacer tooltips más pequeños
+  ::ng-deep .ngx-charts-tooltip-content {
+    font-size: 0.8rem;
+  }
+}
+
+// --- Estilos para Widget de Accesos Rápidos ---
+.quick-links-widget {
+  mat-card-content.quick-links-container {
+    display: grid;
+    // Crea 2 columnas de botones
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem; // Espacio entre botones
+
+    button[mat-stroked-button] {
+      width: 100%; // Hace que los botones ocupen su celda
+      justify-content: flex-start; // Alinea icono y texto a la izquierda
+      padding: 0.75rem 1rem;
+      text-align: left;
+
+      mat-icon {
+        margin-right: 0.5rem;
+      }
+
+      // Color del borde y texto (coincide con secundario)
+      border-color: var(--color-border);
+      color: var(--color-text-secondary);
+
+      &:hover {
+        background-color: var(--color-background);
+        color: var(--color-primary);
+        border-color: var(--color-primary-light);
+      }
+    }
+  }
+}
+
+// --- Estilos para Widget de Eventos (MatList) ---
+// Puedes ajustar estilos de mat-list-item si es necesario
+.overview-widget mat-list-item {
+  // Ejemplo: Reducir altura si es necesario
+  // height: 56px !important;
+}

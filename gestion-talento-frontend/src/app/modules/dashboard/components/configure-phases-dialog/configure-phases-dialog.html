@@ -1,0 +1,34 @@
+<h1 mat-dialog-title>Configurar Fases de Contratación</h1>
+
+<div mat-dialog-content class="phases-list-container">
+  <p class="hint">Arrastra las fases para reordenarlas. Edita los nombres. No puedes eliminar la primera ni la última fase.</p>
+
+  <div cdkDropList class="phases-list" (cdkDropListDropped)="dropPhase($event)">
+    
+    <div *ngFor="let phase of phases; let i = index" class="phase-item" cdkDrag>
+      
+      <div class="drag-handle" cdkDragHandle matTooltip="Reordenar">
+        <mat-icon>drag_indicator</mat-icon>
+      </div>
+      
+      <mat-form-field appearance="outline" class="condensed-field phase-name-input">
+        <mat-label>Nombre de la Fase</mat-label>
+        <input matInput [(ngModel)]="phase.name" [disabled]="i === 0 || i === phases.length - 1" required>
+      </mat-form-field>
+      
+      <button mat-icon-button color="warn" 
+              (click)="removePhase(i)" 
+              [disabled]="i === 0 || i === phases.length - 1"
+              matTooltip="Eliminar fase (no permitido para primera/última)">
+        <mat-icon>delete_outline</mat-icon>
+      </button>
+
+    </div> </div> <button mat-stroked-button (click)="addPhase()" class="add-phase-button">
+    <mat-icon>add</mat-icon>
+    Añadir Fase (antes de "Contratado")
+  </button>
+
+</div> <div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()">Guardar Cambios</button>
+</div>

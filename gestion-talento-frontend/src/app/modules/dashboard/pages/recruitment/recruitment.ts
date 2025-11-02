@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-recruitment',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './recruitment.html',
   styleUrls: ['./recruitment.scss'],
   animations: [
@@ -23,9 +24,10 @@ import { trigger, transition, query, style, stagger, animate } from '@angular/an
 })
 export class Recruitment {
   jobOpenings = [
-    { title: 'Desarrollador Frontend Senior', department: 'Tecnología', location: 'Trabajo Remoto', candidates: 12, status: 'abierta' },
-    { title: 'Diseñador UX/UI', department: 'Diseño', location: 'Oficina Loja', candidates: 25, status: 'abierta' },
-    { title: 'Analista Contable', department: 'Contabilidad', location: 'Oficina Loja', candidates: 8, status: 'cerrada' },
-    { title: 'Especialista en Marketing Digital', department: 'Marketing', location: 'Trabajo Remoto', candidates: 31, status: 'abierta' }
+    // --- CORRECCIÓN: Añadido 'id' a cada objeto ---
+    { id: 'dev-frontend-sr', title: 'Desarrollador Frontend Senior', department: 'Tecnología', location: 'Trabajo Remoto', candidates: 12, status: 'abierta' },
+    { id: 'des-ux-ui', title: 'Diseñador UX/UI', department: 'Diseño', location: 'Oficina Loja', candidates: 25, status: 'abierta' },
+    { id: 'ana-contable', title: 'Analista Contable', department: 'Contabilidad', location: 'Oficina Loja', candidates: 8, status: 'cerrada' },
+    { id: 'esp-mkt', title: 'Especialista en Marketing Digital', department: 'Marketing', location: 'Trabajo Remoto', candidates: 31, status: 'abierta' }
   ];
 }

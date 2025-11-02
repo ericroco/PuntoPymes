@@ -1,0 +1,23 @@
+.course-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 10px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  .form-field {
+    flex: 1;
+  }
+}
+
+[mat-dialog-actions] {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+}

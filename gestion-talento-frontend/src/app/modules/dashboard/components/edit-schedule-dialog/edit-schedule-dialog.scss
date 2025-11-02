@@ -1,0 +1,54 @@
+.schedule-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; // Space between elements/rows
+  padding-top: 10px;
+  padding-bottom: 20px; // More space at bottom before actions
+}
+
+mat-form-field {
+  width: 100%; // Make form fields take full width
+}
+
+// Row for side-by-side time inputs
+.form-row {
+  display: flex;
+  gap: 15px; // Space between time inputs
+}
+
+.form-field {
+   flex: 1; // Make time inputs share space
+}
+
+// Styling for the custom days selection section
+.days-selection {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border); // Separator line
+}
+
+.days-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+// Grid layout for checkboxes
+.days-checkbox-group {
+  display: grid;
+  // Creates responsive columns for checkboxes
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px 15px; // Row and column gap
+}
+
+// Action button alignment
+[mat-dialog-actions] {
+  padding: 16px 24px; // Consistent padding
+}
+
+// Optional: Error message style
+mat-error {
+  font-size: 0.75rem;
+}

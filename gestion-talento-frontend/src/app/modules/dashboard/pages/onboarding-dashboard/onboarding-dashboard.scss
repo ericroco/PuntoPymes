@@ -1,0 +1,68 @@
+
+
+.onboarding-dashboard {
+  max-width: 900px; // Limit width for better readability
+  margin: 1rem auto; // Center and add some margin
+}
+
+.welcome-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding: 1rem;
+  background-color: var(--color-primary-light); // Light background highlight
+  border-radius: var(--border-radius);
+
+  h1 {
+    color: var(--color-primary-dark);
+    margin: 0 0 0.5rem 0;
+  }
+  p {
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+  }
+}
+
+// Stepper Styling
+::ng-deep .mat-stepper-vertical-line::before {
+  border-left-color: var(--color-primary-light); // Match theme color
+}
+::ng-deep .mat-step-header .mat-step-icon-selected,
+::ng-deep .mat-step-header .mat-step-icon-state-edit {
+  background-color: var(--color-primary); // Match theme color
+}
+
+// Label styling
+.mat-step-label {
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: color 0.3s ease; // Smooth transition
+}
+.task-complete {
+   text-decoration: line-through; // Cross out completed task titles
+   color: var(--color-text-secondary);
+}
+
+// Content within each step
+.step-content {
+  padding: 1rem 0 1.5rem 1.5rem; // Padding inside step
+  border-left: 2px solid var(--color-primary-light); // Left border matching stepper line
+  margin-left: 12px; // Align with stepper icon center
+  margin-bottom: 1rem;
+
+  p {
+    margin: 0 0 1rem 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+.step-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem; // Space between button/checkbox
+}
+
+// Style for the final confirmation step
+.final-step {
+   text-align: center;
+   font-weight: 500;
+}

@@ -1,9 +1,86 @@
-[mat-dialog-content] {
+// Quita el padding del contenedor del diálogo para que el stepper se ajuste
+:host ::ng-deep .mdc-dialog__surface {
+  // Limita la altura máxima del modal al 85% de la pantalla
+  max-height: 85vh;
+  // Permite que la superficie crezca si el contenido es más pequeño
+  height: auto;
+  // Asegura que el layout interno sea flex
   display: flex;
   flex-direction: column;
-  gap: 5px;
 }
 
+// Sobrescribe el área de contenido
+:host ::ng-deep .mdc-dialog__content {
+  // Quita el padding por defecto para dárselo al stepper
+  padding: 0 !important;
+
+  // --- ESTAS LÍNEAS SON CLAVE ---
+  flex-grow: 1; // Permite que el área de contenido crezca y ocupe el espacio
+  overflow-y: auto; // AÑADE EL SCROLL INTERNO si el stepper es muy alto
+  min-height: 200px; // Opcional: una altura mínima para que no se colapse
+  // --- FIN LÍNEAS CLAVE ---
+}
+
+.stepper-container {
+  // Añadimos el padding aquí para que el scroll no afecte los bordes
+  padding: 10px 24px 20px 24px;
+}
+
+// Estilos para campos de formulario
 mat-form-field {
   width: 100%;
+  margin-bottom: 5px; // Espacio ligero
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+
+  .form-field {
+    flex: 1;
+  }
+}
+
+// Acciones dentro de cada paso
+.step-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 1.5rem; // Espacio sobre los botones del paso
+}
+
+// Estilos para la sección de revisión
+.review-section {
+  padding: 1rem 0;
+
+  h4 {
+    margin-top: 0;
+  }
+
+  mat-divider {
+    margin: 0.5rem 0 1rem 0;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    margin: 0.5rem 0;
+
+    strong {
+      color: var(--color-text-primary);
+      margin-right: 0.5rem;
+    }
+  }
+
+  .review-note {
+    font-style: italic;
+    font-size: 0.85rem;
+    margin-top: 1.5rem;
+  }
+}
+
+// Acciones globales del modal
+.modal-actions {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border); // Línea divisoria
 }

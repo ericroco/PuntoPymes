@@ -1,5 +1,6 @@
 <div class="settings-subpage-container">
-  <app-subpage-header title="Configuración de Nómina y Compensación" backRoute="/dashboard/settings"></app-subpage-header>
+  <app-subpage-header title="Configuración de Nómina y Compensación"
+    backRoute="/dashboard/settings"></app-subpage-header>
 
   <p class="description">
     Define las reglas básicas para el cálculo de nómina y los tipos de pagos o descuentos personalizados.
@@ -37,16 +38,17 @@
     <div class="payroll-items-container">
       <mat-list role="list">
         <div mat-subheader>Items Definidos</div>
+
         <mat-list-item *ngFor="let item of payrollItems" role="listitem">
           <mat-icon matListItemIcon>{{ item.type === 'Ingreso' ? 'add_card' : 'credit_card_off' }}</mat-icon>
           <div matListItemTitle>{{ item.name }}</div>
-          <div matListItemLine>{{ item.type }} {{ item.isRecurring ? '(Recurrente)' : ''}}</div>
-          <button mat-icon-button color="warn" (click)="removePayrollItem(item.id)" matListItemMeta matTooltip="Eliminar Item">
+          <div matListItemLine>
+            {{ item.type }} | {{ item.isRecurring ? 'Recurrente (Mensual/Quincenal)' : 'Pago Único' }}
+          </div>
+          <button mat-icon-button color="warn" (click)="removePayrollItem(item.id)" matListItemMeta
+            matTooltip="Eliminar Item">
             <mat-icon>delete_outline</mat-icon>
           </button>
-        </mat-list-item>
-        <mat-list-item *ngIf="payrollItems.length === 0">
-           <span matListItemTitle class="empty-list">No hay items personalizados.</span>
         </mat-list-item>
       </mat-list>
 
@@ -62,7 +64,13 @@
             <mat-option value="Descuento">Descuento</mat-option>
           </mat-select>
         </mat-form-field>
-        <button mat-stroked-button color="primary" (click)="addPayrollItem()" [disabled]="!newItemName">
+
+        <mat-checkbox [(ngModel)]="newItemIsRecurring" color="primary" class="recurring-checkbox">
+          Es Recurrente
+        </mat-checkbox>
+
+        <button mat-stroked-button color="primary" (click)="addPayrollItem()" [disabled]="!newItemName"
+          class="add-button">
           <mat-icon>add</mat-icon> Añadir
         </button>
       </div>

@@ -17,9 +17,9 @@ interface CustomField {
   id: number; // Unique identifier (temporary for frontend)
   label: string; // Display name shown to users
   type: 'text' | 'number' | 'date' | 'select'; // Data type
-  options?: string; // Comma-separated options for 'select' type
-  required: boolean; // Is the field mandatory?
-  placeholder?: string; // Optional placeholder text
+  options?: string; 
+  required: boolean;
+  placeholder?: string;
 }
 
 @Component({

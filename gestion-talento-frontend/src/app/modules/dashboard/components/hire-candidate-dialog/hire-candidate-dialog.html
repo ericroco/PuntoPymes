@@ -1,0 +1,21 @@
+<h1 mat-dialog-title>Contratar a {{ data.candidateName }}</h1>
+<form [formGroup]="hireForm" (ngSubmit)="onConfirmHire()">
+  <div mat-dialog-content>
+    <p>Estás a punto de marcar a este candidato como contratado y crear su perfil de empleado.</p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Asignar Plantilla de Onboarding</mat-label>
+      <mat-select formControlName="onboardingTemplateId" required>
+        <mat-option *ngFor="let template of onboardingTemplates" [value]="template.id">
+          {{ template.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error>Debes seleccionar una plantilla.</mat-error>
+    </mat-form-field>
+
+    </div>
+  <div mat-dialog-actions align="end">
+    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-flat-button color="primary" [disabled]="hireForm.invalid">Confirmar Contratación</button>
+  </div>
+</form>

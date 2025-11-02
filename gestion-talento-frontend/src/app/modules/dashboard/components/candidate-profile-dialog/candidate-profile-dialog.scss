@@ -1,0 +1,120 @@
+// --- Encabezado del Perfil ---
+.profile-header-dialog {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 24px 10px; // Padding de MatDialogTitle
+  
+  .info-principal {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .avatar-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+  }
+  
+  .text-info {
+    h1[mat-dialog-title] { // Sobrescribe el título
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem !important;
+      padding: 0 !important; // Quita padding por defecto
+    }
+    p.subtitle {
+      font-size: 1rem;
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+  }
+}
+
+// --- Badge de IA ---
+.ai-badge-dialog {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0; // Evita que se encoja
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  // Colores (copiados de vacancy-pipeline.scss)
+  &.high { background-color: var(--color-success); }
+  &.medium { background-color: var(--color-warning); }
+  &.low { background-color: var(--color-secondary); }
+}
+
+// --- Contenido de Pestañas ---
+[mat-dialog-content] {
+  padding: 0 24px; // Padding lateral
+  max-height: 60vh; // Altura máxima para el contenido
+  overflow-y: auto; // Scroll si es necesario
+}
+.tab-content-container {
+  padding: 1.5rem 0.5rem; // Padding dentro de cada pestaña
+  display: grid;
+  grid-template-columns: 1fr 1fr; // Dos columnas
+  gap: 2rem;
+}
+
+// --- Pestaña 1: Perfil y CV ---
+.cv-viewer-container {
+  h4 { margin-top: 0; }
+  .cv-placeholder {
+    height: 250px;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background-color: var(--color-background);
+    color: var(--color-text-secondary);
+    mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  }
+}
+.details-container {
+  h4 { margin-top: 0; }
+  .skills-title { margin-top: 1.5rem; }
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    .skill-badge {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary-dark);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+  }
+}
+
+// --- Pestaña 2: Historial y Notas ---
+.notes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  mat-form-field { width: 100%; }
+  button { align-self: flex-end; } // Botón a la derecha
+}
+.activity-feed-section {
+  h4 { margin-top: 0; }
+  .activity-feed {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    mat-list-item { height: auto !important; padding-top: 8px !important; padding-bottom: 8px !important; }
+  }
+}

@@ -1,0 +1,39 @@
+<h1 mat-dialog-title>Editar Información de Contacto</h1>
+
+<form [formGroup]="contactForm" (ngSubmit)="onSave()">
+  <div mat-dialog-content class="contact-form-content">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Correo Electrónico</mat-label>
+      <input matInput type="email" formControlName="email" placeholder="ejemplo@correo.com" required>
+      <mat-icon matSuffix>email</mat-icon>
+      <mat-error *ngIf="contactForm.get('email')?.hasError('required')">El correo es obligatorio.</mat-error>
+      <mat-error *ngIf="contactForm.get('email')?.hasError('email')">Formato de correo inválido.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Teléfono / Celular</mat-label>
+      <input matInput type="tel" formControlName="phone" placeholder="Ej: 0991234567" required>
+      <mat-icon matSuffix>phone</mat-icon>
+      <mat-error *ngIf="contactForm.get('phone')?.hasError('required')">El teléfono es obligatorio.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Dirección Domiciliaria (Opcional)</mat-label>
+      <textarea matInput formControlName="address" placeholder="Ej: Calle Principal 123 y Secundaria" rows="3"></textarea>
+      <mat-icon matSuffix>home</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contacto de Emergencia (Opcional)</mat-label>
+      <textarea matInput formControlName="emergencyContact" placeholder="Ej: Nombre - Parentesco - Teléfono" rows="2"></textarea>
+       <mat-icon matSuffix>contact_emergency</mat-icon>
+    </mat-form-field>
+
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-flat-button color="primary" [disabled]="contactForm.invalid">Guardar Cambios</button>
+  </div>
+</form>

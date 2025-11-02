@@ -1,0 +1,25 @@
+// Container for the form fields
+.contact-form-content {
+  display: flex;
+  flex-direction: column; // Stack fields vertically
+  gap: 15px;             // Space between fields
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+
+// Action button alignment
+[mat-dialog-actions] {
+  padding: 16px 24px; // Consistent padding
+}
+
+.profile-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+mat-form-field { width: 100%; }
+.form-row { display: flex; gap: 15px; }
+.form-field { flex: 1; }
+[mat-dialog-actions] { padding: 16px 24px; }
+mat-error { font-size: 0.75rem; }

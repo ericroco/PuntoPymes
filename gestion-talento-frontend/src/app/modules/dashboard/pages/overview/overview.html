@@ -1,17 +1,224 @@
-<div class="overview-container">
-  <section class="summary-cards" [@cardAnimation]>
-    <div *ngFor="let card of summaryCards" class="card card-{{card.color}}">
-      <div class="card-content">
-        <p class="card-title">{{ card.title }}</p>
-        <h3 class="card-value">{{ card.value }}</h3>
+<div class="page-container overview-page">
+
+  <div *ngIf="viewingAsAdmin" class="admin-view" @widgetAnimation>
+    <header class="page-header">
+      <h2>Vista General - Administrador</h2>
+    </header>
+
+    <section class="summary-cards">
+      <div *ngFor="let card of adminKPIs" class="card" [ngClass]="'card-' + card.color">
+        <div class="card-content">
+          <p class="card-title">{{ card.title }}</p>
+          <h3 class="card-value">{{ card.value }}</h3>
+        </div>
+        <div class="card-footer">
+          <span class="trend" [class.positive]="card.isPositive" [class.negative]="!card.isPositive">
+            {{ card.trend }}
+          </span>
+        </div>
       </div>
-      <div class="card-footer">
-        <span class="trend" [class.positive]="card.isPositive" [class.negative]="!card.isPositive">
-          <svg *ngIf="card.trend !== 'Hoy'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-<path fill-rule="evenodd" [attr.d]="card.isPositive ? 'M10 17a.75.75 0 01-.75-.75V5.612L5.03 9.77a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z' : 'M10 3a.75.75 0 01.75.75v10.638l4.22-4.158a.75.75 0 111.06 1.06l-5.25 5.25a.75.75 0 01-1.06 0l-5.25-5.25a.75.75 0 111.06-1.06l4.22 4.158V3.75A.75.75 0 0110 3z'"/>          </svg>
-          {{ card.trend }}
-        </span>
+      <div class="card card-orange">
+        <div class="card-content">
+          <p class="card-title">Aprobaciones Pendientes</p>
+          <h3 class="card-value">{{ pendingApprovals.length }}</h3>
+        </div>
+        <div class="card-footer">
+          <span class="details-link">Solicitudes esperando acción</span>
+        </div>
       </div>
+    </section>
+
+    <mat-divider></mat-divider>
+
+    <div class="overview-grid">
+      <mat-card class="overview-widget">
+        <mat-card-header>
+          <mat-card-title>Aprobaciones Pendientes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list *ngIf="pendingApprovals.length > 0; else noApprovals">
+            <mat-list-item *ngFor="let req of pendingApprovals">
+              <mat-icon matListItemIcon>{{ req.type === 'Vacaciones' ? 'beach_access' : 'receipt_long' }}</mat-icon>
+              <div matListItemTitle>{{ req.type }}</div>
+              <div matListItemLine>{{ req.description }}</div>
+              <div matListItemMeta class="approval-actions">
+                <button mat-icon-button color="primary" (click)="approveRequest(req.id)" matTooltip="Aprobar">
+                  <mat-icon>check_circle_outline</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="rejectRequest(req.id)" matTooltip="Rechazar">
+                  <mat-icon>highlight_off</mat-icon>
+                </button>
+              </div>
+            </mat-list-item>
+          </mat-list>
+          <ng-template #noApprovals>
+            <p class="no-data-placeholder">¡No hay solicitudes pendientes!</p>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="overview-widget">
+        <mat-card-header>
+          <mat-card-title>Última Encuesta</mat-card-title>
+          <mat-card-subtitle>{{ surveySummary.latestSurvey }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p><strong>Participación:</strong> {{ surveySummary.participationRate }}%</p>
+          <p><strong>Satisfacción General:</strong> {{ surveySummary.overallSatisfaction }} / 5</p>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button color="primary" routerLink="/dashboard/surveys">Ver Detalles</button>
+        </mat-card-actions>
+      </mat-card>
+      <mat-card class="overview-widget chart-widget">
+        <mat-card-header>
+          <mat-card-title>Distribución por Departamento</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="chart-container">
+          <ngx-charts-pie-chart [results]="employeeDistribution" [labels]="true" [doughnut]="true"
+            [scheme]="chartColorScheme" [legend]="false"> </ngx-charts-pie-chart>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="overview-widget chart-widget">
+        <mat-card-header>
+          <mat-card-title>Tendencia de Rotación (Últ. Meses)</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="chart-container">
+          <ngx-charts-line-chart [results]="turnoverTrend" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="false"
+            [showYAxisLabel]="false" [autoScale]="true" yAxisLabel="Nº Salidas" [scheme]="chartColorScheme">
+          </ngx-charts-line-chart>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="overview-widget">
+        <mat-card-header>
+          <mat-card-title>Próximos Eventos / Vencimientos</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list *ngIf="upcomingEvents.length > 0; else noEvents">
+            <mat-list-item *ngFor="let event of upcomingEvents">
+              <mat-icon matListItemIcon>event</mat-icon>
+              <div matListItemTitle>{{ event.description }}</div>
+              <div matListItemLine>{{ event.date | date:'dd MMM, yyyy' }}</div>
+            </mat-list-item>
+          </mat-list>
+          <ng-template #noEvents>
+            <p class="no-data-placeholder">No hay eventos próximos.</p>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="overview-widget quick-links-widget">
+        <mat-card-header>
+          <mat-card-title>Accesos Rápidos</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="quick-links-container">
+          <button mat-stroked-button routerLink="/dashboard/employees">
+            <mat-icon>group</mat-icon> Gestionar Personal
+          </button>
+          <button mat-stroked-button routerLink="/dashboard/recruitment">
+            <mat-icon>work_outline</mat-icon> Ver Vacantes
+          </button>
+          <button mat-stroked-button routerLink="/dashboard/sprints">
+            <mat-icon>assessment</mat-icon> Gestionar Sprints
+          </button>
+          <button mat-stroked-button routerLink="/dashboard/settings">
+            <mat-icon>settings</mat-icon> Ir a Configuración
+          </button>
+        </mat-card-content>
+      </mat-card>
+
     </div>
-  </section>
+  </div>
+
+  <div *ngIf="!viewingAsAdmin" class="employee-view" @widgetAnimation>
+    <header class="page-header">
+      <h2>Mi Vista General</h2>
+    </header>
+
+    <div class="overview-grid employee-grid">
+
+      <mat-card class="overview-widget kpi-widget">
+        <mat-card-header>
+          <mat-card-title>Mis Indicadores</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngFor="let kpi of employeeKPIs" class="kpi-item">
+            <label>{{ kpi.title }}</label>
+            <span class="kpi-value">{{ kpi.value }}<span *ngIf="kpi.unit !== '%'"> {{ kpi.unit }}</span><span
+                *ngIf="kpi.unit === '%'">%</span></span>
+            <mat-progress-bar *ngIf="kpi.unit === '%'" mode="determinate" [value]="kpi.value"></mat-progress-bar>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="overview-widget">
+        <mat-card-header>
+          <mat-card-title>Solicitar Vacaciones</mat-card-title>
+          <mat-card-subtitle>Días disponibles: {{ availableLeaveDays }}</mat-card-subtitle>
+        </mat-card-header>
+        <form [formGroup]="leaveRequestForm" (ngSubmit)="requestLeave()">
+          <mat-card-content class="leave-request-form">
+            <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker" class="date-range-inputs">
+              <input matStartDate formControlName="startDate" placeholder="Fecha inicio" required>
+              <input matEndDate formControlName="endDate" placeholder="Fecha fin" required>
+            </mat-date-range-input>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+            <mat-error
+              *ngIf="leaveRequestForm.controls['startDate'].hasError('required') || leaveRequestForm.controls['endDate'].hasError('required')">
+              Ambas fechas son obligatorias.
+            </mat-error>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button type="submit" mat-flat-button color="primary" [disabled]="leaveRequestForm.invalid">
+              <mat-icon>send</mat-icon> Solicitar
+            </button>
+          </mat-card-actions>
+        </form>
+      </mat-card>
+
+      <mat-card class="overview-widget">
+        <mat-card-header>
+          <mat-card-title>Mis Tareas Pendientes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list *ngIf="employeePendingTasks.length > 0; else noTasks">
+            <mat-list-item *ngFor="let task of employeePendingTasks">
+              <mat-icon matListItemIcon [ngClass]="'priority-' + task.priority"
+                matTooltip="{{task.priority | titlecase}}">flag</mat-icon>
+              <div matListItemTitle>{{ task.title }}</div>
+            </mat-list-item>
+          </mat-list>
+          <ng-template #noTasks>
+            <p class="no-data-placeholder">¡No tienes tareas pendientes!</p>
+          </ng-template>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button color="primary" routerLink="/dashboard/tasks">Ver todas mis tareas</button>
+        </mat-card-actions>
+      </mat-card>
+
+      <mat-card class="overview-widget">
+        <mat-card-header>
+          <mat-card-title>Próximos Feriados</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list *ngIf="upcomingHolidays.length > 0; else noHolidays">
+            <mat-list-item *ngFor="let holiday of upcomingHolidays">
+              <mat-icon matListItemIcon>calendar_today</mat-icon>
+              <div matListItemTitle>{{ holiday.name }}</div>
+              <div matListItemLine>{{ holiday.date | date:'dd MMM, yyyy' }}</div>
+            </mat-list-item>
+          </mat-list>
+          <ng-template #noHolidays>
+            <p class="no-data-placeholder">No hay feriados próximos.</p>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  </div>
+
 </div>

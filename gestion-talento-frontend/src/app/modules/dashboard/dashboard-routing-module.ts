@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { EmployeeManagement } from './pages/employee-management/employee-management';
 
 
 const routes: Routes = [
@@ -29,8 +28,24 @@ const routes: Routes = [
     loadComponent: () => import('./pages/employee-profile/employee-profile').then(c => c.EmployeeProfile)
   },
   {
+    path: 'my-profile', // URL: /dashboard/my-profile
+    loadComponent: () => import('./pages/employee-profile/employee-profile').then(c => c.EmployeeProfile)
+  },
+  {
     path: 'recruitment',
     loadComponent: () => import('./pages/recruitment/recruitment').then(c => c.Recruitment)
+  },
+  {
+    path: 'recruitment/new', // URL: /dashboard/recruitment/new
+    loadComponent: () => import('./pages/create-vacancy/create-vacancy').then(c => c.CreateVacancy)
+  },
+  {
+    path: 'recruitment/edit/:id', // Página de EDITAR
+    loadComponent: () => import('./pages/create-vacancy/create-vacancy').then(c => c.CreateVacancy)
+  },
+  {
+    path: 'recruitment/:id', // URL: /dashboard/recruitment/job-id-123
+    loadComponent: () => import('./pages/vacancy-pipeline/vacancy-pipeline').then(c => c.VacancyPipeline)
   },
   {
     path: 'surveys',
@@ -53,6 +68,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/benefits/benefits').then(c => c.Benefits)
   },
   {
+    path: 'benefits/assign/:id',
+    loadComponent: () => import('./pages/benefit-assignment/benefit-assignment').then(c => c.BenefitAssignment)
+  },
+  {
     path: 'timesheet',
     loadComponent: () => import('./pages/timesheet/timesheet').then(c => c.Timesheet)
   },
@@ -61,20 +80,17 @@ const routes: Routes = [
     loadComponent: () => import('./pages/career-paths/career-paths').then(c => c.CareerPaths)
   },
   {
-    path: 'policies', // Asegúrate que el path sea 'policies'
-    loadComponent: () => import('./pages/policy-library/policy-library').then(c => c.PolicyLibrary) // Asegúrate que cargue el componente correcto
+    path: 'policies',
+    loadComponent: () => import('./pages/policy-library/policy-library').then(c => c.PolicyLibrary)
   },
   {
-    path: 'sprints/:sprintId', // URL será /dashboard/sprints/sprint-oct-25, etc.
+    path: 'sprints/:sprintId',
     loadComponent: () => import('./pages/sprint-board/sprint-board').then(c => c.SprintBoard)
   },
   {
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings').then(c => c.Settings)
-    // SIN 'children' aquí
   },
-
-  // --- RUTAS PARA CADA SUB-PÁGINA DE CONFIGURACIÓN (HERMANAS) ---
   {
     path: 'settings/branding', // Ruta completa
     loadComponent: () => import('./pages/settings/branding-settings/branding-settings').then(c => c.BrandingSettings)
@@ -93,16 +109,24 @@ const routes: Routes = [
   },
 
   {
-    path: 'settings/profile-fields', // Ruta completa
+    path: 'settings/profile-fields',
     loadComponent: () => import('./pages/settings/profile-settings/profile-settings').then(c => c.ProfileSettings)
   },
   {
-    path: 'settings/attendance', // URL: /dashboard/settings/attendance
+    path: 'settings/attendance',
     loadComponent: () => import('./pages/settings/attendance-settings/attendance-settings').then(c => c.AttendanceSettings)
   },
   {
-    path: 'settings/payroll', // Ruta completa
+    path: 'settings/payroll',
     loadComponent: () => import('./pages/settings/payroll-settings/payroll-settings').then(c => c.PayrollSettings)
+  },
+  {
+    path: 'settings/jobs',
+    loadComponent: () => import('./pages/settings/job-settings/job-settings').then(c => c.JobSettings)
+  },
+  {
+    path: 'onboarding', // URL: /dashboard/onboarding
+    loadComponent: () => import('./pages/onboarding-dashboard/onboarding-dashboard').then(c => c.OnboardingDashboard)
   },
   {
     path: '**',

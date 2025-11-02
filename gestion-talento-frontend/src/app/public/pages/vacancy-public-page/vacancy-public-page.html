@@ -1,0 +1,86 @@
+<div class="public-page-container">
+    <header class="public-header">
+        <img src="assets/logo.svg" alt="Logo Empresa" class="public-logo">
+    </header>
+
+    <div class="vacancy-content-wrapper">
+
+        <div *ngIf="isLoading" class="feedback-container">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Cargando detalles de la vacante...</p>
+        </div>
+
+        <div *ngIf="submissionComplete" class="feedback-container success-message">
+            <mat-icon>check_circle</mat-icon>
+            <h2>¡Postulación Enviada!</h2>
+            <p>Hemos recibido tu información correctamente. El equipo de RRHH se pondrá en contacto contigo pronto.</p>
+            <a routerLink="/" class="back-link">Volver al inicio</a>
+        </div>
+
+        <div *ngIf="!isLoading && !submissionComplete && vacancy">
+
+            <div class="vacancy-details">
+                <span class="detail-location">{{ vacancy.department }} • {{ vacancy.location }}</span>
+                <h1>{{ vacancy.title }}</h1>
+                <p class="vacancy-description">{{ vacancy.description }}</p>
+
+                <h3 *ngIf="vacancy.requirements.length > 0">Requisitos</h3>
+                <ul class="requirements-list">
+                    <li *ngFor="let req of vacancy.requirements">{{ req }}</li>
+                </ul>
+            </div>
+
+            <div class="application-form-container">
+                <mat-card class="application-card">
+                    <mat-card-header>
+                        <mat-card-title>Postula a esta vacante</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Nombre Completo</mat-label>
+                                <input matInput formControlName="name" required>
+                                <mat-error>Tu nombre es obligatorio.</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Correo Electrónico</mat-label>
+                                <input matInput type="email" formControlName="email" required>
+                                <mat-error>Correo inválido u obligatorio.</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput type="tel" formControlName="phone" required>
+                                <mat-error>Tu teléfono es obligatorio.</mat-error>
+                            </mat-form-field>
+
+                            <div class="file-input-group">
+                                <button type="button" mat-stroked-button color="primary" (click)="cvInput.click()">
+                                    <mat-icon>upload_file</mat-icon>
+                                    Adjuntar CV (PDF, DOCX)
+                                </button>
+                                <input type="file" #cvInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
+                                    hidden>
+                                <span class="file-name" *ngIf="fileName">{{ fileName }}</span>
+                                <mat-error
+                                    *ngIf="applicationForm.get('cvFile')?.hasError('required') && applicationForm.get('cvFile')?.touched">
+                                    Tu CV es obligatorio.
+                                </mat-error>
+                            </div>
+
+                            <button type="submit" mat-flat-button color="primary" class="submit-button"
+                                [disabled]="isSubmitting || applicationForm.invalid">
+                                <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+                                <span *ngIf="!isSubmitting">Enviar Aplicación</span>
+                            </button>
+
+                        </form>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+        </div>
+    </div>
+</div>

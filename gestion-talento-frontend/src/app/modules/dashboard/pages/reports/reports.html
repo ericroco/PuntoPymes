@@ -1,43 +1,235 @@
-<div class="page-container" @fadeSlideIn>
-  <header class="page-header">
-    <h2>Reportes y Analíticas</h2>
-    <button class="btn btn-secondary">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" />
-        <path d="M3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-      </svg>
-      <span>Exportar PDF</span>
+<div class="page-container reports-page">
+  <app-subpage-header title="Reportes y Analíticas" backRoute="/dashboard/overview">
+    <button mat-flat-button color="primary" (click)="exportReports()">
+      <mat-icon>download</mat-icon>
+      Exportar Vista (PDF)
     </button>
-  </header>
+  </app-subpage-header>
 
-  <div class="reports-grid">
-    <div class="report-container">
-      <h3>Tareas Completadas por Departamento</h3>
-      <div class="chart-wrapper">
-        <ngx-charts-bar-vertical
-          [results]="tasksByDepartment"
-          [xAxis]="true"
-          [yAxis]="true"
-          [legend]="false"
-          [showXAxisLabel]="true"
-          [showYAxisLabel]="true"
-          xAxisLabel="Departamento"
-          yAxisLabel="Tareas Completadas"
-          [scheme]="colorScheme">
-        </ngx-charts-bar-vertical>
-      </div>
-    </div>
+  <div class="global-filters">
+    <mat-form-field appearance="outline" class="filter-field date-range-field">
+      <mat-label>Rango de Fechas</mat-label>
+      <mat-date-range-input [rangePicker]="picker">
+        <input matStartDate placeholder="Fecha inicio" [(ngModel)]="selectedDateRange.start">
+        <input matEndDate placeholder="Fecha fin" [(ngModel)]="selectedDateRange.end">
+      </mat-date-range-input>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker #picker></mat-date-range-picker>
+    </mat-form-field>
 
-    <div class="report-container">
-      <h3>Distribución de Empleados por Estado</h3>
-      <div class="chart-wrapper">
-        <ngx-charts-pie-chart
-          [results]="employeeStatus"
-          [labels]="true"
-          [legend]="true"
-          [scheme]="colorScheme">
-        </ngx-charts-pie-chart>
-      </div>
-    </div>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Departamento</mat-label>
+      <mat-select [(ngModel)]="selectedDepartment">
+        <mat-option value="todos">Todos los Departamentos</mat-option>
+        <mat-option *ngFor="let dept of departments" [value]="dept">{{ dept }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button color="primary" class="apply-filter-btn" (click)="applyGlobalFilters()">
+      <mat-icon>filter_list</mat-icon>
+      Aplicar Filtros
+    </button>
   </div>
+
+  <mat-divider></mat-divider>
+
+  <mat-tab-group animationDuration="0ms" class="report-tabs">
+
+    <mat-tab label="Personal y Demografía">
+      <div class="report-tab-content" @fadeSlideIn>
+        <div class="report-widget-grid">
+          <mat-card class="overview-widget kpi-card simple-kpi report-container">
+            <mat-card-header>
+              <mat-card-title>Headcount Total</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <span class="kpi-main-value">{{ headcount.total }}</span>
+              <div class="kpi-sub-values">
+                <span><mat-icon class="success">arrow_upward</mat-icon> {{ headcount.newHires }} Altas</span>
+                <span><mat-icon class="danger">arrow_downward</mat-icon> {{ headcount.departures }} Bajas</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget chart-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Distribución por Departamento</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-container pie-chart">
+              <ngx-charts-pie-chart [results]="employeeDistribution" [labels]="true" [doughnut]="true"
+                [scheme]="chartColorScheme" [legend]="false">
+              </ngx-charts-pie-chart>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget chart-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Distribución por Antigüedad</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-container">
+              <ngx-charts-bar-vertical [results]="employeeTenure" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="false"
+                [showYAxisLabel]="true" yAxisLabel="Nº Empleados" [scheme]="chartColorScheme">
+              </ngx-charts-bar-vertical>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Productividad y Desempeño">
+      <div class="report-tab-content" @fadeSlideIn>
+
+        <div class="report-widget-grid">
+          <mat-card class="overview-widget chart-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Estado General de Tareas (Últ. 30 días)</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-container pie-chart">
+              <ngx-charts-pie-chart [results]="tasksStatusData" [labels]="true" [doughnut]="true"
+                [scheme]="chartColorScheme" [legend]="false">
+              </ngx-charts-pie-chart>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget kpi-card simple-kpi report-container">
+            <mat-card-header>
+              <mat-card-title>{{ avgGoalProgress.label }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <span class="kpi-main-value">{{ avgGoalProgress.total }}%</span>
+              <div class="kpi-sub-values">
+                <span>Progreso hacia objetivos trimestrales.</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget chart-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Productividad por Equipo (% Tareas Completadas)</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-container">
+              <ngx-charts-bar-horizontal [results]="teamProductivityData" [xAxis]="true" [yAxis]="true"
+                [showXAxisLabel]="true" [showYAxisLabel]="false" xAxisLabel="% Completado" [scheme]="chartColorScheme">
+              </ngx-charts-bar-horizontal>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+
+        <mat-divider></mat-divider>
+        <div class="report-widget-grid">
+          <mat-card class="overview-widget report-container data-table-widget">
+            <mat-card-header>
+              <mat-card-title>Matriz de Talento (9-Box)</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="no-data-placeholder">La visualización de la Matriz de Talento (9-Box Grid) irá aquí.</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+      </div>
+    </mat-tab>
+    <mat-tab label="Compensación">
+      <div class="report-tab-content" @fadeSlideIn>
+        <div class="report-widget-grid">
+
+          <mat-card class="overview-widget kpi-card simple-kpi report-container">
+            <mat-card-header>
+              <mat-card-title>{{ kpiMasaSalarial.label }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <span class="kpi-main-value">{{ kpiMasaSalarial.value | currency:'USD':'symbol':'1.0-0' }}</span>
+              <div class="kpi-sub-values">
+                <span>{{ kpiMasaSalarial.subLabel }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget chart-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Salario Promedio por Departamento</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-container">
+              <ngx-charts-bar-vertical [results]="salarioPromedioData" [xAxis]="true" [yAxis]="true"
+                [showXAxisLabel]="false" [showYAxisLabel]="true" yAxisLabel="Salario Promedio (USD)"
+                [scheme]="chartColorScheme">
+              </ngx-charts-bar-vertical>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget chart-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Adopción de Beneficios Clave</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-container pie-chart">
+              <ngx-charts-pie-chart [results]="adopcionBeneficiosData" [labels]="true" [doughnut]="true"
+                [scheme]="chartColorScheme" [legend]="true" [legendPosition]="legendPos"> </ngx-charts-pie-chart>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="overview-widget data-table-widget report-container">
+            <mat-card-header>
+              <mat-card-title>Últimas Novedades de Nómina Registradas</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="table-content-padding-fix">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Empleado</th>
+                    <th>Tipo</th>
+                    <th>Monto (USD)</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of novedadesRecientes">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.empleado }}</td>
+                    <td>{{ item.tipo }}</td>
+                    <td [ngClass]="item.monto > 0 ? 'text-success' : 'text-danger'">
+                      {{ item.monto | currency:'USD':'symbol' }}
+                    </td>
+                    <td>
+                      <span class="status-badge" [ngClass]="'status-' + item.estado.toLowerCase()">
+                        {{ item.estado }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Asistencia y Tiempo">
+      <div class="report-tab-content">
+        <p class="no-data-placeholder">Gráficos de Ausentismo y Horas Extras irán aquí.</p>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Reclutamiento (ATS)">
+      <div class="report-tab-content">
+        <p class="no-data-placeholder">Embudo de Contratación y KPI de Tiempo para Contratar irán aquí.</p>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Capacitación (LMS)">
+      <div class="report-tab-content">
+        <p class="no-data-placeholder">Gráficos de Cursos Completados y Certificaciones irán aquí.</p>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Cultura (Encuestas)">
+      <div class="report-tab-content">
+        <p class="no-data-placeholder">Resultados de Encuestas de Clima Laboral irán aquí.</p>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
 </div>

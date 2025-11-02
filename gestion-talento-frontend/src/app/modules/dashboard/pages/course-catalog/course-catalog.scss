@@ -1,124 +1,468 @@
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ==========================================================================
+   ESTILOS PARA EL PORTAL DE DESARROLLO (course-catalog.scss)
+   ========================================================================== */
+
+// --- Estilos Globales Reutilizables ---
+.no-data-placeholder {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  font-size: 1rem;
+}
+
+.description,
+.tab-description {
+  color: var(--color-text-secondary);
   margin-bottom: 2rem;
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
   font-size: 0.95rem;
-  font-family: var(--font-family-base);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-out;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-.btn.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-
-  &:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
+  max-width: 700px;
 }
 
+.tab-description {
+  margin-top: 1rem; // Espacio dentro de la pestaña
+}
 
-.filters {
+::ng-deep app-subpage-header {
+  width: 100%;
+}
+
+// Color global de barras de progreso
+mat-progress-bar {
+  --mat-progress-bar-active-indicator-color: var(--color-primary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+// --- Contenedor de Pestañas ---
+.tab-content-container {
+  padding: 1rem 0.5rem;
+}
+
+// --- Filtros ---
+.filter-bar {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 1rem;
-}
-
-.search-input {
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 1.5rem;
   background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
-  padding: 0.75rem 1rem;
-  width: 280px;
-  font-family: var(--font-family-base);
-  font-size: 0.95rem;
-  transition: box-shadow 0.3s ease;
 
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+  .filter-field {
+    min-width: 200px;
+  }
+
+  .search-field {
+    flex-grow: 1;
+    min-width: 250px;
+  }
+
+  mat-form-field {
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 48px;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
   }
 }
 
-// Course Grid
+// --- Cuadrícula de Cursos ---
 .course-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
+// Tarjeta de Curso
 .course-card {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  // (Clase para la animación)
+  &.report-container {
+    // No necesita estilos extra si ya está en la tarjeta
+  }
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  img[mat-card-image] {
+    height: 160px; // Altura fija para la imagen
+    object-fit: cover; // Asegura que la imagen cubra el espacio
+  }
+
+  mat-card-header {
+    padding: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  mat-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.25rem;
+  }
+
+  mat-card-subtitle {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+  }
+
+  mat-card-content {
+    flex-grow: 1; // Empuja las acciones hacia abajo
+    padding: 0 1rem;
+
+    &.progress-content {
+      // Estilos específicos para la pestaña "Mi Aprendizaje"
+      flex-grow: 0; // No necesita crecer
+      padding-bottom: 1rem;
+    }
+  }
+
+  .progress-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  mat-card-actions {
+    padding: 0.5rem 1rem !important; // Ajusta padding de acciones
   }
 }
 
-.course-image {
-  height: 160px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  justify-content: flex-end;
-  padding: 0.75rem;
+.career-plan-stepper {
+  background-color: transparent; // Quita el fondo blanco por defecto del stepper
+
+  // Sobrescribe el color del ícono del paso
+  ::ng-deep .mat-step-header .mat-step-icon {
+    background-color: var(--color-secondary-light); // Color por defecto (gris)
+    color: white;
+  }
+
+  // Color para el paso actual (estado 'edit')
+  ::ng-deep .mat-step-header .mat-step-icon[aria-label="Step 2"] {
+    // Hack para el estado 'edit'
+    // O usa un selector más robusto si es posible
+  }
+
+  ::ng-deep .mat-step-header .mat-step-icon-state-edit {
+    background-color: var(--color-primary) !important; // Color primario (rojo)
+    color: white !important;
+  }
+
+  // Color para el paso completado (estado 'done')
+  ::ng-deep .mat-step-header .mat-step-icon-state-done {
+    background-color: var(--color-success) !important; // Color verde
+    color: white !important;
+  }
 }
 
-.course-category {
-  background-color: rgba(0,0,0,0.5);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  backdrop-filter: blur(4px);
-}
-
-.course-content {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.course-title {
-  font-size: 1.2rem;
+.step-label {
+  font-size: 1.1rem;
   font-weight: 600;
-  margin: 0 0 1rem 0;
-  flex-grow: 1;
+
+  // Colores por estado
+  &.status-completado {
+    color: var(--color-success-dark);
+  }
+
+  &.status-actual {
+    color: var(--color-primary);
+  }
+
+  &.status-siguiente {
+    color: var(--color-text-secondary);
+  }
 }
 
-.course-details {
-  display: flex;
-  justify-content: space-between;
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
+.current-step-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  background-color: var(--color-primary);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.step-content {
+  padding: 1rem 0 1rem 1.5rem; // Padding dentro del contenido del paso
+  // (ya no necesita borde izquierdo porque el stepper lo tiene)
+
+  strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .competency-list {
+    margin-left: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    li {
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+// Grid para las tarjetas de cursos recomendados
+.recommended-courses-grid {
+  display: grid;
+  // Columnas más pequeñas para las mini-tarjetas
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+// Estilo de la mini-tarjeta de curso
+.mini-course-card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); // Sombra muy sutil
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none; // Quita subrayado del link
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow); // Sombra normal al pasar el mouse
+  }
+
+  img[mat-card-image] {
+    height: 80px; // Imagen más pequeña
+    object-fit: cover;
+  }
+
+  mat-card-content {
+    padding: 0.75rem !important; // Padding reducido
+  }
+
+  .mini-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-primary); // Asegura color de texto
+    display: block;
+    line-height: 1.3;
+  }
+
+  .mini-instructor {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+}
+
+/* ==========================================================================
+   ESTILOS VISTA ADMINISTRADOR (NUEVO)
+   ========================================================================== */
+.admin-lms-view {
+  .report-tab-content {
+    padding: 1.5rem 0.5rem;
+  }
+
+  // Encabezado con botón "Crear Curso"
+  .tab-action-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+  }
+
+  // Contenedor de la tabla
+  .list-container {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+  }
+
+  // Estilos de Mat-Table
+  .admin-course-table {
+    width: 100%;
+
+    .mat-mdc-header-row {
+      background-color: var(--color-background);
+    }
+
+    .mat-mdc-header-cell {
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .mat-mdc-cell {
+      border-bottom: 1px solid var(--color-border);
+      font-size: 0.9rem;
+    }
+
+    .mat-mdc-row:hover {
+      background-color: #f8f8f8;
+    }
+
+    .mat-mdc-row:last-child .mat-mdc-cell {
+      border-bottom: none;
+    }
+
+    .course-title {
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .actions {
+      text-align: right;
+    }
+  }
+
+  // --- Estilos para Pestaña de Reportes (Admin) ---
+  .report-widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .report-container {
+    // (Clase base para tarjetas)
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 1.5rem;
+
+    mat-card-header {
+      padding-bottom: 0.5rem;
+    }
+
+    mat-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+      width: 100%;
+    }
+
+    mat-card-content {
+      flex-grow: 1;
+      padding-top: 0;
+    }
+  }
+
+  .chart-widget.report-container {
+    mat-card-content.chart-container {
+      min-height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 1rem !important;
+    }
+  }
+
+  // (Estilos ::ng-deep de ngx-charts si los necesitas)
+  ::ng-deep .ngx-charts-tooltip-content {
+    font-family: var(--font-family-base) !important;
+  }
+}
+
+.career-plan-stepper {
+  background-color: transparent; // Quita el fondo blanco del stepper
+
+  .step-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+
+    // Colores por estado
+    &.status-completado {
+      color: var(--color-success-dark);
+    }
+
+    &.status-actual {
+      color: var(--color-primary);
+    }
+
+    &.status-siguiente {
+      color: var(--color-text-secondary);
+    }
+  }
+
+  .current-step-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    background-color: var(--color-primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 0.5rem;
+  }
+
+  .step-content {
+    padding: 1rem 0;
+
+    strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .competency-list {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+
+      li {
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+}
+
+.recommended-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.mini-course-card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow);
+  }
+
+  img[mat-card-image] {
+    height: 80px; // Imagen más pequeña
+    object-fit: cover;
+  }
+
+  mat-card-content {
+    padding: 0.75rem !important; // Menos padding
+  }
+
+  .mini-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: block;
+    line-height: 1.3;
+  }
+
+  .mini-instructor {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
 }

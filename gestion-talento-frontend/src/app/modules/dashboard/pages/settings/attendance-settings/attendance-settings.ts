@@ -8,9 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDividerModule } from '@angular/material/divider'; // For visual separation
-import { MatListModule } from '@angular/material/list'; // For Wi-Fi list
-// Shared Header
+import { MatDividerModule } from '@angular/material/divider';
+import { MatListModule } from '@angular/material/list';
 import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header'; // Adjust path
 
 @Component({
@@ -37,14 +36,14 @@ export class AttendanceSettings{
   settings = {
     standardStartTime: '09:00',
     standardEndTime: '18:00',
-    latenessToleranceMinutes: 10, // Minutes allowed before considered late
+    latenessToleranceMinutes: 10,
     requireWifi: true,
     allowedWifiNetworks: ['OficinaPrincipal-WiFi', 'Bodega-WiFi'],
     requireGeofence: true,
-    geofenceLink: '/dashboard/settings/geofence-map' // Placeholder link to map editor
+    geofenceLink: '/dashboard/settings/geofence-map'
   };
 
-  newWifiNetwork: string = ''; // For adding new Wi-Fi SSIDs
+  newWifiNetwork: string = '';
 
   constructor() {}
 

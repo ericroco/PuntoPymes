@@ -1,0 +1,45 @@
+/* ==========================================================================
+   ESTILOS PARA MODAL DE CONFIRMACIÓN DE ASIGNACIÓN
+   ========================================================================== */
+
+.confirmation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 10px;
+}
+
+// Mensaje de resumen destacado
+.summary-message {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--color-info-light); // Fondo azul claro
+  border: 1px solid var(--color-info-dark);
+  border-radius: var(--border-radius);
+  
+  mat-icon {
+    color: var(--color-info-dark);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+[mat-dialog-actions] {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 1rem;
+}

@@ -1,30 +1,50 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router'; // Added ActivatedRoute
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { trigger, transition, query, style, stagger, animate, state } from '@angular/animations';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+
 import { AddTaskDialog } from '../../components/add-task-dialog/add-task-dialog';
 import { AssignEmployeeDialog } from '../../components/assign-employee-dialog/assign-employee-dialog';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditTaskDialog } from '../../components/edit-task-dialog/edit-task-dialog';
+import { UpdateProgressDialog } from '../../components/update-progress-dialog/update-progress-dialog';
+import { UploadEvidenceDialog } from '../../components/upload-evidence-dialog/upload-evidence-dialog';
 
-// Interface for Task data structure
+// --- Definición de Interfaces ---
+
+// Interface para Tarea
 interface Task {
   id: number;
   title: string;
-  description?: string; // Add optional description
+  description?: string; // Descripción opcional
   assignedTo: string;
-  dueDate: string;
+  dueDate: string | null; // Puede ser nulo
   priority: 'alta' | 'media' | 'baja';
   status: 'pendiente' | 'en-progreso' | 'completada';
+  metaId?: number | null; // ID de la meta vinculada
+  metaTitle?: string | null; // Nombre de la meta (para mostrar)
+  assigneeId?: number; // Opcional: ID del asignado
 }
 
-// Interface for Employee (simplified)
+// Interface para Empleado
 interface Employee {
   id: number;
   name: string;
   avatar: string; // URL to avatar image
+}
+
+// Interface para Meta (necesaria para triggerGoalUpdate)
+interface Goal {
+  id: number;
+  title: string;
+  description: string;
+  progress: number;
+  status: 'pendiente' | 'en-progreso' | 'completada';
+  dueDate: string;
 }
 
 @Component({
@@ -35,7 +55,9 @@ interface Employee {
     DragDropModule,
     RouterModule,
     MatDialogModule,
-    MatTooltipModule // Needed for opening dialogs
+    MatTooltipModule,
+    MatIconModule,    // <-- Añadido
+    MatButtonModule   // <-- Añadido
   ],
   templateUrl: './sprint-board.html',
   styleUrls: ['./sprint-board.scss'],
@@ -44,249 +66,299 @@ interface Employee {
       transition('* => *', [
         query(':enter', [
           style({ opacity: 0, transform: 'scale(0.9)' }),
-          stagger('50ms', [ // Delay each item's animation
+          stagger('50ms', [
             animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
           ])
         ], { optional: true })
       ])
-    ]), trigger('detailExpand', [
+    ]),
+    trigger('detailExpand', [
       state('collapsed', style({ height: '0px', minHeight: '0', opacity: 0, padding: '0 1rem' })),
-      state('expanded', style({ height: '*', opacity: 1, padding: '1rem 1rem 0 1rem' })), // Use padding top
+      state('expanded', style({ height: '*', opacity: 1, padding: '1rem 1rem 0 1rem' })),
       transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
     ]),
   ]
 })
-export class SprintBoard implements OnInit {
-  sprintStatus: 'Activo' | 'Planificado' | 'Completado' | null = null;
-  // --- Sample Task Data ---
-  pendingTasks: Task[] = [
-    { id: 2, title: 'Desarrollar API de autenticación', description: 'Crear endpoints para login, registro y validación de token JWT.', assignedTo: 'Jeimy Torres', dueDate: '2025-10-22', priority: 'alta', status: 'pendiente' },
-    { id: 5, title: 'Crear componentes reutilizables', description: 'Desarrollar componentes genéricos para botones, tablas y modales en Angular Material.', assignedTo: 'Jeimy Torres', dueDate: '2025-10-28', priority: 'media', status: 'pendiente' },
-  ];
-  inProgressTasks: Task[] = [
-    { id: 1, title: 'Diseñar la nueva pantalla de login', description: 'Crear mockups en Figma y prototipo interactivo.', assignedTo: 'Valentina Samaniego', dueDate: '2025-10-20', priority: 'alta', status: 'en-progreso' },
-  ];
+export class SprintBoard implements OnInit { // Nombre de clase corregido a SprintBoardComponent
+
+  // --- Datos de Ejemplo ---
+  // (Estos datos se cargarán en ngOnInit basado en el sprintId)
+  myGoals: Goal[] = [];
+  pendingTasks: Task[] = [];
+  inProgressTasks: Task[] = [];
   completedTasks: Task[] = [];
-  expandedTaskId: number | null = null;
+  assignedEmployees: Employee[] = [];
+
+  // --- Propiedades del Sprint ---
   sprintId: string | null = null;
   sprintName: string = 'Cargando...';
   sprintDescription: string = 'Cargando...';
-  startDate: string | null = null; // Add Start Date
-  endDate: string | null = null;   // Add End Date
-  assignedEmployees: Employee[] = [];
+  startDate: string | null = null;
+  endDate: string | null = null;
+  sprintStatus: 'Activo' | 'Planificado' | 'Completado' | null = null;
 
-  // Inject ActivatedRoute to read URL parameters and MatDialog to open modals
+  // --- Estado de UI ---
+  expandedTaskId: number | null = null;
+
   constructor(
     private route: ActivatedRoute,
     public dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
-    // Read the sprintId from the URL parameter
     this.sprintId = this.route.snapshot.paramMap.get('sprintId');
-    console.log("Displaying board for Sprint ID:", this.sprintId);
+    console.log("Mostrando tablero para Sprint ID:", this.sprintId);
 
-    // --- TODO: Fetch Real Data ---
-    // Here you would typically call services to get:
-    // 1. Sprint details (name, description, dates) based on sprintId.
-    // 2. Assigned employees for this sprint based on sprintId.
-    // 3. Tasks for this sprint, already grouped by status, based on sprintId.
-    // --- End TODO ---
+    // --- TODO: Reemplazar esto con llamadas a la API ---
+    // Simulación de carga de datos basada en el ID
     if (this.sprintId === 'sprint-oct-25') {
-      this.sprintStatus = 'Activo';
       this.sprintName = 'Sprint Octubre 2025';
       this.sprintDescription = 'Enfoque en refactorización del módulo de autenticación y diseño del nuevo dashboard.';
-      // Use the sample task data defined above for this sprint
-      this.startDate = '2025-10-01'; // Sample date
+      this.startDate = '2025-10-01';
       this.endDate = '2025-10-31';
-      this.assignedEmployees = [ // Sample assigned team
+      this.sprintStatus = 'Activo';
+      this.assignedEmployees = [
         { id: 1, name: 'Jeimy Torres', avatar: 'https://i.pravatar.cc/30?u=jeimytorres' },
         { id: 2, name: 'Valentina Samaniego', avatar: 'https://i.pravatar.cc/30?u=valentinasamaniego' }
       ];
-    } else if (this.sprintId && this.sprintId.startsWith('sprint-')) { // Handle newly created sprints
-      this.sprintName = `Sprint ${this.sprintId.split('-')[1]}`; // Basic name from ID
-      this.sprintDescription = 'Sprint recién creado. ¡Añade tareas y asigna empleados!';
-      // Start with empty task lists for new sprints
-      this.pendingTasks = [];
-      this.inProgressTasks = [];
+      this.pendingTasks = [
+        { id: 2, title: 'Desarrollar API de autenticación', description: 'Crear endpoints...', assignedTo: 'Jeimy Torres', dueDate: '2025-10-22', priority: 'alta', status: 'pendiente', metaId: 101, metaTitle: 'Refactor Módulo Auth' },
+        { id: 5, title: 'Crear componentes reutilizables', description: 'Desarrollar componentes...', assignedTo: 'Jeimy Torres', dueDate: '2025-10-28', priority: 'media', status: 'pendiente', metaId: 102, metaTitle: 'Optimizar UI' },
+      ];
+      this.inProgressTasks = [
+        { id: 1, title: 'Diseñar la nueva pantalla de login', description: 'Crear mockups...', assignedTo: 'Valentina Samaniego', dueDate: '2025-10-20', priority: 'alta', status: 'en-progreso', metaId: 101 },
+      ];
       this.completedTasks = [];
-      this.assignedEmployees = [];
+      this.myGoals = [ // Metas simuladas para este sprint/empleado
+        { id: 101, title: 'Refactor Módulo Auth', description: '...', progress: 50, status: 'en-progreso', dueDate: '2025-10-31' },
+        { id: 102, title: 'Optimizar UI', description: '...', progress: 10, status: 'en-progreso', dueDate: '2025-10-31' }
+      ];
+
+    } else if (this.sprintId && this.sprintId.startsWith('sprint-')) {
+      this.sprintName = `Sprint (ID: ${this.sprintId.substring(7, 13)})`;
+      this.sprintDescription = 'Sprint recién creado. ¡Añade tareas y asigna empleados!';
       this.sprintStatus = 'Planificado';
+      // Mantenemos las listas vacías
     } else {
-      // Default/Fallback case
       this.sprintName = `Sprint Desconocido`;
       this.sprintDescription = 'No se encontraron detalles para este sprint.';
-      this.pendingTasks = [];
-      this.inProgressTasks = [];
-      this.completedTasks = [];
-      this.assignedEmployees = [];
-      this.sprintStatus = 'Planificado';
+      this.sprintStatus = null;
     }
   }
 
-  // Handles dropping tasks between or within columns
+  // --- Lógica de Drag and Drop ---
   drop(event: CdkDragDrop<Task[]>) {
+    // Si se mueve en la misma lista (solo reordenar)
     if (event.previousContainer === event.container) {
-      // Move item within the same list
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
-      // Transfer item to a different list
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
+      // Si se mueve a una lista DIFERENTE
+      const task = event.previousContainer.data[event.previousIndex];
+      const newContainerId = event.container.id;
 
-      // --- Update Task Status (Locally and TODO: Backend) ---
-      const movedTask = event.container.data[event.currentIndex];
-      let newStatus: Task['status'] = movedTask.status; // Default to current
+      // --- ¡LÓGICA CLAVE! ---
+      // Si el destino es "Completada"
+      if (newContainerId === 'completedList') {
+        // NO movemos la tarea todavía. Primero llamamos al "peaje de evidencia".
+        // Le pasamos la tarea y el evento de drop original.
+        this.handleTaskCompletion(task, event);
+      } else {
+        // --- Movimiento normal (a "Pendiente" o "En Progreso") ---
 
-      if (event.container.id === 'inProgressList') {
-        newStatus = 'en-progreso';
-      } else if (event.container.id === 'completedList') {
-        newStatus = 'completada';
-      } else if (event.container.id === 'pendingList') {
-        newStatus = 'pendiente';
+        // 1. Mueve la tarea
+        transferArrayItem(
+          event.previousContainer.data,
+          event.container.data,
+          event.previousIndex,
+          event.currentIndex
+        );
+
+        // 2. Actualiza el estado
+        const newStatus: Task['status'] = (newContainerId === 'inProgressList') ? 'en-progreso' : 'pendiente';
+        task.status = newStatus;
+
+        console.log(`Task ${task.id} moved to status '${newStatus}' in Sprint ${this.sprintId}`);
+        // --- TODO: Llamar API para guardar el nuevo estado (en-progreso o pendiente) ---
       }
-
-      movedTask.status = newStatus; // Update status locally
-      console.log(`Task ${movedTask.id} moved to status '${newStatus}' in Sprint ${this.sprintId}`);
     }
   }
 
-  // --- Placeholder Functions for Opening Modals ---
+  // --- Lógica de Modales ---
+  handleTaskCompletion(task: Task, event: CdkDragDrop<Task[]>) {
 
-  // Opens the dialog to create a new task within this sprint
+    const dialogRef = this.dialog.open(UploadEvidenceDialog, {
+      width: '500px',
+      disableClose: true,
+      data: { taskTitle: task.title }
+    });
+
+    dialogRef.afterClosed().subscribe(evidenceResult => {
+      // Si el usuario subió la evidencia (evidenceResult no es null)
+      if (evidenceResult) {
+        console.log('Evidencia subida:', evidenceResult.fileName);
+
+        // --- 1. Mover la Tarea (AHORA SÍ) ---
+        transferArrayItem(
+          event.previousContainer.data,
+          event.container.data,
+          event.previousIndex,
+          event.currentIndex
+        );
+        task.status = 'completada';
+        console.log(`Task ${task.id} moved to status 'completada'`);
+
+        // --- TODO: Llamar API para: ---
+        // 1. Subir el archivo (evidenceResult.file)
+        // 2. Guardar el nuevo estado 'completada' de la tarea, vinculando la evidencia.
+
+        // --- 2. Disparar Modal de Progreso de Meta (si está vinculada) ---
+        if (task.metaId) {
+          setTimeout(() => {
+            this.triggerGoalUpdate(task);
+          }, 300);
+        }
+
+      } else {
+        // Si el usuario canceló el modal de evidencia (evidenceResult es null)
+        console.log('Completitud de tarea cancelada. La tarea no se mueve.');
+        // La tarea visualmente vuelve a su lugar original
+        // (porque nunca llamamos a transferArrayItem)
+      }
+    });
+  }
+  // Dispara el modal de actualización de meta
+  triggerGoalUpdate(completedTask: Task): void {
+    const linkedGoal = this.myGoals.find(g => g.id === completedTask.metaId);
+    if (!linkedGoal) {
+      console.warn(`Tarea completada, pero Meta con ID ${completedTask.metaId} no encontrada.`);
+      return;
+    }
+    const dialogRef = this.dialog.open(UpdateProgressDialog, {
+      width: '450px',
+      disableClose: true,
+      data: {
+        currentProgress: linkedGoal.progress,
+        goalTitle: linkedGoal.title,
+        completedTaskTitle: completedTask.title
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(`Actualizando Meta ${linkedGoal.id} a ${result.progress}%`);
+        // --- TODO: Llamar API para guardar el progreso de la META ---
+        // Simulación local
+        linkedGoal.progress = result.progress;
+        linkedGoal.status = result.progress === 100 ? 'completada' : 'en-progreso';
+        this.myGoals = [...this.myGoals];
+      }
+    });
+  }
+
+  // Abre el modal para crear una nueva tarea
   openAddTaskDialog(): void {
-    console.log('Open modal to create task in sprint:', this.sprintId);
     const dialogRef = this.dialog.open(AddTaskDialog, {
-      width: '600px', // Adjust width as needed
+      width: '600px',
       disableClose: true,
       data: {
         sprintId: this.sprintId,
-        // Pass the list of employees assigned to *this sprint* to the modal
-        availableAssignees: this.assignedEmployees
+        availableAssignees: this.assignedEmployees,
+        availableGoals: this.myGoals
       }
     });
-
     dialogRef.afterClosed().subscribe(newTaskData => {
-      // Check if the dialog returned data (Save was clicked)
       if (newTaskData) {
         console.log('Nueva tarea creada:', newTaskData);
-
-        // --- Simulate adding the task locally ---
-        // 1. Create a new Task object (needs a unique ID in a real app)
+        // Simulación local
         const newTask: Task = {
-          id: Date.now(), // Temporary unique ID for frontend
+          id: Date.now(), // ID Temporal
+          status: 'pendiente',
           title: newTaskData.title,
-          assignedTo: newTaskData.assigneeName, // Get the name from the selected assignee object
+          description: newTaskData.description,
+          assignedTo: newTaskData.assigneeName,
           dueDate: newTaskData.dueDate,
           priority: newTaskData.priority,
-          status: 'pendiente' // New tasks always start as pending
+          metaId: newTaskData.metaId,
+          metaTitle: newTaskData.metaTitle
         };
-
-        // 2. Add the new task to the beginning of the pendingTasks array
-        this.pendingTasks = [newTask, ...this.pendingTasks];
-
-        // --- TODO: Call Backend API ---
-        // Here you would call your service to save the newTask object to the database,
-        // associated with this.sprintId.
-        // Example: this.taskService.createTask(this.sprintId, newTask).subscribe(savedTask => { ... });
-        // --- End TODO ---
-
-      } else {
-        console.log('Add Task dialog closed without saving.');
+        this.pendingTasks = [newTask, ...this.pendingTasks]; // Añade al inicio
+        // --- TODO: Llamar API para guardar la nueva tarea ---
       }
     });
   }
 
+  // Abre el modal para editar una tarea existente
   openEditTaskDialog(task: Task): void {
-    console.log('Abrir modal para editar tarea:', task);
     const dialogRef = this.dialog.open(EditTaskDialog, {
-      width: '600px', // Mismo ancho que el de añadir
+      width: '600px',
       disableClose: true,
       data: {
-        // Pasamos una copia de la tarea para evitar modificaciones accidentales
-        taskData: { ...task },
-        // Pasamos también los empleados asignados al sprint para el dropdown
+        taskData: { ...task }, // Pasa una copia
         availableAssignees: this.assignedEmployees
       }
     });
-
     dialogRef.afterClosed().subscribe(updatedTaskData => {
-      // Si el modal devolvió datos (se guardaron cambios)
       if (updatedTaskData) {
         console.log('Tarea actualizada:', updatedTaskData);
-
-        // --- Simular Actualización Local ---
-        // 1. Encuentra la tarea original en la lista correcta (pendiente, en progreso, completada)
-        const updateTaskInList = (list: Task[], updatedData: any) => {
+        // Simulación local
+        const updateList = (list: Task[]): Task[] => {
           const index = list.findIndex(t => t.id === task.id);
           if (index > -1) {
-            // Actualiza el objeto en la lista con los nuevos datos
-            list[index] = { ...list[index], ...updatedData };
-            // Forzamos la re-renderización clonando el array (importante para la detección de cambios)
-            return [...list];
+            list[index] = { ...list[index], ...updatedTaskData }; // Sobrescribe datos
+            return [...list]; // Retorna nuevo array
           }
-          return list; // Devuelve la lista sin cambios si no se encontró
+          return list;
         };
-
-        this.pendingTasks = updateTaskInList(this.pendingTasks, updatedTaskData);
-        this.inProgressTasks = updateTaskInList(this.inProgressTasks, updatedTaskData);
-        this.completedTasks = updateTaskInList(this.completedTasks, updatedTaskData);
-
-        // --- TODO: Llamar API para guardar los cambios en el backend ---
-        // Ejemplo: this.taskService.updateTask(task.id, updatedTaskData).subscribe(...);
-        // --- End TODO ---
-
-      } else {
-        console.log('Edit Task dialog cerrado sin guardar.');
+        this.pendingTasks = updateList(this.pendingTasks);
+        this.inProgressTasks = updateList(this.inProgressTasks);
+        this.completedTasks = updateList(this.completedTasks);
+        // --- TODO: Llamar API para guardar cambios ---
       }
     });
   }
 
-  // Opens the dialog to assign/manage employees assigned to this sprint
+  // Abre el modal para asignar empleados a este sprint
   openAssignEmployeeDialog(): void {
-    console.log('Open modal to assign employees to sprint:', this.sprintId);
     const dialogRef = this.dialog.open(AssignEmployeeDialog, {
-      width: '700px',
+      width: '600px', // Ancho ajustado
+      disableClose: true,
       data: {
         sprintId: this.sprintId,
         currentlyAssignedIds: this.assignedEmployees.map(emp => emp.id)
       }
     });
-
     dialogRef.afterClosed().subscribe(selectedEmployees => {
       if (selectedEmployees) {
         console.log('Asignaciones actualizadas:', selectedEmployees);
-        this.assignedEmployees = selectedEmployees; // Update the local list
-        // --- TODO: Call API to save new assignments ---
+        this.assignedEmployees = selectedEmployees; // Actualiza lista local
+        // --- TODO: Llamar API para guardar asignaciones ---
       }
     });
   }
+
+  // --- Lógica de UI ---
+
+  // Expande/Colapsa la descripción de la tarea
   toggleTaskDetails(taskId: number): void {
     this.expandedTaskId = this.expandedTaskId === taskId ? null : taskId;
   }
+
+  // --- Lógica de Ciclo de Vida del Sprint ---
+
+  // Inicia el sprint (si está 'Planificado')
   startSprint(): void {
-    if (this.sprintStatus !== 'Planificado') return; // Basic validation
-    console.log(`Starting Sprint: ${this.sprintId}`);
-    // --- TODO: Call API to update sprint status to 'Activo' ---
-    // Example: this.sprintService.updateSprintStatus(this.sprintId, 'Activo').subscribe(() => { ... });
-    // --- Simulate local update ---
-    this.sprintStatus = 'Activo';
-    // You might want to update the status in the main sprint list too if possible,
-    // or just rely on refetching data when navigating back.
+    if (this.sprintStatus !== 'Planificado') return;
+    console.log(`Iniciando Sprint: ${this.sprintId}`);
+    // --- TODO: Llamar API para actualizar estado a 'Activo' ---
+    this.sprintStatus = 'Activo'; // Simulación local
   }
 
+  // Completa el sprint (si está 'Activo')
   completeSprint(): void {
-    if (this.sprintStatus !== 'Activo') return; // Basic validation
-    console.log(`Completing Sprint: ${this.sprintId}`);
-    // Optional: Add confirmation dialog here
-    // Optional: Logic to handle unfinished tasks (move to backlog?)
-    // --- TODO: Call API to update sprint status to 'Completado' ---
-    // Example: this.sprintService.updateSprintStatus(this.sprintId, 'Completado').subscribe(() => { ... });
-    // --- Simulate local update ---
-    this.sprintStatus = 'Completado';
+    if (this.sprintStatus !== 'Activo') return;
+    console.log(`Completando Sprint: ${this.sprintId}`);
+    // --- TODO: Añadir confirmación ---
+    // --- TODO: Añadir lógica para tareas pendientes (mover a backlog?) ---
+    // --- TODO: Llamar API para actualizar estado a 'Completado' ---
+    this.sprintStatus = 'Completado'; // Simulación local
   }
 }

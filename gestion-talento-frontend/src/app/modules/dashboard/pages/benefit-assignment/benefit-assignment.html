@@ -1,0 +1,72 @@
+<div class="page-container dual-list-page">
+  <app-subpage-header [title]="benefit?.name || 'Cargando Beneficio...'" backRoute="/dashboard/benefits">
+  </app-subpage-header>
+  
+  <p class="description">
+    Asigna o remueve empleados para el beneficio: **{{ benefit?.name }}**.
+  </p>
+
+  <div class="dual-list-container">
+    
+    <mat-card class="list-column">
+      <mat-card-header>
+        <mat-card-title>Empleados Disponibles</mat-card-title>
+      </mat-card-header>
+      <mat-form-field appearance="outline" class="filter-input">
+        <mat-label>Buscar por Nombre o Depto...</mat-label>
+        <input matInput [(ngModel)]="availableSearch" (ngModelChange)="applyFilter('available')">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      
+      <mat-selection-list #availableList class="employee-list" (selectionChange)="onAvailableSelectionChange($event)">
+        <mat-list-option *ngFor="let emp of availableEmployees" [value]="emp" [checkboxPosition]="'before'">
+          <div matListItemTitle>{{ emp.name }}</div>
+          <div matListItemLine>{{ emp.department }}</div>
+        </mat-list-option>
+        <p *ngIf="availableEmployees.length === 0" class="no-data-placeholder">
+          {{ availableSearch ? 'Sin resultados' : 'No hay empleados disponibles' }}
+        </p>
+      </mat-selection-list>
+    </mat-card>
+    
+    <div class="actions-column">
+      <button mat-icon-button (click)="assignAll()" matTooltip="Asignar Todos">
+        <mat-icon>keyboard_double_arrow_right</mat-icon>
+      </button>
+      <button mat-icon-button color="primary" (click)="assignSelected()" [disabled]="availableSelection.isEmpty()" matTooltip="Asignar Seleccionados">
+        <mat-icon>keyboard_arrow_right</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" (click)="removeSelected()" [disabled]="assignedSelection.isEmpty()" matTooltip="Quitar Seleccionados">
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </button>
+      <button mat-icon-button (click)="removeAll()" matTooltip="Quitar Todos">
+        <mat-icon>keyboard_double_arrow_left</mat-icon>
+      </button>
+    </div>
+    
+    <mat-card class="list-column">
+      <mat-card-header>
+        <mat-card-title>Empleados Asignados ({{ masterAssigned.length }})</mat-card-title>
+      </mat-card-header>
+       <mat-form-field appearance="outline" class="filter-input">
+        <mat-label>Buscar por Nombre o Depto...</mat-label>
+        <input matInput [(ngModel)]="assignedSearch" (ngModelChange)="applyFilter('assigned')">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-selection-list #assignedList class="employee-list" (selectionChange)="onAssignedSelectionChange($event)">
+        <mat-list-option *ngFor="let emp of assignedEmployees" [value]="emp" [checkboxPosition]="'before'">
+          <div matListItemTitle>{{ emp.name }}</div>
+          <div matListItemLine>{{ emp.department }}</div>
+        </mat-list-option>
+        <p *ngIf="assignedEmployees.length === 0" class="no-data-placeholder">
+          {{ assignedSearch ? 'Sin resultados' : 'No hay empleados asignados' }}
+        </p>
+      </mat-selection-list>
+    </mat-card>
+
+  </div> <footer class="actions-footer">
+    <button mat-stroked-button [routerLink]="'/dashboard/benefits'">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="saveAssignments()">Guardar Asignaciones</button>
+  </footer>
+</div>

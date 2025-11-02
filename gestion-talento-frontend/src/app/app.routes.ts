@@ -14,7 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/main-layout/main-layout').then(c => c.MainLayout),
     loadChildren: () => import('./modules/dashboard/dashboard-routing-module').then(r => r.DashboardRoutingModule)
   },
-
+  {
+    path: 'carreras/:id', // URL pública: /carreras/dev-frontend-sr
+    loadComponent: () => import('./public/pages/vacancy-public-page/vacancy-public-page').then(c => c.VacancyPublicPage)
+  },
   // Si alguien entra a la URL raíz, lo enviamos a /auth
   {
     path: '',

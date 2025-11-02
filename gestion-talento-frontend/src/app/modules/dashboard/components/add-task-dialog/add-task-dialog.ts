@@ -12,6 +12,14 @@ import { MatNativeDateModule } from '@angular/material/core';     // Required by
 
 // Re-use Employee interface
 interface Employee { id: number; name: string; avatar: string; }
+interface Goal {
+  id: number;
+  title: string;
+  description: string;
+  progress: number;
+  status: 'pendiente' | 'en-progreso' | 'completada';
+  dueDate: string;
+}
 
 @Component({
   selector: 'app-add-task-dialog',
@@ -33,28 +41,31 @@ interface Employee { id: number; name: string; avatar: string; }
 export class AddTaskDialog implements OnInit {
   taskForm: FormGroup;
   availableAssignees: Employee[] = []; // To store employees passed from parent
-
+  availableGoals: Goal[] = []; // <-- Nueva propiedad
   priorities: Array<'alta' | 'media' | 'baja'> = ['alta', 'media', 'baja'];
 
   constructor(
     public dialogRef: MatDialogRef<AddTaskDialog>,
     private fb: FormBuilder,
     // Inject data (availableAssignees) from SprintBoardComponent
-    @Inject(MAT_DIALOG_DATA) public data: { sprintId: string | null, availableAssignees: Employee[] }
+    @Inject(MAT_DIALOG_DATA) public data: { sprintId: string | null, availableAssignees: Employee[], availableGoals: Goal[] }
   ) {
+    this.availableAssignees = data.availableAssignees || [];
+    this.availableGoals = data.availableGoals || [];
     this.taskForm = this.fb.group({
       title: ['', Validators.required],
-      description: [''], // Optional
-      assignee: [null, Validators.required], // Store the selected Employee object
-      dueDate: [null], // Optional
-      priority: ['media', Validators.required] // Default priority
+      description: [''],
+      assignee: [null, Validators.required],
+      dueDate: [null],
+      priority: ['media', Validators.required],
+      linkedGoal: [null] // <-- Nuevo control (opcional)
     });
 
     // Set the assignees passed from the parent component
     this.availableAssignees = data.availableAssignees || [];
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   onCancel(): void {
     this.dialogRef.close(); // Close without data
@@ -70,12 +81,14 @@ export class AddTaskDialog implements OnInit {
 
       // Prepare data to return (including assignee name for display)
       const resultData = {
-        title: formData.title,
-        description: formData.description,
-        assigneeId: formData.assignee.id, // Return ID for backend
-        assigneeName: formData.assignee.name, // Return Name for frontend display
-        dueDate: dueDateFormatted,
-        priority: formData.priority
+        title: this.taskForm.value.title,
+        description: this.taskForm.value.description,
+        assigneeId: this.taskForm.value.assignee.id,
+        assigneeName: this.taskForm.value.assignee.name,
+        dueDate: dueDateFormatted, // (tu lógica de formato de fecha)
+        priority: this.taskForm.value.priority,
+        metaId: this.taskForm.value.linkedGoal ? this.taskForm.value.linkedGoal.id : null,
+        metaTitle: this.taskForm.value.linkedGoal ? this.taskForm.value.linkedGoal.title : null
       };
       this.dialogRef.close(resultData); // Close and return formatted data
     }

@@ -1,0 +1,40 @@
+<h1 mat-dialog-title>Editar Horario Asignado</h1>
+
+<form [formGroup]="scheduleForm" (ngSubmit)="onSave()">
+  <div mat-dialog-content class="schedule-form-content">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo de Horario</mat-label>
+      <mat-select formControlName="type">
+        <mat-option *ngFor="let type of scheduleTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="scheduleForm.get('type')?.hasError('required')">Requerido</mat-error>
+    </mat-form-field>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Hora de Entrada</mat-label>
+        <input matInput type="time" formControlName="startTime" required>
+        <mat-error *ngIf="scheduleForm.get('startTime')?.hasError('required')">Requerido</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Hora de Salida</mat-label>
+        <input matInput type="time" formControlName="endTime" required>
+        <mat-error *ngIf="scheduleForm.get('endTime')?.hasError('required')">Requerido</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="days-selection" *ngIf="scheduleForm.get('type')?.value === 'Personalizado'">
+      <label class="days-label">Selecciona los días laborables:</label>
+      <div formArrayName="selectedDays" class="days-checkbox-group">
+        <mat-checkbox *ngFor="let day of daysOfWeek; let i = index" [formControlName]="i" color="primary">
+          {{ day.label }}
+        </mat-checkbox>
+      </div>
+       </div>
+
+  </div> <div mat-dialog-actions align="end">
+    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-flat-button color="primary" [disabled]="scheduleForm.invalid">Guardar Horario</button>
+  </div>
+</form>

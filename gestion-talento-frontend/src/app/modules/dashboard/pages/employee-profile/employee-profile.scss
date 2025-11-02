@@ -296,6 +296,7 @@
     }
   }
 }
+
 .actions {
   display: flex;
   gap: 0.5rem;
@@ -365,5 +366,132 @@
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--color-text-secondary);
+  }
+}
+
+.general-info-section {
+  background-color: var(--color-surface); // Consistent background
+  padding: 1.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem; // Space below this section
+
+  h3 {
+    margin: 0 0 1.5rem 0; // Space below title
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-border); // Separator line
+    padding-bottom: 0.75rem;
+  }
+}
+
+.info-grid {
+  display: grid;
+  // Create 2 columns, adjust minmax as needed for responsiveness
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem 2rem; // Row and Column gap
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column; // Stack label above value
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase; // Optional: Uppercase labels
+  letter-spacing: 0.5px; // Optional: Spacing
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  word-break: break-word; // Allow long values to wrap
+}
+
+/* ==========================================================================
+   STYLES FOR CUSTOM FIELDS SECTION
+   ========================================================================== */
+.custom-fields-section {
+  background-color: var(--color-surface); // Give it a background
+  padding: 1.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem; // Slightly smaller heading
+    font-weight: 600;
+  }
+}
+
+.custom-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.field-item {
+  display: flex;
+  flex-direction: column;
+
+  .field-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .field-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+}
+
+.schedule-section {
+  background-color: var(--color-surface);
+  padding: 1.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+
+  // Consistent header style
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    // Style for the edit button
+    button[mat-stroked-button] {
+      // Adjust size/padding if needed
+    }
+  }
+}
+
+.schedule-summary {
+  p {
+    margin: 0.5rem 0;
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+
+    strong {
+      color: var(--color-text-primary);
+      margin-right: 0.5rem;
+    }
   }
 }

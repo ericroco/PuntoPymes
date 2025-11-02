@@ -1,33 +1,48 @@
-<div class="page-container">
-  <header class="page-header">
-    <h2>Administración de Beneficios</h2>
-    <button class="btn btn-primary">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-      </svg>
-      <span>Añadir Nuevo Beneficio</span>
+<div class="page-container benefits-page">
+  <app-subpage-header title="Gestión de Beneficios" backRoute="/dashboard/overview">
+    <button mat-stroked-button color="primary" routerLink="/dashboard/settings/payroll">
+      <mat-icon>settings</mat-icon>
+      Configurar Tipos de Beneficio
     </button>
-  </header>
+  </app-subpage-header>
 
-  <div class="benefits-grid" @cardAnimation>
-    <div *ngFor="let benefit of benefits" class="benefit-card">
-      <div class="card-header">
-        <span class="category-badge">{{ benefit.category }}</span>
-        <button class="btn-icon" title="Configurar">⚙️</button>
-      </div>
-      <div class="card-content">
-        <h3 class="benefit-title">{{ benefit.title }}</h3>
-        <p class="benefit-description">{{ benefit.description }}</p>
-      </div>
-      <div class="card-footer">
-        <div class="enrolled-info">
-          <span>Inscritos:</span>
-          <strong>{{ benefit.employeesEnrolled }}</strong>
+  <p class="description">
+    Asigna o remueve beneficios y descuentos recurrentes a tus empleados de forma masiva.
+    Los tipos de beneficios se crean en la Configuración de Nómina.
+  </p>
+
+  <div class="benefits-grid" @listAnimation>
+    <mat-card *ngFor="let benefit of availableBenefits" class="benefit-card report-container">
+
+      <mat-card-header>
+        <mat-card-title>{{ benefit.name }}</mat-card-title>
+        <mat-card-subtitle>{{ benefit.type }} Recurrente</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="adoption-kpi">
+          <span class="kpi-value">{{ benefit.assignedCount }}</span>
+          <span class="kpi-total">/ {{ benefit.totalEmployees }} Empleados</span>
         </div>
-        <div class="provider-info">
-          <span>Proveedor: <strong>{{ benefit.provider }}</strong></span>
+
+        <div class="progress-area">
+          <span class="progress-text">{{ getAdoptionRate(benefit) | number:'1.0-0' }}% de Adopción</span>
+          <mat-progress-bar mode="determinate" [value]="getAdoptionRate(benefit)"></mat-progress-bar>
         </div>
-      </div>
-    </div>
+      </mat-card-content>
+
+      <mat-card-actions align="end" class="card-actions">
+        <button mat-button (click)="goToViewAssigned(benefit)">Ver Asignados</button>
+        <button mat-flat-button color="primary" [routerLink]="['/dashboard/benefits/assign', benefit.id]">
+          Asignar / Gestionar
+        </button>
+      </mat-card-actions>
+
+    </mat-card>
   </div>
+
+  <div *ngIf="availableBenefits.length === 0" class="no-data-placeholder">
+    No hay beneficios recurrentes definidos. Ve a Configuración > Nómina para crearlos.
+  </div>
+
 </div>

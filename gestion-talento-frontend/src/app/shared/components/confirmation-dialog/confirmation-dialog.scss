@@ -1,0 +1,15 @@
+h1[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-warn, #f44336); // Use a warn color variable if defined
+}
+
+[mat-dialog-content] p {
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+[mat-dialog-actions] {
+  padding: 16px 24px;
+}

@@ -1,0 +1,23 @@
+// Container for the form fields
+.contact-form-content {
+  display: flex;
+  flex-direction: column; // Stack fields vertically
+  gap: 15px;             // Space between fields
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+// Ensure form fields take full width
+mat-form-field {
+  width: 100%;
+}
+
+// Action button alignment
+[mat-dialog-actions] {
+  padding: 16px 24px; // Consistent padding
+}
+
+// Optional: Adjust error message style
+mat-error {
+  font-size: 0.75rem;
+}

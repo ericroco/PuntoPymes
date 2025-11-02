@@ -1,41 +1,141 @@
-<div class="page-container" @listAnimation>
-  <header class="page-header">
-    <h2>Metas y Objetivos</h2>
-    <button class="btn btn-primary">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-      </svg>
-      <span>Nueva Meta</span>
-    </button>
-  </header>
+<div class="page-container goals-page">
 
-  <section class="goals-section">
-    <h3>Metas Departamentales</h3>
-    <div class="goals-grid">
-      <div *ngFor="let goal of departmentGoals" class="goal-card">
-        <div class="goal-header">
-          <span class="goal-owner">{{ goal.owner }}</span>
-          <span class="goal-status" [style.background-color]="goal.statusColor">{{ goal.status.replace('-', ' ') }}</span>
-        </div>
-        <h4 class="goal-title">{{ goal.title }}</h4>
-        <div class="progress-bar-container">
-          <div class="progress-bar" [style.width.%]="goal.progress" [style.background-color]="goal.statusColor"></div>
-        </div>
-        <span class="progress-text">{{ goal.progress }}% completado</span>
-      </div>
-    </div>
-  </section>
+  <div *ngIf="!viewingAsAdmin" @listAnimation>
+    <app-subpage-header title="Mis Metas y Objetivos"></app-subpage-header>
+    <p class="description">
+      Aquí puedes ver y actualizar el progreso de las metas que te han sido asignadas.
+    </p>
 
-  <section class="goals-section">
-    <h3>Mis Metas Personales</h3>
     <div class="goals-grid">
-      <div *ngFor="let goal of personalGoals" class="goal-card">
-        <h4 class="goal-title">{{ goal.title }}</h4>
-        <div class="progress-bar-container">
-          <div class="progress-bar" [style.width.%]="goal.progress" [style.background-color]="goal.statusColor"></div>
-        </div>
-        <span class="progress-text">{{ goal.progress }}% completado</span>
-      </div>
+      <mat-card *ngFor="let goal of myGoals" class="goal-card" [ngClass]="'status-' + goal.status">
+        <mat-card-header>
+          <mat-card-title>{{ goal.title }}</mat-card-title>
+          <mat-card-subtitle>Vence: {{ goal.dueDate | date:'dd MMM, yyyy' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="goal-description">{{ goal.description }}</p>
+          <div class="progress-area">
+            <span class="progress-text">{{ goal.progress }}% Completado</span>
+            <mat-progress-bar mode="determinate" [value]="goal.progress"></mat-progress-bar>
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-flat-button color="primary" (click)="openUpdateProgressDialog(goal)"
+            [disabled]="goal.status === 'completada'">
+            <mat-icon>edit</mat-icon>
+            {{ goal.status === 'completada' ? 'Completada' : 'Actualizar Progreso' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </div>
-  </section>
+
+    <div *ngIf="myGoals.length === 0" class="no-data-placeholder">
+      Aún no tienes metas asignadas.
+    </div>
+  </div>
+
+  <div *ngIf="viewingAsAdmin" class="admin-goals-view">
+    <app-subpage-header title="Gestión de Metas">
+      <button mat-flat-button color="primary" (click)="openCreateGoalDialog()">
+        <mat-icon>add</mat-icon>
+        Crear Nueva Meta
+      </button>
+    </app-subpage-header>
+
+    <mat-tab-group animationDuration="0ms">
+
+      <mat-tab label="Dashboard">
+        <div class="report-tab-content" @listAnimation>
+          <div class="report-widget-grid kpi-summary">
+            <mat-card class="overview-widget simple-kpi report-container">
+              <mat-card-header><mat-card-title>Metas Totales</mat-card-title></mat-card-header>
+              <mat-card-content><span class="kpi-main-value">{{ teamGoalProgress.total }}</span></mat-card-content>
+            </mat-card>
+            <mat-card class="overview-widget simple-kpi report-container">
+              <mat-card-header><mat-card-title>Completadas</mat-card-title></mat-card-header>
+              <mat-card-content><span class="kpi-main-value success">{{ teamGoalProgress.completed }}</span></mat-card-content>
+            </mat-card>
+            <mat-card class="overview-widget simple-kpi report-container">
+              <mat-card-header><mat-card-title>En Riesgo</mat-card-title></mat-card-header>
+              <mat-card-content><span class="kpi-main-value warning">{{ teamGoalProgress.atRisk }}</span></mat-card-content>
+            </mat-card>
+            <mat-card class="overview-widget simple-kpi report-container">
+              <mat-card-header><mat-card-title>A Tiempo</mat-card-title></mat-card-header>
+              <mat-card-content><span class="kpi-main-value info">{{ teamGoalProgress.onTrack }}</span></mat-card-content>
+            </mat-card>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <h3>Distribución del Desempeño</h3>
+          <div class="report-widget-grid">
+            <mat-card class="overview-widget chart-widget report-container">
+              <mat-card-header>
+                <mat-card-title>Desempeño del Equipo (Categorías)</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="chart-container">
+                <ngx-charts-bar-vertical
+                  [results]="performanceDistributionData"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [showXAxisLabel]="false"
+                  [showYAxisLabel]="true"
+                  yAxisLabel="Nº de Empleados"
+                  [scheme]="chartColorScheme"
+                  [legend]="false">
+                </ngx-charts-bar-vertical>
+              </mat-card-content>
+            </mat-card>
+            
+            </div>
+          </div>
+      </mat-tab>
+
+      <mat-tab label="Gestión de Metas">
+        <div class="report-tab-content">
+          <div class="list-container">
+            <div class="list-item header">
+              <span>Título de la Meta</span>
+              <span>Asignado a</span>
+              <span>Progreso</span>
+              <span>Vencimiento</span>
+              <span>Estado</span>
+              <span>Acciones</span>
+            </div>
+            
+            <div *ngFor="let goal of allGoalsTable.dataSource" class="list-item" @listAnimation>
+              <span class="goal-title">{{ goal.title }}</span>
+              <span>{{ goal.assigneeName }}</span>
+              <div class="progress-cell-container"> 
+                <mat-progress-bar mode="determinate" [value]="goal.progress"></mat-progress-bar>
+              </div>
+              <span>{{ goal.dueDate | date:'dd MMM, yyyy' }}</span>
+              <div> 
+                <span class="status-badge" [ngClass]="'status-' + goal.status.toLowerCase()">{{ goal.status }}</span>
+              </div>
+              <div class="actions"> 
+                <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Acciones">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item (click)="editGoal(goal)">
+                    <mat-icon>edit</mat-icon>
+                    <span>Editar Meta</span>
+                  </button>
+                  <button mat-menu-item (click)="deleteGoal(goal)">
+                    <mat-icon color="warn">delete_outline</mat-icon>
+                    <span>Eliminar Meta</span>
+                  </button>
+                </mat-menu>
+              </div>
+            </div> <div *ngIf="allGoalsTable.dataSource.length === 0" class="no-data-placeholder">
+              No hay metas definidas para el equipo.
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </div>
+
 </div>
