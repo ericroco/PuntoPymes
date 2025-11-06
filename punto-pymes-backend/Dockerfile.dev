@@ -1,0 +1,25 @@
+# punto-pymes-backend/Dockerfile.dev
+
+# --- Base ---
+# Empezamos con la imagen oficial de Node.js
+FROM node:20-alpine AS base
+WORKDIR /usr/src/app
+
+# Copia el package.json y el lockfile
+COPY package*.json ./
+
+# --- Dependencias ---
+# Instala todas las dependencias del monorepo
+FROM base AS dependencies
+RUN npm install
+
+# --- Desarrollo (Development) ---
+# Esta es la imagen que usaremos para desarrollo
+FROM dependencies AS development
+
+# Copia el resto del código fuente
+COPY . .
+
+# El comando por defecto (no se usará directamente, 
+# lo sobreescribiremos en docker-compose)
+CMD [ "npm", "run", "start:dev", "punto-pymes-backend" ]

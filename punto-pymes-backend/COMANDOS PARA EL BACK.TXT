@@ -1,0 +1,16 @@
+npm install -g @nestjs/cli
+npm install @nestjs/microservices
+npm install @nestjs/typeorm typeorm pg
+npm install @nestjs/jwt
+npm install @nestjs/config 
+npm install -D @types/bcrypt  
+npm install bcrypt 
+npm install class-validator class-transformer
+npm install @nestjs/mongoose mongoose
+npm install @nestjs/passport passport passport-jwt
+npm install -D @types/passport-jwt
+npm install class-transformer
+
+#PARA DOCKER:
+docker compose up -d --build PRENDE EL SERVER
+docker compuse down APAGA EL DOCKER
