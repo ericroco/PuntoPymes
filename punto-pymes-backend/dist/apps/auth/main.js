@@ -114,6 +114,7 @@ exports.AuthModule = AuthModule = __decorate([
                 database_1.Empleado,
                 database_1.Departamento,
                 database_1.Cargo,
+                database_1.Contrato,
             ]),
             jwt_1.JwtModule.registerAsync({
                 imports: [
@@ -322,6 +323,7 @@ let AuthService = class AuthService {
             email: usuario.email,
             empresaId: membresiaActiva.empresaId,
             empleadoId: membresiaActiva.id,
+            rolId: membresiaActiva.rolId,
             rol: membresiaActiva.rol.nombre,
             permisos: membresiaActiva.rol.permisos,
         };

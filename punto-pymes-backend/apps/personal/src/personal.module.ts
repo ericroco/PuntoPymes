@@ -14,6 +14,7 @@ import {
   Departamento,
   Cargo,
   Rol,
+  Contrato,
 } from 'default/database'; // <-- Usa tu prefijo correcto
 
 @Module({
@@ -25,17 +26,17 @@ import {
       isGlobal: true,
       envFilePath: './.env',
     }),
-    
+
     DatabaseModule,
 
     TypeOrmModule.forFeature([
-      Empleado, 
-      Departamento, 
-      Cargo, 
-      Rol
+      Empleado,
+      Departamento,
+      Cargo,
+      Rol, Contrato,
     ]),
   ],
   controllers: [PersonalController],
   providers: [PersonalService],
 })
-export class PersonalModule {}
+export class PersonalModule { }

@@ -200,15 +200,15 @@ export class AuthService {
     const payload = {
       sub: usuario.id, // 'sub' (subject) es el ID del usuario
       email: usuario.email,
-      // ¡Aquí está la magia SaaS!
-      // Incluimos el contexto del tenant en el token.
       empresaId: membresiaActiva.empresaId,
       empleadoId: membresiaActiva.id,
+      rolId: membresiaActiva.rolId,
       rol: membresiaActiva.rol.nombre, // Ej: 'Administrador'
       permisos: membresiaActiva.rol.permisos, // Ej: { "esAdmin": true }
     };
     // (FIN DEL CAMBIO)
 
+    
     // --- e. Firmar y devolver el Token ---
     const accessToken = await this.jwtService.signAsync(payload);
 

@@ -15,7 +15,8 @@ import {
   Rol,
   Empleado,
   Departamento, // <-- AÑADIR
-  Cargo,        // <-- AÑADIR
+  Cargo,  
+  Contrato,      // <-- AÑADIR
 } from 'default/database'; // Usando tu prefijo correcto
 
 @Module({
@@ -29,7 +30,8 @@ import {
       Rol,
       Empleado,
       Departamento, // <-- AÑADIR
-      Cargo,        // <-- AÑADIR
+      Cargo,
+      Contrato,     // <-- AÑADIR
     ]),
     JwtModule.registerAsync({
       // Importamos ConfigModule para que esté disponible

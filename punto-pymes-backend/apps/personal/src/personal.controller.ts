@@ -7,6 +7,9 @@ import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { CreateDepartamentoDto } from './dto/create-departamento.dto';
 import { UpdateDepartamentoDto } from './dto/update-departamento.dto';
 import { CreateCargoDto } from './dto/create-cargo.dto';
+import { UpdateCargoDto } from './dto/update-cargo.dto';
+import { CreateRolDto } from './dto/create-rol.dto';
+import { UpdateRolDto } from './dto/update-rol.dto';
 
 @Controller()
 export class PersonalController {
@@ -146,16 +149,129 @@ export class PersonalController {
     );
   }
   /**
-   * Escucha el comando 'create_cargo' (RF-02)
-   */
+     * Escucha el comando 'create_cargo' (RF-02)
+     * (Tu método existente - sin cambios)
+     */
   @MessagePattern({ cmd: 'create_cargo' })
   @UsePipes(new ValidationPipe())
-  createCargo(
-    @Payload() data: { empresaId: string; dto: CreateCargoDto },
-  ) {
+  createCargo(@Payload() data: { empresaId: string; dto: CreateCargoDto }) {
     console.log(
       `Microservicio PERSONAL: Recibido create_cargo para empresa: ${data.empresaId}`,
     );
     return this.personalService.createCargo(data.empresaId, data.dto);
   }
+
+  /**
+   * Escucha el comando 'get_cargos' (RF-02)
+   */
+  @MessagePattern({ cmd: 'get_cargos' })
+  getCargos(@Payload() data: { empresaId: string }) {
+    console.log(
+      `Microservicio PERSONAL: Recibido get_cargos para empresa: ${data.empresaId}`,
+    );
+    return this.personalService.getCargos(data.empresaId);
+  }
+
+  /**
+   * Escucha el comando 'update_cargo' (RF-02)
+   */
+  @MessagePattern({ cmd: 'update_cargo' })
+  @UsePipes(new ValidationPipe())
+  updateCargo(
+    @Payload()
+    data: {
+      empresaId: string;
+      cargoId: string;
+      dto: UpdateCargoDto;
+    },
+  ) {
+    console.log(
+      `Microservicio PERSONAL: Recibido update_cargo para cargo: ${data.cargoId}`,
+    );
+    return this.personalService.updateCargo(
+      data.empresaId,
+      data.cargoId,
+      data.dto,
+    );
+  }
+
+  /**
+   * Escucha el comando 'delete_cargo' (RF-02)
+   */
+  @MessagePattern({ cmd: 'delete_cargo' })
+  deleteCargo(
+    @Payload()
+    data: {
+      empresaId: string;
+      cargoId: string;
+    },
+  ) {
+    console.log(
+      `Microservicio PERSONAL: Recibido delete_cargo para cargo: ${data.cargoId}`,
+    );
+    return this.personalService.deleteCargo(data.empresaId, data.cargoId);
+  }
+  /**
+   * Escucha el comando 'create_rol' (RF-29)
+   */
+  @MessagePattern({ cmd: 'create_rol' })
+  @UsePipes(new ValidationPipe())
+  createRol(@Payload() data: { empresaId: string; dto: CreateRolDto }) {
+    console.log(
+      `Microservicio PERSONAL: Recibido create_rol para empresa: ${data.empresaId}`,
+    );
+    return this.personalService.createRol(data.empresaId, data.dto);
+  }
+
+  /**
+   * Escucha el comando 'get_roles' (RF-29)
+   */
+  @MessagePattern({ cmd: 'get_roles' })
+  getRoles(@Payload() data: { empresaId: string }) {
+    console.log(
+      `Microservicio PERSONAL: Recibido get_roles para empresa: ${data.empresaId}`,
+    );
+    return this.personalService.getRoles(data.empresaId);
+  }
+
+  /**
+   * Escucha el comando 'update_rol' (RF-29)
+   */
+  @MessagePattern({ cmd: 'update_rol' })
+  @UsePipes(new ValidationPipe())
+  updateRol(
+    @Payload()
+    data: {
+      empresaId: string;
+      rolId: string;
+      dto: UpdateRolDto;
+    },
+  ) {
+    console.log(
+      `Microservicio PERSONAL: Recibido update_rol para rol: ${data.rolId}`,
+    );
+    return this.personalService.updateRol(
+      data.empresaId,
+      data.rolId,
+      data.dto,
+    );
+  }
+
+  /**
+   * Escucha el comando 'delete_rol' (RF-29)
+   */
+  @MessagePattern({ cmd: 'delete_rol' })
+  deleteRol(
+    @Payload()
+    data: {
+      empresaId: string;
+      rolId: string;
+    },
+  ) {
+    console.log(
+      `Microservicio PERSONAL: Recibido delete_rol para rol: ${data.rolId}`,
+    );
+    return this.personalService.deleteRol(data.empresaId, data.rolId);
+  }
 }
+

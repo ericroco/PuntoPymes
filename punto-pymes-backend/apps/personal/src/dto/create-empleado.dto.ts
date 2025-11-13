@@ -5,12 +5,12 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  IsDateString,
+  // IsDateString ya no es necesario aquí
 } from 'class-validator';
 
 /**
  * DTO para crear un nuevo Empleado (RF-01-01)
- * Define las reglas de validación para los datos de entrada.
+ * Define las reglas de validación para los datos de entrada de la *persona*.
  */
 export class CreateEmpleadoDto {
   @IsNotEmpty({ message: 'El nombre es requerido.' })
@@ -25,9 +25,13 @@ export class CreateEmpleadoDto {
   @IsEmail({}, { message: 'El email personal no es válido.' })
   emailPersonal?: string;
 
-  @IsNotEmpty({ message: 'La fecha de contratación es requerida.' })
-  @IsDateString({}, { message: 'La fecha de contratación debe ser una fecha válida.'})
-  fechaContratacion: Date;
+  // --- INICIO DEL CAMBIO ---
+  /*
+   * Se elimina 'fechaContratacion'. 
+   * Esta lógica ahora vivirá en un DTO separado (ej. CreateContratoDto)
+   * que se usará para crear la entidad 'Contrato'.
+   */
+  // --- FIN DEL CAMBIO ---
 
   /**
    * El ID del Cargo (puesto) que ocupará.

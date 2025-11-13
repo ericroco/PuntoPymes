@@ -33,18 +33,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
      * (Recuerda: payload = { sub: '...', email: '...' })
      */
     async validate(payload: any) {
-        // (INICIO DEL CAMBIO)
-        // Ahora, todo el payload se pasa a req.user.
-        // req.user será:
-        // {
-        //   "sub": "...",
-        //   "email": "...",
-        //   "empresaId": "...",
-        //   "empleadoId": "...",
-        //   "rol": "...",
-        //   "permisos": { ... }
-        // }
-        return payload;
-        // (FIN DEL CAMBIO)
+        // El 'payload' es el objeto que creamos en auth.service.ts
+        return {
+            userId: payload.sub, // ID del Usuario
+            email: payload.email,
+            empresaId: payload.empresaId, // ID del Tenant
+            empleadoId: payload.empleadoId, // ID del Empleado
+            rolId: payload.rolId,
+            permisos: payload.permisos, // <-- ¡AQUÍ ESTÁ LA MAGIA!
+        };
     }
 }

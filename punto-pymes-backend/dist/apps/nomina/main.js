@@ -2,10 +2,91 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./apps/personal/src/personal.controller.ts":
-/*!**************************************************!*\
-  !*** ./apps/personal/src/personal.controller.ts ***!
-  \**************************************************/
+/***/ "./apps/nomina/src/dto/create-contrato.dto.ts":
+/*!****************************************************!*\
+  !*** ./apps/nomina/src/dto/create-contrato.dto.ts ***!
+  \****************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateContratoDto = exports.EstadoContrato = exports.TipoContrato = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var TipoContrato;
+(function (TipoContrato) {
+    TipoContrato["INDEFINIDO"] = "Indefinido";
+    TipoContrato["PLAZO_FIJO"] = "Plazo Fijo";
+    TipoContrato["SERVICIOS"] = "Servicios";
+    TipoContrato["OBRA_LABOR"] = "Obra Labor";
+})(TipoContrato || (exports.TipoContrato = TipoContrato = {}));
+var EstadoContrato;
+(function (EstadoContrato) {
+    EstadoContrato["VIGENTE"] = "Vigente";
+    EstadoContrato["FINALIZADO"] = "Finalizado";
+    EstadoContrato["PENDIENTE"] = "Pendiente";
+})(EstadoContrato || (exports.EstadoContrato = EstadoContrato = {}));
+class CreateContratoDto {
+    empleadoId;
+    tipo;
+    salario;
+    moneda;
+    fechaInicio;
+    fechaFin;
+    estado;
+}
+exports.CreateContratoDto = CreateContratoDto;
+__decorate([
+    (0, class_validator_1.IsNotEmpty)({ message: 'El ID del empleado es requerido.' }),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], CreateContratoDto.prototype, "empleadoId", void 0);
+__decorate([
+    (0, class_validator_1.IsNotEmpty)({ message: 'El tipo de contrato es requerido.' }),
+    (0, class_validator_1.IsEnum)(TipoContrato),
+    __metadata("design:type", String)
+], CreateContratoDto.prototype, "tipo", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)({}, { message: 'El salario debe ser un número.' }),
+    (0, class_validator_1.IsPositive)({ message: 'El salario debe ser un número positivo.' }),
+    __metadata("design:type", Number)
+], CreateContratoDto.prototype, "salario", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateContratoDto.prototype, "moneda", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de inicio debe ser una fecha válida.' }),
+    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+], CreateContratoDto.prototype, "fechaInicio", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de fin debe ser una fecha válida.' }),
+    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
+], CreateContratoDto.prototype, "fechaFin", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(EstadoContrato),
+    __metadata("design:type", String)
+], CreateContratoDto.prototype, "estado", void 0);
+
+
+/***/ }),
+
+/***/ "./apps/nomina/src/nomina.controller.ts":
+/*!**********************************************!*\
+  !*** ./apps/nomina/src/nomina.controller.ts ***!
+  \**********************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -23,212 +104,75 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalController = void 0;
+exports.NominaController = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
-let PersonalController = class PersonalController {
-    personalService;
-    constructor(personalService) {
-        this.personalService = personalService;
+const nomina_service_1 = __webpack_require__(/*! ./nomina.service */ "./apps/nomina/src/nomina.service.ts");
+let NominaController = class NominaController {
+    nominaService;
+    constructor(nominaService) {
+        this.nominaService = nominaService;
     }
-    getEmpleados(data) {
-        return this.personalService.getEmpleados(data.empresaId);
+    getContratosByEmpleado(data) {
+        console.log(`Microservicio NOMINA: Recibido get_contratos_by_empleado para: ${data.empleadoId}`);
+        return this.nominaService.getContratosByEmpleado(data.empresaId, data.empleadoId);
     }
-    createEmpleado(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_empleado para empresa: ${data.empresaId}`);
-        return this.personalService.createEmpleado(data.empresaId, data.dto);
+    createContrato(data) {
+        console.log(`Microservicio NOMINA: Recibido create_contrato para empresa: ${data.empresaId}`);
+        return this.nominaService.createContrato(data.empresaId, data.dto);
     }
-    updateEmpleado(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_empleado para empleado: ${data.empleadoId}`);
-        return this.personalService.updateEmpleado(data.empresaId, data.empleadoId, data.dto);
+    updateContrato(data) {
+        console.log(`Microservicio NOMINA: Recibido update_contrato para contrato: ${data.contratoId}`);
+        return this.nominaService.updateContrato(data.empresaId, data.contratoId, data.dto);
     }
-    deleteEmpleado(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_empleado para empleado: ${data.empleadoId}`);
-        return this.personalService.deleteEmpleado(data.empresaId, data.empleadoId);
-    }
-    createDepartamento(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_departamento para empresa: ${data.empresaId}`);
-        return this.personalService.createDepartamento(data.empresaId, data.dto);
-    }
-    getDepartamentos(data) {
-        console.log(`Microservicio PERSONAL: Recibido get_departamentos para empresa: ${data.empresaId}`);
-        return this.personalService.getDepartamentos(data.empresaId);
-    }
-    updateDepartamento(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_departamento para depto: ${data.deptoId}`);
-        return this.personalService.updateDepartamento(data.empresaId, data.deptoId, data.dto);
-    }
-    deleteDepartamento(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_departamento para depto: ${data.deptoId}`);
-        return this.personalService.deleteDepartamento(data.empresaId, data.deptoId);
-    }
-    createCargo(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_cargo para empresa: ${data.empresaId}`);
-        return this.personalService.createCargo(data.empresaId, data.dto);
-    }
-    getCargos(data) {
-        console.log(`Microservicio PERSONAL: Recibido get_cargos para empresa: ${data.empresaId}`);
-        return this.personalService.getCargos(data.empresaId);
-    }
-    updateCargo(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_cargo para cargo: ${data.cargoId}`);
-        return this.personalService.updateCargo(data.empresaId, data.cargoId, data.dto);
-    }
-    deleteCargo(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_cargo para cargo: ${data.cargoId}`);
-        return this.personalService.deleteCargo(data.empresaId, data.cargoId);
-    }
-    createRol(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_rol para empresa: ${data.empresaId}`);
-        return this.personalService.createRol(data.empresaId, data.dto);
-    }
-    getRoles(data) {
-        console.log(`Microservicio PERSONAL: Recibido get_roles para empresa: ${data.empresaId}`);
-        return this.personalService.getRoles(data.empresaId);
-    }
-    updateRol(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_rol para rol: ${data.rolId}`);
-        return this.personalService.updateRol(data.empresaId, data.rolId, data.dto);
-    }
-    deleteRol(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_rol para rol: ${data.rolId}`);
-        return this.personalService.deleteRol(data.empresaId, data.rolId);
+    deleteContrato(data) {
+        console.log(`Microservicio NOMINA: Recibido delete_contrato para contrato: ${data.contratoId}`);
+        return this.nominaService.deleteContrato(data.empresaId, data.contratoId);
     }
 };
-exports.PersonalController = PersonalController;
+exports.NominaController = NominaController;
 __decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_empleados' }),
+    (0, microservices_1.MessagePattern)({ cmd: 'get_contratos_by_empleado' }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getEmpleados", null);
+], NominaController.prototype, "getContratosByEmpleado", null);
 __decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_empleado' }),
+    (0, microservices_1.MessagePattern)({ cmd: 'create_contrato' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createEmpleado", null);
+], NominaController.prototype, "createContrato", null);
 __decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_empleado' }),
+    (0, microservices_1.MessagePattern)({ cmd: 'update_contrato' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateEmpleado", null);
+], NominaController.prototype, "updateContrato", null);
 __decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_empleado' }),
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_contrato' }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteEmpleado", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_departamento' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createDepartamento", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_departamentos' }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getDepartamentos", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_departamento' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateDepartamento", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_departamento' }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteDepartamento", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_cargo' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createCargo", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_cargos' }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getCargos", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_cargo' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateCargo", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_cargo' }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteCargo", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_rol' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createRol", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_roles' }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getRoles", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_rol' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateRol", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_rol' }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteRol", null);
-exports.PersonalController = PersonalController = __decorate([
+], NominaController.prototype, "deleteContrato", null);
+exports.NominaController = NominaController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof personal_service_1.PersonalService !== "undefined" && personal_service_1.PersonalService) === "function" ? _a : Object])
-], PersonalController);
+    __metadata("design:paramtypes", [typeof (_a = typeof nomina_service_1.NominaService !== "undefined" && nomina_service_1.NominaService) === "function" ? _a : Object])
+], NominaController);
 
 
 /***/ }),
 
-/***/ "./apps/personal/src/personal.module.ts":
-/*!**********************************************!*\
-  !*** ./apps/personal/src/personal.module.ts ***!
-  \**********************************************/
+/***/ "./apps/nomina/src/nomina.module.ts":
+/*!******************************************!*\
+  !*** ./apps/nomina/src/nomina.module.ts ***!
+  \******************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -239,17 +183,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalModule = void 0;
+exports.NominaModule = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
-const personal_controller_1 = __webpack_require__(/*! ./personal.controller */ "./apps/personal/src/personal.controller.ts");
-const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
-let PersonalModule = class PersonalModule {
+const nomina_controller_1 = __webpack_require__(/*! ./nomina.controller */ "./apps/nomina/src/nomina.controller.ts");
+const nomina_service_1 = __webpack_require__(/*! ./nomina.service */ "./apps/nomina/src/nomina.service.ts");
+let NominaModule = class NominaModule {
 };
-exports.PersonalModule = PersonalModule;
-exports.PersonalModule = PersonalModule = __decorate([
+exports.NominaModule = NominaModule;
+exports.NominaModule = NominaModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({
@@ -258,24 +202,23 @@ exports.PersonalModule = PersonalModule = __decorate([
             }),
             database_1.DatabaseModule,
             typeorm_1.TypeOrmModule.forFeature([
+                database_1.Contrato,
                 database_1.Empleado,
-                database_1.Departamento,
-                database_1.Cargo,
-                database_1.Rol, database_1.Contrato,
+                database_1.Rol,
             ]),
         ],
-        controllers: [personal_controller_1.PersonalController],
-        providers: [personal_service_1.PersonalService],
+        controllers: [nomina_controller_1.NominaController],
+        providers: [nomina_service_1.NominaService],
     })
-], PersonalModule);
+], NominaModule);
 
 
 /***/ }),
 
-/***/ "./apps/personal/src/personal.service.ts":
-/*!***********************************************!*\
-  !*** ./apps/personal/src/personal.service.ts ***!
-  \***********************************************/
+/***/ "./apps/nomina/src/nomina.service.ts":
+/*!*******************************************!*\
+  !*** ./apps/nomina/src/nomina.service.ts ***!
+  \*******************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -291,72 +234,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c, _d, _e;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalService = void 0;
+exports.NominaService = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
-let PersonalService = class PersonalService {
-    empleadoRepository;
-    rolRepository;
-    cargoRepository;
+const create_contrato_dto_1 = __webpack_require__(/*! ./dto/create-contrato.dto */ "./apps/nomina/src/dto/create-contrato.dto.ts");
+let NominaService = class NominaService {
     contratoRepository;
-    deptoRepository;
-    constructor(empleadoRepository, rolRepository, cargoRepository, contratoRepository, deptoRepository) {
-        this.empleadoRepository = empleadoRepository;
-        this.rolRepository = rolRepository;
-        this.cargoRepository = cargoRepository;
+    empleadoRepository;
+    constructor(contratoRepository, empleadoRepository) {
         this.contratoRepository = contratoRepository;
-        this.deptoRepository = deptoRepository;
+        this.empleadoRepository = empleadoRepository;
     }
-    async getEmpleados(empresaId) {
-        console.log(`Microservicio PERSONAL: Buscando empleados para empresaId: ${empresaId}`);
-        return this.empleadoRepository.find({
-            where: {
-                empresaId: empresaId,
-            },
-            relations: ['cargo', 'rol'],
-        });
-    }
-    async createEmpleado(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`);
-        const rol = await this.rolRepository.findOneBy({
-            id: dto.rolId,
-            empresaId: empresaId,
-        });
-        if (!rol) {
-            throw new common_1.BadRequestException('El Rol seleccionado no es válido o no pertenece a esta empresa.');
-        }
-        const cargo = await this.cargoRepository.findOne({
-            where: {
-                id: dto.cargoId,
-                departamento: {
-                    empresaId: empresaId,
-                },
-            },
-        });
-        if (!cargo) {
-            throw new common_1.BadRequestException('El Cargo seleccionado no es válido o no pertenece a esta empresa.');
-        }
-        if (dto.jefeId) {
-            const jefe = await this.empleadoRepository.findOneBy({
-                id: dto.jefeId,
-                empresaId: empresaId,
-            });
-            if (!jefe) {
-                throw new common_1.BadRequestException('El Jefe seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        const nuevoEmpleado = this.empleadoRepository.create({
-            ...dto,
-            empresaId: empresaId,
-        });
-        return this.empleadoRepository.save(nuevoEmpleado);
-    }
-    async updateEmpleado(empresaId, empleadoId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando empleado ${empleadoId} para empresaId: ${empresaId}`);
+    async getContratosByEmpleado(empresaId, empleadoId) {
+        console.log(`Microservicio NOMINA: Buscando contratos para empleado ${empleadoId}`);
         const empleado = await this.empleadoRepository.findOneBy({
             id: empleadoId,
             empresaId: empresaId,
@@ -364,272 +258,79 @@ let PersonalService = class PersonalService {
         if (!empleado) {
             throw new common_1.NotFoundException('Empleado no encontrado o no pertenece a esta empresa.');
         }
-        if (dto.rolId) {
-            const rol = await this.rolRepository.findOneBy({
-                id: dto.rolId,
-                empresaId: empresaId,
-            });
-            if (!rol) {
-                throw new common_1.BadRequestException('El Rol seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        if (dto.cargoId) {
-            const cargo = await this.cargoRepository.findOne({
-                where: {
-                    id: dto.cargoId,
-                    departamento: {
-                        empresaId: empresaId,
-                    },
-                },
-            });
-            if (!cargo) {
-                throw new common_1.BadRequestException('El Cargo seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        const empleadoActualizado = this.empleadoRepository.merge(empleado, dto);
-        return this.empleadoRepository.save(empleadoActualizado);
-    }
-    async deleteEmpleado(empresaId, empleadoId) {
-        console.log(`Microservicio PERSONAL: Desvinculando empleado ${empleadoId} (finalizando contrato) para empresaId: ${empresaId}`);
-        const contratoActivo = await this.contratoRepository.findOne({
-            where: {
-                empleado: { id: empleadoId, empresaId: empresaId },
-                estado: 'Activo',
-            },
+        return this.contratoRepository.find({
+            where: { empleadoId: empleadoId },
+            withDeleted: false,
+            order: { fechaInicio: 'DESC' },
         });
-        if (!contratoActivo) {
-            throw new common_1.NotFoundException('No se encontró un contrato activo para este empleado.');
-        }
-        contratoActivo.estado = 'Inactivo';
-        await this.contratoRepository.save(contratoActivo);
+    }
+    async createContrato(empresaId, dto) {
         const empleado = await this.empleadoRepository.findOneBy({
-            id: empleadoId,
+            id: dto.empleadoId,
             empresaId: empresaId,
         });
-        if (empleado) {
-            empleado.estado = 'Inactivo';
-            await this.empleadoRepository.save(empleado);
+        if (!empleado) {
+            throw new common_1.BadRequestException('El empleadoId proporcionado no es válido o no pertenece a esta empresa.');
         }
-        return {
-            message: 'Empleado desvinculado (contrato finalizado) correctamente.',
-        };
-    }
-    async createDepartamento(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando departamento para empresaId: ${empresaId}`);
-        const deptoExistente = await this.deptoRepository.findOneBy({
-            nombre: dto.nombre,
-            empresaId: empresaId,
-        });
-        if (deptoExistente) {
-            throw new common_1.ConflictException('Ya existe un departamento con ese nombre en esta empresa.');
+        const estadoNuevo = dto.estado || create_contrato_dto_1.EstadoContrato.VIGENTE;
+        if (estadoNuevo === create_contrato_dto_1.EstadoContrato.VIGENTE) {
+            const contratoActivo = await this.contratoRepository.findOneBy({
+                empleadoId: dto.empleadoId,
+                estado: create_contrato_dto_1.EstadoContrato.VIGENTE,
+            });
+            if (contratoActivo) {
+                throw new common_1.ConflictException('El empleado ya tiene un contrato "Vigente". No se puede crear otro.');
+            }
         }
-        const nuevoDepto = this.deptoRepository.create({
+        const nuevoContrato = this.contratoRepository.create({
             ...dto,
-            empresaId: empresaId,
+            estado: estadoNuevo,
         });
-        return this.deptoRepository.save(nuevoDepto);
+        return this.contratoRepository.save(nuevoContrato);
     }
-    async getDepartamentos(empresaId) {
-        console.log(`Microservicio PERSONAL: Buscando departamentos para empresaId: ${empresaId}`);
-        return this.deptoRepository.find({
-            where: {
-                empresaId: empresaId,
-            },
-            relations: ['cargos'],
+    async updateContrato(empresaId, contratoId, dto) {
+        const contrato = await this.contratoRepository.findOne({
+            where: { id: contratoId },
+            relations: ['empleado'],
         });
-    }
-    async updateDepartamento(empresaId, deptoId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando depto ${deptoId} para empresaId: ${empresaId}`);
-        const depto = await this.deptoRepository.findOneBy({
-            id: deptoId,
-            empresaId: empresaId,
-        });
-        if (!depto) {
-            throw new common_1.NotFoundException('Departamento no encontrado o no pertenece a esta empresa.');
+        if (!contrato || contrato.empleado.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Contrato no encontrado o no pertenece a esta empresa.');
         }
-        if (dto.nombre && dto.nombre !== depto.nombre) {
-            const deptoExistente = await this.deptoRepository.findOneBy({
-                nombre: dto.nombre,
-                empresaId: empresaId,
+        if (dto.estado === create_contrato_dto_1.EstadoContrato.VIGENTE) {
+            const otroContratoVigente = await this.contratoRepository.findOneBy({
+                empleadoId: contrato.empleadoId,
+                estado: create_contrato_dto_1.EstadoContrato.VIGENTE,
+                id: (0, typeorm_2.Not)(contratoId),
             });
-            if (deptoExistente) {
-                throw new common_1.ConflictException('Ya existe un departamento con ese nombre en esta empresa.');
+            if (otroContratoVigente) {
+                throw new common_1.ConflictException('No se puede activar este contrato. El empleado ya tiene OTRO contrato vigente.');
             }
         }
-        const deptoActualizado = this.deptoRepository.merge(depto, dto);
-        return this.deptoRepository.save(deptoActualizado);
+        const contratoActualizado = this.contratoRepository.merge(contrato, dto);
+        return this.contratoRepository.save(contratoActualizado);
     }
-    async deleteDepartamento(empresaId, deptoId) {
-        console.log(`Microservicio PERSONAL: Borrando (Soft Delete) depto ${deptoId} para empresaId: ${empresaId}`);
-        const depto = await this.deptoRepository.findOneBy({
-            id: deptoId,
-            empresaId: empresaId,
+    async deleteContrato(empresaId, contratoId) {
+        const contrato = await this.contratoRepository.findOne({
+            where: { id: contratoId },
+            relations: ['empleado'],
         });
-        if (!depto) {
-            throw new common_1.NotFoundException('Departamento no encontrado o no pertenece a esta empresa.');
+        if (!contrato || contrato.empleado.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Contrato no encontrado o no pertenece a esta empresa.');
         }
-        await this.deptoRepository.softRemove(depto);
-        return { message: 'Departamento desactivado correctamente.' };
-    }
-    async createCargo(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando cargo para empresaId: ${empresaId}`);
-        const depto = await this.deptoRepository.findOneBy({
-            id: dto.departamentoId,
-            empresaId: empresaId,
-        });
-        if (!depto) {
-            throw new common_1.BadRequestException('El Departamento seleccionado no es válido o no pertenece a esta empresa.');
+        if (contrato.estado === create_contrato_dto_1.EstadoContrato.VIGENTE) {
+            throw new common_1.BadRequestException('No se puede borrar un contrato "Vigente". Use la función "Desvincular Empleado" en el módulo de personal para finalizarlo.');
         }
-        const cargoExistente = await this.cargoRepository.findOneBy({
-            nombre: dto.nombre,
-            departamentoId: dto.departamentoId,
-        });
-        if (cargoExistente) {
-            throw new common_1.ConflictException('Ya existe un cargo con ese nombre en este departamento.');
-        }
-        const nuevoCargo = this.cargoRepository.create({
-            ...dto,
-        });
-        return this.cargoRepository.save(nuevoCargo);
-    }
-    async getCargos(empresaId) {
-        console.log(`Microservicio PERSONAL: Buscando cargos para empresaId: ${empresaId}`);
-        return this.cargoRepository.find({
-            where: {
-                departamento: {
-                    empresaId: empresaId,
-                },
-            },
-            relations: ['departamento'],
-            withDeleted: false,
-        });
-    }
-    async updateCargo(empresaId, cargoId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando cargo ${cargoId} para empresaId: ${empresaId}`);
-        const cargo = await this.cargoRepository.findOne({
-            where: { id: cargoId },
-            relations: ['departamento'],
-        });
-        if (!cargo || cargo.departamento.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Cargo no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.departamentoId && dto.departamentoId !== cargo.departamentoId) {
-            const nuevoDepto = await this.deptoRepository.findOneBy({
-                id: dto.departamentoId,
-                empresaId: empresaId,
-            });
-            if (!nuevoDepto) {
-                throw new common_1.BadRequestException('El nuevo departamento seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        if (dto.nombre || dto.departamentoId) {
-            const nombreValidar = dto.nombre || cargo.nombre;
-            const deptoIdValidar = dto.departamentoId || cargo.departamentoId;
-            const cargoExistente = await this.cargoRepository.findOne({
-                where: {
-                    nombre: nombreValidar,
-                    departamentoId: deptoIdValidar,
-                    id: (0, typeorm_2.Not)(cargoId),
-                },
-            });
-            if (cargoExistente) {
-                throw new common_1.ConflictException('Ya existe un cargo con ese nombre en el departamento seleccionado.');
-            }
-        }
-        const cargoActualizado = this.cargoRepository.merge(cargo, dto);
-        return this.cargoRepository.save(cargoActualizado);
-    }
-    async deleteCargo(empresaId, cargoId) {
-        console.log(`Microservicio PERSONAL: Borrando (Soft Delete) cargo ${cargoId} para empresaId: ${empresaId}`);
-        const cargo = await this.cargoRepository.findOne({
-            where: { id: cargoId },
-            relations: ['departamento'],
-        });
-        if (!cargo || cargo.departamento.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Cargo no encontrado o no pertenece a esta empresa.');
-        }
-        await this.cargoRepository.softRemove(cargo);
-        return { message: 'Cargo desactivado correctamente.' };
-    }
-    async createRol(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando Rol para empresaId: ${empresaId}`);
-        const rolExistente = await this.rolRepository.findOneBy({
-            nombre: dto.nombre,
-            empresaId: empresaId,
-        });
-        if (rolExistente) {
-            throw new common_1.ConflictException('Ya existe un rol con ese nombre en esta empresa.');
-        }
-        const nuevoRol = this.rolRepository.create({
-            ...dto,
-            empresaId: empresaId,
-            permisos: dto.permisos || {},
-        });
-        return this.rolRepository.save(nuevoRol);
-    }
-    async getRoles(empresaId) {
-        console.log(`Microservicio PERSONAL: Buscando Roles para empresaId: ${empresaId}`);
-        return this.rolRepository.find({
-            where: {
-                empresaId: empresaId,
-            },
-            withDeleted: false,
-        });
-    }
-    async updateRol(empresaId, rolId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando Rol ${rolId} para empresaId: ${empresaId}`);
-        const rol = await this.rolRepository.findOneBy({
-            id: rolId,
-            empresaId: empresaId,
-        });
-        if (!rol) {
-            throw new common_1.NotFoundException('Rol no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.nombre && dto.nombre !== rol.nombre) {
-            const rolExistente = await this.rolRepository.findOneBy({
-                nombre: dto.nombre,
-                empresaId: empresaId,
-                id: (0, typeorm_2.Not)(rolId),
-            });
-            if (rolExistente) {
-                throw new common_1.ConflictException('Ya existe un rol con ese nombre en esta empresa.');
-            }
-        }
-        const rolActualizado = this.rolRepository.merge(rol, dto);
-        return this.rolRepository.save(rolActualizado);
-    }
-    async deleteRol(empresaId, rolId) {
-        console.log(`Microservicio PERSONAL: Borrando (Soft Delete) Rol ${rolId} para empresaId: ${empresaId}`);
-        const rol = await this.rolRepository.findOneBy({
-            id: rolId,
-            empresaId: empresaId,
-        });
-        if (!rol) {
-            throw new common_1.NotFoundException('Rol no encontrado o no pertenece a esta empresa.');
-        }
-        const empleadosConRol = await this.empleadoRepository.count({
-            where: {
-                rolId: rolId,
-                empresaId: empresaId,
-            },
-        });
-        if (empleadosConRol > 0) {
-            throw new common_1.ConflictException(`No se puede eliminar el rol. Está asignado a ${empleadosConRol} empleado(s).`);
-        }
-        await this.rolRepository.softRemove(rol);
-        return { message: 'Rol desactivado correctamente.' };
+        await this.contratoRepository.softRemove(contrato);
+        return { message: 'Contrato eliminado (desactivado) correctamente.' };
     }
 };
-exports.PersonalService = PersonalService;
-exports.PersonalService = PersonalService = __decorate([
+exports.NominaService = NominaService;
+exports.NominaService = NominaService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(database_1.Empleado)),
-    __param(1, (0, typeorm_1.InjectRepository)(database_1.Rol)),
-    __param(2, (0, typeorm_1.InjectRepository)(database_1.Cargo)),
-    __param(3, (0, typeorm_1.InjectRepository)(database_1.Contrato)),
-    __param(4, (0, typeorm_1.InjectRepository)(database_1.Departamento)),
-    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object, typeof (_d = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _d : Object, typeof (_e = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _e : Object])
-], PersonalService);
+    __param(0, (0, typeorm_1.InjectRepository)(database_1.Contrato)),
+    __param(1, (0, typeorm_1.InjectRepository)(database_1.Empleado)),
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object])
+], NominaService);
 
 
 /***/ }),
@@ -3352,6 +3053,16 @@ module.exports = require("@nestjs/typeorm");
 
 /***/ }),
 
+/***/ "class-validator":
+/*!**********************************!*\
+  !*** external "class-validator" ***!
+  \**********************************/
+/***/ ((module) => {
+
+module.exports = require("class-validator");
+
+/***/ }),
+
 /***/ "typeorm":
 /*!**************************!*\
   !*** external "typeorm" ***!
@@ -3393,29 +3104,28 @@ var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 var exports = __webpack_exports__;
-/*!***********************************!*\
-  !*** ./apps/personal/src/main.ts ***!
-  \***********************************/
+/*!*********************************!*\
+  !*** ./apps/nomina/src/main.ts ***!
+  \*********************************/
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(/*! @nestjs/core */ "@nestjs/core");
-const personal_module_1 = __webpack_require__(/*! ./personal.module */ "./apps/personal/src/personal.module.ts");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const nomina_module_1 = __webpack_require__(/*! ./nomina.module */ "./apps/nomina/src/nomina.module.ts");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 async function bootstrap() {
-    const tempApp = await core_1.NestFactory.createApplicationContext(personal_module_1.PersonalModule);
-    const configService = tempApp.get(config_1.ConfigService);
-    const port = configService.get('PERSONAL_SERVICE_PORT') || 3002;
-    await tempApp.close();
-    const app = await core_1.NestFactory.createMicroservice(personal_module_1.PersonalModule, {
+    const app = await core_1.NestFactory.create(nomina_module_1.NominaModule);
+    const configService = app.get(config_1.ConfigService);
+    const port = configService.get('NOMINA_SERVICE_PORT') || 3003;
+    app.connectMicroservice({
         transport: microservices_1.Transport.TCP,
         options: {
             host: '0.0.0.0',
             port: port,
         },
     });
-    await app.listen();
-    console.log(`🚀 Microservicio PERSONAL está escuchando en el puerto ${port}`);
+    await app.startAllMicroservices();
+    console.log(`Microservicio NOMINA está escuchando en el puerto ${port}`);
 }
 bootstrap();
 

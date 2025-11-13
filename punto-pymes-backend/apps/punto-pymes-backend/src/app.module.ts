@@ -14,7 +14,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
       isGlobal: true,
       envFilePath: './.env',
     }),
-    
+
     // --- (INICIO DE CAMBIOS) ---
     // 1. Registra AMBOS microservicios
     ClientsModule.registerAsync([
@@ -43,6 +43,18 @@ import { JwtStrategy } from './auth/jwt.strategy';
           },
         }),
       },
+      {
+        name: 'NOMINA_SERVICE',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: 'nomina_service',
+            port: +configService.get<number>('NOMINA_SERVICE_PORT')!,
+          },
+        }),
+      },
     ]),
     // --- (FIN DE CAMBIOS) ---
 
@@ -62,4 +74,4 @@ import { JwtStrategy } from './auth/jwt.strategy';
   controllers: [AppController],
   providers: [AppService, JwtStrategy],
 })
-export class AppModule {}
+export class AppModule { }

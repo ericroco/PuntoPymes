@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AppService } from './app.service';
-
 import { RegisterDto } from '../../auth/src/dto/register.dto';
 import { LoginDto } from '../../auth/src/dto/login.dto';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -24,13 +23,22 @@ import { UpdateEmpleadoDto } from '../../personal/src/dto/update-empleado.dto';
 import { CreateDepartamentoDto } from '../../personal/src/dto/create-departamento.dto';
 import { UpdateDepartamentoDto } from '../../personal/src/dto/update-departamento.dto';
 import { CreateCargoDto } from '../../personal/src/dto/create-cargo.dto';
-
+import { UpdateCargoDto } from '../../personal/src/dto/update-cargo.dto';
+import { CreateRolDto } from '../../personal/src/dto/create-rol.dto';
+import { UpdateRolDto } from '../../personal/src/dto/update-rol.dto';
+import { RequirePermission } from './auth/decorators/permission.decorator';
+import { PermissionGuard } from './auth/guards/permission.guard';
+import { CreateContratoDto } from '../../nomina/src/dto/create-contrato.dto';
+import { UpdateContratoDto } from '../../nomina/src/dto/update-contrato.dto';
+import { CreateBeneficioDto } from '../../nomina/src/dto/create-beneficio.dto';
+import { UpdateBeneficioDto } from '../../nomina/src/dto/update-beneficio.dto';
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     @Inject('AUTH_SERVICE') private readonly authService: ClientProxy,
     @Inject('PERSONAL_SERVICE') private readonly personalService: ClientProxy,
+    @Inject('NOMINA_SERVICE') private readonly nominaService: ClientProxy,
   ) { }
 
   @Get()
@@ -246,8 +254,9 @@ export class AppController {
     );
   }
   /**
-   * Crea un nuevo cargo (RF-02)
-   */
+    * Endpoint del Gateway para CREAR un Cargo.
+    * (Este es el que tú ya tenías)
+    */
   @UseGuards(JwtAuthGuard)
   @Post('cargos') // <-- Escucha en POST /cargos
   @UsePipes(new ValidationPipe())
@@ -267,6 +276,275 @@ export class AppController {
         empresaId: empresaId,
         dto: dto,
       },
+    );
+  }
+
+  /**
+   * Endpoint del Gateway para OBTENER TODOS los Cargos.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('cargos') // <-- Escucha en GET /cargos
+  getCargos(@Request() req) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición GET /cargos para empresaId: ${empresaId}`,
+    );
+
+    // Envía el mensaje al microservicio PERSONAL
+    return this.personalService.send(
+      { cmd: 'get_cargos' },
+      { empresaId: empresaId },
+    );
+  }
+
+  /**
+   * Endpoint del Gateway para ACTUALIZAR un Cargo.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Patch('cargos/:id') // <-- Escucha en PATCH /cargos/un-id
+  @UsePipes(new ValidationPipe())
+  updateCargo(
+    @Request() req,
+    @Param('id') cargoId: string, // <-- Obtiene el ID de la URL
+    @Body() dto: UpdateCargoDto, // <-- Obtiene los datos a actualizar
+  ) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición PATCH /cargos/${cargoId} para empresaId: ${empresaId}`,
+    );
+
+    // Envía el mensaje al microservicio PERSONAL
+    return this.personalService.send(
+      { cmd: 'update_cargo' },
+      {
+        empresaId: empresaId,
+        cargoId: cargoId,
+        dto: dto,
+      },
+    );
+  }
+
+  /**
+   * Endpoint del Gateway para ELIMINAR (Soft Delete) un Cargo.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Delete('cargos/:id') // <-- Escucha en DELETE /cargos/un-id
+  deleteCargo(
+    @Request() req,
+    @Param('id') cargoId: string, // <-- Obtiene el ID de la URL
+  ) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición DELETE /cargos/${cargoId} para empresaId: ${empresaId}`,
+    );
+
+    // Envía el mensaje al microservicio PERSONAL
+    return this.personalService.send(
+      { cmd: 'delete_cargo' },
+      {
+        empresaId: empresaId,
+        cargoId: cargoId,
+      },
+    );
+  }
+  // --- INICIO DE CRUD PARA ROL (RF-02, RF-29) ---
+
+  @UseGuards(JwtAuthGuard, PermissionGuard) // <-- 1. AÑADIR PermissionGuard
+  @RequirePermission('roles.create') // <-- 2. DEFINIR EL PERMISO
+  @Post('roles')
+  @UsePipes(new ValidationPipe())
+  createRol(@Request() req, @Body() dto: CreateRolDto) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición POST /roles para empresaId: ${empresaId}`,
+    );
+    return this.personalService.send(
+      { cmd: 'create_rol' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('roles.read') // <-- Ejemplo
+  @Get('roles')
+  getRoles(@Request() req) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición GET /roles para empresaId: ${empresaId}`,
+    );
+    return this.personalService.send(
+      { cmd: 'get_roles' },
+      { empresaId: empresaId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('roles.update') // <-- Ejemplo
+  @Patch('roles/:id')
+  @UsePipes(new ValidationPipe())
+  updateRol(@Request() req, @Param('id') rolId: string, @Body() dto: UpdateRolDto) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición PATCH /roles/${rolId} para empresaId: ${empresaId}`,
+    );
+    return this.personalService.send(
+      { cmd: 'update_rol' },
+      { empresaId: empresaId, rolId: rolId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('roles.delete') // <-- Ejemplo
+  @Delete('roles/:id')
+  deleteRol(@Request() req, @Param('id') rolId: string) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición DELETE /roles/${rolId} para empresaId: ${empresaId}`,
+    );
+    return this.personalService.send(
+      { cmd: 'delete_rol' },
+      { empresaId: empresaId, rolId: rolId },
+    );
+  }
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('contratos.create') // <-- Protegido por RBAC
+  @Post('contratos')
+  @UsePipes(new ValidationPipe())
+  createContrato(
+    @Request() req,
+    @Body() dto: CreateContratoDto,
+  ) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición POST /contratos para empresaId: ${empresaId}`,
+    );
+    // 3. Enviar el comando al NOMINA_SERVICE
+    return this.nominaService.send(
+      { cmd: 'create_contrato' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+
+  /**
+   * Endpoint del Gateway para OBTENER todos los contratos DE UN EMPLEADO
+   * (Ruta REST anidada para mejor semántica)
+   */
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('contratos.read')
+  @Get('empleados/:empleadoId/contratos')
+  getContratosByEmpleado(
+    @Request() req,
+    @Param('empleadoId') empleadoId: string,
+  ) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición GET /empleados/${empleadoId}/contratos para empresaId: ${empresaId}`,
+    );
+    // 3. Enviar el comando al NOMINA_SERVICE
+    return this.nominaService.send(
+      { cmd: 'get_contratos_by_empleado' },
+      { empresaId: empresaId, empleadoId: empleadoId },
+    );
+  }
+
+  /**
+   * Endpoint del Gateway para ACTUALIZAR un Contrato
+   */
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('contratos.update')
+  @Patch('contratos/:id')
+  @UsePipes(new ValidationPipe())
+  updateContrato(
+    @Request() req,
+    @Param('id') contratoId: string,
+    @Body() dto: UpdateContratoDto,
+  ) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición PATCH /contratos/${contratoId} para empresaId: ${empresaId}`,
+    );
+    // 3. Enviar el comando al NOMINA_SERVICE
+    return this.nominaService.send(
+      { cmd: 'update_contrato' },
+      { empresaId: empresaId, contratoId: contratoId, dto: dto },
+    );
+  }
+
+  /**
+   * Endpoint del Gateway para ELIMINAR (Soft Delete) un Contrato
+   */
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('contratos.delete')
+  @Delete('contratos/:id')
+  deleteContrato(
+    @Request() req,
+    @Param('id') contratoId: string,
+  ) {
+    const { empresaId } = req.user;
+    console.log(
+      `Gateway: Petición DELETE /contratos/${contratoId} para empresaId: ${empresaId}`,
+    );
+    // 3. Enviar el comando al NOMINA_SERVICE
+    return this.nominaService.send(
+      { cmd: 'delete_contrato' },
+      { empresaId: empresaId, contratoId: contratoId },
+    );
+  }
+  // --- INICIO DE CRUD PARA BENEFICIO (RF-19) ---
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.read')
+  @Get('beneficios')
+  getBeneficios(@Request() req) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'get_beneficios' },
+      { empresaId: empresaId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.create')
+  @Post('beneficios')
+  @UsePipes(new ValidationPipe())
+  createBeneficio(
+    @Request() req,
+    @Body() dto: CreateBeneficioDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'create_beneficio' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.update')
+  @Patch('beneficios/:id')
+  @UsePipes(new ValidationPipe())
+  updateBeneficio(
+    @Request() req,
+    @Param('id') beneficioId: string,
+    @Body() dto: UpdateBeneficioDto,
+    NT) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'update_beneficio' },
+      { empresaId: empresaId, beneficioId: beneficioId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.delete')
+  @Delete('beneficios/:id')
+  deleteBeneficio(
+    @Request() req,
+    @Param('id') beneficioId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'delete_beneficio' },
+      { empresaId: empresaId, beneficioId: beneficioId },
     );
   }
 }
