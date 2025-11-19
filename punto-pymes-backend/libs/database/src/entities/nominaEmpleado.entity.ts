@@ -32,6 +32,7 @@ export class NominaEmpleado extends BaseEntity {
   @Column({
     type: 'float',
     comment: 'Suma total de ingresos (calculado de los rubros)',
+    default: 0,
   })
   totalIngresos: number;
 
@@ -42,6 +43,7 @@ export class NominaEmpleado extends BaseEntity {
   @Column({
     type: 'float',
     comment: 'Suma total de deducciones (calculado de los rubros)',
+    default: 0,
   })
   totalEgresos: number;
 
@@ -52,6 +54,7 @@ export class NominaEmpleado extends BaseEntity {
   @Column({
     type: 'float',
     comment: 'Monto neto a pagar (TotalIngresos - TotalEgresos)',
+    default: 0,
   })
   netoAPagar: number;
 

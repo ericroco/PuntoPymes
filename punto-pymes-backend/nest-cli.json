@@ -8,7 +8,7 @@
     "tsConfigPath": "apps/punto-pymes-backend/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/punto-pymes-backend",
+  "root": ".",
   "projects": {
     "auth": {
       "type": "application",
@@ -44,6 +44,15 @@
       "sourceRoot": "apps/personal/src",
       "compilerOptions": {
         "tsConfigPath": "apps/personal/tsconfig.app.json"
+      }
+    },
+    "productividad": {
+      "type": "application",
+      "root": "apps/productividad",
+      "entryFile": "main",
+      "sourceRoot": "apps/productividad/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/productividad/tsconfig.app.json"
       }
     },
     "punto-pymes-backend": {

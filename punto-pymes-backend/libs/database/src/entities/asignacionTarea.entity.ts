@@ -24,14 +24,27 @@ import { Empleado } from './empleado.entity';
 @Unique(['tareaId', 'empleadoId'])
 export class AsignacionTarea extends BaseEntity {
   /**
-   * Fecha de asignación de la tarea al empleado
-   * Mapea: date fechaAsignacion "Fecha asignacion tarea"
+   * Fecha en que se realizó la asignación.
+   * Tipo: 'timestamp' para guardar fecha y hora.
+   * Default: Se llena sola con la hora actual si no se envía.
    */
   @Column({
-    type: 'date',
-    comment: 'Fecha de asignación de la tarea al empleado',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    comment: 'Fecha y hora de asignación',
   })
   fechaAsignacion: Date;
+
+  /**
+   * Observaciones o instrucciones específicas (Ej: "Solo backend").
+   * CORRECCIÓN: Faltaba esta columna y causaba error en el servicio.
+   */
+  @Column({
+    type: 'text',
+    nullable: true,
+    comment: 'Observaciones o instrucciones para la asignación',
+  })
+  observaciones: string;
 
   // ---
   // RELACIONES "MUCHOS A UNO" (Una Asignación PERTENECE A...)
@@ -39,36 +52,36 @@ export class AsignacionTarea extends BaseEntity {
 
   /**
    * Relación: La asignación pertenece a UNA Tarea.
-   * onDelete: 'CASCADE' = Si la Tarea se borra, sus asignaciones
-   * (que no tienen sentido sin ella) también se borran.
+   * onDelete: 'CASCADE' = Si la Tarea se borra, sus asignaciones se borran.
    */
   @ManyToOne(() => Tarea, (tarea) => tarea.asignaciones, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'tareaId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'tareaId' })
   tarea: Tarea;
 
   /**
-   * Mapea: string tareaId FK "Tarea asignada"
+   * ID de la Tarea (FK explícita)
    */
   @Column({ comment: 'ID de la Tarea asignada' })
   tareaId: string;
 
   /**
    * Relación: La asignación pertenece a UN Empleado.
-   * onDelete: 'CASCADE' = Si el Empleado es borrado, sus asignaciones
-   * de tareas también se borran.
+   * onDelete: 'CASCADE' = Si el Empleado es borrado, sus asignaciones se borran.
+   * NOTA: Asegúrate que en tu entidad Empleado tengas la propiedad 'asignaciones' o 'tareasAsignadas'.
+   * Aquí asumo que se llama 'asignaciones' para mantener consistencia.
    */
-  @ManyToOne(() => Empleado, (empleado) => empleado.tareasAsignadas, {
-    nullable: false, // Requerido
+  @ManyToOne(() => Empleado, (empleado) => empleado.asignaciones, {
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
   /**
-   * Mapea: string empleadoId FK "Empleado responsable"
+   * ID del Empleado (FK explícita)
    */
   @Column({ comment: 'ID del Empleado responsable' })
   empleadoId: string;

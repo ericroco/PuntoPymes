@@ -4,8 +4,13 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { NominaService } from './nomina.service';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
-import { CreateBeneficioDto } from './dto/create-beneficio.dto'; // <-- NUEVO
+import { CreateBeneficioDto } from './dto/create-beneficio.dto';
 import { UpdateBeneficioDto } from './dto/update-beneficio.dto';
+import { CreatePeriodoNominaDto } from './dto/create-periodo-nomina.dto';
+import { UpdatePeriodoNominaDto } from './dto/update-periodo-nomina.dto';
+import { CreateConceptoNominaDto } from './dto/create-concepto-nomina.dto';
+import { UpdateConceptoNominaDto } from './dto/update-concepto-nomina.dto';
+import { ProcesarNominaDto } from './dto/procesar-nomina.dto';
 
 @Controller()
 export class NominaController {
@@ -123,5 +128,104 @@ export class NominaController {
     },
   ) {
     return this.nominaService.deleteBeneficio(data.empresaId, data.beneficioId);
+  }
+  // --- INICIO DE CRUD PARA PERIODO NOMINA (RF-20) ---
+
+  @MessagePattern({ cmd: 'get_periodos_nomina' })
+  getPeriodosNomina(@Payload() data: { empresaId: string }) {
+    return this.nominaService.getPeriodosNomina(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'create_periodo_nomina' })
+  @UsePipes(new ValidationPipe())
+  createPeriodoNomina(
+    @Payload() data: { empresaId: string; dto: CreatePeriodoNominaDto },
+  ) {
+    return this.nominaService.createPeriodoNomina(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'update_periodo_nomina' })
+  @UsePipes(new ValidationPipe())
+  updatePeriodoNomina(
+    @Payload()
+    data: {
+      empresaId: string;
+      periodoId: string;
+      dto: UpdatePeriodoNominaDto;
+    },
+  ) {
+    return this.nominaService.updatePeriodoNomina(
+      data.empresaId,
+      data.periodoId,
+      data.dto,
+    );
+  }
+
+  @MessagePattern({ cmd: 'delete_periodo_nomina' })
+  deletePeriodoNomina(
+    @Payload()
+    data: {
+      empresaId: string;
+      periodoId: string;
+    },
+  ) {
+    return this.nominaService.deletePeriodoNomina(data.empresaId, data.periodoId);
+  }
+  // --- INICIO DE CRUD PARA CONCEPTO NOMINA (Semana 9) ---
+
+  @MessagePattern({ cmd: 'get_conceptos_nomina' })
+  getConceptosNomina(@Payload() data: { empresaId: string }) {
+    return this.nominaService.getConceptosNomina(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'create_concepto_nomina' })
+  @UsePipes(new ValidationPipe())
+  createConceptoNomina(
+    @Payload() data: { empresaId: string; dto: CreateConceptoNominaDto },
+  ) {
+    return this.nominaService.createConceptoNomina(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'update_concepto_nomina' })
+  @UsePipes(new ValidationPipe())
+  updateConceptoNomina(
+    @Payload()
+    data: {
+      empresaId: string;
+      conceptoId: string;
+      dto: UpdateConceptoNominaDto;
+    },
+  ) {
+    return this.nominaService.updateConceptoNomina(
+      data.empresaId,
+      data.conceptoId,
+      data.dto,
+    );
+  }
+
+  @MessagePattern({ cmd: 'delete_concepto_nomina' })
+  deleteConceptoNomina(
+    @Payload()
+    data: {
+      empresaId: string;
+      conceptoId: string;
+    },
+  ) {
+    return this.nominaService.deleteConceptoNomina(
+      data.empresaId,
+      data.conceptoId,
+    );
+  }
+  // --- INICIO DE LÓGICA DE PROCESAMIENTO (Semana 9) ---
+
+  @MessagePattern({ cmd: 'procesar_nomina' })
+  @UsePipes(new ValidationPipe())
+  procesarNomina(
+    @Payload() data: { empresaId: string; dto: ProcesarNominaDto },
+  ) {
+    console.log(
+      `Microservicio NOMINA: Recibido procesar_nomina para período: ${data.dto.periodoId}`,
+    );
+    return this.nominaService.procesarNomina(data.empresaId, data.dto.periodoId);
   }
 }

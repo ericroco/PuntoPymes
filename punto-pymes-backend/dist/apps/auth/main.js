@@ -446,6 +446,75 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/productividad/src/dto/create-tarea.dto.ts":
+/*!********************************************************!*\
+  !*** ./apps/productividad/src/dto/create-tarea.dto.ts ***!
+  \********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateTareaDto = exports.PrioridadTarea = exports.EstadoTarea = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var EstadoTarea;
+(function (EstadoTarea) {
+    EstadoTarea["PENDIENTE"] = "PENDIENTE";
+    EstadoTarea["EN_PROGRESO"] = "EN_PROGRESO";
+    EstadoTarea["COMPLETADA"] = "COMPLETADA";
+})(EstadoTarea || (exports.EstadoTarea = EstadoTarea = {}));
+var PrioridadTarea;
+(function (PrioridadTarea) {
+    PrioridadTarea["BAJA"] = "BAJA";
+    PrioridadTarea["MEDIA"] = "MEDIA";
+    PrioridadTarea["ALTA"] = "ALTA";
+})(PrioridadTarea || (exports.PrioridadTarea = PrioridadTarea = {}));
+class CreateTareaDto {
+    titulo;
+    descripcion;
+    puntosHistoria;
+    estado;
+    prioridad;
+}
+exports.CreateTareaDto = CreateTareaDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "titulo", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "descripcion", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateTareaDto.prototype, "puntosHistoria", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(EstadoTarea),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "estado", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(PrioridadTarea),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "prioridad", void 0);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/database.module.ts":
 /*!**********************************************!*\
   !*** ./libs/database/src/database.module.ts ***!
@@ -498,6 +567,7 @@ const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const entities = __importStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"));
+const entityList = Object.values(entities).filter((entity) => typeof entity === 'function');
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -519,7 +589,7 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     username: configService.get('DB_POSTGRES_USER'),
                     password: configService.get('DB_POSTGRES_PASSWORD'),
                     database: configService.get('DB_POSTGRES_DATABASE'),
-                    entities: Object.values(entities),
+                    entities: entityList,
                     synchronize: true,
                 }),
             }),
@@ -737,6 +807,7 @@ const tarea_entity_1 = __webpack_require__(/*! ./tarea.entity */ "./libs/databas
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let AsignacionTarea = class AsignacionTarea extends base_entity_1.BaseEntity {
     fechaAsignacion;
+    observaciones;
     tarea;
     tareaId;
     empleado;
@@ -745,11 +816,20 @@ let AsignacionTarea = class AsignacionTarea extends base_entity_1.BaseEntity {
 exports.AsignacionTarea = AsignacionTarea;
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'date',
-        comment: 'Fecha de asignación de la tarea al empleado',
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+        comment: 'Fecha y hora de asignación',
     }),
     __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
 ], AsignacionTarea.prototype, "fechaAsignacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'Observaciones o instrucciones para la asignación',
+    }),
+    __metadata("design:type", String)
+], AsignacionTarea.prototype, "observaciones", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => tarea_entity_1.Tarea, (tarea) => tarea.asignaciones, {
         nullable: false,
@@ -763,7 +843,7 @@ __decorate([
     __metadata("design:type", String)
 ], AsignacionTarea.prototype, "tareaId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.tareasAsignadas, {
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.asignaciones, {
         nullable: false,
         onDelete: 'CASCADE',
     }),
@@ -800,7 +880,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaseEntity = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -808,6 +888,7 @@ class BaseEntity {
     id;
     createdAt;
     updatedAt;
+    deletedAt;
 }
 exports.BaseEntity = BaseEntity;
 __decorate([
@@ -831,6 +912,15 @@ __decorate([
     }),
     __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
 ], BaseEntity.prototype, "updatedAt", void 0);
+__decorate([
+    (0, typeorm_1.DeleteDateColumn)({
+        type: 'timestamptz',
+        nullable: true,
+        comment: 'Fecha de borrado lógico (soft delete)',
+    }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
+], BaseEntity.prototype, "deletedAt", void 0);
 
 
 /***/ }),
@@ -993,7 +1083,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Cargo = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -1004,7 +1094,6 @@ let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
     departamento;
     departamentoId;
-    deletedAt;
     empleados;
 };
 exports.Cargo = Cargo;
@@ -1028,14 +1117,6 @@ __decorate([
     (0, typeorm_1.Column)({ comment: 'ID del Departamento padre' }),
     __metadata("design:type", String)
 ], Cargo.prototype, "departamentoId", void 0);
-__decorate([
-    (0, typeorm_1.DeleteDateColumn)({
-        type: 'timestamptz',
-        nullable: true,
-        comment: 'Fecha de borrado lógico (soft delete)',
-    }),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], Cargo.prototype, "deletedAt", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.cargo),
     __metadata("design:type", Array)
@@ -1130,6 +1211,95 @@ exports.CicloEvaluacion = CicloEvaluacion = __decorate([
     (0, typeorm_1.Entity)({ name: 'ciclos_evaluacion' }),
     (0, typeorm_1.Index)(['empresaId'])
 ], CicloEvaluacion);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/conceptoNomina.entity.ts":
+/*!*************************************************************!*\
+  !*** ./libs/database/src/entities/conceptoNomina.entity.ts ***!
+  \*************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ConceptoNomina = exports.TipoRubro = void 0;
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+var TipoRubro;
+(function (TipoRubro) {
+    TipoRubro["INGRESO"] = "Ingreso";
+    TipoRubro["EGRESO"] = "Egreso";
+})(TipoRubro || (exports.TipoRubro = TipoRubro = {}));
+let ConceptoNomina = class ConceptoNomina extends base_entity_1.BaseEntity {
+    nombre;
+    tipo;
+    esFijo;
+    formula;
+    empresa;
+    empresaId;
+};
+exports.ConceptoNomina = ConceptoNomina;
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 255,
+        comment: 'Nombre del concepto (Salario Base, Aporte IESS)',
+    }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: TipoRubro,
+        comment: 'Tipo de rubro (Ingreso, Egreso)',
+    }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Indica si es un monto fijo o calculado por fórmula',
+    }),
+    __metadata("design:type", Boolean)
+], ConceptoNomina.prototype, "esFijo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 1000,
+        nullable: true,
+        comment: 'Fórmula para el cálculo (ej. "(salario / 30) * dias_trabajados")',
+    }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "formula", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", typeof (_a = typeof empresa_entity_1.Empresa !== "undefined" && empresa_entity_1.Empresa) === "function" ? _a : Object)
+], ConceptoNomina.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) a la que pertenece' }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "empresaId", void 0);
+exports.ConceptoNomina = ConceptoNomina = __decorate([
+    (0, typeorm_1.Entity)({ name: 'conceptos_nomina' }),
+    (0, typeorm_1.Index)(['empresaId', 'tipo'])
+], ConceptoNomina);
 
 
 /***/ }),
@@ -1329,7 +1499,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Departamento = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -1341,7 +1511,6 @@ let Departamento = class Departamento extends base_entity_1.BaseEntity {
     empresa;
     empresaId;
     cargos;
-    deletedAt;
 };
 exports.Departamento = Departamento;
 __decorate([
@@ -1368,14 +1537,6 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => cargo_entity_1.Cargo, (cargo) => cargo.departamento),
     __metadata("design:type", Array)
 ], Departamento.prototype, "cargos", void 0);
-__decorate([
-    (0, typeorm_1.DeleteDateColumn)({
-        type: 'timestamptz',
-        nullable: true,
-        comment: 'Fecha de borrado lógico (soft delete)',
-    }),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], Departamento.prototype, "deletedAt", void 0);
 exports.Departamento = Departamento = __decorate([
     (0, typeorm_1.Entity)({ name: 'departamentos' }),
     (0, typeorm_1.Index)(['empresaId'])
@@ -1453,6 +1614,7 @@ let Empleado = class Empleado extends base_entity_1.BaseEntity {
     registrosAsistencia;
     activosAsignados;
     reportesGastos;
+    asignaciones;
 };
 exports.Empleado = Empleado;
 __decorate([
@@ -1637,6 +1799,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => reporteGasto_entity_1.ReporteGasto, (reporte) => reporte.empleado),
     __metadata("design:type", Array)
 ], Empleado.prototype, "reportesGastos", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => asignacionTarea_entity_1.AsignacionTarea, (asignacion) => asignacion.empleado),
+    __metadata("design:type", Array)
+], Empleado.prototype, "asignaciones", void 0);
 exports.Empleado = Empleado = __decorate([
     (0, typeorm_1.Entity)({ name: 'empleados' }),
     (0, typeorm_1.Index)(['empresaId', 'estado']),
@@ -1917,6 +2083,7 @@ __exportStar(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/ent
 __exportStar(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/entities/itemGasto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts"), exports);
 
 
 /***/ }),
@@ -2132,6 +2299,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         comment: 'Suma total de ingresos (calculado de los rubros)',
+        default: 0,
     }),
     __metadata("design:type", Number)
 ], NominaEmpleado.prototype, "totalIngresos", void 0);
@@ -2139,6 +2307,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         comment: 'Suma total de deducciones (calculado de los rubros)',
+        default: 0,
     }),
     __metadata("design:type", Number)
 ], NominaEmpleado.prototype, "totalEgresos", void 0);
@@ -2146,6 +2315,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         comment: 'Monto neto a pagar (TotalIngresos - TotalEgresos)',
+        default: 0,
     }),
     __metadata("design:type", Number)
 ], NominaEmpleado.prototype, "netoAPagar", void 0);
@@ -2363,7 +2533,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Proyecto = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -2371,11 +2541,15 @@ const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const sprint_entity_1 = __webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts");
 const tarea_entity_1 = __webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Proyecto = class Proyecto extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
+    estado;
     empresa;
     empresaId;
+    lider;
+    liderId;
     sprints;
     tareas;
 };
@@ -2397,6 +2571,15 @@ __decorate([
     __metadata("design:type", String)
 ], Proyecto.prototype, "descripcion", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        default: 'ACTIVO',
+        comment: 'Estado actual del proyecto',
+    }),
+    __metadata("design:type", String)
+], Proyecto.prototype, "estado", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.proyectos, {
         nullable: false,
         onDelete: 'CASCADE',
@@ -2408,6 +2591,21 @@ __decorate([
     (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) propietaria del proyecto' }),
     __metadata("design:type", String)
 ], Proyecto.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, {
+        nullable: true,
+        onDelete: 'SET NULL',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'liderId' }),
+    __metadata("design:type", typeof (_b = typeof empleado_entity_1.Empleado !== "undefined" && empleado_entity_1.Empleado) === "function" ? _b : Object)
+], Proyecto.prototype, "lider", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true,
+        comment: 'ID del Empleado (opcional) que lidera el proyecto',
+    }),
+    __metadata("design:type", String)
+], Proyecto.prototype, "liderId", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => sprint_entity_1.Sprint, (sprint) => sprint.proyecto, { cascade: true }),
     __metadata("design:type", Array)
@@ -2833,7 +3031,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Tarea = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -2842,9 +3040,11 @@ const proyecto_entity_1 = __webpack_require__(/*! ./proyecto.entity */ "./libs/d
 const sprint_entity_1 = __webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts");
 const asignacionTarea_entity_1 = __webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts");
 const timesheet_entity_1 = __webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts");
+const create_tarea_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
 let Tarea = class Tarea extends base_entity_1.BaseEntity {
     titulo;
     descripcion;
+    puntosHistoria;
     estado;
     prioridad;
     proyecto;
@@ -2873,18 +3073,30 @@ __decorate([
 ], Tarea.prototype, "descripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        type: 'int',
+        nullable: true,
+        default: 0,
+        comment: 'Puntos de historia (Estimación)',
+    }),
+    __metadata("design:type", Number)
+], Tarea.prototype, "puntosHistoria", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
         type: 'varchar',
         length: 50,
-        comment: 'Estado actual de la tarea (Pendiente, En Progreso, Hecho)',
+        default: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+        comment: 'Estado actual de la tarea',
     }),
-    __metadata("design:type", String)
+    __metadata("design:type", typeof (_a = typeof create_tarea_dto_1.EstadoTarea !== "undefined" && create_tarea_dto_1.EstadoTarea) === "function" ? _a : Object)
 ], Tarea.prototype, "estado", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'int',
-        comment: 'Nivel de prioridad (1=Baja, 2=Media, 3=Alta)',
+        type: 'varchar',
+        length: 50,
+        default: create_tarea_dto_1.PrioridadTarea.MEDIA,
+        comment: 'Nivel de prioridad (BAJA, MEDIA, ALTA)',
     }),
-    __metadata("design:type", Number)
+    __metadata("design:type", typeof (_b = typeof create_tarea_dto_1.PrioridadTarea !== "undefined" && create_tarea_dto_1.PrioridadTarea) === "function" ? _b : Object)
 ], Tarea.prototype, "prioridad", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => proyecto_entity_1.Proyecto, (proyecto) => proyecto.tareas, {
@@ -2892,7 +3104,7 @@ __decorate([
         onDelete: 'CASCADE',
     }),
     (0, typeorm_1.JoinColumn)({ name: 'proyectoId' }),
-    __metadata("design:type", typeof (_a = typeof proyecto_entity_1.Proyecto !== "undefined" && proyecto_entity_1.Proyecto) === "function" ? _a : Object)
+    __metadata("design:type", typeof (_c = typeof proyecto_entity_1.Proyecto !== "undefined" && proyecto_entity_1.Proyecto) === "function" ? _c : Object)
 ], Tarea.prototype, "proyecto", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: 'ID del Proyecto padre' }),
@@ -2904,7 +3116,7 @@ __decorate([
         onDelete: 'SET NULL',
     }),
     (0, typeorm_1.JoinColumn)({ name: 'sprintId' }),
-    __metadata("design:type", typeof (_b = typeof sprint_entity_1.Sprint !== "undefined" && sprint_entity_1.Sprint) === "function" ? _b : Object)
+    __metadata("design:type", typeof (_d = typeof sprint_entity_1.Sprint !== "undefined" && sprint_entity_1.Sprint) === "function" ? _d : Object)
 ], Tarea.prototype, "sprint", void 0);
 __decorate([
     (0, typeorm_1.Column)({

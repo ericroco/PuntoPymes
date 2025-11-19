@@ -1,35 +1,31 @@
 // libs/database/src/entities/base.entity.ts
-import { PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  // --- INICIO DE CAMBIOS ---
+  DeleteDateColumn, // 1. Importar DeleteDateColumn
+  Index, // 2. Importar Index (buena práctica para columnas de borrado)
+  // --- FIN DE CAMBIOS ---
+} from 'typeorm';
 
 /**
  * Entidad base abstracta que provee las columnas comunes:
- * - id (UUID)
- * - createdAt (Fecha de creación)
- * - updatedAt (Fecha de última actualización)
+ * ... (las demás)
+ * - deletedAt (Fecha de borrado lógico)
  */
 export abstract class BaseEntity {
-  /**
-   * Identificador único (UUID)
-   * Mapea: string id PK "UUID"
-   */
+  // ... (id, createdAt, updatedAt - sin cambios)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  /**
-   * Fecha de creación del registro
-   * Mapea: datetime createdAt "..."
-   */
   @CreateDateColumn({
-    type: 'timestamptz', // 'timestamptz' guarda la zona horaria (mejor práctica)
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
     comment: 'Fecha de creación del registro',
   })
   createdAt: Date;
 
-  /**
-   * Fecha de última actualización del registro
-   * (Mejora "ultra-completa", no está en el diagrama pero es vital)
-   */
   @UpdateDateColumn({
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
@@ -37,4 +33,18 @@ export abstract class BaseEntity {
     comment: 'Fecha de última actualización del registro',
   })
   updatedAt: Date;
+
+  // --- INICIO DE CAMBIOS ---
+  /**
+   * Fecha de borrado lógico (soft delete)
+   * (Ahora sí cumplimos la regla de "ultra completo" de no borrar nada)
+   */
+  @DeleteDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+    comment: 'Fecha de borrado lógico (soft delete)',
+  })
+  @Index() // 4. Añadir índice para optimizar consultas que filtran borrados
+  deletedAt: Date;
+  // --- FIN DE CAMBIOS ---
 }

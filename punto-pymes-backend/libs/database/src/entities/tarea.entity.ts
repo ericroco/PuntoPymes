@@ -13,6 +13,9 @@ import { Sprint } from './sprint.entity';
 import { AsignacionTarea } from './asignacionTarea.entity';
 import { Timesheet } from './timesheet.entity';
 
+// Importamos los Enums del DTO para asegurar consistencia de tipos
+import { EstadoTarea, PrioridadTarea } from 'apps/productividad/src/dto/create-tarea.dto';
+
 /**
  * Entidad que representa una Tarea o item de trabajo individual.
  * (Ej: 'Diseñar el login', 'Corregir bug #123').
@@ -47,25 +50,41 @@ export class Tarea extends BaseEntity {
   descripcion: string;
 
   /**
-   * Estado actual de la tarea (Pendiente, En Progreso, Hecho)
-   * Mapea: string estado "Estado actual tarea"
+   * Puntos de historia (Estimación de esfuerzo)
+   * Útil para metodologías ágiles.
+   */
+  @Column({
+    type: 'int',
+    nullable: true,
+    default: 0,
+    comment: 'Puntos de historia (Estimación)',
+  })
+  puntosHistoria: number;
+
+  /**
+   * Estado actual de la tarea
+   * Usa el Enum: PENDIENTE, EN_PROGRESO, COMPLETADA
    */
   @Column({
     type: 'varchar',
     length: 50,
-    comment: 'Estado actual de la tarea (Pendiente, En Progreso, Hecho)',
+    default: EstadoTarea.PENDIENTE,
+    comment: 'Estado actual de la tarea',
   })
-  estado: string;
+  estado: EstadoTarea;
 
   /**
    * Nivel de prioridad de la tarea
-   * Mapea: int prioridad "Nivel prioridad 1-3"
+   * Usa el Enum: BAJA, MEDIA, ALTA
+   * IMPORTANTE: Tipo 'varchar' porque el Enum tiene valores de texto.
    */
   @Column({
-    type: 'int',
-    comment: 'Nivel de prioridad (1=Baja, 2=Media, 3=Alta)',
+    type: 'varchar',
+    length: 50,
+    default: PrioridadTarea.MEDIA,
+    comment: 'Nivel de prioridad (BAJA, MEDIA, ALTA)',
   })
-  prioridad: number;
+  prioridad: PrioridadTarea;
 
   // ---
   // RELACIONES "MUCHOS A UNO" (Una Tarea PERTENECE A...)
@@ -90,11 +109,7 @@ export class Tarea extends BaseEntity {
 
   /**
    * Relación: Una Tarea PUEDE pertenecer a UN Sprint (opcional).
-   * Mapea: string sprintId FK "Sprint pertenece nullable"
-   *
-   * @logic onDelete: 'SET NULL' = Lógica de negocio clave.
-   * Si un Sprint es borrado, sus Tareas NO se borran, sino que
-   * su 'sprintId' se vuelve NULL (regresan al "backlog" del proyecto).
+   * onDelete: 'SET NULL' = Si se borra el Sprint, la tarea vuelve al Backlog (sprintId = null)
    */
   @ManyToOne(() => Sprint, (sprint) => sprint.tareas, {
     nullable: true, // Una tarea puede estar en el backlog, sin sprint

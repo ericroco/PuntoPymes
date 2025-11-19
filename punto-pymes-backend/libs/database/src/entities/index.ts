@@ -39,3 +39,4 @@ export * from './activo.entity';
 export * from './activoAsignado.entity';
 export * from './reporteGasto.entity';
 export * from './itemGasto.entity';
+export * from './conceptoNomina.entity';

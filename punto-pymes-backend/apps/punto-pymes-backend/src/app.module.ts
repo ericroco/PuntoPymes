@@ -55,6 +55,18 @@ import { JwtStrategy } from './auth/jwt.strategy';
           },
         }),
       },
+      {
+        name: 'PRODUCTIVIDAD_SERVICE',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: 'productividad_service', // <-- Nombre del servicio en Docker
+            port: +configService.get<number>('PRODUCTIVIDAD_SERVICE_PORT')!,
+          },
+        }),
+      },
     ]),
     // --- (FIN DE CAMBIOS) ---
 

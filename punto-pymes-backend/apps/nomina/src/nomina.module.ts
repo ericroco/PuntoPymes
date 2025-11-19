@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DatabaseModule, Contrato, Empleado, Rol, Beneficio, BeneficioAsignado } from 'default/database';
+import { DatabaseModule, Contrato, Empleado, Rol, Beneficio, BeneficioAsignado, PeriodoNomina, NominaEmpleado,RubroNomina, ConceptoNomina } from 'default/database';
 import { NominaController } from './nomina.controller';
 import { NominaService } from './nomina.service';
 
@@ -19,6 +19,10 @@ import { NominaService } from './nomina.service';
       Rol,
       Beneficio,
       BeneficioAsignado,
+      PeriodoNomina,
+      NominaEmpleado,
+      RubroNomina,
+      ConceptoNomina,
     ]),
   ],
   controllers: [NominaController],

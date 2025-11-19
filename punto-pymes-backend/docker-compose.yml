@@ -98,6 +98,25 @@ services:
     depends_on:
       - postgres_db
       - mongo_db
+    # --- Aplicación: Microservicio Productividad ---
+  productividad_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    # Corre el servicio 'productividad'
+    command: npm run start:dev productividad
+    env_file:
+      - .env
+    ports:
+      # Exponemos el nuevo puerto (¡añade esto a tu .env!)
+      - "${PRODUCTIVIDAD_SERVICE_PORT}:${PRODUCTIVIDAD_SERVICE_PORT}" 
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - postgres_db
+      - mongo_db
   # --- Base de Datos PostgreSQL ---
   postgres_db:
     image: postgres:15-alpine

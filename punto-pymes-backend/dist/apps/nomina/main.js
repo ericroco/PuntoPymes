@@ -83,6 +83,55 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts":
+/*!**********************************************************!*\
+  !*** ./apps/nomina/src/dto/create-periodo-nomina.dto.ts ***!
+  \**********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreatePeriodoNominaDto = exports.EstadoPeriodo = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var EstadoPeriodo;
+(function (EstadoPeriodo) {
+    EstadoPeriodo["ABIERTO"] = "Abierto";
+    EstadoPeriodo["CERRADO"] = "Cerrado";
+    EstadoPeriodo["PROCESADO"] = "Procesado";
+})(EstadoPeriodo || (exports.EstadoPeriodo = EstadoPeriodo = {}));
+class CreatePeriodoNominaDto {
+    fechaInicio;
+    fechaFin;
+    estado;
+}
+exports.CreatePeriodoNominaDto = CreatePeriodoNominaDto;
+__decorate([
+    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de inicio debe ser una fecha válida.' }),
+    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+], CreatePeriodoNominaDto.prototype, "fechaInicio", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de fin debe ser una fecha válida.' }),
+    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
+], CreatePeriodoNominaDto.prototype, "fechaFin", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(EstadoPeriodo),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePeriodoNominaDto.prototype, "estado", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/nomina/src/nomina.controller.ts":
 /*!**********************************************!*\
   !*** ./apps/nomina/src/nomina.controller.ts ***!
@@ -129,6 +178,46 @@ let NominaController = class NominaController {
         console.log(`Microservicio NOMINA: Recibido delete_contrato para contrato: ${data.contratoId}`);
         return this.nominaService.deleteContrato(data.empresaId, data.contratoId);
     }
+    getBeneficios(data) {
+        return this.nominaService.getBeneficios(data.empresaId);
+    }
+    createBeneficio(data) {
+        return this.nominaService.createBeneficio(data.empresaId, data.dto);
+    }
+    updateBeneficio(data) {
+        return this.nominaService.updateBeneficio(data.empresaId, data.beneficioId, data.dto);
+    }
+    deleteBeneficio(data) {
+        return this.nominaService.deleteBeneficio(data.empresaId, data.beneficioId);
+    }
+    getPeriodosNomina(data) {
+        return this.nominaService.getPeriodosNomina(data.empresaId);
+    }
+    createPeriodoNomina(data) {
+        return this.nominaService.createPeriodoNomina(data.empresaId, data.dto);
+    }
+    updatePeriodoNomina(data) {
+        return this.nominaService.updatePeriodoNomina(data.empresaId, data.periodoId, data.dto);
+    }
+    deletePeriodoNomina(data) {
+        return this.nominaService.deletePeriodoNomina(data.empresaId, data.periodoId);
+    }
+    getConceptosNomina(data) {
+        return this.nominaService.getConceptosNomina(data.empresaId);
+    }
+    createConceptoNomina(data) {
+        return this.nominaService.createConceptoNomina(data.empresaId, data.dto);
+    }
+    updateConceptoNomina(data) {
+        return this.nominaService.updateConceptoNomina(data.empresaId, data.conceptoId, data.dto);
+    }
+    deleteConceptoNomina(data) {
+        return this.nominaService.deleteConceptoNomina(data.empresaId, data.conceptoId);
+    }
+    procesarNomina(data) {
+        console.log(`Microservicio NOMINA: Recibido procesar_nomina para período: ${data.dto.periodoId}`);
+        return this.nominaService.procesarNomina(data.empresaId, data.dto.periodoId);
+    }
 };
 exports.NominaController = NominaController;
 __decorate([
@@ -161,6 +250,104 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], NominaController.prototype, "deleteContrato", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_beneficios' }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "getBeneficios", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_beneficio' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "createBeneficio", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_beneficio' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "updateBeneficio", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_beneficio' }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "deleteBeneficio", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_periodos_nomina' }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "getPeriodosNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_periodo_nomina' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "createPeriodoNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_periodo_nomina' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "updatePeriodoNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_periodo_nomina' }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "deletePeriodoNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_conceptos_nomina' }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "getConceptosNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_concepto_nomina' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "createConceptoNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_concepto_nomina' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "updateConceptoNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_concepto_nomina' }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "deleteConceptoNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'procesar_nomina' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "procesarNomina", null);
 exports.NominaController = NominaController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [typeof (_a = typeof nomina_service_1.NominaService !== "undefined" && nomina_service_1.NominaService) === "function" ? _a : Object])
@@ -205,6 +392,12 @@ exports.NominaModule = NominaModule = __decorate([
                 database_1.Contrato,
                 database_1.Empleado,
                 database_1.Rol,
+                database_1.Beneficio,
+                database_1.BeneficioAsignado,
+                database_1.PeriodoNomina,
+                database_1.NominaEmpleado,
+                database_1.RubroNomina,
+                database_1.ConceptoNomina,
             ]),
         ],
         controllers: [nomina_controller_1.NominaController],
@@ -234,7 +427,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.NominaService = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
@@ -242,12 +435,28 @@ const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 const create_contrato_dto_1 = __webpack_require__(/*! ./dto/create-contrato.dto */ "./apps/nomina/src/dto/create-contrato.dto.ts");
+const create_periodo_nomina_dto_1 = __webpack_require__(/*! ./dto/create-periodo-nomina.dto */ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts");
+const conceptoNomina_entity_1 = __webpack_require__(/*! ../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
 let NominaService = class NominaService {
     contratoRepository;
     empleadoRepository;
-    constructor(contratoRepository, empleadoRepository) {
+    beneficioRepository;
+    beneficioAsignadoRepository;
+    periodoNominaRepository;
+    nominaEmpleadoRepository;
+    rubroNominaRepository;
+    conceptoNominaRepository;
+    entityManager;
+    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager) {
         this.contratoRepository = contratoRepository;
         this.empleadoRepository = empleadoRepository;
+        this.beneficioRepository = beneficioRepository;
+        this.beneficioAsignadoRepository = beneficioAsignadoRepository;
+        this.periodoNominaRepository = periodoNominaRepository;
+        this.nominaEmpleadoRepository = nominaEmpleadoRepository;
+        this.rubroNominaRepository = rubroNominaRepository;
+        this.conceptoNominaRepository = conceptoNominaRepository;
+        this.entityManager = entityManager;
     }
     async getContratosByEmpleado(empresaId, empleadoId) {
         console.log(`Microservicio NOMINA: Buscando contratos para empleado ${empleadoId}`);
@@ -323,14 +532,356 @@ let NominaService = class NominaService {
         await this.contratoRepository.softRemove(contrato);
         return { message: 'Contrato eliminado (desactivado) correctamente.' };
     }
+    async getBeneficios(empresaId) {
+        console.log(`Microservicio NOMINA: Buscando beneficios para empresaId: ${empresaId}`);
+        return this.beneficioRepository.find({
+            where: { empresaId: empresaId },
+            withDeleted: false,
+        });
+    }
+    async createBeneficio(empresaId, dto) {
+        const beneficioExistente = await this.beneficioRepository.findOneBy({
+            nombre: dto.nombre,
+            empresaId: empresaId,
+        });
+        if (beneficioExistente) {
+            throw new common_1.ConflictException('Ya existe un beneficio con ese nombre en esta empresa.');
+        }
+        const nuevoBeneficio = this.beneficioRepository.create({
+            ...dto,
+            empresaId: empresaId,
+        });
+        return this.beneficioRepository.save(nuevoBeneficio);
+    }
+    async updateBeneficio(empresaId, beneficioId, dto) {
+        const beneficio = await this.beneficioRepository.findOneBy({
+            id: beneficioId,
+            empresaId: empresaId,
+        });
+        if (!beneficio) {
+            throw new common_1.NotFoundException('Beneficio no encontrado o no pertenece a esta empresa.');
+        }
+        if (dto.nombre && dto.nombre !== beneficio.nombre) {
+            const beneficioExistente = await this.beneficioRepository.findOneBy({
+                nombre: dto.nombre,
+                empresaId: empresaId,
+                id: (0, typeorm_2.Not)(beneficioId),
+            });
+            if (beneficioExistente) {
+                throw new common_1.ConflictException('Ya existe un beneficio con ese nombre en esta empresa.');
+            }
+        }
+        const beneficioActualizado = this.beneficioRepository.merge(beneficio, dto);
+        return this.beneficioRepository.save(beneficioActualizado);
+    }
+    async deleteBeneficio(empresaId, beneficioId) {
+        const beneficio = await this.beneficioRepository.findOneBy({
+            id: beneficioId,
+            empresaId: empresaId,
+        });
+        if (!beneficio) {
+            throw new common_1.NotFoundException('Beneficio no encontrado o no pertenece a esta empresa.');
+        }
+        const asignaciones = await this.beneficioAsignadoRepository.count({
+            where: { beneficioId: beneficioId },
+        });
+        if (asignaciones > 0) {
+            throw new common_1.ConflictException(`No se puede eliminar. Este beneficio está asignado a ${asignaciones} empleado(s).`);
+        }
+        await this.beneficioRepository.softRemove(beneficio);
+        return { message: 'Beneficio eliminado correctamente.' };
+    }
+    async getPeriodosNomina(empresaId) {
+        return this.periodoNominaRepository.find({
+            where: { empresaId: empresaId },
+            withDeleted: false,
+            order: { fechaInicio: 'DESC' },
+        });
+    }
+    async createPeriodoNomina(empresaId, dto) {
+        const overlap = await this.periodoNominaRepository.findOne({
+            where: {
+                empresaId: empresaId,
+                fechaInicio: (0, typeorm_2.LessThanOrEqual)(dto.fechaFin),
+                fechaFin: (0, typeorm_2.MoreThanOrEqual)(dto.fechaInicio),
+            },
+        });
+        if (overlap) {
+            throw new common_1.ConflictException('Las fechas de este período se superponen con un período existente.');
+        }
+        const nuevoPeriodo = this.periodoNominaRepository.create({
+            ...dto,
+            empresaId: empresaId,
+            estado: dto.estado || create_periodo_nomina_dto_1.EstadoPeriodo.ABIERTO,
+        });
+        return this.periodoNominaRepository.save(nuevoPeriodo);
+    }
+    async updatePeriodoNomina(empresaId, periodoId, dto) {
+        const periodo = await this.periodoNominaRepository.findOneBy({
+            id: periodoId,
+            empresaId: empresaId,
+        });
+        if (!periodo) {
+            throw new common_1.NotFoundException('Período no encontrado o no pertenece a esta empresa.');
+        }
+        if (dto.fechaInicio || dto.fechaFin) {
+            const fechaInicioValidar = dto.fechaInicio || periodo.fechaInicio;
+            const fechaFinValidar = dto.fechaFin || periodo.fechaFin;
+            const overlap = await this.periodoNominaRepository.findOne({
+                where: {
+                    empresaId: empresaId,
+                    fechaInicio: (0, typeorm_2.LessThanOrEqual)(fechaFinValidar),
+                    fechaFin: (0, typeorm_2.MoreThanOrEqual)(fechaInicioValidar),
+                    id: (0, typeorm_2.Not)(periodoId),
+                },
+            });
+            if (overlap) {
+                throw new common_1.ConflictException('Las nuevas fechas de este período se superponen con un período existente.');
+            }
+        }
+        const periodoActualizado = this.periodoNominaRepository.merge(periodo, dto);
+        return this.periodoNominaRepository.save(periodoActualizado);
+    }
+    async deletePeriodoNomina(empresaId, periodoId) {
+        const periodo = await this.periodoNominaRepository.findOneBy({
+            id: periodoId,
+            empresaId: empresaId,
+        });
+        if (!periodo) {
+            throw new common_1.NotFoundException('Período no encontrado o no pertenece a esta empresa.');
+        }
+        if (periodo.estado === create_periodo_nomina_dto_1.EstadoPeriodo.PROCESADO) {
+            throw new common_1.ConflictException('No se puede eliminar un período que ya ha sido procesado.');
+        }
+        const nominasGeneradas = await this.nominaEmpleadoRepository.count({
+            where: { periodoId: periodoId },
+        });
+        if (nominasGeneradas > 0) {
+            throw new common_1.ConflictException(`No se puede eliminar. Este período tiene ${nominasGeneradas} nóminas de empleados asociadas.`);
+        }
+        await this.periodoNominaRepository.softRemove(periodo);
+        return { message: 'Período de nómina eliminado correctamente.' };
+    }
+    async getConceptosNomina(empresaId) {
+        return this.conceptoNominaRepository.find({
+            where: { empresaId: empresaId },
+            withDeleted: false,
+            order: { tipo: 'ASC', nombre: 'ASC' },
+        });
+    }
+    async createConceptoNomina(empresaId, dto) {
+        const existente = await this.conceptoNominaRepository.findOneBy({
+            nombre: dto.nombre,
+            empresaId: empresaId,
+        });
+        if (existente) {
+            throw new common_1.ConflictException('Ya existe un concepto de nómina con ese nombre en esta empresa.');
+        }
+        const nuevoConcepto = this.conceptoNominaRepository.create({
+            ...dto,
+            empresaId: empresaId,
+            esFijo: dto.esFijo || false,
+        });
+        return this.conceptoNominaRepository.save(nuevoConcepto);
+    }
+    async updateConceptoNomina(empresaId, conceptoId, dto) {
+        const concepto = await this.conceptoNominaRepository.findOneBy({
+            id: conceptoId,
+            empresaId: empresaId,
+        });
+        if (!concepto) {
+            throw new common_1.NotFoundException('Concepto no encontrado o no pertenece a esta empresa.');
+        }
+        if (dto.nombre && dto.nombre !== concepto.nombre) {
+            const existente = await this.conceptoNominaRepository.findOneBy({
+                nombre: dto.nombre,
+                empresaId: empresaId,
+                id: (0, typeorm_2.Not)(conceptoId),
+            });
+            if (existente) {
+                throw new common_1.ConflictException('Ya existe un concepto de nómina con ese nombre en esta empresa.');
+            }
+        }
+        const conceptoActualizado = this.conceptoNominaRepository.merge(concepto, dto);
+        return this.conceptoNominaRepository.save(conceptoActualizado);
+    }
+    async deleteConceptoNomina(empresaId, conceptoId) {
+        const concepto = await this.conceptoNominaRepository.findOneBy({
+            id: conceptoId,
+            empresaId: empresaId,
+        });
+        if (!concepto) {
+            throw new common_1.NotFoundException('Concepto no encontrado o no pertenece a esta empresa.');
+        }
+        const query = this.rubroNominaRepository
+            .createQueryBuilder('rubro')
+            .innerJoin('rubro.nominaEmpleado', 'nominaEmpleado')
+            .innerJoin('nominaEmpleado.empleado', 'empleado')
+            .where('empleado.empresaId = :empresaId', { empresaId })
+            .andWhere('rubro.concepto = :concepto', { concepto: concepto.nombre });
+        const usos = await query.getCount();
+        if (usos > 0) {
+            throw new common_1.ConflictException(`No se puede eliminar. Este concepto ya ha sido utilizado en ${usos} nóminas procesadas.`);
+        }
+        await this.conceptoNominaRepository.softRemove(concepto);
+        return { message: 'Concepto de nómina eliminado correctamente.' };
+    }
+    async procesarNomina(empresaId, periodoId) {
+        return this.entityManager.transaction('SERIALIZABLE', async (manager) => {
+            const periodo = await manager.findOneBy(database_1.PeriodoNomina, {
+                id: periodoId,
+                empresaId: empresaId,
+            });
+            if (!periodo) {
+                throw new common_1.NotFoundException('Período de nómina no encontrado.');
+            }
+            if (periodo.estado !== create_periodo_nomina_dto_1.EstadoPeriodo.ABIERTO) {
+                throw new common_1.ConflictException('El período de nómina no está "Abierto". No se puede procesar.');
+            }
+            const conceptos = await manager.findBy(database_1.ConceptoNomina, {
+                empresaId: empresaId,
+            });
+            if (conceptos.length === 0) {
+                throw new common_1.BadRequestException('No hay "Conceptos de Nómina" configurados para esta empresa.');
+            }
+            const contratosVigentes = await manager.find(database_1.Contrato, {
+                where: {
+                    estado: 'Vigente',
+                    empleado: { empresaId: empresaId },
+                },
+                relations: ['empleado'],
+            });
+            if (contratosVigentes.length === 0) {
+                throw new common_1.NotFoundException('No se encontraron empleados con contratos vigentes para procesar.');
+            }
+            for (const contrato of contratosVigentes) {
+                const empleado = contrato.empleado;
+                let totalIngresos = 0;
+                let totalEgresos = 0;
+                const nuevaNominaEmpleado = manager.create(database_1.NominaEmpleado, {
+                    empleadoId: empleado.id,
+                    periodoId: periodo.id,
+                });
+                await manager.save(nuevaNominaEmpleado);
+                for (const concepto of conceptos) {
+                    let valorCalculado = 0;
+                    if (concepto.nombre === 'Salario Base') {
+                        valorCalculado = contrato.salario;
+                    }
+                    else if (concepto.nombre === 'Aporte IESS (9.45%)') {
+                        valorCalculado = contrato.salario * 0.0945;
+                    }
+                    const nuevoRubro = manager.create(database_1.RubroNomina, {
+                        nominaEmpleadoId: nuevaNominaEmpleado.id,
+                        tipo: concepto.tipo,
+                        concepto: concepto.nombre,
+                        valor: valorCalculado,
+                    });
+                    await manager.save(nuevoRubro);
+                    if (concepto.tipo === conceptoNomina_entity_1.TipoRubro.INGRESO) {
+                        totalIngresos += valorCalculado;
+                    }
+                    else if (concepto.tipo === conceptoNomina_entity_1.TipoRubro.EGRESO) {
+                        totalEgresos += valorCalculado;
+                    }
+                }
+                nuevaNominaEmpleado.totalIngresos = totalIngresos;
+                nuevaNominaEmpleado.totalEgresos = totalEgresos;
+                nuevaNominaEmpleado.netoAPagar = totalIngresos - totalEgresos;
+                await manager.save(nuevaNominaEmpleado);
+            }
+            periodo.estado = create_periodo_nomina_dto_1.EstadoPeriodo.PROCESADO;
+            await manager.save(periodo);
+            console.log(`Microservicio NOMINA: Nómina procesada para ${contratosVigentes.length} empleados.`);
+            return {
+                message: 'Nómina procesada exitosamente.',
+                empleadosProcesados: contratosVigentes.length,
+            };
+        });
+    }
 };
 exports.NominaService = NominaService;
 exports.NominaService = NominaService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(database_1.Contrato)),
     __param(1, (0, typeorm_1.InjectRepository)(database_1.Empleado)),
-    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object])
+    __param(2, (0, typeorm_1.InjectRepository)(database_1.Beneficio)),
+    __param(3, (0, typeorm_1.InjectRepository)(database_1.BeneficioAsignado)),
+    __param(4, (0, typeorm_1.InjectRepository)(database_1.PeriodoNomina)),
+    __param(5, (0, typeorm_1.InjectRepository)(database_1.NominaEmpleado)),
+    __param(6, (0, typeorm_1.InjectRepository)(database_1.RubroNomina)),
+    __param(7, (0, typeorm_1.InjectRepository)(database_1.ConceptoNomina)),
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object, typeof (_d = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _d : Object, typeof (_e = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _e : Object, typeof (_f = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _f : Object, typeof (_g = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _g : Object, typeof (_h = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _h : Object, typeof (_j = typeof typeorm_2.EntityManager !== "undefined" && typeorm_2.EntityManager) === "function" ? _j : Object])
 ], NominaService);
+
+
+/***/ }),
+
+/***/ "./apps/productividad/src/dto/create-tarea.dto.ts":
+/*!********************************************************!*\
+  !*** ./apps/productividad/src/dto/create-tarea.dto.ts ***!
+  \********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateTareaDto = exports.PrioridadTarea = exports.EstadoTarea = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var EstadoTarea;
+(function (EstadoTarea) {
+    EstadoTarea["PENDIENTE"] = "PENDIENTE";
+    EstadoTarea["EN_PROGRESO"] = "EN_PROGRESO";
+    EstadoTarea["COMPLETADA"] = "COMPLETADA";
+})(EstadoTarea || (exports.EstadoTarea = EstadoTarea = {}));
+var PrioridadTarea;
+(function (PrioridadTarea) {
+    PrioridadTarea["BAJA"] = "BAJA";
+    PrioridadTarea["MEDIA"] = "MEDIA";
+    PrioridadTarea["ALTA"] = "ALTA";
+})(PrioridadTarea || (exports.PrioridadTarea = PrioridadTarea = {}));
+class CreateTareaDto {
+    titulo;
+    descripcion;
+    puntosHistoria;
+    estado;
+    prioridad;
+}
+exports.CreateTareaDto = CreateTareaDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "titulo", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "descripcion", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateTareaDto.prototype, "puntosHistoria", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(EstadoTarea),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "estado", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(PrioridadTarea),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTareaDto.prototype, "prioridad", void 0);
 
 
 /***/ }),
@@ -387,6 +938,7 @@ const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const entities = __importStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"));
+const entityList = Object.values(entities).filter((entity) => typeof entity === 'function');
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -408,7 +960,7 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     username: configService.get('DB_POSTGRES_USER'),
                     password: configService.get('DB_POSTGRES_PASSWORD'),
                     database: configService.get('DB_POSTGRES_DATABASE'),
-                    entities: Object.values(entities),
+                    entities: entityList,
                     synchronize: true,
                 }),
             }),
@@ -626,6 +1178,7 @@ const tarea_entity_1 = __webpack_require__(/*! ./tarea.entity */ "./libs/databas
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let AsignacionTarea = class AsignacionTarea extends base_entity_1.BaseEntity {
     fechaAsignacion;
+    observaciones;
     tarea;
     tareaId;
     empleado;
@@ -634,11 +1187,20 @@ let AsignacionTarea = class AsignacionTarea extends base_entity_1.BaseEntity {
 exports.AsignacionTarea = AsignacionTarea;
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'date',
-        comment: 'Fecha de asignación de la tarea al empleado',
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+        comment: 'Fecha y hora de asignación',
     }),
     __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
 ], AsignacionTarea.prototype, "fechaAsignacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'Observaciones o instrucciones para la asignación',
+    }),
+    __metadata("design:type", String)
+], AsignacionTarea.prototype, "observaciones", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => tarea_entity_1.Tarea, (tarea) => tarea.asignaciones, {
         nullable: false,
@@ -652,7 +1214,7 @@ __decorate([
     __metadata("design:type", String)
 ], AsignacionTarea.prototype, "tareaId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.tareasAsignadas, {
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.asignaciones, {
         nullable: false,
         onDelete: 'CASCADE',
     }),
@@ -689,7 +1251,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaseEntity = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -697,6 +1259,7 @@ class BaseEntity {
     id;
     createdAt;
     updatedAt;
+    deletedAt;
 }
 exports.BaseEntity = BaseEntity;
 __decorate([
@@ -720,6 +1283,15 @@ __decorate([
     }),
     __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
 ], BaseEntity.prototype, "updatedAt", void 0);
+__decorate([
+    (0, typeorm_1.DeleteDateColumn)({
+        type: 'timestamptz',
+        nullable: true,
+        comment: 'Fecha de borrado lógico (soft delete)',
+    }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
+], BaseEntity.prototype, "deletedAt", void 0);
 
 
 /***/ }),
@@ -882,7 +1454,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Cargo = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -893,7 +1465,6 @@ let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
     departamento;
     departamentoId;
-    deletedAt;
     empleados;
 };
 exports.Cargo = Cargo;
@@ -917,14 +1488,6 @@ __decorate([
     (0, typeorm_1.Column)({ comment: 'ID del Departamento padre' }),
     __metadata("design:type", String)
 ], Cargo.prototype, "departamentoId", void 0);
-__decorate([
-    (0, typeorm_1.DeleteDateColumn)({
-        type: 'timestamptz',
-        nullable: true,
-        comment: 'Fecha de borrado lógico (soft delete)',
-    }),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], Cargo.prototype, "deletedAt", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.cargo),
     __metadata("design:type", Array)
@@ -1019,6 +1582,95 @@ exports.CicloEvaluacion = CicloEvaluacion = __decorate([
     (0, typeorm_1.Entity)({ name: 'ciclos_evaluacion' }),
     (0, typeorm_1.Index)(['empresaId'])
 ], CicloEvaluacion);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/conceptoNomina.entity.ts":
+/*!*************************************************************!*\
+  !*** ./libs/database/src/entities/conceptoNomina.entity.ts ***!
+  \*************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ConceptoNomina = exports.TipoRubro = void 0;
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+var TipoRubro;
+(function (TipoRubro) {
+    TipoRubro["INGRESO"] = "Ingreso";
+    TipoRubro["EGRESO"] = "Egreso";
+})(TipoRubro || (exports.TipoRubro = TipoRubro = {}));
+let ConceptoNomina = class ConceptoNomina extends base_entity_1.BaseEntity {
+    nombre;
+    tipo;
+    esFijo;
+    formula;
+    empresa;
+    empresaId;
+};
+exports.ConceptoNomina = ConceptoNomina;
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 255,
+        comment: 'Nombre del concepto (Salario Base, Aporte IESS)',
+    }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: TipoRubro,
+        comment: 'Tipo de rubro (Ingreso, Egreso)',
+    }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Indica si es un monto fijo o calculado por fórmula',
+    }),
+    __metadata("design:type", Boolean)
+], ConceptoNomina.prototype, "esFijo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 1000,
+        nullable: true,
+        comment: 'Fórmula para el cálculo (ej. "(salario / 30) * dias_trabajados")',
+    }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "formula", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", typeof (_a = typeof empresa_entity_1.Empresa !== "undefined" && empresa_entity_1.Empresa) === "function" ? _a : Object)
+], ConceptoNomina.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) a la que pertenece' }),
+    __metadata("design:type", String)
+], ConceptoNomina.prototype, "empresaId", void 0);
+exports.ConceptoNomina = ConceptoNomina = __decorate([
+    (0, typeorm_1.Entity)({ name: 'conceptos_nomina' }),
+    (0, typeorm_1.Index)(['empresaId', 'tipo'])
+], ConceptoNomina);
 
 
 /***/ }),
@@ -1218,7 +1870,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Departamento = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -1230,7 +1882,6 @@ let Departamento = class Departamento extends base_entity_1.BaseEntity {
     empresa;
     empresaId;
     cargos;
-    deletedAt;
 };
 exports.Departamento = Departamento;
 __decorate([
@@ -1257,14 +1908,6 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => cargo_entity_1.Cargo, (cargo) => cargo.departamento),
     __metadata("design:type", Array)
 ], Departamento.prototype, "cargos", void 0);
-__decorate([
-    (0, typeorm_1.DeleteDateColumn)({
-        type: 'timestamptz',
-        nullable: true,
-        comment: 'Fecha de borrado lógico (soft delete)',
-    }),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], Departamento.prototype, "deletedAt", void 0);
 exports.Departamento = Departamento = __decorate([
     (0, typeorm_1.Entity)({ name: 'departamentos' }),
     (0, typeorm_1.Index)(['empresaId'])
@@ -1342,6 +1985,7 @@ let Empleado = class Empleado extends base_entity_1.BaseEntity {
     registrosAsistencia;
     activosAsignados;
     reportesGastos;
+    asignaciones;
 };
 exports.Empleado = Empleado;
 __decorate([
@@ -1526,6 +2170,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => reporteGasto_entity_1.ReporteGasto, (reporte) => reporte.empleado),
     __metadata("design:type", Array)
 ], Empleado.prototype, "reportesGastos", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => asignacionTarea_entity_1.AsignacionTarea, (asignacion) => asignacion.empleado),
+    __metadata("design:type", Array)
+], Empleado.prototype, "asignaciones", void 0);
 exports.Empleado = Empleado = __decorate([
     (0, typeorm_1.Entity)({ name: 'empleados' }),
     (0, typeorm_1.Index)(['empresaId', 'estado']),
@@ -1806,6 +2454,7 @@ __exportStar(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/ent
 __exportStar(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/entities/itemGasto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts"), exports);
 
 
 /***/ }),
@@ -2021,6 +2670,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         comment: 'Suma total de ingresos (calculado de los rubros)',
+        default: 0,
     }),
     __metadata("design:type", Number)
 ], NominaEmpleado.prototype, "totalIngresos", void 0);
@@ -2028,6 +2678,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         comment: 'Suma total de deducciones (calculado de los rubros)',
+        default: 0,
     }),
     __metadata("design:type", Number)
 ], NominaEmpleado.prototype, "totalEgresos", void 0);
@@ -2035,6 +2686,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         comment: 'Monto neto a pagar (TotalIngresos - TotalEgresos)',
+        default: 0,
     }),
     __metadata("design:type", Number)
 ], NominaEmpleado.prototype, "netoAPagar", void 0);
@@ -2252,7 +2904,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Proyecto = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -2260,11 +2912,15 @@ const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const sprint_entity_1 = __webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts");
 const tarea_entity_1 = __webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Proyecto = class Proyecto extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
+    estado;
     empresa;
     empresaId;
+    lider;
+    liderId;
     sprints;
     tareas;
 };
@@ -2286,6 +2942,15 @@ __decorate([
     __metadata("design:type", String)
 ], Proyecto.prototype, "descripcion", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        default: 'ACTIVO',
+        comment: 'Estado actual del proyecto',
+    }),
+    __metadata("design:type", String)
+], Proyecto.prototype, "estado", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.proyectos, {
         nullable: false,
         onDelete: 'CASCADE',
@@ -2297,6 +2962,21 @@ __decorate([
     (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) propietaria del proyecto' }),
     __metadata("design:type", String)
 ], Proyecto.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, {
+        nullable: true,
+        onDelete: 'SET NULL',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'liderId' }),
+    __metadata("design:type", typeof (_b = typeof empleado_entity_1.Empleado !== "undefined" && empleado_entity_1.Empleado) === "function" ? _b : Object)
+], Proyecto.prototype, "lider", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true,
+        comment: 'ID del Empleado (opcional) que lidera el proyecto',
+    }),
+    __metadata("design:type", String)
+], Proyecto.prototype, "liderId", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => sprint_entity_1.Sprint, (sprint) => sprint.proyecto, { cascade: true }),
     __metadata("design:type", Array)
@@ -2722,7 +3402,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Tarea = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -2731,9 +3411,11 @@ const proyecto_entity_1 = __webpack_require__(/*! ./proyecto.entity */ "./libs/d
 const sprint_entity_1 = __webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts");
 const asignacionTarea_entity_1 = __webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts");
 const timesheet_entity_1 = __webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts");
+const create_tarea_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
 let Tarea = class Tarea extends base_entity_1.BaseEntity {
     titulo;
     descripcion;
+    puntosHistoria;
     estado;
     prioridad;
     proyecto;
@@ -2762,18 +3444,30 @@ __decorate([
 ], Tarea.prototype, "descripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        type: 'int',
+        nullable: true,
+        default: 0,
+        comment: 'Puntos de historia (Estimación)',
+    }),
+    __metadata("design:type", Number)
+], Tarea.prototype, "puntosHistoria", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
         type: 'varchar',
         length: 50,
-        comment: 'Estado actual de la tarea (Pendiente, En Progreso, Hecho)',
+        default: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+        comment: 'Estado actual de la tarea',
     }),
-    __metadata("design:type", String)
+    __metadata("design:type", typeof (_a = typeof create_tarea_dto_1.EstadoTarea !== "undefined" && create_tarea_dto_1.EstadoTarea) === "function" ? _a : Object)
 ], Tarea.prototype, "estado", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'int',
-        comment: 'Nivel de prioridad (1=Baja, 2=Media, 3=Alta)',
+        type: 'varchar',
+        length: 50,
+        default: create_tarea_dto_1.PrioridadTarea.MEDIA,
+        comment: 'Nivel de prioridad (BAJA, MEDIA, ALTA)',
     }),
-    __metadata("design:type", Number)
+    __metadata("design:type", typeof (_b = typeof create_tarea_dto_1.PrioridadTarea !== "undefined" && create_tarea_dto_1.PrioridadTarea) === "function" ? _b : Object)
 ], Tarea.prototype, "prioridad", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => proyecto_entity_1.Proyecto, (proyecto) => proyecto.tareas, {
@@ -2781,7 +3475,7 @@ __decorate([
         onDelete: 'CASCADE',
     }),
     (0, typeorm_1.JoinColumn)({ name: 'proyectoId' }),
-    __metadata("design:type", typeof (_a = typeof proyecto_entity_1.Proyecto !== "undefined" && proyecto_entity_1.Proyecto) === "function" ? _a : Object)
+    __metadata("design:type", typeof (_c = typeof proyecto_entity_1.Proyecto !== "undefined" && proyecto_entity_1.Proyecto) === "function" ? _c : Object)
 ], Tarea.prototype, "proyecto", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: 'ID del Proyecto padre' }),
@@ -2793,7 +3487,7 @@ __decorate([
         onDelete: 'SET NULL',
     }),
     (0, typeorm_1.JoinColumn)({ name: 'sprintId' }),
-    __metadata("design:type", typeof (_b = typeof sprint_entity_1.Sprint !== "undefined" && sprint_entity_1.Sprint) === "function" ? _b : Object)
+    __metadata("design:type", typeof (_d = typeof sprint_entity_1.Sprint !== "undefined" && sprint_entity_1.Sprint) === "function" ? _d : Object)
 ], Tarea.prototype, "sprint", void 0);
 __decorate([
     (0, typeorm_1.Column)({

@@ -61,12 +61,6 @@ export class Cargo extends BaseEntity {
    * Si es NULL, el cargo está activo.
    * Si tiene fecha, está "borrado" y se ocultará.
    */
-  @DeleteDateColumn({
-    type: 'timestamptz',
-    nullable: true,
-    comment: 'Fecha de borrado lógico (soft delete)',
-  })
-  deletedAt: Date;
   // ---
   // RELACIONES "UNO A MUCHOS" (Un Cargo TIENE MUCHOS...)
   // ---

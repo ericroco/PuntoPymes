@@ -72,10 +72,4 @@ export class Departamento extends BaseEntity {
    * TypeORM lo ocultará automáticamente de todas las
    * consultas 'find()'.
    */
-  @DeleteDateColumn({
-    type: 'timestamptz',
-    nullable: true,
-    comment: 'Fecha de borrado lógico (soft delete)',
-  })
-  deletedAt: Date;
 }

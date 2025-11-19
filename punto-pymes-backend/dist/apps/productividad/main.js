@@ -2,809 +2,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./apps/auth/src/dto/login.dto.ts":
-/*!****************************************!*\
-  !*** ./apps/auth/src/dto/login.dto.ts ***!
-  \****************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LoginDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class LoginDto {
-    email;
-    password;
-}
-exports.LoginDto = LoginDto;
-__decorate([
-    (0, class_validator_1.IsEmail)({}, { message: 'El email no es válido.' }),
-    (0, class_validator_1.IsNotEmpty)({ message: 'El email no puede estar vacío.' }),
-    __metadata("design:type", String)
-], LoginDto.prototype, "email", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'La contraseña no puede estar vacía.' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], LoginDto.prototype, "password", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/auth/src/dto/register.dto.ts":
-/*!*******************************************!*\
-  !*** ./apps/auth/src/dto/register.dto.ts ***!
-  \*******************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.RegisterDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class RegisterDto {
-    nombreEmpresa;
-    nombreAdmin;
-    apellidoAdmin;
-    email;
-    password;
-}
-exports.RegisterDto = RegisterDto;
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El nombre de la empresa no puede estar vacío.' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "nombreEmpresa", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'Tu nombre no puede estar vacío.' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "nombreAdmin", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'Tu apellido no puede estar vacío.' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "apellidoAdmin", void 0);
-__decorate([
-    (0, class_validator_1.IsEmail)({}, { message: 'El email no es válido.' }),
-    (0, class_validator_1.IsNotEmpty)({ message: 'El email no puede estar vacío.' }),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "email", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'La contraseña no puede estar vacía.' }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(8, { message: 'La contraseña debe tener al menos 8 caracteres.' }),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "password", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/create-beneficio.dto.ts":
-/*!*****************************************************!*\
-  !*** ./apps/nomina/src/dto/create-beneficio.dto.ts ***!
-  \*****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateBeneficioDto = exports.TipoBeneficio = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-var TipoBeneficio;
-(function (TipoBeneficio) {
-    TipoBeneficio["MONETARIO"] = "Monetario";
-    TipoBeneficio["NO_MONETARIO"] = "No Monetario";
-})(TipoBeneficio || (exports.TipoBeneficio = TipoBeneficio = {}));
-class CreateBeneficioDto {
-    nombre;
-    descripcion;
-    tipo;
-    montoEstimado;
-}
-exports.CreateBeneficioDto = CreateBeneficioDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.MaxLength)(255),
-    __metadata("design:type", String)
-], CreateBeneficioDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.MaxLength)(1000),
-    __metadata("design:type", String)
-], CreateBeneficioDto.prototype, "descripcion", void 0);
-__decorate([
-    (0, class_validator_1.IsEnum)(TipoBeneficio),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateBeneficioDto.prototype, "tipo", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsPositive)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateBeneficioDto.prototype, "montoEstimado", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts":
-/*!***********************************************************!*\
-  !*** ./apps/nomina/src/dto/create-concepto-nomina.dto.ts ***!
-  \***********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateConceptoNominaDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-const conceptoNomina_entity_1 = __webpack_require__(/*! ../../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
-class CreateConceptoNominaDto {
-    nombre;
-    tipo;
-    esFijo;
-    formula;
-}
-exports.CreateConceptoNominaDto = CreateConceptoNominaDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.MaxLength)(255),
-    __metadata("design:type", String)
-], CreateConceptoNominaDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsEnum)(conceptoNomina_entity_1.TipoRubro),
-    (0, class_validator_1.IsNotEmpty)({ message: 'El tipo (Ingreso/Egreso) es requerido.' }),
-    __metadata("design:type", typeof (_a = typeof conceptoNomina_entity_1.TipoRubro !== "undefined" && conceptoNomina_entity_1.TipoRubro) === "function" ? _a : Object)
-], CreateConceptoNominaDto.prototype, "tipo", void 0);
-__decorate([
-    (0, class_validator_1.IsBoolean)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Boolean)
-], CreateConceptoNominaDto.prototype, "esFijo", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateConceptoNominaDto.prototype, "formula", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/create-contrato.dto.ts":
-/*!****************************************************!*\
-  !*** ./apps/nomina/src/dto/create-contrato.dto.ts ***!
-  \****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a, _b;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateContratoDto = exports.EstadoContrato = exports.TipoContrato = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-var TipoContrato;
-(function (TipoContrato) {
-    TipoContrato["INDEFINIDO"] = "Indefinido";
-    TipoContrato["PLAZO_FIJO"] = "Plazo Fijo";
-    TipoContrato["SERVICIOS"] = "Servicios";
-    TipoContrato["OBRA_LABOR"] = "Obra Labor";
-})(TipoContrato || (exports.TipoContrato = TipoContrato = {}));
-var EstadoContrato;
-(function (EstadoContrato) {
-    EstadoContrato["VIGENTE"] = "Vigente";
-    EstadoContrato["FINALIZADO"] = "Finalizado";
-    EstadoContrato["PENDIENTE"] = "Pendiente";
-})(EstadoContrato || (exports.EstadoContrato = EstadoContrato = {}));
-class CreateContratoDto {
-    empleadoId;
-    tipo;
-    salario;
-    moneda;
-    fechaInicio;
-    fechaFin;
-    estado;
-}
-exports.CreateContratoDto = CreateContratoDto;
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El ID del empleado es requerido.' }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CreateContratoDto.prototype, "empleadoId", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El tipo de contrato es requerido.' }),
-    (0, class_validator_1.IsEnum)(TipoContrato),
-    __metadata("design:type", String)
-], CreateContratoDto.prototype, "tipo", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)({}, { message: 'El salario debe ser un número.' }),
-    (0, class_validator_1.IsPositive)({ message: 'El salario debe ser un número positivo.' }),
-    __metadata("design:type", Number)
-], CreateContratoDto.prototype, "salario", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateContratoDto.prototype, "moneda", void 0);
-__decorate([
-    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de inicio debe ser una fecha válida.' }),
-    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], CreateContratoDto.prototype, "fechaInicio", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de fin debe ser una fecha válida.' }),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], CreateContratoDto.prototype, "fechaFin", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(EstadoContrato),
-    __metadata("design:type", String)
-], CreateContratoDto.prototype, "estado", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts":
-/*!**********************************************************!*\
-  !*** ./apps/nomina/src/dto/create-periodo-nomina.dto.ts ***!
-  \**********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a, _b;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreatePeriodoNominaDto = exports.EstadoPeriodo = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-var EstadoPeriodo;
-(function (EstadoPeriodo) {
-    EstadoPeriodo["ABIERTO"] = "Abierto";
-    EstadoPeriodo["CERRADO"] = "Cerrado";
-    EstadoPeriodo["PROCESADO"] = "Procesado";
-})(EstadoPeriodo || (exports.EstadoPeriodo = EstadoPeriodo = {}));
-class CreatePeriodoNominaDto {
-    fechaInicio;
-    fechaFin;
-    estado;
-}
-exports.CreatePeriodoNominaDto = CreatePeriodoNominaDto;
-__decorate([
-    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de inicio debe ser una fecha válida.' }),
-    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], CreatePeriodoNominaDto.prototype, "fechaInicio", void 0);
-__decorate([
-    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de fin debe ser una fecha válida.' }),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], CreatePeriodoNominaDto.prototype, "fechaFin", void 0);
-__decorate([
-    (0, class_validator_1.IsEnum)(EstadoPeriodo),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreatePeriodoNominaDto.prototype, "estado", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/procesar-nomina.dto.ts":
-/*!****************************************************!*\
-  !*** ./apps/nomina/src/dto/procesar-nomina.dto.ts ***!
-  \****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ProcesarNominaDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class ProcesarNominaDto {
-    periodoId;
-}
-exports.ProcesarNominaDto = ProcesarNominaDto;
-__decorate([
-    (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)({ message: 'El ID del período es requerido.' }),
-    __metadata("design:type", String)
-], ProcesarNominaDto.prototype, "periodoId", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/update-beneficio.dto.ts":
-/*!*****************************************************!*\
-  !*** ./apps/nomina/src/dto/update-beneficio.dto.ts ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateBeneficioDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_beneficio_dto_1 = __webpack_require__(/*! ./create-beneficio.dto */ "./apps/nomina/src/dto/create-beneficio.dto.ts");
-class UpdateBeneficioDto extends (0, mapped_types_1.PartialType)(create_beneficio_dto_1.CreateBeneficioDto) {
-}
-exports.UpdateBeneficioDto = UpdateBeneficioDto;
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/update-concepto-nomina.dto.ts":
-/*!***********************************************************!*\
-  !*** ./apps/nomina/src/dto/update-concepto-nomina.dto.ts ***!
-  \***********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateConceptoNominaDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_concepto_nomina_dto_1 = __webpack_require__(/*! ./create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts");
-class UpdateConceptoNominaDto extends (0, mapped_types_1.PartialType)(create_concepto_nomina_dto_1.CreateConceptoNominaDto) {
-}
-exports.UpdateConceptoNominaDto = UpdateConceptoNominaDto;
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/update-contrato.dto.ts":
-/*!****************************************************!*\
-  !*** ./apps/nomina/src/dto/update-contrato.dto.ts ***!
-  \****************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateContratoDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_contrato_dto_1 = __webpack_require__(/*! ./create-contrato.dto */ "./apps/nomina/src/dto/create-contrato.dto.ts");
-class UpdateContratoDto extends (0, mapped_types_1.PartialType)(create_contrato_dto_1.CreateContratoDto) {
-    empleadoId;
-}
-exports.UpdateContratoDto = UpdateContratoDto;
-
-
-/***/ }),
-
-/***/ "./apps/nomina/src/dto/update-periodo-nomina.dto.ts":
-/*!**********************************************************!*\
-  !*** ./apps/nomina/src/dto/update-periodo-nomina.dto.ts ***!
-  \**********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdatePeriodoNominaDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_periodo_nomina_dto_1 = __webpack_require__(/*! ./create-periodo-nomina.dto */ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts");
-class UpdatePeriodoNominaDto extends (0, mapped_types_1.PartialType)(create_periodo_nomina_dto_1.CreatePeriodoNominaDto) {
-}
-exports.UpdatePeriodoNominaDto = UpdatePeriodoNominaDto;
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/create-cargo.dto.ts":
-/*!***************************************************!*\
-  !*** ./apps/personal/src/dto/create-cargo.dto.ts ***!
-  \***************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateCargoDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class CreateCargoDto {
-    nombre;
-    departamentoId;
-}
-exports.CreateCargoDto = CreateCargoDto;
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El nombre es requerido.' }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MaxLength)(255),
-    __metadata("design:type", String)
-], CreateCargoDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El departamento es requerido.' }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CreateCargoDto.prototype, "departamentoId", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/create-departamento.dto.ts":
-/*!**********************************************************!*\
-  !*** ./apps/personal/src/dto/create-departamento.dto.ts ***!
-  \**********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateDepartamentoDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class CreateDepartamentoDto {
-    nombre;
-}
-exports.CreateDepartamentoDto = CreateDepartamentoDto;
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El nombre es requerido.' }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MaxLength)(255),
-    __metadata("design:type", String)
-], CreateDepartamentoDto.prototype, "nombre", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/create-empleado.dto.ts":
-/*!******************************************************!*\
-  !*** ./apps/personal/src/dto/create-empleado.dto.ts ***!
-  \******************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateEmpleadoDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class CreateEmpleadoDto {
-    nombre;
-    apellido;
-    emailPersonal;
-    cargoId;
-    rolId;
-    jefeId;
-}
-exports.CreateEmpleadoDto = CreateEmpleadoDto;
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El nombre es requerido.' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateEmpleadoDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El apellido es requerido.' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateEmpleadoDto.prototype, "apellido", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)({}, { message: 'El email personal no es válido.' }),
-    __metadata("design:type", String)
-], CreateEmpleadoDto.prototype, "emailPersonal", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El cargo es requerido.' }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CreateEmpleadoDto.prototype, "cargoId", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'El rol es requerido.' }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CreateEmpleadoDto.prototype, "rolId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CreateEmpleadoDto.prototype, "jefeId", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/create-rol.dto.ts":
-/*!*************************************************!*\
-  !*** ./apps/personal/src/dto/create-rol.dto.ts ***!
-  \*************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateRolDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class CreateRolDto {
-    nombre;
-    descripcion;
-    permisos;
-}
-exports.CreateRolDto = CreateRolDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.MaxLength)(100),
-    __metadata("design:type", String)
-], CreateRolDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.MaxLength)(500),
-    __metadata("design:type", String)
-], CreateRolDto.prototype, "descripcion", void 0);
-__decorate([
-    (0, class_validator_1.IsObject)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
-], CreateRolDto.prototype, "permisos", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/update-cargo.dto.ts":
-/*!***************************************************!*\
-  !*** ./apps/personal/src/dto/update-cargo.dto.ts ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateCargoDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_cargo_dto_1 = __webpack_require__(/*! ./create-cargo.dto */ "./apps/personal/src/dto/create-cargo.dto.ts");
-class UpdateCargoDto extends (0, mapped_types_1.PartialType)(create_cargo_dto_1.CreateCargoDto) {
-}
-exports.UpdateCargoDto = UpdateCargoDto;
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/update-departamento.dto.ts":
-/*!**********************************************************!*\
-  !*** ./apps/personal/src/dto/update-departamento.dto.ts ***!
-  \**********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateDepartamentoDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class UpdateDepartamentoDto {
-    nombre;
-}
-exports.UpdateDepartamentoDto = UpdateDepartamentoDto;
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MaxLength)(255),
-    __metadata("design:type", String)
-], UpdateDepartamentoDto.prototype, "nombre", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/update-empleado.dto.ts":
-/*!******************************************************!*\
-  !*** ./apps/personal/src/dto/update-empleado.dto.ts ***!
-  \******************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateEmpleadoDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class UpdateEmpleadoDto {
-    nombre;
-    apellido;
-    emailPersonal;
-    fechaContratacion;
-    cargoId;
-    rolId;
-    jefeId;
-    estado;
-}
-exports.UpdateEmpleadoDto = UpdateEmpleadoDto;
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "apellido", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)({}, { message: 'El email personal no es válido.' }),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "emailPersonal", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de contratación debe ser una fecha válida.' }),
-    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], UpdateEmpleadoDto.prototype, "fechaContratacion", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "cargoId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "rolId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "jefeId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "estado", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/update-rol.dto.ts":
-/*!*************************************************!*\
-  !*** ./apps/personal/src/dto/update-rol.dto.ts ***!
-  \*************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateRolDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_rol_dto_1 = __webpack_require__(/*! ./create-rol.dto */ "./apps/personal/src/dto/create-rol.dto.ts");
-class UpdateRolDto extends (0, mapped_types_1.PartialType)(create_rol_dto_1.CreateRolDto) {
-}
-exports.UpdateRolDto = UpdateRolDto;
-
-
-/***/ }),
-
-/***/ "./apps/productividad/src/dto/create-asignacion.dto.ts":
-/*!*************************************************************!*\
-  !*** ./apps/productividad/src/dto/create-asignacion.dto.ts ***!
-  \*************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateAsignacionDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class CreateAsignacionDto {
-    empleadoId;
-    observaciones;
-}
-exports.CreateAsignacionDto = CreateAsignacionDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateAsignacionDto.prototype, "empleadoId", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateAsignacionDto.prototype, "observaciones", void 0);
-
-
-/***/ }),
-
 /***/ "./apps/productividad/src/dto/create-proyecto.dto.ts":
 /*!***********************************************************!*\
   !*** ./apps/productividad/src/dto/create-proyecto.dto.ts ***!
@@ -871,58 +68,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateProyectoDto.prototype, "estado", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/productividad/src/dto/create-sprint.dto.ts":
-/*!*********************************************************!*\
-  !*** ./apps/productividad/src/dto/create-sprint.dto.ts ***!
-  \*********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a, _b;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateSprintDto = void 0;
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-const class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
-class CreateSprintDto {
-    nombre;
-    fechaInicio;
-    fechaFin;
-    objetivo;
-}
-exports.CreateSprintDto = CreateSprintDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateSprintDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsDate)(),
-    (0, class_transformer_1.Type)(() => Date),
-    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], CreateSprintDto.prototype, "fechaInicio", void 0);
-__decorate([
-    (0, class_validator_1.IsDate)(),
-    (0, class_transformer_1.Type)(() => Date),
-    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
-], CreateSprintDto.prototype, "fechaFin", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateSprintDto.prototype, "objetivo", void 0);
 
 
 /***/ }),
@@ -996,82 +141,10 @@ __decorate([
 
 /***/ }),
 
-/***/ "./apps/productividad/src/dto/update-asignacion.dto.ts":
-/*!*************************************************************!*\
-  !*** ./apps/productividad/src/dto/update-asignacion.dto.ts ***!
-  \*************************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateAsignacionDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_asignacion_dto_1 = __webpack_require__(/*! ./create-asignacion.dto */ "./apps/productividad/src/dto/create-asignacion.dto.ts");
-class UpdateAsignacionDto extends (0, mapped_types_1.PartialType)(create_asignacion_dto_1.CreateAsignacionDto) {
-}
-exports.UpdateAsignacionDto = UpdateAsignacionDto;
-
-
-/***/ }),
-
-/***/ "./apps/productividad/src/dto/update-proyecto.dto.ts":
-/*!***********************************************************!*\
-  !*** ./apps/productividad/src/dto/update-proyecto.dto.ts ***!
-  \***********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateProyectoDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_proyecto_dto_1 = __webpack_require__(/*! ./create-proyecto.dto */ "./apps/productividad/src/dto/create-proyecto.dto.ts");
-class UpdateProyectoDto extends (0, mapped_types_1.PartialType)(create_proyecto_dto_1.CreateProyectoDto) {
-}
-exports.UpdateProyectoDto = UpdateProyectoDto;
-
-
-/***/ }),
-
-/***/ "./apps/productividad/src/dto/update-sprint.dto.ts":
-/*!*********************************************************!*\
-  !*** ./apps/productividad/src/dto/update-sprint.dto.ts ***!
-  \*********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateSprintDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_sprint_dto_1 = __webpack_require__(/*! ./create-sprint.dto */ "./apps/productividad/src/dto/create-sprint.dto.ts");
-class UpdateSprintDto extends (0, mapped_types_1.PartialType)(create_sprint_dto_1.CreateSprintDto) {
-}
-exports.UpdateSprintDto = UpdateSprintDto;
-
-
-/***/ }),
-
-/***/ "./apps/productividad/src/dto/update-tarea.dto.ts":
-/*!********************************************************!*\
-  !*** ./apps/productividad/src/dto/update-tarea.dto.ts ***!
-  \********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateTareaDto = void 0;
-const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
-const create_tarea_dto_1 = __webpack_require__(/*! ./create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
-class UpdateTareaDto extends (0, mapped_types_1.PartialType)(create_tarea_dto_1.CreateTareaDto) {
-}
-exports.UpdateTareaDto = UpdateTareaDto;
-
-
-/***/ }),
-
-/***/ "./apps/punto-pymes-backend/src/app.controller.ts":
-/*!********************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/app.controller.ts ***!
-  \********************************************************/
+/***/ "./apps/productividad/src/productividad.controller.ts":
+/*!************************************************************!*\
+  !*** ./apps/productividad/src/productividad.controller.ts ***!
+  \************************************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1087,887 +160,213 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AppController = void 0;
+exports.ProductividadController = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-const app_service_1 = __webpack_require__(/*! ./app.service */ "./apps/punto-pymes-backend/src/app.service.ts");
-const register_dto_1 = __webpack_require__(/*! ../../auth/src/dto/register.dto */ "./apps/auth/src/dto/register.dto.ts");
-const login_dto_1 = __webpack_require__(/*! ../../auth/src/dto/login.dto */ "./apps/auth/src/dto/login.dto.ts");
-const jwt_auth_guard_1 = __webpack_require__(/*! ./auth/jwt-auth.guard */ "./apps/punto-pymes-backend/src/auth/jwt-auth.guard.ts");
-const create_empleado_dto_1 = __webpack_require__(/*! ../../personal/src/dto/create-empleado.dto */ "./apps/personal/src/dto/create-empleado.dto.ts");
-const update_empleado_dto_1 = __webpack_require__(/*! ../../personal/src/dto/update-empleado.dto */ "./apps/personal/src/dto/update-empleado.dto.ts");
-const create_departamento_dto_1 = __webpack_require__(/*! ../../personal/src/dto/create-departamento.dto */ "./apps/personal/src/dto/create-departamento.dto.ts");
-const update_departamento_dto_1 = __webpack_require__(/*! ../../personal/src/dto/update-departamento.dto */ "./apps/personal/src/dto/update-departamento.dto.ts");
-const create_cargo_dto_1 = __webpack_require__(/*! ../../personal/src/dto/create-cargo.dto */ "./apps/personal/src/dto/create-cargo.dto.ts");
-const update_cargo_dto_1 = __webpack_require__(/*! ../../personal/src/dto/update-cargo.dto */ "./apps/personal/src/dto/update-cargo.dto.ts");
-const create_rol_dto_1 = __webpack_require__(/*! ../../personal/src/dto/create-rol.dto */ "./apps/personal/src/dto/create-rol.dto.ts");
-const update_rol_dto_1 = __webpack_require__(/*! ../../personal/src/dto/update-rol.dto */ "./apps/personal/src/dto/update-rol.dto.ts");
-const permission_decorator_1 = __webpack_require__(/*! ./auth/decorators/permission.decorator */ "./apps/punto-pymes-backend/src/auth/decorators/permission.decorator.ts");
-const permission_guard_1 = __webpack_require__(/*! ./auth/guards/permission.guard */ "./apps/punto-pymes-backend/src/auth/guards/permission.guard.ts");
-const create_contrato_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/create-contrato.dto */ "./apps/nomina/src/dto/create-contrato.dto.ts");
-const update_contrato_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/update-contrato.dto */ "./apps/nomina/src/dto/update-contrato.dto.ts");
-const create_beneficio_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/create-beneficio.dto */ "./apps/nomina/src/dto/create-beneficio.dto.ts");
-const update_beneficio_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/update-beneficio.dto */ "./apps/nomina/src/dto/update-beneficio.dto.ts");
-const create_periodo_nomina_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/create-periodo-nomina.dto */ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts");
-const update_periodo_nomina_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/update-periodo-nomina.dto */ "./apps/nomina/src/dto/update-periodo-nomina.dto.ts");
-const create_concepto_nomina_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts");
-const update_concepto_nomina_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/update-concepto-nomina.dto */ "./apps/nomina/src/dto/update-concepto-nomina.dto.ts");
-const procesar_nomina_dto_1 = __webpack_require__(/*! ../../nomina/src/dto/procesar-nomina.dto */ "./apps/nomina/src/dto/procesar-nomina.dto.ts");
-const create_proyecto_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-proyecto.dto */ "./apps/productividad/src/dto/create-proyecto.dto.ts");
-const update_proyecto_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/update-proyecto.dto */ "./apps/productividad/src/dto/update-proyecto.dto.ts");
-const create_sprint_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-sprint.dto */ "./apps/productividad/src/dto/create-sprint.dto.ts");
-const update_sprint_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/update-sprint.dto */ "./apps/productividad/src/dto/update-sprint.dto.ts");
-const create_tarea_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
-const update_tarea_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/update-tarea.dto */ "./apps/productividad/src/dto/update-tarea.dto.ts");
-const create_asignacion_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-asignacion.dto */ "./apps/productividad/src/dto/create-asignacion.dto.ts");
-const update_asignacion_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/update-asignacion.dto */ "./apps/productividad/src/dto/update-asignacion.dto.ts");
-let AppController = class AppController {
-    appService;
-    authService;
-    personalService;
-    nominaService;
+const productividad_service_1 = __webpack_require__(/*! ./productividad.service */ "./apps/productividad/src/productividad.service.ts");
+let ProductividadController = class ProductividadController {
     productividadService;
-    constructor(appService, authService, personalService, nominaService, productividadService) {
-        this.appService = appService;
-        this.authService = authService;
-        this.personalService = personalService;
-        this.nominaService = nominaService;
+    constructor(productividadService) {
         this.productividadService = productividadService;
     }
-    getHello() {
-        return this.appService.getHello();
+    getProyectos(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido get_proyectos para empresa: ${data.empresaId}`);
+        return this.productividadService.getProyectos(data.empresaId);
     }
-    pingAuthService() {
-        console.log('Enviando PING al microservicio Auth...');
-        return this.authService.send({ cmd: 'ping' }, {});
+    createProyecto(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido create_proyecto: ${data.dto.nombre}`);
+        return this.productividadService.createProyecto(data.empresaId, data.dto);
     }
-    register(registerDto) {
-        console.log('API Gateway recibió solicitud de registro');
-        return this.authService.send({ cmd: 'register' }, registerDto);
+    updateProyecto(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido update_proyecto para: ${data.proyectoId}`);
+        return this.productividadService.updateProyecto(data.empresaId, data.proyectoId, data.dto);
     }
-    login(loginDto) {
-        console.log('API Gateway recibió solicitud de login');
-        return this.authService.send({ cmd: 'login' }, loginDto);
+    deleteProyecto(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido delete_proyecto para: ${data.proyectoId}`);
+        return this.productividadService.deleteProyecto(data.empresaId, data.proyectoId);
     }
-    getProfile(req) {
-        console.log('Petición exitosa a ruta protegida /profile');
-        return {
-            message: '¡Acceso concedido a ruta protegida!',
-            user: req.user,
-        };
+    createSprint(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido create_sprint en proyecto: ${data.proyectoId}`);
+        return this.productividadService.createSprint(data.empresaId, data.proyectoId, data.dto);
     }
-    getEmpleados(req) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Pidiendo empleados para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'get_empleados' }, { empresaId: empresaId });
+    getSprintsByProyecto(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido get_sprints para proyecto: ${data.proyectoId}`);
+        return this.productividadService.getSprintsByProyecto(data.empresaId, data.proyectoId);
     }
-    createEmpleado(req, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición POST /empleados para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'create_empleado' }, {
-            empresaId: empresaId,
-            dto: dto,
-        });
+    updateSprint(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido update_sprint para sprint: ${data.sprintId}`);
+        return this.productividadService.updateSprint(data.empresaId, data.sprintId, data.dto);
     }
-    updateEmpleado(req, empleadoId, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición PATCH /empleados/${empleadoId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'update_empleado' }, {
-            empresaId: empresaId,
-            empleadoId: empleadoId,
-            dto: dto,
-        });
+    deleteSprint(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido delete_sprint para sprint: ${data.sprintId}`);
+        return this.productividadService.deleteSprint(data.empresaId, data.sprintId);
     }
-    deleteEmpleado(req, empleadoId) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición DELETE /empleados/${empleadoId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'delete_empleado' }, {
-            empresaId: empresaId,
-            empleadoId: empleadoId,
-        });
+    createTarea(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido create_tarea en sprint: ${data.sprintId}`);
+        return this.productividadService.createTarea(data.empresaId, data.sprintId, data.dto);
     }
-    createDepartamento(req, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición POST /departamentos para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'create_departamento' }, {
-            empresaId: empresaId,
-            dto: dto,
-        });
+    getTareasBySprint(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido get_tareas para sprint: ${data.sprintId}`);
+        return this.productividadService.getTareasBySprint(data.empresaId, data.sprintId);
     }
-    getDepartamentos(req) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Pidiendo departamentos para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'get_departamentos' }, { empresaId: empresaId });
+    updateTarea(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido update_tarea para: ${data.tareaId}`);
+        return this.productividadService.updateTarea(data.empresaId, data.tareaId, data.dto);
     }
-    updateDepartamento(req, deptoId, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición PATCH /departamentos/${deptoId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'update_departamento' }, {
-            empresaId: empresaId,
-            deptoId: deptoId,
-            dto: dto,
-        });
+    deleteTarea(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Recibido delete_tarea para: ${data.tareaId}`);
+        return this.productividadService.deleteTarea(data.empresaId, data.tareaId);
     }
-    deleteDepartamento(req, deptoId) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición DELETE /departamentos/${deptoId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'delete_departamento' }, {
-            empresaId: empresaId,
-            deptoId: deptoId,
-        });
+    assignTarea(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Asignando tarea ${data.tareaId} al empleado ${data.dto.empleadoId}`);
+        return this.productividadService.assignTarea(data.empresaId, data.tareaId, data.dto);
     }
-    createCargo(req, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición POST /cargos para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'create_cargo' }, {
-            empresaId: empresaId,
-            dto: dto,
-        });
+    getAsignaciones(data) {
+        return this.productividadService.getAsignacionesByTarea(data.empresaId, data.tareaId);
     }
-    getCargos(req) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición GET /cargos para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'get_cargos' }, { empresaId: empresaId });
+    removeAsignacion(data) {
+        return this.productividadService.removeAsignacion(data.empresaId, data.asignacionId);
     }
-    updateCargo(req, cargoId, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición PATCH /cargos/${cargoId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'update_cargo' }, {
-            empresaId: empresaId,
-            cargoId: cargoId,
-            dto: dto,
-        });
-    }
-    deleteCargo(req, cargoId) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición DELETE /cargos/${cargoId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'delete_cargo' }, {
-            empresaId: empresaId,
-            cargoId: cargoId,
-        });
-    }
-    createRol(req, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición POST /roles para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'create_rol' }, { empresaId: empresaId, dto: dto });
-    }
-    getRoles(req) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición GET /roles para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'get_roles' }, { empresaId: empresaId });
-    }
-    updateRol(req, rolId, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición PATCH /roles/${rolId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'update_rol' }, { empresaId: empresaId, rolId: rolId, dto: dto });
-    }
-    deleteRol(req, rolId) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición DELETE /roles/${rolId} para empresaId: ${empresaId}`);
-        return this.personalService.send({ cmd: 'delete_rol' }, { empresaId: empresaId, rolId: rolId });
-    }
-    createContrato(req, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición POST /contratos para empresaId: ${empresaId}`);
-        return this.nominaService.send({ cmd: 'create_contrato' }, { empresaId: empresaId, dto: dto });
-    }
-    getContratosByEmpleado(req, empleadoId) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición GET /empleados/${empleadoId}/contratos para empresaId: ${empresaId}`);
-        return this.nominaService.send({ cmd: 'get_contratos_by_empleado' }, { empresaId: empresaId, empleadoId: empleadoId });
-    }
-    updateContrato(req, contratoId, dto) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición PATCH /contratos/${contratoId} para empresaId: ${empresaId}`);
-        return this.nominaService.send({ cmd: 'update_contrato' }, { empresaId: empresaId, contratoId: contratoId, dto: dto });
-    }
-    deleteContrato(req, contratoId) {
-        const { empresaId } = req.user;
-        console.log(`Gateway: Petición DELETE /contratos/${contratoId} para empresaId: ${empresaId}`);
-        return this.nominaService.send({ cmd: 'delete_contrato' }, { empresaId: empresaId, contratoId: contratoId });
-    }
-    getBeneficios(req) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'get_beneficios' }, { empresaId: empresaId });
-    }
-    createBeneficio(req, dto) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'create_beneficio' }, { empresaId: empresaId, dto: dto });
-    }
-    updateBeneficio(req, beneficioId, dto, NT) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'update_beneficio' }, { empresaId: empresaId, beneficioId: beneficioId, dto: dto });
-    }
-    deleteBeneficio(req, beneficioId) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'delete_beneficio' }, { empresaId: empresaId, beneficioId: beneficioId });
-    }
-    getPeriodosNomina(req) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'get_periodos_nomina' }, { empresaId: empresaId });
-    }
-    createPeriodoNomina(req, dto) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'create_periodo_nomina' }, { empresaId: empresaId, dto: dto });
-    }
-    updatePeriodoNomina(req, periodoId, dto) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'update_periodo_nomina' }, { empresaId: empresaId, periodoId: periodoId, dto: dto });
-    }
-    deletePeriodoNomina(req, periodoId) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'delete_periodo_nomina' }, { empresaId: empresaId, periodoId: periodoId });
-    }
-    getConceptosNomina(req) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'get_conceptos_nomina' }, { empresaId: empresaId });
-    }
-    createConceptoNomina(req, dto) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'create_concepto_nomina' }, { empresaId: empresaId, dto: dto });
-    }
-    updateConceptoNomina(req, conceptoId, dto) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'update_concepto_nomina' }, { empresaId: empresaId, conceptoId: conceptoId, dto: dto });
-    }
-    deleteConceptoNomina(req, conceptoId) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'delete_concepto_nomina' }, { empresaId: empresaId, conceptoId: conceptoId });
-    }
-    procesarNomina(req, dto) {
-        const { empresaId } = req.user;
-        return this.nominaService.send({ cmd: 'procesar_nomina' }, { empresaId: empresaId, dto: dto });
-    }
-    getProyectos(req) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'get_proyectos' }, { empresaId: empresaId });
-    }
-    createProyecto(req, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'create_proyecto' }, { empresaId: empresaId, dto: dto });
-    }
-    updateProyecto(req, proyectoId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'update_proyecto' }, { empresaId: empresaId, proyectoId: proyectoId, dto: dto });
-    }
-    deleteProyecto(req, proyectoId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'delete_proyecto' }, { empresaId: empresaId, proyectoId: proyectoId });
-    }
-    createSprint(req, proyectoId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'create_sprint' }, { empresaId, proyectoId, dto });
-    }
-    getSprints(req, proyectoId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'get_sprints_by_proyecto' }, { empresaId, proyectoId });
-    }
-    updateSprint(req, sprintId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'update_sprint' }, { empresaId, sprintId, dto });
-    }
-    deleteSprint(req, sprintId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'delete_sprint' }, { empresaId, sprintId });
-    }
-    createTarea(req, sprintId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'create_tarea' }, { empresaId, sprintId, dto });
-    }
-    getTareasBySprint(req, sprintId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'get_tareas_by_sprint' }, { empresaId, sprintId });
-    }
-    updateTarea(req, tareaId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'update_tarea' }, { empresaId, tareaId, dto });
-    }
-    deleteTarea(req, tareaId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'delete_tarea' }, { empresaId, tareaId });
-    }
-    assignTarea(req, tareaId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'assign_tarea' }, { empresaId, tareaId, dto });
-    }
-    getAsignaciones(req, tareaId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'get_asignaciones' }, { empresaId, tareaId });
-    }
-    removeAsignacion(req, asignacionId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'remove_asignacion' }, { empresaId, asignacionId });
-    }
-    updateAsignacion(req, asignacionId, dto) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'update_asignacion' }, { empresaId, asignacionId, dto });
+    updateAsignacion(data) {
+        console.log(`Microservicio PRODUCTIVIDAD: Actualizando asignación ${data.asignacionId}`);
+        return this.productividadService.updateAsignacion(data.empresaId, data.asignacionId, data.dto);
     }
 };
-exports.AppController = AppController;
+exports.ProductividadController = ProductividadController;
 __decorate([
-    (0, common_1.Get)(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", String)
-], AppController.prototype, "getHello", null);
-__decorate([
-    (0, common_1.Get)('ping-auth'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "pingAuthService", null);
-__decorate([
-    (0, common_1.Post)('auth/register'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_f = typeof register_dto_1.RegisterDto !== "undefined" && register_dto_1.RegisterDto) === "function" ? _f : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "register", null);
-__decorate([
-    (0, common_1.Post)('auth/login'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_g = typeof login_dto_1.LoginDto !== "undefined" && login_dto_1.LoginDto) === "function" ? _g : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "login", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('profile'),
-    __param(0, (0, common_1.Request)()),
+    (0, microservices_1.MessagePattern)({ cmd: 'get_proyectos' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getProfile", null);
+], ProductividadController.prototype, "getProyectos", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('empleados'),
-    __param(0, (0, common_1.Request)()),
+    (0, microservices_1.MessagePattern)({ cmd: 'create_proyecto' }),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getEmpleados", null);
+], ProductividadController.prototype, "createProyecto", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('empleados'),
+    (0, microservices_1.MessagePattern)({ cmd: 'update_proyecto' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_h = typeof create_empleado_dto_1.CreateEmpleadoDto !== "undefined" && create_empleado_dto_1.CreateEmpleadoDto) === "function" ? _h : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createEmpleado", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Patch)('empleados/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_j = typeof update_empleado_dto_1.UpdateEmpleadoDto !== "undefined" && update_empleado_dto_1.UpdateEmpleadoDto) === "function" ? _j : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateEmpleado", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Delete)('empleados/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteEmpleado", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('departamentos'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_k = typeof create_departamento_dto_1.CreateDepartamentoDto !== "undefined" && create_departamento_dto_1.CreateDepartamentoDto) === "function" ? _k : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createDepartamento", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('departamentos'),
-    __param(0, (0, common_1.Request)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getDepartamentos", null);
+], ProductividadController.prototype, "updateProyecto", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Patch)('departamentos/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_l = typeof update_departamento_dto_1.UpdateDepartamentoDto !== "undefined" && update_departamento_dto_1.UpdateDepartamentoDto) === "function" ? _l : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateDepartamento", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Delete)('departamentos/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteDepartamento", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('cargos'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_m = typeof create_cargo_dto_1.CreateCargoDto !== "undefined" && create_cargo_dto_1.CreateCargoDto) === "function" ? _m : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createCargo", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('cargos'),
-    __param(0, (0, common_1.Request)()),
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_proyecto' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getCargos", null);
+], ProductividadController.prototype, "deleteProyecto", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Patch)('cargos/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_o = typeof update_cargo_dto_1.UpdateCargoDto !== "undefined" && update_cargo_dto_1.UpdateCargoDto) === "function" ? _o : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateCargo", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Delete)('cargos/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteCargo", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('roles.create'),
-    (0, common_1.Post)('roles'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_p = typeof create_rol_dto_1.CreateRolDto !== "undefined" && create_rol_dto_1.CreateRolDto) === "function" ? _p : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createRol", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('roles.read'),
-    (0, common_1.Get)('roles'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getRoles", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('roles.update'),
-    (0, common_1.Patch)('roles/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_q = typeof update_rol_dto_1.UpdateRolDto !== "undefined" && update_rol_dto_1.UpdateRolDto) === "function" ? _q : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateRol", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('roles.delete'),
-    (0, common_1.Delete)('roles/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteRol", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('contratos.create'),
-    (0, common_1.Post)('contratos'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_r = typeof create_contrato_dto_1.CreateContratoDto !== "undefined" && create_contrato_dto_1.CreateContratoDto) === "function" ? _r : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createContrato", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('contratos.read'),
-    (0, common_1.Get)('empleados/:empleadoId/contratos'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('empleadoId')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getContratosByEmpleado", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('contratos.update'),
-    (0, common_1.Patch)('contratos/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_s = typeof update_contrato_dto_1.UpdateContratoDto !== "undefined" && update_contrato_dto_1.UpdateContratoDto) === "function" ? _s : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateContrato", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('contratos.delete'),
-    (0, common_1.Delete)('contratos/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteContrato", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('beneficios.read'),
-    (0, common_1.Get)('beneficios'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getBeneficios", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('beneficios.create'),
-    (0, common_1.Post)('beneficios'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_t = typeof create_beneficio_dto_1.CreateBeneficioDto !== "undefined" && create_beneficio_dto_1.CreateBeneficioDto) === "function" ? _t : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createBeneficio", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('beneficios.update'),
-    (0, common_1.Patch)('beneficios/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_u = typeof update_beneficio_dto_1.UpdateBeneficioDto !== "undefined" && update_beneficio_dto_1.UpdateBeneficioDto) === "function" ? _u : Object, Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateBeneficio", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('beneficios.delete'),
-    (0, common_1.Delete)('beneficios/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteBeneficio", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.periodos.read'),
-    (0, common_1.Get)('periodos-nomina'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getPeriodosNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.periodos.create'),
-    (0, common_1.Post)('periodos-nomina'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_v = typeof create_periodo_nomina_dto_1.CreatePeriodoNominaDto !== "undefined" && create_periodo_nomina_dto_1.CreatePeriodoNominaDto) === "function" ? _v : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createPeriodoNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.periodos.update'),
-    (0, common_1.Patch)('periodos-nomina/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_w = typeof update_periodo_nomina_dto_1.UpdatePeriodoNominaDto !== "undefined" && update_periodo_nomina_dto_1.UpdatePeriodoNominaDto) === "function" ? _w : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updatePeriodoNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.periodos.delete'),
-    (0, common_1.Delete)('periodos-nomina/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deletePeriodoNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.conceptos.read'),
-    (0, common_1.Get)('conceptos-nomina'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getConceptosNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.conceptos.create'),
-    (0, common_1.Post)('conceptos-nomina'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_x = typeof create_concepto_nomina_dto_1.CreateConceptoNominaDto !== "undefined" && create_concepto_nomina_dto_1.CreateConceptoNominaDto) === "function" ? _x : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createConceptoNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.conceptos.update'),
-    (0, common_1.Patch)('conceptos-nomina/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_y = typeof update_concepto_nomina_dto_1.UpdateConceptoNominaDto !== "undefined" && update_concepto_nomina_dto_1.UpdateConceptoNominaDto) === "function" ? _y : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateConceptoNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.conceptos.delete'),
-    (0, common_1.Delete)('conceptos-nomina/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteConceptoNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('nomina.procesar'),
-    (0, common_1.Post)('nomina/procesar'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_z = typeof procesar_nomina_dto_1.ProcesarNominaDto !== "undefined" && procesar_nomina_dto_1.ProcesarNominaDto) === "function" ? _z : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "procesarNomina", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.proyectos.read'),
-    (0, common_1.Get)('proyectos'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "getProyectos", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.proyectos.create'),
-    (0, common_1.Post)('proyectos'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_0 = typeof create_proyecto_dto_1.CreateProyectoDto !== "undefined" && create_proyecto_dto_1.CreateProyectoDto) === "function" ? _0 : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "createProyecto", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.proyectos.update'),
-    (0, common_1.Patch)('proyectos/:id'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_1 = typeof update_proyecto_dto_1.UpdateProyectoDto !== "undefined" && update_proyecto_dto_1.UpdateProyectoDto) === "function" ? _1 : Object]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "updateProyecto", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.proyectos.delete'),
-    (0, common_1.Delete)('proyectos/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteProyecto", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.sprints.create'),
-    (0, common_1.Post)('proyectos/:proyectoId/sprints'),
+    (0, microservices_1.MessagePattern)({ cmd: 'create_sprint' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe({ transform: true })),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('proyectoId')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_2 = typeof create_sprint_dto_1.CreateSprintDto !== "undefined" && create_sprint_dto_1.CreateSprintDto) === "function" ? _2 : Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "createSprint", null);
+], ProductividadController.prototype, "createSprint", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.sprints.read'),
-    (0, common_1.Get)('proyectos/:proyectoId/sprints'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('proyectoId')),
+    (0, microservices_1.MessagePattern)({ cmd: 'get_sprints_by_proyecto' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getSprints", null);
+], ProductividadController.prototype, "getSprintsByProyecto", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.sprints.update'),
-    (0, common_1.Patch)('sprints/:id'),
+    (0, microservices_1.MessagePattern)({ cmd: 'update_sprint' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe({ transform: true })),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_3 = typeof update_sprint_dto_1.UpdateSprintDto !== "undefined" && update_sprint_dto_1.UpdateSprintDto) === "function" ? _3 : Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "updateSprint", null);
+], ProductividadController.prototype, "updateSprint", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.sprints.delete'),
-    (0, common_1.Delete)('sprints/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_sprint' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteSprint", null);
+], ProductividadController.prototype, "deleteSprint", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.create'),
-    (0, common_1.Post)('sprints/:sprintId/tareas'),
+    (0, microservices_1.MessagePattern)({ cmd: 'create_tarea' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('sprintId')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_4 = typeof create_tarea_dto_1.CreateTareaDto !== "undefined" && create_tarea_dto_1.CreateTareaDto) === "function" ? _4 : Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "createTarea", null);
+], ProductividadController.prototype, "createTarea", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.read'),
-    (0, common_1.Get)('sprints/:sprintId/tareas'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('sprintId')),
+    (0, microservices_1.MessagePattern)({ cmd: 'get_tareas_by_sprint' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getTareasBySprint", null);
+], ProductividadController.prototype, "getTareasBySprint", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.update'),
-    (0, common_1.Patch)('tareas/:id'),
+    (0, microservices_1.MessagePattern)({ cmd: 'update_tarea' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_5 = typeof update_tarea_dto_1.UpdateTareaDto !== "undefined" && update_tarea_dto_1.UpdateTareaDto) === "function" ? _5 : Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "updateTarea", null);
+], ProductividadController.prototype, "updateTarea", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.delete'),
-    (0, common_1.Delete)('tareas/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_tarea' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteTarea", null);
+], ProductividadController.prototype, "deleteTarea", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.assign'),
-    (0, common_1.Post)('tareas/:tareaId/asignaciones'),
+    (0, microservices_1.MessagePattern)({ cmd: 'assign_tarea' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('tareaId')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_6 = typeof create_asignacion_dto_1.CreateAsignacionDto !== "undefined" && create_asignacion_dto_1.CreateAsignacionDto) === "function" ? _6 : Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "assignTarea", null);
+], ProductividadController.prototype, "assignTarea", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.read'),
-    (0, common_1.Get)('tareas/:tareaId/asignaciones'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('tareaId')),
+    (0, microservices_1.MessagePattern)({ cmd: 'get_asignaciones' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "getAsignaciones", null);
+], ProductividadController.prototype, "getAsignaciones", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.assign'),
-    (0, common_1.Delete)('asignaciones/:id'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
+    (0, microservices_1.MessagePattern)({ cmd: 'remove_asignacion' }),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "removeAsignacion", null);
+], ProductividadController.prototype, "removeAsignacion", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('productividad.tareas.assign'),
-    (0, common_1.Patch)('asignaciones/:id'),
+    (0, microservices_1.MessagePattern)({ cmd: 'update_asignacion' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, typeof (_7 = typeof update_asignacion_dto_1.UpdateAsignacionDto !== "undefined" && update_asignacion_dto_1.UpdateAsignacionDto) === "function" ? _7 : Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AppController.prototype, "updateAsignacion", null);
-exports.AppController = AppController = __decorate([
+], ProductividadController.prototype, "updateAsignacion", null);
+exports.ProductividadController = ProductividadController = __decorate([
     (0, common_1.Controller)(),
-    __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
-    __param(2, (0, common_1.Inject)('PERSONAL_SERVICE')),
-    __param(3, (0, common_1.Inject)('NOMINA_SERVICE')),
-    __param(4, (0, common_1.Inject)('PRODUCTIVIDAD_SERVICE')),
-    __metadata("design:paramtypes", [typeof (_a = typeof app_service_1.AppService !== "undefined" && app_service_1.AppService) === "function" ? _a : Object, typeof (_b = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _b : Object, typeof (_c = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _c : Object, typeof (_d = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _d : Object, typeof (_e = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _e : Object])
-], AppController);
+    __metadata("design:paramtypes", [typeof (_a = typeof productividad_service_1.ProductividadService !== "undefined" && productividad_service_1.ProductividadService) === "function" ? _a : Object])
+], ProductividadController);
 
 
 /***/ }),
 
-/***/ "./apps/punto-pymes-backend/src/app.module.ts":
-/*!****************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/app.module.ts ***!
-  \****************************************************/
+/***/ "./apps/productividad/src/productividad.module.ts":
+/*!********************************************************!*\
+  !*** ./apps/productividad/src/productividad.module.ts ***!
+  \********************************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1978,145 +377,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AppModule = void 0;
+exports.ProductividadModule = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const app_controller_1 = __webpack_require__(/*! ./app.controller */ "./apps/punto-pymes-backend/src/app.controller.ts");
-const app_service_1 = __webpack_require__(/*! ./app.service */ "./apps/punto-pymes-backend/src/app.service.ts");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
-const passport_1 = __webpack_require__(/*! @nestjs/passport */ "@nestjs/passport");
-const jwt_strategy_1 = __webpack_require__(/*! ./auth/jwt.strategy */ "./apps/punto-pymes-backend/src/auth/jwt.strategy.ts");
-let AppModule = class AppModule {
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
+const productividad_controller_1 = __webpack_require__(/*! ./productividad.controller */ "./apps/productividad/src/productividad.controller.ts");
+const productividad_service_1 = __webpack_require__(/*! ./productividad.service */ "./apps/productividad/src/productividad.service.ts");
+let ProductividadModule = class ProductividadModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.ProductividadModule = ProductividadModule;
+exports.ProductividadModule = ProductividadModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
                 envFilePath: './.env',
             }),
-            microservices_1.ClientsModule.registerAsync([
-                {
-                    name: 'AUTH_SERVICE',
-                    imports: [config_1.ConfigModule],
-                    inject: [config_1.ConfigService],
-                    useFactory: (configService) => ({
-                        transport: microservices_1.Transport.TCP,
-                        options: {
-                            host: 'auth_service',
-                            port: +configService.get('AUTH_SERVICE_PORT'),
-                        },
-                    }),
-                },
-                {
-                    name: 'PERSONAL_SERVICE',
-                    imports: [config_1.ConfigModule],
-                    inject: [config_1.ConfigService],
-                    useFactory: (configService) => ({
-                        transport: microservices_1.Transport.TCP,
-                        options: {
-                            host: 'personal_service',
-                            port: +configService.get('PERSONAL_SERVICE_PORT'),
-                        },
-                    }),
-                },
-                {
-                    name: 'NOMINA_SERVICE',
-                    imports: [config_1.ConfigModule],
-                    inject: [config_1.ConfigService],
-                    useFactory: (configService) => ({
-                        transport: microservices_1.Transport.TCP,
-                        options: {
-                            host: 'nomina_service',
-                            port: +configService.get('NOMINA_SERVICE_PORT'),
-                        },
-                    }),
-                },
-                {
-                    name: 'PRODUCTIVIDAD_SERVICE',
-                    imports: [config_1.ConfigModule],
-                    inject: [config_1.ConfigService],
-                    useFactory: (configService) => ({
-                        transport: microservices_1.Transport.TCP,
-                        options: {
-                            host: 'productividad_service',
-                            port: +configService.get('PRODUCTIVIDAD_SERVICE_PORT'),
-                        },
-                    }),
-                },
+            database_1.DatabaseModule,
+            typeorm_1.TypeOrmModule.forFeature([
+                database_1.Proyecto,
+                database_1.Sprint,
+                database_1.Tarea,
+                database_1.AsignacionTarea,
+                database_1.Empleado,
             ]),
-            jwt_1.JwtModule.registerAsync({
-                imports: [config_1.ConfigModule],
-                inject: [config_1.ConfigService],
-                useFactory: (configService) => ({
-                    secret: configService.get('JWT_SECRET'),
-                    signOptions: {
-                        expiresIn: +configService.get('JWT_EXPIRES_IN'),
-                    },
-                }),
-            }),
-            passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
         ],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, jwt_strategy_1.JwtStrategy],
+        controllers: [productividad_controller_1.ProductividadController],
+        providers: [productividad_service_1.ProductividadService],
     })
-], AppModule);
+], ProductividadModule);
 
 
 /***/ }),
 
-/***/ "./apps/punto-pymes-backend/src/app.service.ts":
-/*!*****************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/app.service.ts ***!
-  \*****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AppService = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-let AppService = class AppService {
-    getHello() {
-        return 'Hello World!';
-    }
-};
-exports.AppService = AppService;
-exports.AppService = AppService = __decorate([
-    (0, common_1.Injectable)()
-], AppService);
-
-
-/***/ }),
-
-/***/ "./apps/punto-pymes-backend/src/auth/decorators/permission.decorator.ts":
-/*!******************************************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/auth/decorators/permission.decorator.ts ***!
-  \******************************************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.RequirePermission = exports.PERMISSION_KEY = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-exports.PERMISSION_KEY = 'require_permission';
-const RequirePermission = (permission) => (0, common_1.SetMetadata)(exports.PERMISSION_KEY, permission);
-exports.RequirePermission = RequirePermission;
-
-
-/***/ }),
-
-/***/ "./apps/punto-pymes-backend/src/auth/guards/permission.guard.ts":
-/*!**********************************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/auth/guards/permission.guard.ts ***!
-  \**********************************************************************/
+/***/ "./apps/productividad/src/productividad.service.ts":
+/*!*********************************************************!*\
+  !*** ./apps/productividad/src/productividad.service.ts ***!
+  \*********************************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2129,134 +427,400 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c, _d, _e;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PermissionGuard = void 0;
+exports.ProductividadService = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const core_1 = __webpack_require__(/*! @nestjs/core */ "@nestjs/core");
-const permission_decorator_1 = __webpack_require__(/*! ../decorators/permission.decorator */ "./apps/punto-pymes-backend/src/auth/decorators/permission.decorator.ts");
-let PermissionGuard = class PermissionGuard {
-    reflector;
-    constructor(reflector) {
-        this.reflector = reflector;
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
+const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
+const create_proyecto_dto_1 = __webpack_require__(/*! ./dto/create-proyecto.dto */ "./apps/productividad/src/dto/create-proyecto.dto.ts");
+const create_tarea_dto_1 = __webpack_require__(/*! ./dto/create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
+let ProductividadService = class ProductividadService {
+    proyectoRepository;
+    sprintRepository;
+    empleadoRepository;
+    tareaRepository;
+    asignacionRepository;
+    constructor(proyectoRepository, sprintRepository, empleadoRepository, tareaRepository, asignacionRepository) {
+        this.proyectoRepository = proyectoRepository;
+        this.sprintRepository = sprintRepository;
+        this.empleadoRepository = empleadoRepository;
+        this.tareaRepository = tareaRepository;
+        this.asignacionRepository = asignacionRepository;
     }
-    canActivate(context) {
-        const requiredPermission = this.reflector.get(permission_decorator_1.PERMISSION_KEY, context.getHandler());
-        if (!requiredPermission) {
-            return true;
-        }
-        const { user } = context.switchToHttp().getRequest();
-        if (!user || !user.permisos) {
-            throw new common_1.ForbiddenException('No tienes permisos (payload de usuario vacío).');
-        }
-        const hasPermission = this.checkPermission(user.permisos, requiredPermission);
-        if (!hasPermission) {
-            throw new common_1.ForbiddenException(`No tienes el permiso requerido: '${requiredPermission}'`);
-        }
-        return true;
-    }
-    checkPermission(permisos, path) {
-        if (permisos?.esAdmin === true) {
-            return true;
-        }
-        const keys = path.split('.');
-        let current = permisos;
-        for (const key of keys) {
-            if (current[key] === undefined || current[key] === null) {
-                return false;
-            }
-            current = current[key];
-        }
-        return current === true;
-    }
-};
-exports.PermissionGuard = PermissionGuard;
-exports.PermissionGuard = PermissionGuard = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof core_1.Reflector !== "undefined" && core_1.Reflector) === "function" ? _a : Object])
-], PermissionGuard);
-
-
-/***/ }),
-
-/***/ "./apps/punto-pymes-backend/src/auth/jwt-auth.guard.ts":
-/*!*************************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/auth/jwt-auth.guard.ts ***!
-  \*************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.JwtAuthGuard = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const passport_1 = __webpack_require__(/*! @nestjs/passport */ "@nestjs/passport");
-let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
-};
-exports.JwtAuthGuard = JwtAuthGuard;
-exports.JwtAuthGuard = JwtAuthGuard = __decorate([
-    (0, common_1.Injectable)()
-], JwtAuthGuard);
-
-
-/***/ }),
-
-/***/ "./apps/punto-pymes-backend/src/auth/jwt.strategy.ts":
-/*!***********************************************************!*\
-  !*** ./apps/punto-pymes-backend/src/auth/jwt.strategy.ts ***!
-  \***********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.JwtStrategy = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-const passport_1 = __webpack_require__(/*! @nestjs/passport */ "@nestjs/passport");
-const passport_jwt_1 = __webpack_require__(/*! passport-jwt */ "passport-jwt");
-let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
-    constructor(configService) {
-        const secret = configService.get('JWT_SECRET');
-        if (!secret) {
-            throw new Error('JWT_SECRET is not defined in environment variables');
-        }
-        super({
-            jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: secret,
+    async getProyectos(empresaId) {
+        return this.proyectoRepository.find({
+            where: { empresaId: empresaId },
+            relations: ['lider'],
+            withDeleted: false,
         });
     }
-    async validate(payload) {
-        return {
-            userId: payload.sub,
-            email: payload.email,
-            empresaId: payload.empresaId,
-            empleadoId: payload.empleadoId,
-            rolId: payload.rolId,
-            permisos: payload.permisos,
-        };
+    async createProyecto(empresaId, dto) {
+        const existente = await this.proyectoRepository.findOneBy({
+            nombre: dto.nombre,
+            empresaId: empresaId,
+        });
+        if (existente) {
+            throw new common_1.ConflictException('Ya existe un proyecto con ese nombre en esta empresa.');
+        }
+        if (dto.liderId) {
+            const lider = await this.empleadoRepository.findOneBy({
+                id: dto.liderId,
+                empresaId: empresaId,
+            });
+            if (!lider) {
+                throw new common_1.BadRequestException('El líder seleccionado no es un empleado válido de esta empresa.');
+            }
+        }
+        const nuevoProyecto = this.proyectoRepository.create({
+            ...dto,
+            empresaId: empresaId,
+            estado: dto.estado || create_proyecto_dto_1.EstadoProyecto.ACTIVO,
+        });
+        return this.proyectoRepository.save(nuevoProyecto);
+    }
+    async updateProyecto(empresaId, proyectoId, dto) {
+        const proyecto = await this.proyectoRepository.findOneBy({
+            id: proyectoId,
+            empresaId: empresaId,
+        });
+        if (!proyecto) {
+            throw new common_1.NotFoundException('Proyecto no encontrado o no pertenece a esta empresa.');
+        }
+        if (dto.liderId && dto.liderId !== proyecto.liderId) {
+            const lider = await this.empleadoRepository.findOneBy({
+                id: dto.liderId,
+                empresaId: empresaId,
+            });
+            if (!lider) {
+                throw new common_1.BadRequestException('El líder seleccionado no es un empleado válido de esta empresa.');
+            }
+        }
+        if (dto.nombre && dto.nombre !== proyecto.nombre) {
+            const existente = await this.proyectoRepository.findOneBy({
+                nombre: dto.nombre,
+                empresaId: empresaId,
+                id: (0, typeorm_2.Not)(proyectoId),
+            });
+            if (existente) {
+                throw new common_1.ConflictException('Ya existe un proyecto con ese nombre en esta empresa.');
+            }
+        }
+        const proyectoActualizado = this.proyectoRepository.merge(proyecto, dto);
+        return this.proyectoRepository.save(proyectoActualizado);
+    }
+    async deleteProyecto(empresaId, proyectoId) {
+        const proyecto = await this.proyectoRepository.findOneBy({
+            id: proyectoId,
+            empresaId: empresaId,
+        });
+        if (!proyecto) {
+            throw new common_1.NotFoundException('Proyecto no encontrado o no pertenece a esta empresa.');
+        }
+        const sprints = await this.sprintRepository.count({
+            where: { proyectoId: proyectoId },
+        });
+        if (sprints > 0) {
+            throw new common_1.ConflictException(`No se puede eliminar. Este proyecto tiene ${sprints} sprint(s) asociados.`);
+        }
+        await this.proyectoRepository.softRemove(proyecto);
+        return { message: 'Proyecto eliminado correctamente.' };
+    }
+    async createSprint(empresaId, proyectoId, dto) {
+        const proyecto = await this.proyectoRepository.findOneBy({
+            id: proyectoId,
+            empresaId: empresaId,
+        });
+        if (!proyecto) {
+            throw new common_1.NotFoundException('Proyecto no encontrado o no tienes acceso.');
+        }
+        if (dto.fechaInicio >= dto.fechaFin) {
+            throw new common_1.BadRequestException('La fecha de inicio debe ser anterior a la de fin.');
+        }
+        const sprint = this.sprintRepository.create({
+            ...dto,
+            proyectoId: proyectoId,
+        });
+        return this.sprintRepository.save(sprint);
+    }
+    async getSprintsByProyecto(empresaId, proyectoId) {
+        const proyecto = await this.proyectoRepository.findOneBy({
+            id: proyectoId,
+            empresaId: empresaId,
+        });
+        if (!proyecto)
+            throw new common_1.NotFoundException('Proyecto no encontrado.');
+        return this.sprintRepository.find({
+            where: { proyectoId: proyectoId },
+            order: { fechaInicio: 'ASC' },
+        });
+    }
+    async updateSprint(empresaId, sprintId, dto) {
+        const sprint = await this.sprintRepository.findOne({
+            where: { id: sprintId },
+            relations: ['proyecto'],
+        });
+        if (!sprint || sprint.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Sprint no encontrado o no tienes acceso.');
+        }
+        const inicio = dto.fechaInicio ? new Date(dto.fechaInicio) : sprint.fechaInicio;
+        const fin = dto.fechaFin ? new Date(dto.fechaFin) : sprint.fechaFin;
+        if (inicio >= fin) {
+            throw new common_1.BadRequestException('La fecha de inicio debe ser anterior a la fecha de fin.');
+        }
+        this.sprintRepository.merge(sprint, dto);
+        return this.sprintRepository.save(sprint);
+    }
+    async deleteSprint(empresaId, sprintId) {
+        const sprint = await this.sprintRepository.findOne({
+            where: { id: sprintId },
+            relations: ['proyecto'],
+        });
+        if (!sprint || sprint.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Sprint no encontrado o no tienes acceso.');
+        }
+        await this.sprintRepository.softRemove(sprint);
+        return { message: 'Sprint eliminado correctamente.' };
+    }
+    async createTarea(empresaId, sprintId, dto) {
+        const sprint = await this.sprintRepository.findOne({
+            where: { id: sprintId },
+            relations: ['proyecto'],
+        });
+        if (!sprint || sprint.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Sprint no encontrado o no tienes acceso.');
+        }
+        const tarea = this.tareaRepository.create({
+            ...dto,
+            sprintId: sprintId,
+            proyectoId: sprint.proyecto.id,
+            estado: dto.estado || create_tarea_dto_1.EstadoTarea.PENDIENTE,
+            prioridad: dto.prioridad || create_tarea_dto_1.PrioridadTarea.MEDIA,
+        });
+        return this.tareaRepository.save(tarea);
+    }
+    async getTareasBySprint(empresaId, sprintId) {
+        const sprint = await this.sprintRepository.findOne({
+            where: { id: sprintId },
+            relations: ['proyecto'],
+        });
+        if (!sprint || sprint.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Sprint no encontrado.');
+        }
+        return this.tareaRepository.find({
+            where: { sprintId: sprintId },
+            order: { createdAt: 'DESC' },
+        });
+    }
+    async updateTarea(empresaId, tareaId, dto) {
+        const tarea = await this.tareaRepository.findOne({
+            where: { id: tareaId },
+            relations: ['proyecto'],
+        });
+        if (!tarea || tarea.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Tarea no encontrada o no tienes acceso.');
+        }
+        this.tareaRepository.merge(tarea, dto);
+        return this.tareaRepository.save(tarea);
+    }
+    async deleteTarea(empresaId, tareaId) {
+        const tarea = await this.tareaRepository.findOne({
+            where: { id: tareaId },
+            relations: ['proyecto'],
+        });
+        if (!tarea || tarea.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Tarea no encontrada o no tienes acceso.');
+        }
+        await this.tareaRepository.softRemove(tarea);
+        return { message: 'Tarea eliminada correctamente.' };
+    }
+    async assignTarea(empresaId, tareaId, dto) {
+        console.log('🔍 DEBUG 1: Iniciando assignTarea');
+        try {
+            if (!this.tareaRepository)
+                throw new Error('CRÍTICO: tareaRepository es undefined');
+            if (!this.empleadoRepository)
+                throw new Error('CRÍTICO: empleadoRepository es undefined');
+            if (!this.asignacionRepository)
+                throw new Error('CRÍTICO: asignacionRepository es undefined');
+            console.log('🔍 DEBUG 2: Buscando tarea', tareaId);
+            const tarea = await this.tareaRepository.findOne({
+                where: { id: tareaId },
+                relations: ['proyecto'],
+            });
+            if (!tarea)
+                throw new common_1.NotFoundException('Tarea no encontrada');
+            if (tarea.proyecto.empresaId !== empresaId)
+                throw new common_1.NotFoundException('No tienes acceso a esta tarea');
+            console.log('🔍 DEBUG 3: Buscando empleado', dto.empleadoId);
+            const empleado = await this.empleadoRepository.findOneBy({
+                id: dto.empleadoId,
+                empresaId: empresaId,
+            });
+            if (!empleado)
+                throw new common_1.BadRequestException('Empleado no encontrado o es de otra empresa');
+            console.log('🔍 DEBUG 4: Creando asignación');
+            const asignacion = this.asignacionRepository.create({
+                tareaId: tareaId,
+                empleadoId: dto.empleadoId,
+                observaciones: dto.observaciones,
+            });
+            console.log('🔍 DEBUG 5: Guardando...');
+            const guardado = await this.asignacionRepository.save(asignacion);
+            console.log('✅ ÉXITO: Guardado correcto');
+            return guardado;
+        }
+        catch (error) {
+            console.error('💥💥 ERROR EXPLÍCITO EN MICROSERVICIO 💥💥');
+            console.error(error);
+            throw error;
+        }
+    }
+    async getAsignacionesByTarea(empresaId, tareaId) {
+        const tarea = await this.tareaRepository.findOne({
+            where: { id: tareaId },
+            relations: ['proyecto'],
+        });
+        if (!tarea || tarea.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Tarea no encontrada.');
+        }
+        return this.asignacionRepository.find({
+            where: { tareaId: tareaId },
+            relations: ['empleado'],
+        });
+    }
+    async removeAsignacion(empresaId, asignacionId) {
+        const asignacion = await this.asignacionRepository.findOne({
+            where: { id: asignacionId },
+            relations: ['tarea', 'tarea.proyecto'],
+        });
+        if (!asignacion || asignacion.tarea.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Asignación no encontrada o no tienes acceso.');
+        }
+        await this.asignacionRepository.remove(asignacion);
+        return { message: 'Empleado desasignado correctamente.' };
+    }
+    async updateAsignacion(empresaId, asignacionId, dto) {
+        const asignacion = await this.asignacionRepository.findOne({
+            where: { id: asignacionId },
+            relations: ['tarea', 'tarea.proyecto'],
+        });
+        if (!asignacion || asignacion.tarea.proyecto.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Asignación no encontrada o no tienes acceso.');
+        }
+        if (dto.empleadoId && dto.empleadoId !== asignacion.empleadoId) {
+            const nuevoEmpleado = await this.empleadoRepository.findOneBy({
+                id: dto.empleadoId,
+                empresaId: empresaId,
+            });
+            if (!nuevoEmpleado) {
+                throw new common_1.BadRequestException('El nuevo empleado no es válido o no pertenece a tu empresa.');
+            }
+        }
+        this.asignacionRepository.merge(asignacion, dto);
+        return this.asignacionRepository.save(asignacion);
     }
 };
-exports.JwtStrategy = JwtStrategy;
-exports.JwtStrategy = JwtStrategy = __decorate([
+exports.ProductividadService = ProductividadService;
+exports.ProductividadService = ProductividadService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _a : Object])
-], JwtStrategy);
+    __param(0, (0, typeorm_1.InjectRepository)(database_1.Proyecto)),
+    __param(1, (0, typeorm_1.InjectRepository)(database_1.Sprint)),
+    __param(2, (0, typeorm_1.InjectRepository)(database_1.Empleado)),
+    __param(3, (0, typeorm_1.InjectRepository)(database_1.Tarea)),
+    __param(4, (0, typeorm_1.InjectRepository)(database_1.AsignacionTarea)),
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object, typeof (_d = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _d : Object, typeof (_e = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _e : Object])
+], ProductividadService);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/database.module.ts":
+/*!**********************************************!*\
+  !*** ./libs/database/src/database.module.ts ***!
+  \**********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DatabaseModule = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const entities = __importStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"));
+const entityList = Object.values(entities).filter((entity) => typeof entity === 'function');
+let DatabaseModule = class DatabaseModule {
+};
+exports.DatabaseModule = DatabaseModule;
+exports.DatabaseModule = DatabaseModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [
+                    config_1.ConfigModule.forRoot({
+                        isGlobal: true,
+                        envFilePath: './.env',
+                    }),
+                ],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => ({
+                    type: 'postgres',
+                    host: configService.get('DB_POSTGRES_HOST'),
+                    port: configService.get('DB_POSTGRES_PORT'),
+                    username: configService.get('DB_POSTGRES_USER'),
+                    password: configService.get('DB_POSTGRES_PASSWORD'),
+                    database: configService.get('DB_POSTGRES_DATABASE'),
+                    entities: entityList,
+                    synchronize: true,
+                }),
+            }),
+        ],
+        exports: [typeorm_1.TypeOrmModule],
+    })
+], DatabaseModule);
 
 
 /***/ }),
@@ -3693,6 +2257,61 @@ exports.Evaluacion = Evaluacion = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/index.ts":
+/*!*********************************************!*\
+  !*** ./libs/database/src/entities/index.ts ***!
+  \*********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./usuario.entity */ "./libs/database/src/entities/usuario.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./contrato.entity */ "./libs/database/src/entities/contrato.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./nominaEmpleado.entity */ "./libs/database/src/entities/nominaEmpleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./rubroNomina.entity */ "./libs/database/src/entities/rubroNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./objetivo.entity */ "./libs/database/src/entities/objetivo.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/entities/itemGasto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts"), exports);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/inscripcionCurso.entity.ts":
 /*!***************************************************************!*\
   !*** ./libs/database/src/entities/inscripcionCurso.entity.ts ***!
@@ -4903,6 +3522,34 @@ exports.Usuario = Usuario = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/index.ts":
+/*!************************************!*\
+  !*** ./libs/database/src/index.ts ***!
+  \************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database.module */ "./libs/database/src/database.module.ts"), exports);
+__exportStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"), exports);
+
+
+/***/ }),
+
 /***/ "@nestjs/common":
 /*!*********************************!*\
   !*** external "@nestjs/common" ***!
@@ -4933,26 +3580,6 @@ module.exports = require("@nestjs/core");
 
 /***/ }),
 
-/***/ "@nestjs/jwt":
-/*!******************************!*\
-  !*** external "@nestjs/jwt" ***!
-  \******************************/
-/***/ ((module) => {
-
-module.exports = require("@nestjs/jwt");
-
-/***/ }),
-
-/***/ "@nestjs/mapped-types":
-/*!***************************************!*\
-  !*** external "@nestjs/mapped-types" ***!
-  \***************************************/
-/***/ ((module) => {
-
-module.exports = require("@nestjs/mapped-types");
-
-/***/ }),
-
 /***/ "@nestjs/microservices":
 /*!****************************************!*\
   !*** external "@nestjs/microservices" ***!
@@ -4963,23 +3590,13 @@ module.exports = require("@nestjs/microservices");
 
 /***/ }),
 
-/***/ "@nestjs/passport":
-/*!***********************************!*\
-  !*** external "@nestjs/passport" ***!
-  \***********************************/
+/***/ "@nestjs/typeorm":
+/*!**********************************!*\
+  !*** external "@nestjs/typeorm" ***!
+  \**********************************/
 /***/ ((module) => {
 
-module.exports = require("@nestjs/passport");
-
-/***/ }),
-
-/***/ "class-transformer":
-/*!************************************!*\
-  !*** external "class-transformer" ***!
-  \************************************/
-/***/ ((module) => {
-
-module.exports = require("class-transformer");
+module.exports = require("@nestjs/typeorm");
 
 /***/ }),
 
@@ -4990,16 +3607,6 @@ module.exports = require("class-transformer");
 /***/ ((module) => {
 
 module.exports = require("class-validator");
-
-/***/ }),
-
-/***/ "passport-jwt":
-/*!*******************************!*\
-  !*** external "passport-jwt" ***!
-  \*******************************/
-/***/ ((module) => {
-
-module.exports = require("passport-jwt");
 
 /***/ }),
 
@@ -5044,16 +3651,28 @@ var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 var exports = __webpack_exports__;
-/*!**********************************************!*\
-  !*** ./apps/punto-pymes-backend/src/main.ts ***!
-  \**********************************************/
+/*!****************************************!*\
+  !*** ./apps/productividad/src/main.ts ***!
+  \****************************************/
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(/*! @nestjs/core */ "@nestjs/core");
-const app_module_1 = __webpack_require__(/*! ./app.module */ "./apps/punto-pymes-backend/src/app.module.ts");
+const productividad_module_1 = __webpack_require__(/*! ./productividad.module */ "./apps/productividad/src/productividad.module.ts");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    await app.listen(process.env.PORT ?? 3000);
+    const app = await core_1.NestFactory.create(productividad_module_1.ProductividadModule);
+    const configService = app.get(config_1.ConfigService);
+    const port = configService.get('PRODUCTIVIDAD_SERVICE_PORT') || 3004;
+    app.connectMicroservice({
+        transport: microservices_1.Transport.TCP,
+        options: {
+            host: '0.0.0.0',
+            port: port,
+        },
+    });
+    await app.startAllMicroservices();
+    console.log(`🚀 Microservicio PRODUCTIVIDAD está escuchando en el puerto ${port}`);
 }
 bootstrap();
 

@@ -32,6 +32,19 @@ import { CreateContratoDto } from '../../nomina/src/dto/create-contrato.dto';
 import { UpdateContratoDto } from '../../nomina/src/dto/update-contrato.dto';
 import { CreateBeneficioDto } from '../../nomina/src/dto/create-beneficio.dto';
 import { UpdateBeneficioDto } from '../../nomina/src/dto/update-beneficio.dto';
+import { CreatePeriodoNominaDto } from '../../nomina/src/dto/create-periodo-nomina.dto';
+import { UpdatePeriodoNominaDto } from '../../nomina/src/dto/update-periodo-nomina.dto';
+import { CreateConceptoNominaDto } from '../../nomina/src/dto/create-concepto-nomina.dto';
+import { UpdateConceptoNominaDto } from '../../nomina/src/dto/update-concepto-nomina.dto';
+import { ProcesarNominaDto } from '../../nomina/src/dto/procesar-nomina.dto';
+import { CreateProyectoDto } from 'apps/productividad/src/dto/create-proyecto.dto';
+import { UpdateProyectoDto } from 'apps/productividad/src/dto/update-proyecto.dto';
+import { CreateSprintDto } from 'apps/productividad/src/dto/create-sprint.dto';
+import { UpdateSprintDto } from 'apps/productividad/src/dto/update-sprint.dto';
+import { CreateTareaDto } from 'apps/productividad/src/dto/create-tarea.dto';
+import { UpdateTareaDto } from 'apps/productividad/src/dto/update-tarea.dto';
+import { CreateAsignacionDto } from 'apps/productividad/src/dto/create-asignacion.dto';
+import { UpdateAsignacionDto } from 'apps/productividad/src/dto/update-asignacion.dto';
 @Controller()
 export class AppController {
   constructor(
@@ -39,6 +52,7 @@ export class AppController {
     @Inject('AUTH_SERVICE') private readonly authService: ClientProxy,
     @Inject('PERSONAL_SERVICE') private readonly personalService: ClientProxy,
     @Inject('NOMINA_SERVICE') private readonly nominaService: ClientProxy,
+    @Inject('PRODUCTIVIDAD_SERVICE') private readonly productividadService: ClientProxy,
   ) { }
 
   @Get()
@@ -545,6 +559,385 @@ export class AppController {
     return this.nominaService.send(
       { cmd: 'delete_beneficio' },
       { empresaId: empresaId, beneficioId: beneficioId },
+    );
+  }
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.periodos.read') // <-- Protegido por RBAC
+  @Get('periodos-nomina')
+  getPeriodosNomina(@Request() req) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'get_periodos_nomina' },
+      { empresaId: empresaId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.periodos.create')
+  @Post('periodos-nomina')
+  @UsePipes(new ValidationPipe())
+  createPeriodoNomina(
+    @Request() req,
+    @Body() dto: CreatePeriodoNominaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'create_periodo_nomina' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.periodos.update')
+  @Patch('periodos-nomina/:id')
+  @UsePipes(new ValidationPipe())
+  updatePeriodoNomina(
+    @Request() req,
+    @Param('id') periodoId: string,
+    @Body() dto: UpdatePeriodoNominaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'update_periodo_nomina' },
+      { empresaId: empresaId, periodoId: periodoId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.periodos.delete')
+  @Delete('periodos-nomina/:id')
+  deletePeriodoNomina(
+    @Request() req,
+    @Param('id') periodoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'delete_periodo_nomina' },
+      { empresaId: empresaId, periodoId: periodoId },
+    );
+  }
+  // --- INICIO DE CRUD PARA CONCEPTO NOMINA (Semana 9) ---
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.conceptos.read') // <-- Protegido por RBAC
+  @Get('conceptos-nomina')
+  getConceptosNomina(@Request() req) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'get_conceptos_nomina' },
+      { empresaId: empresaId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.conceptos.create')
+  @Post('conceptos-nomina')
+  @UsePipes(new ValidationPipe())
+  createConceptoNomina(
+    @Request() req,
+    @Body() dto: CreateConceptoNominaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'create_concepto_nomina' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.conceptos.update')
+  @Patch('conceptos-nomina/:id')
+  @UsePipes(new ValidationPipe())
+  updateConceptoNomina(
+    @Request() req,
+    @Param('id') conceptoId: string,
+    @Body() dto: UpdateConceptoNominaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'update_concepto_nomina' },
+      { empresaId: empresaId, conceptoId: conceptoId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.conceptos.delete')
+  @Delete('conceptos-nomina/:id')
+  deleteConceptoNomina(
+    @Request() req,
+    @Param('id') conceptoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'delete_concepto_nomina' },
+      { empresaId: empresaId, conceptoId: conceptoId },
+    );
+  }
+  // --- INICIO DE LÓGICA DE PROCESAMIENTO (Semana 9) ---
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.procesar') // <-- ¡Protegido!
+  @Post('nomina/procesar')
+  @UsePipes(new ValidationPipe())
+  procesarNomina(
+    @Request() req,
+    @Body() dto: ProcesarNominaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.nominaService.send(
+      { cmd: 'procesar_nomina' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+  // --- INICIO DE CRUD PARA PROYECTO (Semana 9) ---
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.proyectos.read') // <-- Define tu permiso
+  @Get('proyectos')
+  getProyectos(@Request() req) {
+    const { empresaId } = req.user;
+    // Envía el mensaje al microservicio de productividad
+    return this.productividadService.send(
+      { cmd: 'get_proyectos' }, // El "comando" que escuchará
+      { empresaId: empresaId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.proyectos.create')
+  @Post('proyectos')
+  @UsePipes(new ValidationPipe())
+  createProyecto(
+    @Request() req,
+    @Body() dto: CreateProyectoDto, // <-- El DTO que ya creamos
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_proyecto' },
+      { empresaId: empresaId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.proyectos.update')
+  @Patch('proyectos/:id')
+  @UsePipes(new ValidationPipe())
+  updateProyecto(
+    @Request() req,
+    @Param('id') proyectoId: string, // 'id' debe coincidir con la ruta
+    @Body() dto: UpdateProyectoDto, // El DTO de actualización
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_proyecto' },
+      { empresaId: empresaId, proyectoId: proyectoId, dto: dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.proyectos.delete')
+  @Delete('proyectos/:id')
+  deleteProyecto(
+    @Request() req,
+    @Param('id') proyectoId: string, // 'id' debe coincidir con la ruta
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_proyecto' },
+      { empresaId: empresaId, proyectoId: proyectoId },
+    );
+  }
+  // 1. Crear Sprint (POST /proyectos/:id/sprints)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.sprints.create')
+  @Post('proyectos/:proyectoId/sprints')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  createSprint(
+    @Request() req,
+    @Param('proyectoId') proyectoId: string,
+    @Body() dto: CreateSprintDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_sprint' },
+      { empresaId, proyectoId, dto },
+    );
+  }
+
+  // 2. Listar Sprints (GET /proyectos/:id/sprints)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.sprints.read')
+  @Get('proyectos/:proyectoId/sprints')
+  getSprints(
+    @Request() req,
+    @Param('proyectoId') proyectoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_sprints_by_proyecto' },
+      { empresaId, proyectoId },
+    );
+  }
+
+  // 3. Actualizar Sprint (PATCH /sprints/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.sprints.update')
+  @Patch('sprints/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  updateSprint(
+    @Request() req,
+    @Param('id') sprintId: string,
+    @Body() dto: UpdateSprintDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_sprint' },
+      { empresaId, sprintId, dto },
+    );
+  }
+
+  // 4. Borrar Sprint (DELETE /sprints/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.sprints.delete')
+  @Delete('sprints/:id')
+  deleteSprint(
+    @Request() req,
+    @Param('id') sprintId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_sprint' },
+      { empresaId, sprintId },
+    );
+  }
+  // 1. CREAR TAREA (POST /sprints/:sprintId/tareas)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.create')
+  @Post('sprints/:sprintId/tareas')
+  @UsePipes(new ValidationPipe())
+  createTarea(
+    @Request() req,
+    @Param('sprintId') sprintId: string,
+    @Body() dto: CreateTareaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_tarea' },
+      { empresaId, sprintId, dto },
+    );
+  }
+
+  // 2. LISTAR TAREAS (GET /sprints/:sprintId/tareas)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.read')
+  @Get('sprints/:sprintId/tareas')
+  getTareasBySprint(
+    @Request() req,
+    @Param('sprintId') sprintId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_tareas_by_sprint' },
+      { empresaId, sprintId },
+    );
+  }
+
+  // 3. ACTUALIZAR TAREA (PATCH /tareas/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.update')
+  @Patch('tareas/:id')
+  @UsePipes(new ValidationPipe())
+  updateTarea(
+    @Request() req,
+    @Param('id') tareaId: string,
+    @Body() dto: UpdateTareaDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_tarea' },
+      { empresaId, tareaId, dto },
+    );
+  }
+
+  // 4. BORRAR TAREA (DELETE /tareas/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.delete')
+  @Delete('tareas/:id')
+  deleteTarea(
+    @Request() req,
+    @Param('id') tareaId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_tarea' },
+      { empresaId, tareaId },
+    );
+  }
+  // ==========================================
+  //          ASIGNACIONES (Staffing)
+  // ==========================================
+
+  // 1. ASIGNAR EMPLEADO (POST /tareas/:tareaId/asignaciones)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.assign')
+  @Post('tareas/:tareaId/asignaciones')
+  @UsePipes(new ValidationPipe())
+  assignTarea(
+    @Request() req,
+    @Param('tareaId') tareaId: string,
+    @Body() dto: CreateAsignacionDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'assign_tarea' },
+      { empresaId, tareaId, dto },
+    );
+  }
+
+  // 2. VER QUIÉN ESTÁ ASIGNADO (GET /tareas/:tareaId/asignaciones)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.read')
+  @Get('tareas/:tareaId/asignaciones')
+  getAsignaciones(
+    @Request() req,
+    @Param('tareaId') tareaId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_asignaciones' },
+      { empresaId, tareaId },
+    );
+  }
+
+  // 3. DESASIGNAR (DELETE /asignaciones/:id)
+  // Nota: Usamos el ID de la ASIGNACIÓN, no del empleado
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.assign') // Mismo permiso que asignar
+  @Delete('asignaciones/:id')
+  removeAsignacion(
+    @Request() req,
+    @Param('id') asignacionId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'remove_asignacion' },
+      { empresaId, asignacionId },
+    );
+  }
+  // 4. ACTUALIZAR ASIGNACIÓN (PATCH /asignaciones/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('productividad.tareas.assign') // Usamos el mismo permiso de asignar
+  @Patch('asignaciones/:id')
+  @UsePipes(new ValidationPipe())
+  updateAsignacion(
+    @Request() req,
+    @Param('id') asignacionId: string,
+    @Body() dto: UpdateAsignacionDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_asignacion' },
+      { empresaId, asignacionId, dto },
     );
   }
 }

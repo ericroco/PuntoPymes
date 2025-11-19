@@ -11,6 +11,7 @@ import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
 import { Sprint } from './sprint.entity';
 import { Tarea } from './tarea.entity';
+import { Empleado } from './empleado.entity';
 
 /**
  * Entidad que representa un Proyecto dentro de una Empresa.
@@ -43,6 +44,14 @@ export class Proyecto extends BaseEntity {
   })
   descripcion: string;
 
+  @Column({
+    type: 'varchar',
+    length: 50, // O la longitud que necesites para tus estados
+    default: 'ACTIVO', // Replicamos la lógica del servicio
+    comment: 'Estado actual del proyecto',
+  })
+  estado: string;
+
   // ---
   // RELACIONES "MUCHOS A UNO" (Un Proyecto PERTENECE A...)
   // ---
@@ -63,6 +72,29 @@ export class Proyecto extends BaseEntity {
    */
   @Column({ comment: 'ID de la Empresa (Tenant) propietaria del proyecto' })
   empresaId: string;
+
+  // --- 2. AÑADIR LA RELACIÓN CON EL LÍDER (EMPLEADO) ---
+  /**
+   * Relación: Un Proyecto tiene UN líder (que es un Empleado).
+   * Es opcional (nullable: true).
+   * onDelete: 'SET NULL' = Si el empleado se borra, el proyecto se queda sin líder.
+   */
+  @ManyToOne(() => Empleado, {
+    nullable: true, // Un proyecto puede no tener líder
+    onDelete: 'SET NULL', // Si se borra el empleado, el campo liderId queda null
+  })
+  @JoinColumn({ name: 'liderId' }) // La columna FK se llamará 'liderId'
+  lider: Empleado; // Esta es la propiedad que usas en 'relations: ['lider']'
+
+  // --- 3. AÑADIR LA COLUMNA 'liderId' ---
+  /**
+   * Mapea: string liderId FK "Empleado líder del proyecto"
+   */
+  @Column({
+    nullable: true, // Debe coincidir con la relación
+    comment: 'ID del Empleado (opcional) que lidera el proyecto',
+  })
+  liderId: string; // <-- Esta es la propiedad que te faltaba
 
   // ---
   // RELACIONES "UNO A MUCHOS" (Un Proyecto TIENE MUCHOS...)

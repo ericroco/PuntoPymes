@@ -167,18 +167,18 @@ export class Empleado extends BaseEntity {
     comment: 'ID del manager/supervisor directo (otro Empleado)',
   })
   jefeId: string;
-  
+
   // ---
   // RELACIONES "UNO A MUCHOS" (Un Empleado TIENE MUCHOS...)
   // ---
-  
+
   // ... (todas las relaciones OneToMany siguen EXACTAMENTE IGUAL)
   @OneToMany(() => Contrato, (contrato) => contrato.empleado)
   contratos: Contrato[];
 
   @OneToMany(() => NominaEmpleado, (nomina) => nomina.empleado)
   nominas: NominaEmpleado[];
-  
+
   // ... (etc. ... todas las demás relaciones)
   @OneToMany(() => BeneficioAsignado, (beneficio) => beneficio.empleado)
   beneficiosAsignados: BeneficioAsignado[];
@@ -209,4 +209,9 @@ export class Empleado extends BaseEntity {
 
   @OneToMany(() => ReporteGasto, (reporte) => reporte.empleado)
   reportesGastos: ReporteGasto[];
+  /**
+   * Relación: Un Empleado puede tener MUCHAS asignaciones de tareas.
+   */
+  @OneToMany(() => AsignacionTarea, (asignacion) => asignacion.empleado)
+  asignaciones: AsignacionTarea[]; // <--- Esta es la propiedad que faltaba
 }
