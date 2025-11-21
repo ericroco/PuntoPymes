@@ -1,4 +1,5 @@
 // apps/personal/src/personal.service.ts
+import { ConfigService } from '@nestjs/config';
 import {
   Injectable,
   BadRequestException,
@@ -7,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 // Tu import ya incluye 'Contrato', lo cual es perfecto.
-import { Empleado, Rol, Cargo, Departamento, Contrato } from 'default/database';
+import { Empleado, Rol, Cargo, Departamento, Contrato, Candidato, Vacante, EstadoCandidato, EstadoVacante } from 'default/database';
 import { Repository, Not } from 'typeorm';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -17,9 +18,18 @@ import { CreateCargoDto } from './dto/create-cargo.dto';
 import { UpdateCargoDto } from './dto/update-cargo.dto';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
+import { CreateCandidatoDto } from './dto/create-candidato.dto';
+import { CreateVacanteDto } from './dto/create-vacante.dto';
+import { UpdateVacanteDto } from './dto/update-vacante.dto';
+import { UpdateCandidatoAIDto } from './dto/update-candidato-ai.dto';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as fs from 'fs';
+import { join } from 'path';
+import axios from 'axios';
 
 @Injectable()
 export class PersonalService {
+  private genAI: GoogleGenerativeAI;
   constructor(
     @InjectRepository(Empleado)
     private readonly empleadoRepository: Repository<Empleado>,
@@ -29,16 +39,21 @@ export class PersonalService {
 
     @InjectRepository(Cargo)
     private readonly cargoRepository: Repository<Cargo>,
-
-    // --- (INICIO DE CAMBIOS) ---
-    // 1. Inyectar el repositorio de Contrato
+    private configService: ConfigService,
     @InjectRepository(Contrato)
     private readonly contratoRepository: Repository<Contrato>,
-    // --- (FIN DE CAMBIOS) ---
-
     @InjectRepository(Departamento)
     private readonly deptoRepository: Repository<Departamento>,
-  ) { }
+    @InjectRepository(Vacante)
+    private readonly vacanteRepository: Repository<Vacante>,
+    @InjectRepository(Candidato)
+    private readonly candidatoRepository: Repository<Candidato>,
+  ) {
+    // 3. Usar getOrThrow (Lanza error si no existe, y TypeScript sabe que es string)
+    const apiKey = this.configService.getOrThrow<string>('GEMINI_API_KEY');
+
+    this.genAI = new GoogleGenerativeAI(apiKey);
+  }
 
   /**
    * Lógica de negocio para obtener todos los empleados
@@ -639,5 +654,240 @@ export class PersonalService {
     await this.rolRepository.softRemove(rol);
 
     return { message: 'Rol desactivado correctamente.' };
+  }
+  // ==========================================
+  //        1. GESTIÓN DE VACANTES
+  // ==========================================
+
+  async createVacante(empresaId: string, dto: CreateVacanteDto): Promise<Vacante> {
+    // Validar departamento si se envía
+    if (dto.departamentoId) {
+      const dep = await this.deptoRepository.findOneBy({ id: dto.departamentoId, empresaId });
+      if (!dep) throw new BadRequestException('Departamento no válido.');
+    }
+
+    const vacante = this.vacanteRepository.create({
+      ...dto,
+      empresaId,
+      estado: dto.estado || EstadoVacante.BORRADOR,
+    });
+    return this.vacanteRepository.save(vacante);
+  }
+
+  async getVacantes(empresaId: string, soloPublicas: boolean = false): Promise<Vacante[]> {
+    const where: any = { empresaId };
+    if (soloPublicas) {
+      where.estado = EstadoVacante.PUBLICA;
+    }
+    return this.vacanteRepository.find({ where, order: { createdAt: 'DESC' } });
+  }
+
+  async updateVacante(empresaId: string, vacanteId: string, dto: UpdateVacanteDto): Promise<Vacante> {
+    const vacante = await this.vacanteRepository.findOneBy({ id: vacanteId, empresaId });
+    if (!vacante) throw new NotFoundException('Vacante no encontrada.');
+
+    this.vacanteRepository.merge(vacante, dto);
+    return this.vacanteRepository.save(vacante);
+  }
+
+  // ==========================================
+  //   2. REGISTRO DE CANDIDATO + ANÁLISIS IA
+  // ==========================================
+
+  async registrarCandidato(dto: CreateCandidatoDto): Promise<Candidato> {
+    // 1. Buscar la vacante para tener el contexto (título, requisitos)
+    const vacante = await this.vacanteRepository.findOneBy({ id: dto.vacanteId });
+    if (!vacante) throw new NotFoundException('La vacante no existe.');
+
+    // 2. Verificar si ya aplicó a esta vacante
+    const existente = await this.candidatoRepository.findOne({
+      where: { email: dto.email, vacanteId: dto.vacanteId }
+    });
+    if (existente) throw new BadRequestException('Ya has postulado a esta vacante.');
+
+    // 3. Crear el candidato inicialmente (Estado NUEVO)
+    const candidato = this.candidatoRepository.create({
+      ...dto,
+      estado: EstadoCandidato.ANALIZANDO_IA, // Estado temporal mientras piensa la IA
+    });
+    await this.candidatoRepository.save(candidato);
+
+    // 4. EJECUTAR ANÁLISIS DE IA (Asíncrono)
+    // No usamos 'await' aquí para no hacer esperar al usuario.
+    // La IA trabaja en segundo plano y actualiza cuando termina.
+    this.analizarCVConIA(candidato, vacante).catch(err => {
+      console.error(`Error en análisis IA para candidato ${candidato.id}:`, err);
+      // Si falla, lo pasamos a NUEVO sin score para no dejarlo trabado
+      this.candidatoRepository.update(candidato.id, { estado: EstadoCandidato.NUEVO });
+    });
+
+    return candidato;
+  }
+  // ==========================================
+  //        🧠 CEREBRO DE LA IA (GEMINI)
+  // ==========================================
+
+  private async analizarCVConIA(candidato: Candidato, vacante: Vacante) {
+    try {
+      console.log(`🤖 Iniciando análisis IA para: ${candidato.nombre}`);
+
+      let pdfBuffer: Buffer;
+
+      // --- 1. OBTENER EL ARCHIVO (Lógica Híbrida) ---
+      if (candidato.cvUrl.includes('localhost')) {
+        const urlParts = candidato.cvUrl.split('/uploads/');
+
+        if (!urlParts[1]) {
+          throw new Error('Formato de URL local no reconocido');
+        }
+
+        const filePath = join(process.cwd(), 'uploads', urlParts[1]);
+
+        console.log(`📂 Leyendo archivo local desde: ${filePath}`);
+
+        if (!fs.existsSync(filePath)) {
+          throw new Error(`El archivo no existe en la ruta física: ${filePath}`);
+        }
+
+        pdfBuffer = fs.readFileSync(filePath);
+
+      } else {
+        console.log(`🌐 Descargando archivo remoto: ${candidato.cvUrl}`);
+        const response = await axios.get(candidato.cvUrl, { responseType: 'arraybuffer' });
+        pdfBuffer = Buffer.from(response.data);
+      }
+
+      // --- 2. ENVIAR PDF DIRECTAMENTE A GEMINI (¡Magia!) ---
+      console.log('🧠 Enviando PDF directamente a Gemini...');
+
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+
+      // Convertimos el buffer a base64
+      const pdfBase64 = pdfBuffer.toString('base64');
+
+      const prompt = `
+      Actúa como un Reclutador Técnico Experto.
+      Analiza el siguiente Currículum Vitae (PDF adjunto) frente a la Vacante proporcionada.
+      
+      VACANTE:
+      - Título: ${vacante.titulo}
+      - Descripción: ${vacante.descripcion}
+      - Requisitos: ${vacante.requisitos}
+
+      INSTRUCCIONES:
+      1. Lee TODO el contenido del CV (incluso si está en formato imagen).
+      2. Evalúa la coincidencia de habilidades técnicas y blandas.
+      3. Tu respuesta DEBE ser estrictamente un objeto JSON válido (sin markdown, sin bloques de código).
+      4. El contenido del JSON debe estar SIEMPRE EN ESPAÑOL.
+
+      FORMATO JSON ESPERADO:
+      {
+        "aiScore": (número entero 0-100),
+        "aiAnalysis": (resumen de texto justificando el puntaje, máximo 300 caracteres)
+      }
+    `;
+
+      // Enviamos el PDF junto con el prompt
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: pdfBase64,
+            mimeType: 'application/pdf'
+          }
+        }
+      ]);
+
+      const responseText = result.response.text();
+
+      console.log('✅ Gemini procesó el PDF correctamente');
+
+      // --- 3. LIMPIAR Y PARSEAR ---
+      const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const analisis = JSON.parse(jsonString);
+
+      // --- 4. ACTUALIZAR BD ---
+      await this.candidatoRepository.update(candidato.id, {
+        aiScore: analisis.aiScore,
+        aiAnalysis: analisis.aiAnalysis,
+        estado: EstadoCandidato.NUEVO,
+      });
+
+      console.log(`✅ Análisis IA completado con éxito. Score: ${analisis.aiScore}`);
+
+    } catch (error) {
+      console.error('❌ Error procesando IA:', error);
+      console.error('📋 Stack trace:', error.stack);
+
+      try {
+        await this.candidatoRepository.update(candidato.id, {
+          estado: EstadoCandidato.REVISION,
+          aiAnalysis: `Error en análisis automático: ${error.message}`
+        });
+      } catch (updateError) {
+        console.error('❌ Error al actualizar estado de candidato:', updateError);
+      }
+    }
+  }
+  // ==========================================
+  //        3. GESTIÓN DE CANDIDATOS
+  // ==========================================
+
+  /**
+   * Obtener lista de candidatos para una vacante específica.
+   * Ordenados por:
+   * 1. Score de IA (Mayor a menor)
+   * 2. Fecha de postulación (Más recientes)
+   */
+  async getCandidatos(empresaId: string, vacanteId: string): Promise<Candidato[]> {
+    // 1. Validar que la vacante exista y pertenezca a la empresa (Seguridad Multi-tenant)
+    const vacante = await this.vacanteRepository.findOneBy({ id: vacanteId, empresaId });
+
+    if (!vacante) {
+      throw new NotFoundException('Vacante no encontrada o no tienes acceso.');
+    }
+
+    // 2. Buscar candidatos
+    return this.candidatoRepository.find({
+      where: { vacanteId },
+      // ¡Aquí está el truco! Los ordenamos por el puntaje de la IA
+      order: {
+        aiScore: 'DESC',        // Los de mejor puntaje primero
+        fechaPostulacion: 'DESC' // Desempate por fecha
+      },
+    });
+  }
+  // ==========================================
+  //        REINTENTAR IA (Manual)
+  // ==========================================
+
+  async reanalizarCandidato(candidatoId: string): Promise<Candidato> {
+    // 1. Buscar candidato con su vacante
+    const candidato = await this.candidatoRepository.findOne({
+      where: { id: candidatoId },
+      relations: ['vacante'], // ¡Importante! Necesitamos los datos de la vacante para el prompt
+    });
+
+    if (!candidato) {
+      throw new NotFoundException('Candidato no encontrado.');
+    }
+
+    // 2. Resetear estado para feedback visual
+    candidato.estado = EstadoCandidato.ANALIZANDO_IA;
+    candidato.aiScore = null;
+    candidato.aiAnalysis = null;
+    await this.candidatoRepository.save(candidato);
+
+    // 3. Lanzar proceso (Sin await para no bloquear)
+    this.analizarCVConIA(candidato, candidato.vacante).catch(err => {
+      console.error('Error en reanálisis:', err);
+      this.candidatoRepository.update(candidato.id, {
+        estado: EstadoCandidato.REVISION,
+        aiAnalysis: 'Error al reintentar análisis.'
+      });
+    });
+
+    return candidato;
   }
 }

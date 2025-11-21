@@ -15,6 +15,8 @@ import {
   Cargo,
   Rol,
   Contrato,
+  Vacante,
+  Candidato,
 } from 'default/database'; // <-- Usa tu prefijo correcto
 
 @Module({
@@ -34,6 +36,8 @@ import {
       Departamento,
       Cargo,
       Rol, Contrato,
+      Vacante,
+      Candidato,
     ]),
   ],
   controllers: [PersonalController],

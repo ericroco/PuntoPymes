@@ -12,7 +12,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ClientProxy } from '@nestjs/microservices';
 import { AppService } from './app.service';
 import { RegisterDto } from '../../auth/src/dto/register.dto';
@@ -45,6 +50,29 @@ import { CreateTareaDto } from 'apps/productividad/src/dto/create-tarea.dto';
 import { UpdateTareaDto } from 'apps/productividad/src/dto/update-tarea.dto';
 import { CreateAsignacionDto } from 'apps/productividad/src/dto/create-asignacion.dto';
 import { UpdateAsignacionDto } from 'apps/productividad/src/dto/update-asignacion.dto';
+import { CreateCicloDto } from 'apps/productividad/src/dto/create-ciclo.dto';
+import { UpdateCicloDto } from 'apps/productividad/src/dto/update-ciclo.dto';
+import { CreateObjetivoDto } from 'apps/productividad/src/dto/create-objetivo.dto';
+import { UpdateObjetivoDto } from 'apps/productividad/src/dto/update-objetivo.dto';
+import { CreateEvaluacionDto } from 'apps/productividad/src/dto/create-evaluacion.dto';
+import { UpdateEvaluacionDto } from 'apps/productividad/src/dto/update-evaluacion.dto';
+import { CreateCursoDto } from 'apps/productividad/src/dto/create-curso.dto';
+import { UpdateCursoDto } from 'apps/productividad/src/dto/update-curso.dto';
+import { CreateInscripcionDto } from 'apps/productividad/src/dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from 'apps/productividad/src/dto/update-inscripcion.dto';
+import { CheckInDto } from 'apps/productividad/src/dto/check-in.dto';
+import { CheckOutDto } from 'apps/productividad/src/dto/check-out.dto';
+import { CreateActivoDto } from 'apps/productividad/src/dto/create-activo.dto';
+import { UpdateActivoDto } from 'apps/productividad/src/dto/update-activo.dto';
+import { AssignActivoDto } from 'apps/productividad/src/dto/assign-activo.dto';
+import { ReturnActivoDto } from 'apps/productividad/src/dto/return-activo.dto';
+import { CreateReporteDto } from 'apps/productividad/src/dto/create-reporte.dto';
+import { CreateItemGastoDto } from 'apps/productividad/src/dto/create-item-gasto.dto';
+import { UpdateReporteEstadoDto } from 'apps/productividad/src/dto/update-reporte-estado.dto';
+import { createMulterOptions } from './shared/utils/multer-config.util';
+import { CreateCandidatoDto } from 'apps/personal/src/dto/create-candidato.dto';
+import { CreateVacanteDto } from 'apps/personal/src/dto/create-vacante.dto';
+
 @Controller()
 export class AppController {
   constructor(
@@ -938,6 +966,683 @@ export class AppController {
     return this.productividadService.send(
       { cmd: 'update_asignacion' },
       { empresaId, asignacionId, dto },
+    );
+  }
+  // ==========================================
+  //        DESEMPEÑO: CICLOS DE EVALUACIÓN
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.ciclos.create') // Nuevo permiso sugerido
+  @Post('desempeno/ciclos')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  createCiclo(@Request() req, @Body() dto: CreateCicloDto) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'create_ciclo' }, { empresaId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.ciclos.read')
+  @Get('desempeno/ciclos')
+  getCiclos(@Request() req) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'get_ciclos' }, { empresaId });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.ciclos.update')
+  @Patch('desempeno/ciclos/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  updateCiclo(@Request() req, @Param('id') cicloId: string, @Body() dto: UpdateCicloDto) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'update_ciclo' }, { empresaId, cicloId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.ciclos.delete')
+  @Delete('desempeno/ciclos/:id')
+  deleteCiclo(@Request() req, @Param('id') cicloId: string) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'delete_ciclo' }, { empresaId, cicloId });
+  }
+  // ==========================================
+  //        DESEMPEÑO: OBJETIVOS
+  // ==========================================
+
+  // 1. CREAR OBJETIVO (POST /desempeno/ciclos/:cicloId/objetivos)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.objetivos.create')
+  @Post('desempeno/ciclos/:cicloId/objetivos')
+  @UsePipes(new ValidationPipe())
+  createObjetivo(
+    @Request() req,
+    @Param('cicloId') cicloId: string,
+    @Body() dto: CreateObjetivoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_objetivo' },
+      { empresaId, cicloId, dto },
+    );
+  }
+
+  // 2. LISTAR OBJETIVOS DEL CICLO (GET /desempeno/ciclos/:cicloId/objetivos)
+  // Soporta ?empleadoId=... para filtrar
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.objetivos.read')
+  @Get('desempeno/ciclos/:cicloId/objetivos')
+  getObjetivos(
+    @Request() req,
+    @Param('cicloId') cicloId: string,
+    @Query('empleadoId') empleadoId?: string, // Opcional: filtrar por empleado
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_objetivos' },
+      { empresaId, cicloId, empleadoId },
+    );
+  }
+
+  // 3. ACTUALIZAR OBJETIVO (PATCH /desempeno/objetivos/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.objetivos.update')
+  @Patch('desempeno/objetivos/:id')
+  @UsePipes(new ValidationPipe())
+  updateObjetivo(
+    @Request() req,
+    @Param('id') objetivoId: string,
+    @Body() dto: UpdateObjetivoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_objetivo' },
+      { empresaId, objetivoId, dto },
+    );
+  }
+
+  // 4. BORRAR OBJETIVO (DELETE /desempeno/objetivos/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.objetivos.delete')
+  @Delete('desempeno/objetivos/:id')
+  deleteObjetivo(
+    @Request() req,
+    @Param('id') objetivoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_objetivo' },
+      { empresaId, objetivoId },
+    );
+  }
+  // ==========================================
+  //        DESEMPEÑO: EVALUACIONES (9-BOX)
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.evaluaciones.create')
+  @Post('desempeno/ciclos/:cicloId/evaluaciones')
+  @UsePipes(new ValidationPipe())
+  createEvaluacion(
+    @Request() req,
+    @Param('cicloId') cicloId: string,
+    @Body() dto: CreateEvaluacionDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_evaluacion' },
+      { empresaId, cicloId, dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.evaluaciones.read')
+  @Get('desempeno/ciclos/:cicloId/evaluaciones')
+  getEvaluaciones(
+    @Request() req,
+    @Param('cicloId') cicloId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_evaluaciones' },
+      { empresaId, cicloId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.evaluaciones.update')
+  @Patch('desempeno/evaluaciones/:id')
+  @UsePipes(new ValidationPipe())
+  updateEvaluacion(
+    @Request() req,
+    @Param('id') evaluacionId: string,
+    @Body() dto: UpdateEvaluacionDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_evaluacion' },
+      { empresaId, evaluacionId, dto },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.evaluaciones.delete')
+  @Delete('desempeno/evaluaciones/:id')
+  deleteEvaluacion(
+    @Request() req,
+    @Param('id') evaluacionId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_evaluacion' },
+      { empresaId, evaluacionId },
+    );
+  }
+  // ==========================================
+  //        LMS: GESTIÓN DE CURSOS
+  // ==========================================
+
+  // 1. CREAR CURSO (POST /capacitacion/cursos)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.cursos.create')
+  @Post('capacitacion/cursos')
+  @UsePipes(new ValidationPipe())
+  createCurso(
+    @Request() req,
+    @Body() dto: CreateCursoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_curso' },
+      { empresaId, dto },
+    );
+  }
+
+  // 2. LISTAR CURSOS (GET /capacitacion/cursos)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.cursos.read')
+  @Get('capacitacion/cursos')
+  getCursos(@Request() req) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_cursos' },
+      { empresaId },
+    );
+  }
+
+  // 3. ACTUALIZAR CURSO (PATCH /capacitacion/cursos/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.cursos.update')
+  @Patch('capacitacion/cursos/:id')
+  @UsePipes(new ValidationPipe())
+  updateCurso(
+    @Request() req,
+    @Param('id') cursoId: string,
+    @Body() dto: UpdateCursoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_curso' },
+      { empresaId, cursoId, dto },
+    );
+  }
+
+  // 4. BORRAR CURSO (DELETE /capacitacion/cursos/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.cursos.delete')
+  @Delete('capacitacion/cursos/:id')
+  deleteCurso(
+    @Request() req,
+    @Param('id') cursoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_curso' },
+      { empresaId, cursoId },
+    );
+  }
+  // ==========================================
+  //        LMS: INSCRIPCIONES
+  // ==========================================
+
+  // 1. INSCRIBIR EMPLEADO (POST /capacitacion/cursos/:cursoId/inscripciones)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.inscripciones.create')
+  @Post('capacitacion/cursos/:cursoId/inscripciones')
+  @UsePipes(new ValidationPipe())
+  createInscripcion(
+    @Request() req,
+    @Param('cursoId') cursoId: string,
+    @Body() dto: CreateInscripcionDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'create_inscripcion' },
+      { empresaId, cursoId, dto },
+    );
+  }
+
+  // 2. VER ALUMNOS DEL CURSO (GET /capacitacion/cursos/:cursoId/inscripciones)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.inscripciones.read')
+  @Get('capacitacion/cursos/:cursoId/inscripciones')
+  getInscripciones(
+    @Request() req,
+    @Param('cursoId') cursoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_inscripciones_curso' },
+      { empresaId, cursoId },
+    );
+  }
+
+  // 3. ACTUALIZAR PROGRESO/NOTA (PATCH /capacitacion/inscripciones/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.inscripciones.update')
+  @Patch('capacitacion/inscripciones/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  updateInscripcion(
+    @Request() req,
+    @Param('id') inscripcionId: string,
+    @Body() dto: UpdateInscripcionDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_inscripcion' },
+      { empresaId, inscripcionId, dto },
+    );
+  }
+
+  // 4. ELIMINAR INSCRIPCIÓN (DELETE /capacitacion/inscripciones/:id)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('capacitacion.inscripciones.delete')
+  @Delete('capacitacion/inscripciones/:id')
+  deleteInscripcion(
+    @Request() req,
+    @Param('id') inscripcionId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_inscripcion' },
+      { empresaId, inscripcionId },
+    );
+  }
+  // ==========================================
+  //        CONTROL DE ASISTENCIA
+  // ==========================================
+
+  // 1. MARCAR ENTRADA
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('asistencia.registro')
+  @Post('asistencia/check-in')
+  @UsePipes(new ValidationPipe())
+  checkIn(
+    @Request() req,
+    @Body() dto: CheckInDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'check_in' },
+      { empresaId, dto },
+    );
+  }
+
+  // 2. MARCAR SALIDA
+  // OJO: Usamos un Query Param para saber qué empleado sale (en modo admin/prueba)
+  // En producción real, esto vendría del usuario logueado.
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('asistencia.registro')
+  @Post('asistencia/check-out')
+  @UsePipes(new ValidationPipe())
+  checkOut(
+    @Request() req,
+    @Body() dto: CheckOutDto,
+    @Query('empleadoId') empleadoId: string, // ?empleadoId=UUID
+  ) {
+    const { empresaId } = req.user;
+
+    if (!empleadoId) {
+      // Fallback para pruebas si no mandas query, intentar sacarlo del body si existiera o lanzar error
+      // Para este ejemplo, exigimos el query param para ser explícitos.
+      // throw new BadRequestException('Falta el parámetro empleadoId');
+    }
+
+    return this.productividadService.send(
+      { cmd: 'check_out' },
+      { empresaId, empleadoId, dto },
+    );
+  }
+
+  // 3. VER HISTORIAL
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('asistencia.reportes')
+  @Get('asistencia/empleados/:empleadoId')
+  getHistorialAsistencia(
+    @Request() req,
+    @Param('empleadoId') empleadoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_asistencia' },
+      { empresaId, empleadoId },
+    );
+  }
+  // ==========================================
+  //        GESTIÓN DE ACTIVOS
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.gestion') // Permiso sugerido
+  @Post('activos')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  createActivo(@Request() req, @Body() dto: CreateActivoDto) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'create_activo' }, { empresaId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.gestion')
+  @Get('activos')
+  getActivos(@Request() req) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'get_activos' }, { empresaId });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.gestion')
+  @Patch('activos/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  updateActivo(@Request() req, @Param('id') activoId: string, @Body() dto: UpdateActivoDto) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'update_activo' }, { empresaId, activoId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.gestion')
+  @Delete('activos/:id')
+  deleteActivo(@Request() req, @Param('id') activoId: string) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'delete_activo' }, { empresaId, activoId });
+  }
+  // ==========================================
+  //        ASIGNACIÓN DE ACTIVOS
+  // ==========================================
+
+  // 1. ASIGNAR ACTIVO
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.asignar')
+  @Post('activos/:activoId/asignaciones')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  assignActivo(
+    @Request() req,
+    @Param('activoId') activoId: string,
+    @Body() dto: AssignActivoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'assign_activo' },
+      { empresaId, activoId, dto },
+    );
+  }
+
+  // 2. DEVOLVER ACTIVO
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.asignar')
+  @Post('activos/asignaciones/:id/devolver')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  returnActivo(
+    @Request() req,
+    @Param('id') asignacionId: string,
+    @Body() dto: ReturnActivoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'return_activo' },
+      { empresaId, asignacionId, dto },
+    );
+  }
+
+  // 3. VER ACTIVOS DE UN EMPLEADO
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.gestion')
+  @Get('activos/empleados/:empleadoId')
+  getActivosEmpleado(
+    @Request() req,
+    @Param('empleadoId') empleadoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_activos_empleado' },
+      { empresaId, empleadoId },
+    );
+  }
+
+  // 4. VER HISTORIAL DE UN ACTIVO
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('activos.gestion')
+  @Get('activos/:activoId/historial')
+  getHistorialActivo(
+    @Request() req,
+    @Param('activoId') activoId: string
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_historial_activo' },
+      { empresaId, activoId }
+    );
+  }
+  // ==========================================
+  //        GESTIÓN DE GASTOS
+  // ==========================================
+
+  // 1. CREAR REPORTE (Cabecera)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('gastos.reportar')
+  @Post('gastos/reportes')
+  @UsePipes(new ValidationPipe())
+  createReporte(
+    @Request() req,
+    @Body() dto: CreateReporteDto,
+    @Query('empleadoId') empleadoId: string, // En producción, sacarlo de req.user si es autoservicio
+  ) {
+    const { empresaId } = req.user;
+    // Si no mandan empleadoId (autoservicio), usar el del usuario logueado (si tuvieras esa lógica).
+    // Para admin, exigimos query param o body.
+    return this.productividadService.send(
+      { cmd: 'create_reporte' },
+      { empresaId, empleadoId, dto },
+    );
+  }
+
+  // 2. AGREGAR ÍTEM (Factura)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('gastos.reportar')
+  @Post('gastos/reportes/:reporteId/items')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  addItemGasto(
+    @Request() req,
+    @Param('reporteId') reporteId: string,
+    @Body() dto: CreateItemGastoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'add_item_gasto' },
+      { empresaId, reporteId, dto },
+    );
+  }
+
+  // 3. LISTAR REPORTES
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('gastos.ver')
+  @Get('gastos/reportes')
+  getReportes(
+    @Request() req,
+    @Query('empleadoId') empleadoId?: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_reportes' },
+      { empresaId, empleadoId },
+    );
+  }
+
+  // 4. CAMBIAR ESTADO (Aprobar/Rechazar)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('gastos.aprobar')
+  @Patch('gastos/reportes/:id/estado')
+  updateReporteEstado(
+    @Request() req,
+    @Param('id') reporteId: string,
+    @Body() dto: UpdateReporteEstadoDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_reporte_estado' },
+      { empresaId, reporteId, dto },
+    );
+  }
+  // ==========================================
+  //        DASHBOARD & ANALÍTICAS
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('analiticas.ver') // Permiso para ver el dashboard
+  @Get('analiticas/dashboard')
+  getDashboard(@Request() req) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_dashboard_kpis' },
+      { empresaId },
+    );
+  }
+  // ==========================================
+  //        1. SUBIR CERTIFICADO (LMS)
+  // ==========================================
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Post('capacitacion/inscripciones/:id/certificado')
+  @UseInterceptors(
+    // USAMOS EL HELPER: Carpeta 'certificados', Max 5MB, solo PDF/Imágenes
+    FileInterceptor('file', createMulterOptions('certificados', 5))
+  )
+  uploadCertificado(
+    @Request() req,
+    @Param('id') inscripcionId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+    const { empresaId } = req.user;
+
+    // Generamos la URL pública relativa a la empresa
+    // Nota: file.filename ya es único. 
+    // La URL debe coincidir con la estructura de carpetas o usar un endpoint proxy.
+    // Para simplificar con ServeStatic, servimos todo 'uploads'
+    const fileUrl = `http://localhost:3000/uploads/${empresaId}/certificados/${file.filename}`;
+
+    return this.productividadService.send(
+      { cmd: 'upload_certificado' },
+      { empresaId, inscripcionId, fileUrl },
+    );
+  }
+  // ==========================================
+  //        RECLUTAMIENTO (ATS)
+  // ==========================================
+
+  // 1. PUBLICAR VACANTE (Admin)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('reclutamiento.gestion')
+  @Post('reclutamiento/vacantes')
+  @UsePipes(new ValidationPipe())
+  createVacante(
+    @Request() req,
+    @Body() dto: CreateVacanteDto,
+  ) {
+    const { empresaId } = req.user;
+    return this.personalService.send(
+      { cmd: 'create_vacante' },
+      { empresaId, dto },
+    );
+  }
+
+  // 2. LISTAR VACANTES (Público o Admin)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('reclutamiento.gestion')
+  @Get('reclutamiento/vacantes')
+  getVacantesAdmin(@Request() req) {
+    const { empresaId } = req.user;
+    return this.personalService.send(
+      { cmd: 'get_vacantes' },
+      { empresaId, publicas: false },
+    );
+  }
+
+  // ==========================================
+  //        POSTULACIÓN (Carga de CV + Registro)
+  // ==========================================
+
+  // 3. POSTULARSE (Este endpoint hace TODO: Subir archivo + Crear candidato)
+  @Post('reclutamiento/vacantes/:vacanteId/postular')
+  @UseInterceptors(
+    FileInterceptor('file', createMulterOptions(
+      (req) => `vacantes/${req.params.vacanteId}/candidatos`,
+      10,
+      /\/(pdf)$/
+    ))
+  )
+  async postularCandidato(
+    @Request() req,
+    @Param('vacanteId') vacanteId: string,
+    @Body() body: any, // Usamos any porque al ser form-data, los campos vienen planos
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('El CV (PDF) es obligatorio');
+
+    // 1. Determinar carpeta (Si es público, usamos 'public')
+    const empresaFolder = req.user?.empresaId || 'public';
+
+    // 2. Construir URL pública
+    const fileUrl = `http://localhost:3000/uploads/${empresaFolder}/vacantes/${vacanteId}/candidatos/${file.filename}`;
+
+    // 3. Armar el DTO para el microservicio
+    // Mapeamos los campos del body (form-data) al DTO
+    const candidatoDto: CreateCandidatoDto = {
+      nombre: body.nombre,
+      email: body.email,
+      telefono: body.telefono,
+      vacanteId: vacanteId,
+      cvUrl: fileUrl, // ¡Aquí va el archivo que acabamos de subir!
+    };
+
+    // 4. Llamar al servicio (que luego llamará a la IA)
+    return this.personalService.send(
+      { cmd: 'registrar_candidato' },
+      candidatoDto,
+    );
+  }
+  // 4. VER CANDIDATOS DE UNA VACANTE (GET /reclutamiento/vacantes/:id/candidatos)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('reclutamiento.gestion')
+  @Get('reclutamiento/vacantes/:vacanteId/candidatos')
+  getCandidatos(
+    @Request() req,
+    @Param('vacanteId') vacanteId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.personalService.send(
+      { cmd: 'get_candidatos' },
+      { empresaId, vacanteId },
+    );
+  }
+  // 5. REINTENTAR ANÁLISIS IA (POST /reclutamiento/candidatos/:id/reanalizar)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('reclutamiento.gestion')
+  @Post('reclutamiento/candidatos/:candidatoId/reanalizar')
+  reanalizarCandidato(
+    @Param('candidatoId') candidatoId: string,
+  ) {
+    // No necesitamos empresaId porque el candidato ya existe y es único
+    return this.personalService.send(
+      { cmd: 'reanalizar_candidato' },
+      { candidatoId },
     );
   }
 }

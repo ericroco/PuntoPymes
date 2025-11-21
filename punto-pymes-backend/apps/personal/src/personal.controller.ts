@@ -10,6 +10,11 @@ import { CreateCargoDto } from './dto/create-cargo.dto';
 import { UpdateCargoDto } from './dto/update-cargo.dto';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
+import { CreateCandidatoDto } from './dto/create-candidato.dto';
+import { CreateVacanteDto } from './dto/create-vacante.dto';
+import { UpdateVacanteDto } from './dto/update-vacante.dto';
+import { UpdateCandidatoAIDto } from './dto/update-candidato-ai.dto';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Controller()
 export class PersonalController {
@@ -273,5 +278,39 @@ export class PersonalController {
     );
     return this.personalService.deleteRol(data.empresaId, data.rolId);
   }
-}
+  // --- VACANTES ---
 
+  @MessagePattern({ cmd: 'create_vacante' })
+  @UsePipes(new ValidationPipe())
+  createVacante(@Payload() data: { empresaId: string; dto: CreateVacanteDto }) {
+    return this.personalService.createVacante(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'get_vacantes' })
+  getVacantes(@Payload() data: { empresaId: string; publicas?: boolean }) {
+    return this.personalService.getVacantes(data.empresaId, data.publicas);
+  }
+
+  @MessagePattern({ cmd: 'update_vacante' })
+  @UsePipes(new ValidationPipe())
+  updateVacante(@Payload() data: { empresaId: string; vacanteId: string; dto: UpdateVacanteDto }) {
+    return this.personalService.updateVacante(data.empresaId, data.vacanteId, data.dto);
+  }
+
+  // --- CANDIDATOS ---
+
+  @MessagePattern({ cmd: 'registrar_candidato' })
+  @UsePipes(new ValidationPipe())
+  registrarCandidato(@Payload() dto: CreateCandidatoDto) {
+    // Nota: No necesitamos empresaId aquí porque la vacante ya pertenece a una empresa
+    return this.personalService.registrarCandidato(dto);
+  }
+  @MessagePattern({ cmd: 'get_candidatos' })
+  getCandidatos(@Payload() data: { empresaId: string; vacanteId: string }) {
+    return this.personalService.getCandidatos(data.empresaId, data.vacanteId);
+  }
+  @MessagePattern({ cmd: 'reanalizar_candidato' })
+  reanalizarCandidato(@Payload() data: { candidatoId: string }) {
+    return this.personalService.reanalizarCandidato(data.candidatoId);
+  }
+}

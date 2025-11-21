@@ -15,6 +15,7 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+      - ./uploads:/usr/src/app/uploads
     depends_on:
       - postgres_db
       - mongo_db
@@ -69,6 +70,7 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+      - ./uploads:/usr/src/app/uploads
     depends_on:
       - postgres_db
       - mongo_db

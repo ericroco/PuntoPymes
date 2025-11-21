@@ -10,86 +10,77 @@ import { BaseEntity } from './base.entity';
 import { Activo } from './activo.entity';
 import { Empleado } from './empleado.entity';
 
-/**
- * Entidad que representa la asignación de un Activo a un Empleado.
- * Es la tabla que vincula el "qué" (Activo) con el "quién" (Empleado)
- * y registra el historial de la asignación (RF-36-01).
- * Mapea la tabla 'activos_asignados'
- */
+export enum EstadoAsignacion {
+  VIGENTE = 'VIGENTE',   // El empleado tiene el activo actualmente
+  DEVUELTO = 'DEVUELTO', // Ya lo regresó (registro histórico)
+}
+
 @Entity({ name: 'activos_asignados' })
-// Indexamos ambas FKs para búsquedas rápidas
 @Index(['activoId'])
 @Index(['empleadoId'])
 export class ActivoAsignado extends BaseEntity {
+
   /**
-   * Fecha de entrega del activo al empleado
-   * Mapea: date fechaAsignacion "Fecha entrega activo"
+   * Fecha de entrega.
+   * Default: La fecha actual al momento de crear el registro.
    */
   @Column({
     type: 'date',
+    default: () => 'CURRENT_DATE',
     comment: 'Fecha de entrega del activo al empleado',
   })
   fechaAsignacion: Date;
 
   /**
-   * Fecha de devolución del activo (opcional)
-   * Mapea: date fechaDevolucion "Fecha devolucion nullable"
+   * Fecha de devolución (null mientras esté VIGENTE).
    */
   @Column({
     type: 'date',
     nullable: true,
-    comment: 'Fecha de devolución del activo (si aplica)',
+    comment: 'Fecha de devolución del activo',
   })
   fechaDevolucion: Date;
 
   /**
-   * Estado de la asignación
-   * Mapea: string estado "Estado asignacion activo"
+   * Estado de la asignación (VIGENTE vs DEVUELTO).
    */
   @Column({
     type: 'varchar',
     length: 50,
-    comment: 'Estado de la asignación (Activo, Devuelto)',
+    default: EstadoAsignacion.VIGENTE,
+    comment: 'Estado de la asignación (VIGENTE, DEVUELTO)',
   })
-  estado: string;
-
-  // ---
-  // RELACIONES "MUCHOS A UNO" (Una Asignación PERTENECE A...)
-  // ---
+  estado: EstadoAsignacion;
 
   /**
-   * Relación: La asignación se refiere a UN Activo del inventario.
-   * onDelete: 'CASCADE' = Si el Activo es borrado del inventario,
-   * su historial de asignaciones también se borra.
+   * Notas sobre el estado físico o accesorios (Ej: "Incluye cargador").
    */
+  @Column({
+    type: 'text',
+    nullable: true,
+    comment: 'Observaciones de entrega o devolución',
+  })
+  observaciones: string;
+
+  // --- RELACIONES ---
+
   @ManyToOne(() => Activo, (activo) => activo.asignaciones, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'activoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'activoId' })
   activo: Activo;
 
-  /**
-   * Mapea: string activoId FK "Activo asignado empleado"
-   */
   @Column({ comment: 'ID del Activo asignado' })
   activoId: string;
 
-  /**
-   * Relación: La asignación pertenece a UN Empleado.
-   * onDelete: 'CASCADE' = Si el Empleado es borrado, su historial
-   * de activos asignados también se borra.
-   */
   @ManyToOne(() => Empleado, (empleado) => empleado.activosAsignados, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
-  /**
-   * Mapea: string empleadoId FK "Empleado recibe activo"
-   */
   @Column({ comment: 'ID del Empleado que recibe el activo' })
   empleadoId: string;
 }

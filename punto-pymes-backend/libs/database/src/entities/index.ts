@@ -40,3 +40,5 @@ export * from './activoAsignado.entity';
 export * from './reporteGasto.entity';
 export * from './itemGasto.entity';
 export * from './conceptoNomina.entity';
+export * from './candidato.entity';
+export * from './vacante.entity';

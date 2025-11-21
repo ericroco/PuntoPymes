@@ -6,8 +6,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Proyecto, Sprint, Empleado, Tarea, AsignacionTarea } from 'default/database';
-import { Repository, Not } from 'typeorm';
+import {
+  Proyecto, Sprint, Empleado, Tarea, AsignacionTarea, CicloEvaluacion,
+  Objetivo, Evaluacion, EstadoCiclo, Curso, InscripcionCurso, EstadoInscripcion, RegistroAsistencia,
+  Activo, ActivoAsignado, EstadoActivo, EstadoAsignacion, ReporteGasto, ItemGasto, EstadoReporte,
+} from 'default/database';
+import { Repository, Not, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import {
   CreateProyectoDto,
   EstadoProyecto,
@@ -19,6 +23,26 @@ import { CreateTareaDto, EstadoTarea, PrioridadTarea } from './dto/create-tarea.
 import { UpdateTareaDto } from './dto/update-tarea.dto';
 import { CreateAsignacionDto } from './dto/create-asignacion.dto';
 import { UpdateAsignacionDto } from './dto/update-asignacion.dto';
+import { CreateCicloDto } from './dto/create-ciclo.dto';
+import { UpdateCicloDto } from './dto/update-ciclo.dto';
+import { CreateObjetivoDto } from './dto/create-objetivo.dto';
+import { UpdateObjetivoDto } from './dto/update-objetivo.dto';
+import { CreateEvaluacionDto } from './dto/create-evaluacion.dto';
+import { UpdateEvaluacionDto } from './dto/update-evaluacion.dto';
+import { CreateCursoDto } from './dto/create-curso.dto';
+import { UpdateCursoDto } from './dto/update-curso.dto';
+import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
+import { CheckInDto } from './dto/check-in.dto';
+import { CheckOutDto } from './dto/check-out.dto';
+import { CreateActivoDto } from './dto/create-activo.dto';
+import { UpdateActivoDto } from './dto/update-activo.dto';
+import { AssignActivoDto } from './dto/assign-activo.dto';
+import { ReturnActivoDto } from './dto/return-activo.dto';
+import { CreateReporteDto } from './dto/create-reporte.dto';
+import { CreateItemGastoDto } from './dto/create-item-gasto.dto';
+import { UpdateReporteEstadoDto } from './dto/update-reporte-estado.dto';
+import { DashboardKpiDto } from './dto/dashboard-kpi.dto';
 @Injectable()
 export class ProductividadService {
   constructor(
@@ -34,6 +58,24 @@ export class ProductividadService {
     private readonly tareaRepository: Repository<Tarea>,
     @InjectRepository(AsignacionTarea)
     private readonly asignacionRepository: Repository<AsignacionTarea>,
+    @InjectRepository(CicloEvaluacion)
+    private readonly cicloRepository: Repository<CicloEvaluacion>,
+    @InjectRepository(Objetivo)
+    private readonly objetivoRepository: Repository<Objetivo>,
+    @InjectRepository(Evaluacion)
+    private readonly evaluacionRepository: Repository<Evaluacion>,
+    @InjectRepository(Curso)
+    private readonly cursoRepository: Repository<Curso>,
+    @InjectRepository(InscripcionCurso)
+    private readonly inscripcionRepository: Repository<InscripcionCurso>,
+    @InjectRepository(RegistroAsistencia)
+    private readonly asistenciaRepository: Repository<RegistroAsistencia>,
+    @InjectRepository(Activo)
+    private readonly activoRepository: Repository<Activo>,
+    @InjectRepository(ActivoAsignado)
+    private readonly activoAsignadoRepository: Repository<ActivoAsignado>,
+    @InjectRepository(ReporteGasto) private readonly reporteRepository: Repository<ReporteGasto>,
+    @InjectRepository(ItemGasto) private readonly itemGastoRepository: Repository<ItemGasto>,
   ) { }
 
   // --- INICIO DE CRUD PARA PROYECTO (Semana 9) ---
@@ -519,5 +561,904 @@ export class ProductividadService {
     // 4. Actualizar y Guardar
     this.asignacionRepository.merge(asignacion, dto);
     return this.asignacionRepository.save(asignacion);
+  }
+  // ==========================================
+  //          MÓDULO DESEMPEÑO: CICLOS
+  // ==========================================
+
+  async createCiclo(empresaId: string, dto: CreateCicloDto): Promise<CicloEvaluacion> {
+    if (dto.fechaInicio >= dto.fechaFin) {
+      throw new BadRequestException('La fecha de inicio debe ser anterior al fin.');
+    }
+
+    const ciclo = this.cicloRepository.create({
+      ...dto,
+      empresaId, // Vinculamos al tenant
+      estado: dto.estado || EstadoCiclo.PLANIFICACION,
+    });
+
+    return this.cicloRepository.save(ciclo);
+  }
+
+  async getCiclos(empresaId: string): Promise<CicloEvaluacion[]> {
+    return this.cicloRepository.find({
+      where: { empresaId },
+      order: { fechaInicio: 'DESC' },
+    });
+  }
+
+  async updateCiclo(empresaId: string, cicloId: string, dto: UpdateCicloDto): Promise<CicloEvaluacion> {
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
+
+    this.cicloRepository.merge(ciclo, dto);
+    return this.cicloRepository.save(ciclo);
+  }
+
+  async deleteCiclo(empresaId: string, cicloId: string): Promise<any> {
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
+
+    await this.cicloRepository.remove(ciclo); // O softRemove si prefieres
+    return { message: 'Ciclo eliminado.' };
+  }
+  // ==========================================
+  //          MÓDULO DESEMPEÑO: OBJETIVOS
+  // ==========================================
+
+  /**
+   * Crear un objetivo para un empleado en un ciclo específico
+   */
+  async createObjetivo(
+    empresaId: string,
+    cicloId: string,
+    dto: CreateObjetivoDto,
+  ): Promise<Objetivo> {
+    // 1. Validar Ciclo
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
+
+    // 2. Validar Empleado
+    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+    if (!empleado) throw new BadRequestException('Empleado no válido.');
+
+    // 3. Crear
+    const objetivo = this.objetivoRepository.create({
+      ...dto,
+      cicloId,
+      progreso: dto.progreso || 0,
+    });
+
+    return this.objetivoRepository.save(objetivo);
+  }
+
+  /**
+   * Obtener objetivos de un ciclo (opcional: filtrar por empleado)
+   */
+  async getObjetivos(
+    empresaId: string,
+    cicloId: string,
+    empleadoId?: string,
+  ): Promise<Objetivo[]> {
+    // Validar ciclo
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
+
+    const whereCondition: any = { cicloId };
+    if (empleadoId) {
+      whereCondition.empleadoId = empleadoId;
+    }
+
+    return this.objetivoRepository.find({
+      where: whereCondition,
+      relations: ['empleado'], // Para ver el nombre del responsable
+    });
+  }
+
+  /**
+   * Actualizar Objetivo (Descripción o Progreso)
+   */
+  async updateObjetivo(
+    empresaId: string,
+    objetivoId: string,
+    dto: UpdateObjetivoDto,
+  ): Promise<Objetivo> {
+    // Buscamos por ID y cargamos relación ciclo para validar empresa
+    const objetivo = await this.objetivoRepository.findOne({
+      where: { id: objetivoId },
+      relations: ['ciclo'],
+    });
+
+    if (!objetivo || objetivo.ciclo.empresaId !== empresaId) {
+      throw new NotFoundException('Objetivo no encontrado.');
+    }
+
+    this.objetivoRepository.merge(objetivo, dto);
+    return this.objetivoRepository.save(objetivo);
+  }
+
+  /**
+   * Borrar Objetivo
+   */
+  async deleteObjetivo(
+    empresaId: string,
+    objetivoId: string,
+  ): Promise<{ message: string }> {
+    const objetivo = await this.objetivoRepository.findOne({
+      where: { id: objetivoId },
+      relations: ['ciclo'],
+    });
+
+    if (!objetivo || objetivo.ciclo.empresaId !== empresaId) {
+      throw new NotFoundException('Objetivo no encontrado.');
+    }
+
+    await this.objetivoRepository.remove(objetivo);
+    return { message: 'Objetivo eliminado.' };
+  }
+  // ==========================================
+  //          MÓDULO DESEMPEÑO: EVALUACIONES
+  // ==========================================
+
+  /**
+   * Registrar una nueva evaluación (9-Box)
+   */
+  async createEvaluacion(
+    empresaId: string,
+    cicloId: string,
+    dto: CreateEvaluacionDto,
+  ): Promise<Evaluacion> {
+    // 1. Validar Ciclo
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
+
+    // 2. Validar Empleados (Evaluado y Evaluador)
+    const evaluado = await this.empleadoRepository.findOneBy({ id: dto.evaluadoId, empresaId });
+    if (!evaluado) throw new BadRequestException('Empleado a evaluar no válido.');
+
+    const evaluador = await this.empleadoRepository.findOneBy({ id: dto.evaluadorId, empresaId });
+    if (!evaluador) throw new BadRequestException('Evaluador no válido.');
+
+    // 3. Evitar duplicados (Un empleado solo una vez por ciclo)
+    const existente = await this.evaluacionRepository.findOne({
+      where: { cicloId, evaluadoId: dto.evaluadoId }
+    });
+    if (existente) throw new ConflictException('Este empleado ya fue evaluado en este ciclo.');
+
+    // 4. Crear
+    const evaluacion = this.evaluacionRepository.create({
+      ...dto,
+      cicloId,
+    });
+
+    return this.evaluacionRepository.save(evaluacion);
+  }
+
+  /**
+   * Obtener evaluaciones de un ciclo
+   */
+  async getEvaluaciones(
+    empresaId: string,
+    cicloId: string,
+  ): Promise<Evaluacion[]> {
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
+
+    return this.evaluacionRepository.find({
+      where: { cicloId },
+      relations: ['evaluado', 'evaluador'], // Cargar nombres
+    });
+  }
+
+  /**
+   * Actualizar Evaluación
+   */
+  async updateEvaluacion(
+    empresaId: string,
+    evaluacionId: string,
+    dto: UpdateEvaluacionDto,
+  ): Promise<Evaluacion> {
+    const evaluacion = await this.evaluacionRepository.findOne({
+      where: { id: evaluacionId },
+      relations: ['ciclo'],
+    });
+
+    if (!evaluacion || evaluacion.ciclo.empresaId !== empresaId) {
+      throw new NotFoundException('Evaluación no encontrada.');
+    }
+
+    this.evaluacionRepository.merge(evaluacion, dto);
+    return this.evaluacionRepository.save(evaluacion);
+  }
+
+  /**
+   * Eliminar Evaluación
+   */
+  async deleteEvaluacion(
+    empresaId: string,
+    evaluacionId: string,
+  ): Promise<{ message: string }> {
+    const evaluacion = await this.evaluacionRepository.findOne({
+      where: { id: evaluacionId },
+      relations: ['ciclo'],
+    });
+
+    if (!evaluacion || evaluacion.ciclo.empresaId !== empresaId) {
+      throw new NotFoundException('Evaluación no encontrada.');
+    }
+
+    await this.evaluacionRepository.remove(evaluacion);
+    return { message: 'Evaluación eliminada.' };
+  }
+  // ==========================================
+  //          MÓDULO LMS: CURSOS
+  // ==========================================
+
+  /**
+   * Crear un nuevo curso en el catálogo de la empresa
+   */
+  async createCurso(empresaId: string, dto: CreateCursoDto): Promise<Curso> {
+    // Validar si ya existe un curso con el mismo nombre en la empresa (Opcional pero recomendado)
+    const existente = await this.cursoRepository.findOneBy({
+      titulo: dto.titulo,
+      empresaId
+    });
+
+    if (existente) {
+      throw new ConflictException('Ya existe un curso con este título en tu catálogo.');
+    }
+
+    const curso = this.cursoRepository.create({
+      ...dto,
+      empresaId,
+    });
+
+    return this.cursoRepository.save(curso);
+  }
+
+  /**
+   * Obtener todos los cursos de la empresa
+   */
+  async getCursos(empresaId: string): Promise<Curso[]> {
+    return this.cursoRepository.find({
+      where: { empresaId },
+      order: { createdAt: 'DESC' }, // Los más nuevos primero
+    });
+  }
+
+  /**
+   * Actualizar un curso
+   */
+  async updateCurso(
+    empresaId: string,
+    cursoId: string,
+    dto: UpdateCursoDto,
+  ): Promise<Curso> {
+    const curso = await this.cursoRepository.findOneBy({ id: cursoId, empresaId });
+
+    if (!curso) {
+      throw new NotFoundException('Curso no encontrado.');
+    }
+
+    this.cursoRepository.merge(curso, dto);
+    return this.cursoRepository.save(curso);
+  }
+
+  /**
+   * Eliminar un curso
+   */
+  async deleteCurso(
+    empresaId: string,
+    cursoId: string,
+  ): Promise<{ message: string }> {
+    const curso = await this.cursoRepository.findOneBy({ id: cursoId, empresaId });
+
+    if (!curso) {
+      throw new NotFoundException('Curso no encontrado.');
+    }
+
+    await this.cursoRepository.remove(curso); // Hard delete (se borran inscripciones en cascada)
+    return { message: 'Curso eliminado del catálogo.' };
+  }
+  // ==========================================
+  //        LMS: INSCRIPCIONES Y PROGRESO
+  // ==========================================
+
+  /**
+   * Inscribir a un empleado en un curso
+   */
+  async createInscripcion(
+    empresaId: string,
+    cursoId: string,
+    dto: CreateInscripcionDto,
+  ): Promise<InscripcionCurso> {
+    // 1. Validar Curso y Empresa
+    const curso = await this.cursoRepository.findOneBy({ id: cursoId, empresaId });
+    if (!curso) throw new NotFoundException('Curso no encontrado.');
+
+    // 2. Validar Empleado
+    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+    if (!empleado) throw new BadRequestException('Empleado no válido.');
+
+    // 3. Validar Duplicados (El unique constraint de la BD lo hace, pero esto es más amigable)
+    const existente = await this.inscripcionRepository.findOne({
+      where: { cursoId, empleadoId: dto.empleadoId }
+    });
+    if (existente) throw new ConflictException('El empleado ya está inscrito en este curso.');
+
+    // 4. Crear
+    const inscripcion = this.inscripcionRepository.create({
+      cursoId,
+      empleadoId: dto.empleadoId,
+      estado: dto.estado || EstadoInscripcion.INSCRITO,
+    });
+
+    return this.inscripcionRepository.save(inscripcion);
+  }
+
+  /**
+   * Ver inscripciones de un curso (quiénes lo están tomando)
+   */
+  async getInscripcionesByCurso(
+    empresaId: string,
+    cursoId: string,
+  ): Promise<InscripcionCurso[]> {
+    const curso = await this.cursoRepository.findOneBy({ id: cursoId, empresaId });
+    if (!curso) throw new NotFoundException('Curso no encontrado.');
+
+    return this.inscripcionRepository.find({
+      where: { cursoId },
+      relations: ['empleado'], // Ver nombres de los estudiantes
+    });
+  }
+
+  /**
+   * Actualizar progreso (Poner nota, cambiar estado a COMPLETADO)
+   */
+  async updateInscripcion(
+    empresaId: string,
+    inscripcionId: string,
+    dto: UpdateInscripcionDto,
+  ): Promise<InscripcionCurso> {
+    // Buscamos la inscripción y el curso padre para validar empresa
+    const inscripcion = await this.inscripcionRepository.findOne({
+      where: { id: inscripcionId },
+      relations: ['curso'],
+    });
+
+    if (!inscripcion || inscripcion.curso.empresaId !== empresaId) {
+      throw new NotFoundException('Inscripción no encontrada.');
+    }
+
+    // Lógica automática: Si cambian estado a COMPLETADO y no mandan fecha, ponemos HOY.
+    if (dto.estado === EstadoInscripcion.COMPLETADO && !dto.fechaCompletado && !inscripcion.fechaCompletado) {
+      inscripcion.fechaCompletado = new Date();
+    }
+
+    this.inscripcionRepository.merge(inscripcion, dto);
+    return this.inscripcionRepository.save(inscripcion);
+  }
+
+  /**
+   * Cancelar/Borrar inscripción
+   */
+  async deleteInscripcion(
+    empresaId: string,
+    inscripcionId: string,
+  ): Promise<{ message: string }> {
+    const inscripcion = await this.inscripcionRepository.findOne({
+      where: { id: inscripcionId },
+      relations: ['curso'],
+    });
+
+    if (!inscripcion || inscripcion.curso.empresaId !== empresaId) {
+      throw new NotFoundException('Inscripción no encontrada.');
+    }
+
+    await this.inscripcionRepository.remove(inscripcion);
+    return { message: 'Inscripción eliminada.' };
+  }
+  // ==========================================
+  //        CONTROL DE ASISTENCIA (RELOJ)
+  // ==========================================
+
+  /**
+   * Marcar Entrada (Check-In)
+   * Regla: Solo una entrada por día por empleado.
+   */
+  async checkIn(
+    empresaId: string,
+    dto: CheckInDto,
+  ): Promise<RegistroAsistencia> {
+    // 1. Validar Empleado y Empresa
+    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+    if (!empleado) throw new BadRequestException('Empleado no válido o de otra empresa.');
+
+    // 2. Definir el rango de tiempo de "HOY" (00:00 a 23:59)
+    const hoy = new Date();
+    const inicioDia = new Date(hoy.setHours(0, 0, 0, 0));
+    const finDia = new Date(hoy.setHours(23, 59, 59, 999));
+
+    // 3. Verificar si YA marcó entrada HOY
+    const registroExistente = await this.asistenciaRepository.findOne({
+      where: {
+        empleadoId: dto.empleadoId,
+        fecha: Between(inicioDia, finDia),
+      },
+    });
+
+    if (registroExistente) {
+      throw new ConflictException('Ya registraste tu entrada el día de hoy.');
+    }
+
+    // 4. Crear Registro
+    const nuevoRegistro = this.asistenciaRepository.create({
+      empleadoId: dto.empleadoId,
+      fecha: new Date(),       // Fecha para agrupar
+      horaEntrada: new Date(), // Hora exacta
+      estado: 'ABIERTO',       // Aún no sale
+      observaciones: dto.observaciones,
+    });
+
+    return this.asistenciaRepository.save(nuevoRegistro);
+  }
+
+  /**
+   * Marcar Salida (Check-Out)
+   * Regla: Debe tener una entrada ABIERTA hoy.
+   */
+  async checkOut(
+    empresaId: string,
+    empleadoId: string,
+    dto: CheckOutDto,
+  ): Promise<RegistroAsistencia> {
+    const hoy = new Date();
+    const inicioDia = new Date(hoy.setHours(0, 0, 0, 0));
+    const finDia = new Date(hoy.setHours(23, 59, 59, 999));
+
+    // 1. Buscar el registro de HOY de ese empleado
+    const registro = await this.asistenciaRepository.findOne({
+      where: {
+        empleadoId,
+        fecha: Between(inicioDia, finDia),
+      },
+      relations: ['empleado'],
+    });
+
+    if (!registro) {
+      throw new NotFoundException('No has marcado entrada hoy. No puedes marcar salida.');
+    }
+
+    if (registro.empleado.empresaId !== empresaId) {
+      throw new NotFoundException('No tienes acceso.');
+    }
+
+    if (registro.horaSalida) {
+      throw new ConflictException('Ya marcaste tu salida hoy.');
+    }
+
+    // 2. Calcular Horas Trabajadas (Diferencia en milisegundos)
+    const horaSalida = new Date();
+    const diferenciaMs = horaSalida.getTime() - registro.horaEntrada.getTime();
+    const horasTrabajadas = diferenciaMs / (1000 * 60 * 60); // Convertir a horas decimales
+
+    // 3. Actualizar Registro
+    registro.horaSalida = horaSalida;
+    registro.totalHoras = parseFloat(horasTrabajadas.toFixed(2)); // Ej: 8.5 horas
+    registro.estado = 'CERRADO';
+
+    // Concatenar observaciones si existen
+    if (dto.observaciones) {
+      registro.observaciones = registro.observaciones
+        ? `${registro.observaciones} | Salida: ${dto.observaciones}`
+        : dto.observaciones;
+    }
+
+    return this.asistenciaRepository.save(registro);
+  }
+
+  /**
+   * Ver historial de un empleado
+   */
+  async getHistorialAsistencia(
+    empresaId: string,
+    empleadoId: string,
+  ): Promise<RegistroAsistencia[]> {
+    const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+    if (!empleado) throw new NotFoundException('Empleado no encontrado.');
+
+    return this.asistenciaRepository.find({
+      where: { empleadoId },
+      order: { fecha: 'DESC' } // Lo más reciente primero
+    });
+  }
+  // ==========================================
+  //        GESTIÓN DE ACTIVOS (INVENTARIO)
+  // ==========================================
+
+  async createActivo(empresaId: string, dto: CreateActivoDto): Promise<Activo> {
+    // 1. Validar serial duplicado (Solo si envía serial)
+    if (dto.serial) {
+      const existente = await this.activoRepository.findOneBy({
+        empresaId,
+        serial: dto.serial,
+      });
+      if (existente) {
+        throw new ConflictException('Ya existe un activo con este serial en tu inventario.');
+      }
+    }
+
+    // 2. Crear
+    const activo = this.activoRepository.create({
+      ...dto,
+      empresaId,
+      estado: dto.estado || EstadoActivo.DISPONIBLE,
+    });
+
+    return this.activoRepository.save(activo);
+  }
+
+  async getActivos(empresaId: string): Promise<Activo[]> {
+    return this.activoRepository.find({
+      where: { empresaId },
+      order: { nombre: 'ASC' },
+    });
+  }
+
+  async updateActivo(
+    empresaId: string,
+    activoId: string,
+    dto: UpdateActivoDto,
+  ): Promise<Activo> {
+    const activo = await this.activoRepository.findOneBy({ id: activoId, empresaId });
+    if (!activo) throw new NotFoundException('Activo no encontrado.');
+
+    // Validar serial si lo están cambiando
+    if (dto.serial && dto.serial !== activo.serial) {
+      const duplicado = await this.activoRepository.findOneBy({ empresaId, serial: dto.serial });
+      if (duplicado) throw new ConflictException('El serial ya está en uso por otro activo.');
+    }
+
+    this.activoRepository.merge(activo, dto);
+    return this.activoRepository.save(activo);
+  }
+
+  async deleteActivo(
+    empresaId: string,
+    activoId: string,
+  ): Promise<{ message: string }> {
+    const activo = await this.activoRepository.findOneBy({ id: activoId, empresaId });
+    if (!activo) throw new NotFoundException('Activo no encontrado.');
+
+    await this.activoRepository.remove(activo);
+    return { message: 'Activo eliminado del inventario.' };
+  }
+  // ==========================================
+  //        GESTIÓN DE ACTIVOS: ASIGNACIONES
+  // ==========================================
+
+  /**
+   * Asignar un activo a un empleado
+   */
+  async assignActivo(
+    empresaId: string,
+    activoId: string,
+    dto: AssignActivoDto,
+  ): Promise<ActivoAsignado> {
+    // 1. Validar Activo y Disponibilidad
+    const activo = await this.activoRepository.findOneBy({ id: activoId, empresaId });
+    if (!activo) throw new NotFoundException('Activo no encontrado.');
+
+    if (activo.estado !== EstadoActivo.DISPONIBLE) {
+      throw new ConflictException(`El activo no está disponible (Estado: ${activo.estado}).`);
+    }
+
+    // 2. Validar Empleado
+    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+    if (!empleado) throw new BadRequestException('Empleado no válido.');
+
+    // 3. Crear Asignación
+    const asignacion = this.activoAsignadoRepository.create({
+      activoId,
+      empleadoId: dto.empleadoId,
+      observaciones: dto.observaciones,
+      fechaAsignacion: dto.fechaAsignacion || new Date(),
+      estado: EstadoAsignacion.VIGENTE,
+    });
+
+    // 4. Actualizar estado del Activo a ASIGNADO
+    activo.estado = EstadoActivo.ASIGNADO;
+    await this.activoRepository.save(activo);
+
+    return this.activoAsignadoRepository.save(asignacion);
+  }
+
+  /**
+   * Registrar devolución de un activo
+   */
+  async returnActivo(
+    empresaId: string,
+    asignacionId: string,
+    dto: ReturnActivoDto,
+  ): Promise<ActivoAsignado> {
+    // 1. Buscar la asignación
+    const asignacion = await this.activoAsignadoRepository.findOne({
+      where: { id: asignacionId },
+      relations: ['activo'], // Necesitamos el activo para cambiar su estado
+    });
+
+    if (!asignacion || asignacion.activo.empresaId !== empresaId) {
+      throw new NotFoundException('Asignación no encontrada.');
+    }
+
+    if (asignacion.estado === EstadoAsignacion.DEVUELTO) {
+      throw new ConflictException('Este activo ya fue devuelto.');
+    }
+
+    // 2. Actualizar Asignación (Cerrarla)
+    asignacion.fechaDevolucion = dto.fechaDevolucion || new Date();
+    asignacion.estado = EstadoAsignacion.DEVUELTO;
+    if (dto.observaciones) {
+      asignacion.observaciones = asignacion.observaciones
+        ? `${asignacion.observaciones} | Devolución: ${dto.observaciones}`
+        : dto.observaciones;
+    }
+
+    // 3. Liberar el Activo (Ponerlo DISPONIBLE)
+    // Ojo: Si se devuelve roto, quizás deberíamos permitir cambiar estado a EN_REPARACION, 
+    // pero por ahora lo dejamos DISPONIBLE por defecto.
+    asignacion.activo.estado = EstadoActivo.DISPONIBLE;
+    await this.activoRepository.save(asignacion.activo);
+
+    return this.activoAsignadoRepository.save(asignacion);
+  }
+
+  /**
+   * Ver activos que tiene un empleado actualmente
+   */
+  async getActivosByEmpleado(
+    empresaId: string,
+    empleadoId: string,
+  ): Promise<ActivoAsignado[]> {
+    const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+    if (!empleado) throw new NotFoundException('Empleado no encontrado.');
+
+    return this.activoAsignadoRepository.find({
+      where: {
+        empleadoId,
+        estado: EstadoAsignacion.VIGENTE // Solo los que tiene ahora
+      },
+      relations: ['activo'],
+    });
+  }
+
+  /**
+   * Ver historial de un activo
+   */
+  async getHistorialActivo(
+    empresaId: string,
+    activoId: string
+  ): Promise<ActivoAsignado[]> {
+    const activo = await this.activoRepository.findOneBy({ id: activoId, empresaId });
+    if (!activo) throw new NotFoundException('Activo no encontrado');
+
+    return this.activoAsignadoRepository.find({
+      where: { activoId },
+      relations: ['empleado'],
+      order: { fechaAsignacion: 'DESC' }
+    });
+  }
+  // ==========================================
+  //        GESTIÓN DE GASTOS (VIÁTICOS)
+  // ==========================================
+
+  /**
+   * 1. Crear Cabecera de Reporte
+   */
+  async createReporte(empresaId: string, empleadoId: string, dto: CreateReporteDto): Promise<ReporteGasto> {
+    // Validar empleado (que sea de la empresa)
+    const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+    if (!empleado) throw new BadRequestException('Empleado no válido.');
+
+    const reporte = this.reporteRepository.create({
+      ...dto,
+      empleadoId,
+      estado: EstadoReporte.BORRADOR,
+      total: 0,
+    });
+    return this.reporteRepository.save(reporte);
+  }
+
+  /**
+   * 2. Agregar Ítem (Factura) al Reporte
+   * Lógica: Guarda el ítem y actualiza el total del reporte.
+   */
+  async addItemToReporte(
+    empresaId: string,
+    reporteId: string,
+    dto: CreateItemGastoDto,
+  ): Promise<ItemGasto> {
+    // Verificar reporte y permisos
+    const reporte = await this.reporteRepository.findOne({
+      where: { id: reporteId },
+      relations: ['empleado'] // Para verificar empresa del empleado dueño del reporte
+    });
+
+    if (!reporte || reporte.empleado.empresaId !== empresaId) {
+      throw new NotFoundException('Reporte no encontrado o sin acceso.');
+    }
+
+    if (reporte.estado !== EstadoReporte.BORRADOR && reporte.estado !== EstadoReporte.RECHAZADO) {
+      throw new ConflictException('No puedes agregar items a un reporte que ya fue enviado o aprobado.');
+    }
+
+    // Crear el ítem
+    const item = this.itemGastoRepository.create({
+      ...dto,
+      reporteId,
+    });
+    await this.itemGastoRepository.save(item);
+
+    // Actualizar el Total del Reporte (Suma)
+    // Opción A: Sumar en memoria (rápido si tienes el total actual).
+    // Opción B: Recalcular desde cero (más seguro). Usaremos la B.
+    const suma = await this.itemGastoRepository.sum('monto', { reporteId });
+    reporte.total = suma || 0;
+    await this.reporteRepository.save(reporte);
+
+    return item;
+  }
+
+  /**
+   * 3. Eliminar Ítem
+   */
+  async removeItemFromReporte(
+    empresaId: string,
+    itemId: string,
+  ): Promise<{ message: string }> {
+    const item = await this.itemGastoRepository.findOne({
+      where: { id: itemId },
+      relations: ['reporte', 'reporte.empleado'],
+    });
+
+    if (!item || item.reporte.empleado.empresaId !== empresaId) {
+      throw new NotFoundException('Ítem no encontrado.');
+    }
+
+    if (item.reporte.estado !== EstadoReporte.BORRADOR) {
+      throw new ConflictException('Reporte bloqueado. No se pueden borrar items.');
+    }
+
+    const reporteId = item.reporteId;
+    await this.itemGastoRepository.remove(item);
+
+    // Recalcular Total
+    const suma = await this.itemGastoRepository.sum('monto', { reporteId });
+    await this.reporteRepository.update(reporteId, { total: suma || 0 });
+
+    return { message: 'Ítem eliminado y total actualizado.' };
+  }
+
+  /**
+   * 4. Obtener Reportes de un Empleado (o todos si es Admin)
+   */
+  async getReportes(empresaId: string, empleadoId?: string): Promise<ReporteGasto[]> {
+    const where: any = { empleado: { empresaId } };
+    if (empleadoId) where.empleadoId = empleadoId;
+
+    return this.reporteRepository.find({
+      where,
+      relations: ['items', 'empleado'],
+      order: { fechaReporte: 'DESC' },
+    });
+  }
+
+  /**
+   * 5. Aprobar/Rechazar Reporte (Admin)
+   */
+  async updateEstadoReporte(
+    empresaId: string,
+    reporteId: string,
+    dto: UpdateReporteEstadoDto,
+  ): Promise<ReporteGasto> {
+    const reporte = await this.reporteRepository.findOne({
+      where: { id: reporteId },
+      relations: ['empleado'],
+    });
+
+    if (!reporte || reporte.empleado.empresaId !== empresaId) {
+      throw new NotFoundException('Reporte no encontrado.');
+    }
+
+    // Aquí podrías añadir lógica: Si pasa a PAGADO, generar asiento contable, etc.
+
+    reporte.estado = dto.estado;
+    // No tenemos campo comentarios en tu entidad actual, 
+    // pero si lo agregaras, iría aquí: reporte.comentarios = dto.comentarios;
+
+    return this.reporteRepository.save(reporte);
+  }
+  // ==========================================
+  //        ANALÍTICAS Y DASHBOARD (KPIs)
+  // ==========================================
+
+  async getDashboardKPIs(empresaId: string): Promise<DashboardKpiDto> {
+    // 1. Total Empleados (Headcount)
+    const totalEmpleados = await this.empleadoRepository.count({
+      where: { empresaId, estado: 'Activo' } // Asumiendo que 'estado' es string 'Activo'
+    });
+
+    // 2. Proyectos Activos
+    const totalProyectosActivos = await this.proyectoRepository.count({
+      where: {
+        empresaId,
+        estado: EstadoProyecto.ACTIVO // O usa el Enum EstadoProyecto.ACTIVO si lo tienes importado
+      }
+    });
+
+    // 3. Total Gastos Aprobados (Suma de dinero)
+    const gastos = await this.reporteRepository
+      .createQueryBuilder('reporte')
+      .leftJoin('reporte.empleado', 'empleado')
+      .where('empleado.empresaId = :empresaId', { empresaId })
+      .andWhere('reporte.estado = :estado', { estado: EstadoReporte.APROBADO })
+      .select('SUM(reporte.total)', 'sum')
+      .getRawOne();
+
+    const totalGastosAprobados = parseFloat(gastos.sum || '0');
+
+    // 4. Asistencia de HOY (% de asistencia)
+    const hoy = new Date();
+    const inicioDia = new Date(hoy.setHours(0, 0, 0, 0));
+    const finDia = new Date(hoy.setHours(23, 59, 59, 999));
+
+    const asistenciasHoy = await this.asistenciaRepository.count({
+      where: {
+        empleado: { empresaId }, // Join implícito
+        fecha: Between(inicioDia, finDia)
+      }
+    });
+
+    const tasaAsistenciaHoy = totalEmpleados > 0
+      ? Math.round((asistenciasHoy / totalEmpleados) * 100)
+      : 0;
+
+    // 5. Talento (9-Box Resumen)
+    // Contamos cuántos "Estrellas" (Alto Desempeño + Alto Potencial)
+    // Asumimos escala 1-9. Alto es >= 7.
+    const estrellas = await this.evaluacionRepository.count({
+      where: {
+        evaluado: { empresaId },
+        calificacionDesempeno: MoreThanOrEqual(7),
+        calificacionPotencial: MoreThanOrEqual(7)
+      }
+    });
+
+    const enRiesgo = await this.evaluacionRepository.count({
+      where: {
+        evaluado: { empresaId },
+        calificacionDesempeno: LessThanOrEqual(3),
+        calificacionPotencial: LessThanOrEqual(3)
+      }
+    });
+
+    return {
+      totalEmpleados,
+      totalProyectosActivos,
+      totalGastosAprobados,
+      tasaAsistenciaHoy,
+      distribucion9Box: {
+        altoDesempenoAltoPotencial: estrellas,
+        bajoDesempenoBajoPotencial: enRiesgo,
+        bajoDesempenoAltoPotencial: 0,
+        altoDesempenoBajoPotencial: 0,
+        bajoDesempenoMedioPotencial: 0,
+        altoDesempenoMedioPotencial: 0,
+        medioDesempenoBajoPotencial: 0,
+        medioDesempenoMedioPotencial: 0,
+      }
+    };
   }
 }

@@ -8,7 +8,17 @@ import {
   Sprint,
   Tarea,
   AsignacionTarea,
-  Empleado, // Para futuras validaciones
+  Empleado,
+  CicloEvaluacion,
+  Objetivo,
+  Evaluacion,
+  Curso,
+  InscripcionCurso,
+  RegistroAsistencia,
+  Activo,
+  ActivoAsignado,
+  ReporteGasto,
+  ItemGasto,
 } from 'default/database';
 import { ProductividadController } from './productividad.controller';
 import { ProductividadService } from './productividad.service';
@@ -30,6 +40,16 @@ import { ProductividadService } from './productividad.service';
       Tarea,
       AsignacionTarea,
       Empleado, // Para validar que el 'liderId' sea un empleado válido
+      CicloEvaluacion,
+      Objetivo,
+      Evaluacion,
+      Curso,
+      InscripcionCurso,
+      RegistroAsistencia,
+      Activo,
+      ActivoAsignado,
+      ReporteGasto,
+      ItemGasto,
     ]),
   ],
   controllers: [ProductividadController],

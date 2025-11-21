@@ -1,4 +1,3 @@
-// libs/database/src/entities/activo.entity.ts
 import {
   Entity,
   Column,
@@ -6,99 +5,93 @@ import {
   OneToMany,
   JoinColumn,
   Index,
+  Unique, // Importante para la restricción compuesta
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
+// Nota: Asegúrate de que activoAsignado.entity.ts exista, si no, coméntalo temporalmente
 import { ActivoAsignado } from './activoAsignado.entity';
 
-/**
- * Entidad que representa un Activo propiedad de la Empresa (Tenant).
- * (Ej: 'Laptop Dell XPS 15', 'Silla Ergonómica', 'Monitor 4K').
- * Cumple con el módulo de Gestión de Activos (RF-36).
- * Mapea la tabla 'activos'
- */
+export enum EstadoActivo {
+  DISPONIBLE = 'DISPONIBLE',       // En bodega, listo para usar
+  ASIGNADO = 'ASIGNADO',           // Lo tiene un empleado
+  EN_REPARACION = 'EN_REPARACION', // Mantenimiento
+  DE_BAJA = 'DE_BAJA',             // Perdido, robado o vendido
+}
+
 @Entity({ name: 'activos' })
-// Indexamos para buscar activos rápidamente por empresa y por serial
 @Index(['empresaId'])
+// REGLA DE ORO SAAS: El serial es único SOLO dentro de la misma empresa
+@Unique(['empresaId', 'serial'])
 export class Activo extends BaseEntity {
-  /**
-   * Nombre o descripción del activo
-   * Mapea: string nombre "Nombre descripcion activo"
-   */
+
   @Column({
     type: 'varchar',
     length: 255,
-    comment: 'Nombre o descripción del activo (Laptop, Silla)',
+    comment: 'Nombre o descripción del activo (Laptop Dell XPS, Silla)',
   })
   nombre: string;
 
-  /**
-   * Número de serial único del activo (si aplica)
-   * Mapea: string serial UK "Numero serial unico"
-   */
   @Column({
     type: 'varchar',
     length: 255,
-    unique: true, // El serial debe ser único en toda la BDD
-    nullable: true, // Nulo si el activo no tiene serial (ej. una silla)
+    nullable: true, // Algunos activos (sillas) no tienen serial
     comment: 'Número de serial único (si aplica)',
   })
-  @Index() // Indexamos para búsquedas rápidas por serial
   serial: string;
 
-  /**
-   * Categoría o tipo de activo
-   * Mapea: string tipo "Categoria tipo activo"
-   */
   @Column({
     type: 'varchar',
     length: 100,
-    comment: 'Categoría o tipo de activo (Laptop, Mobiliario, Teléfono)',
+    comment: 'Categoría o tipo (Computación, Mobiliario, Vehículo)',
   })
   tipo: string;
 
   /**
-   * Estado actual del activo
-   * Mapea: string estado "Estado actual activo"
+   * Estado actual. Controlado por Enum.
    */
   @Column({
     type: 'varchar',
     length: 50,
-    comment: 'Estado actual del activo (En Bodega, Asignado, De Baja)',
+    default: EstadoActivo.DISPONIBLE,
+    comment: 'Estado actual (DISPONIBLE, ASIGNADO...)',
   })
-  estado: string;
-
-  // ---
-  // RELACIONES "MUCHOS A UNO" (Un Activo PERTENECE A...)
-  // ---
+  estado: EstadoActivo;
 
   /**
-   * Relación: Un Activo es propiedad de UNA Empresa (Tenant).
-   * onDelete: 'CASCADE' = Si la Empresa se borra, todos sus
-   * activos inventariados se borran con ella.
+   * Valor estimado o costo de compra (Opcional pero útil para inventario)
    */
+  @Column({
+    type: 'float',
+    nullable: true,
+    comment: 'Valor monetario del activo',
+  })
+  valor: number;
+
+  /**
+   * Fecha de adquisición
+   */
+  @Column({
+    type: 'date',
+    nullable: true,
+    comment: 'Fecha de compra o adquisición',
+  })
+  fechaAdquisicion: Date;
+
+  // --- RELACIONES ---
+
   @ManyToOne(() => Empresa, (empresa) => empresa.activos, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empresaId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empresaId' })
   empresa: Empresa;
 
-  /**
-   * Mapea: string empresaId FK "Empresa propietaria activo"
-   */
-  @Column({ comment: 'ID de la Empresa (Tenant) propietaria del activo' })
+  @Column({ comment: 'ID de la Empresa propietaria' })
   empresaId: string;
 
-  // ---
-  // RELACIONES "UNO A MUCHOS" (Un Activo TIENE MUCHAS...)
-  // ---
-
   /**
-   * Relación: Un Activo puede tener muchas Asignaciones (historial).
-   * (Ej. una laptop puede ser asignada a Juan, luego devuelta, y
-   * luego asignada a María).
-   * Este es el "otro lado" de la relación que definiremos en 'ActivoAsignado'.
+   * Historial de asignaciones.
    */
   @OneToMany(() => ActivoAsignado, (asignacion) => asignacion.activo)
   asignaciones: ActivoAsignado[];

@@ -9,6 +9,7 @@ import { Activo } from './activo.entity';
 import { Beneficio } from './beneficio.entity';
 import { PeriodoNomina } from './periodoNomina.entity';
 import { CicloEvaluacion } from './cicloEvaluacion.entity';
+import { Vacante } from './vacante.entity';
 
 @Entity({ name: 'empresas' })
 export class Empresa extends BaseEntity {
@@ -114,4 +115,6 @@ export class Empresa extends BaseEntity {
     { cascade: true },
   )
   ciclosEvaluacion: CicloEvaluacion[];
+  @OneToMany(() => Vacante, (vacante) => vacante.empresa, { cascade: true })
+  vacantes: Vacante[];
 }

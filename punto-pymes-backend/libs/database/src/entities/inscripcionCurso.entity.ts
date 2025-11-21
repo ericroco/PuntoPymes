@@ -11,34 +11,31 @@ import { BaseEntity } from './base.entity';
 import { Curso } from './curso.entity';
 import { Empleado } from './empleado.entity';
 
-/**
- * Entidad que representa la inscripción de un Empleado en un Curso.
- * Es la tabla que vincula el "qué" (Curso) con el "quién" (Empleado)
- * y registra su progreso (RF-17).
- * Mapea la tabla 'inscripciones_cursos'
- */
+// 1. Definimos estados estrictos
+export enum EstadoInscripcion {
+  INSCRITO = 'INSCRITO',
+  EN_PROGRESO = 'EN_PROGRESO',
+  COMPLETADO = 'COMPLETADO',
+  CANCELADO = 'CANCELADO',
+}
+
 @Entity({ name: 'inscripciones_cursos' })
-// Indexamos ambas FKs para búsquedas rápidas
 @Index(['cursoId'])
 @Index(['empleadoId'])
-// Un empleado solo puede inscribirse UNA vez en el mismo curso.
 @Unique(['cursoId', 'empleadoId'])
 export class InscripcionCurso extends BaseEntity {
+
   /**
-   * Estado del progreso del empleado en el curso
-   * Mapea: string estado "Estado progreso curso"
+   * Estado del progreso. Usa el Enum para consistencia.
    */
   @Column({
     type: 'varchar',
     length: 50,
-    comment: 'Estado del progreso (Inscrito, En Progreso, Completado)',
+    default: EstadoInscripcion.INSCRITO, // Valor por defecto
+    comment: 'Estado del progreso (INSCRITO, COMPLETADO...)',
   })
-  estado: string;
+  estado: EstadoInscripcion;
 
-  /**
-   * Nota final del curso (opcional)
-   * Mapea: float calificacion "Nota final nullable"
-   */
   @Column({
     type: 'float',
     nullable: true,
@@ -47,52 +44,46 @@ export class InscripcionCurso extends BaseEntity {
   calificacion: number;
 
   /**
-   * Fecha en que el empleado se inscribió al curso
-   * Mapea: date fechaInscripcion "Fecha inscripcion curso"
+   * Fecha de inscripción.
+   * Default: Se llena sola con la fecha actual.
    */
   @Column({
     type: 'date',
+    default: () => 'CURRENT_DATE',
     comment: 'Fecha de inscripción al curso',
   })
   fechaInscripcion: Date;
 
-  // ---
-  // RELACIONES "MUCHOS A UNO" (Una Inscripción PERTENECE A...)
-  // ---
-
   /**
-   * Relación: La inscripción pertenece a UN Curso del catálogo.
-   * onDelete: 'CASCADE' = Si el Curso es borrado del catálogo,
-   * las inscripciones a ese curso también se borran.
+   * Fecha en que completó el curso.
+   * Importante para reportes y certificados.
    */
+  @Column({
+    type: 'date',
+    nullable: true,
+    comment: 'Fecha de finalización del curso',
+  })
+  fechaCompletado: Date;
+
+  // --- RELACIONES ---
+
   @ManyToOne(() => Curso, (curso) => curso.inscripciones, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'cursoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'cursoId' })
   curso: Curso;
 
-  /**
-   * Mapea: string cursoId FK "Curso inscrito"
-   */
   @Column({ comment: 'ID del Curso al que se inscribió' })
   cursoId: string;
 
-  /**
-   * Relación: La inscripción pertenece a UN Empleado (estudiante).
-   * onDelete: 'CASCADE' = Si el Empleado es borrado, sus inscripciones
-   * a cursos también se borran.
-   */
   @ManyToOne(() => Empleado, (empleado) => empleado.inscripcionesCursos, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
-  /**
-   * Mapea: string empleadoId FK "Empleado estudiante"
-   */
   @Column({ comment: 'ID del Empleado (estudiante)' })
   empleadoId: string;
 }

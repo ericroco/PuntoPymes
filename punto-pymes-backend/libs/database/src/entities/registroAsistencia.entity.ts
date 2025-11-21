@@ -1,86 +1,75 @@
 // libs/database/src/entities/registroAsistencia.entity.ts
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index, Unique } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empleado } from './empleado.entity';
 
 /**
- * Entidad que representa una marcación de asistencia (Check-in/Check-out).
- * Es un registro transaccional para el módulo de Control de Asistencia (RF-23).
- * Mapea la tabla 'registros_asistencia'
+ * Entidad para el control de asistencia diario (RF-23).
+ * Modelo: UNA fila por día de trabajo.
  */
 @Entity({ name: 'registros_asistencia' })
-// Indexamos para reportes rápidos de asistencia por empleado y fecha
-@Index(['empleadoId', 'timestamp'])
+@Index(['empleadoId'])
+@Index(['fecha'])
+// Regla de Oro: Un empleado solo puede tener UN registro de asistencia por día
+@Unique(['empleadoId', 'fecha'])
 export class RegistroAsistencia extends BaseEntity {
-  /**
-   * Fecha y hora exactas de la marcación (con zona horaria)
-   * Mapea: datetime timestamp "Fecha hora marcacion"
-   */
-  @Column({
-    type: 'timestamptz', // 'timestamptz' es crucial para asistencias
-    comment: 'Fecha y hora exactas de la marcación',
-  })
-  timestamp: Date;
 
   /**
-   * Tipo de marcación (Entrada, Salida, Inicio Pausa, Fin Pausa)
-   * Mapea: string tipo "Tipo marcacion entrada salida"
+   * Fecha de la jornada (YYYY-MM-DD).
+   * Sirve para agrupar y buscar.
+   */
+  @Column({ type: 'date', comment: 'Fecha de la jornada laboral' })
+  fecha: Date;
+
+  /**
+   * Hora exacta de entrada (Check-In).
+   */
+  @Column({ type: 'timestamp', comment: 'Hora de entrada' })
+  horaEntrada: Date;
+
+  /**
+   * Hora exacta de salida (Check-Out).
+   * Es nullable porque al entrar, aún no ha salido.
+   */
+  @Column({ type: 'timestamp', nullable: true, comment: 'Hora de salida' })
+  horaSalida: Date;
+
+  /**
+   * Horas trabajadas calculadas (se llena al hacer Check-Out).
+   */
+  @Column({
+    type: 'float',
+    nullable: true,
+    comment: 'Total de horas trabajadas en el día'
+  })
+  totalHoras: number;
+
+  /**
+   * Estado de la asistencia.
    */
   @Column({
     type: 'varchar',
     length: 50,
-    comment: 'Tipo de marcación (Entrada, Salida)',
+    default: 'ABIERTO', // ABIERTO (trabajando) o CERRADO (salió)
+    comment: 'Estado (ABIERTO, CERRADO)'
   })
-  tipo: string;
+  estado: string;
 
   /**
-   * Método de registro (Web, Móvil, Biométrico)
-   * Mapea: string metodo "Metodo registro usado"
+   * Observaciones (ej: "Salí temprano por cita médica").
    */
-  @Column({
-    type: 'varchar',
-    length: 50,
-    comment: 'Método de registro (Web, Móvil)',
-  })
-  metodo: string;
+  @Column({ type: 'text', nullable: true })
+  observaciones: string;
 
-  /**
-   * Datos de ubicación (GPS) para marcaciones móviles (RF-23-02)
-   * Mapea: string ubicacion "Datos ubicacion GPS"
-   */
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true, // Nulo si la marcación es 'Web'
-    comment: 'Datos de ubicación (GPS) si es móvil (RF-23-02)',
-  })
-  ubicacion: string;
+  // --- RELACIONES ---
 
-  // ---
-  // RELACIONES "MUCHOS A UNO" (Un Registro PERTENECE A...)
-  // ---
-
-  /**
-   * Relación: El registro de asistencia pertenece a UN Empleado.
-   * onDelete: 'CASCADE' = Si el Empleado es borrado, todos sus
-   * registros de asistencia (su historial) se borran con él.
-   */
   @ManyToOne(() => Empleado, (empleado) => empleado.registrosAsistencia, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
-  /**
-   * Mapea: string empleadoId FK "Empleado registra asistencia"
-   */
-  @Column({ comment: 'ID del Empleado que registra la asistencia' })
+  @Column()
   empleadoId: string;
 }
