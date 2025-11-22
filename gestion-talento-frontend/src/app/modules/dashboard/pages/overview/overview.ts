@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Para *ngIf, *ngFor, | date
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // Para el formulario de vacaciones
-import { RouterModule } from '@angular/router'; // Para enlaces
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 // Importaciones de Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -16,10 +16,13 @@ import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
-// Importaciones para Animaciones
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
 
-// Interfaces (opcionales pero recomendadas)
+// Servicios y Modelos Reales
+import { DashboardService, DashboardKPIs } from '../../services/dashboard';
+import { AuthService } from '../../../auth/services/auth';
+
+// Interfaces Locales (Vista)
 interface AdminKPI { title: string; value: string; trend: string; isPositive: boolean; color: string; }
 interface Approval { id: number; type: 'Vacaciones' | 'Gastos'; description: string; }
 interface EmployeeKPI { title: string; value: number; unit: '%' | 'cursos' | 'días'; }
@@ -51,10 +54,10 @@ interface Holiday { date: string; name: string; }
   styleUrls: ['./overview.scss'],
   animations: [
     trigger('widgetAnimation', [
-      transition(':enter', [ // Se activa solo al entrar
-        query('.overview-widget', [ // Selecciona todos los widgets
+      transition(':enter', [
+        query('.overview-widget', [
           style({ opacity: 0, transform: 'translateY(20px)' }),
-          stagger('100ms', // Aplica un retraso a cada uno
+          stagger('100ms',
             animate('500ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
           )
         ], { optional: true })
@@ -63,23 +66,24 @@ interface Holiday { date: string; name: string; }
   ]
 })
 export class Overview implements OnInit {
+  private dashboardService = inject(DashboardService);
+  private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
 
   viewingAsAdmin: boolean = false;
+  isLoading: boolean = true;
 
-  // --- DATOS DE EJEMPLO PARA ADMINISTRADOR ---
-  adminKPIs: AdminKPI[] = [
-    { title: 'Empleados Activos', value: '74', trend: '+2.5%', isPositive: true, color: 'blue' },
-    { title: 'Tareas Completadas (Mes)', value: '248', trend: '+10%', isPositive: true, color: 'green' },
-    { title: 'Nuevas Contrataciones (Q4)', value: '6', trend: '+1', isPositive: true, color: 'blue' },
-  ];
+  // --- DATOS REALES (Mapeados del Backend) ---
+  adminKPIs: AdminKPI[] = [];
+
+  // --- DATOS SIMULADOS (Aún no conectados al backend en esta fase) ---
+  // Mantenemos estos para que la UI no se rompa mientras conectas los otros módulos
   surveySummary = { latestSurvey: 'Clima Laboral Q4 2025', participationRate: 78, overallSatisfaction: 4.2 };
   pendingApprovals: Approval[] = [
     { id: 1, type: 'Vacaciones', description: 'Jeimy Torres (5 días)' },
-    { id: 2, type: 'Gastos', description: 'Erick Rodas ($120)' },
-    { id: 3, type: 'Vacaciones', description: 'Valentina Samaniego (1 día)' }
+    { id: 2, type: 'Gastos', description: 'Erick Rodas ($120)' }
   ];
 
-  // --- DATOS DE EJEMPLO PARA EMPLEADO ---
   employeeKPIs: EmployeeKPI[] = [
     { title: 'Progreso de Metas (Q4)', value: 82, unit: '%' },
     { title: 'Cursos Completados', value: 3, unit: 'cursos' },
@@ -93,14 +97,16 @@ export class Overview implements OnInit {
     { date: '2025-11-03', name: 'Independencia de Cuenca' },
     { date: '2025-12-25', name: 'Navidad' }
   ];
-  employeeDistribution = [ // Para gráfico de pastel
+
+  // Gráfico de distribución (simulado por ahora o podrías mapearlo de distribucion9Box)
+  employeeDistribution = [
     { name: 'Tecnología', value: 25 },
     { name: 'Diseño', value: 15 },
     { name: 'Contabilidad', value: 12 },
     { name: 'Marketing', value: 10 },
     { name: 'RRHH', value: 8 },
   ];
-  turnoverTrend = [ // Para gráfico de línea (simulado)
+  turnoverTrend = [
     {
       name: 'Rotación',
       series: [
@@ -111,34 +117,32 @@ export class Overview implements OnInit {
       ]
     }
   ];
-  upcomingEvents = [ // Lista de eventos
+  upcomingEvents = [
     { date: '2025-10-31', description: 'Finaliza Sprint Octubre 2025' },
-    { date: '2025-11-05', description: 'Revisión Política Teletrabajo' },
-    { date: '2025-11-15', description: 'Fecha Límite Encuesta Clima' },
+    { date: '2025-11-05', description: 'Revisión Política Teletrabajo' }
   ];
-  // Esquema de color para gráficos (usando variables CSS)
+
   chartColorScheme: Color = {
     name: 'puntopymesCharts',
     selectable: true,
     group: ScaleType.Ordinal,
     domain: [
-        'var(--color-primary)',
-        'var(--color-accent)',
-        'var(--color-warning)',
-        'var(--color-success)',
-        'var(--color-secondary)'
-      ] // Usa tus variables CSS principales
+      '#3f51b5', // Primary
+      '#ff4081', // Accent
+      '#ff9800', // Warning
+      '#4caf50', // Success
+      '#9c27b0'  // Secondary
+    ]
   };
-  leaveRequestForm: FormGroup; // Formulario para solicitar vacaciones
 
-  // Getter para obtener fácilmente los días de vacaciones
+  leaveRequestForm: FormGroup;
+
   get availableLeaveDays(): number {
     const leaveKPI = this.employeeKPIs.find(k => k.title.includes('Vacaciones'));
     return leaveKPI ? leaveKPI.value : 0;
   }
 
   constructor(private fb: FormBuilder) {
-    // Inicializa el formulario de solicitud de vacaciones
     this.leaveRequestForm = this.fb.group({
       startDate: [null, Validators.required],
       endDate: [null, Validators.required]
@@ -146,46 +150,94 @@ export class Overview implements OnInit {
   }
 
   ngOnInit(): void {
-    // --- TODO: Cargar los datos correspondientes desde el backend según el rol del usuario ---
+    // --- 4. DETERMINAR EL ROL AL INICIAR ---
+    this.viewingAsAdmin = this.authService.isAdmin();
+    console.log('¿Es Admin?', this.viewingAsAdmin);
+
+    // Cargar datos según el rol
     if (this.viewingAsAdmin) {
-      console.log("Cargando datos del dashboard de Administrador...");
-      // Simulación: Cargar KPIs, aprobaciones, resúmenes
+      this.loadDashboardData(); // Datos globales (KPIs de empresa)
     } else {
-      console.log("Cargando datos del dashboard de Empleado...");
-      // Simulación: Cargar KPIs personales, tareas, feriados
+      this.isLoading = false; // Para que no se quede cargando infinito si no hay datos de empleado aún
     }
   }
 
-  // --- Método de Empleado ---
+  loadDashboardData() {
+    this.isLoading = true;
+
+    this.dashboardService.getKPIs().subscribe({
+      next: (data: DashboardKPIs) => {
+        console.log('✅ Datos del Dashboard recibidos:', data);
+
+        // Mapear la respuesta del backend a la estructura visual de AdminKPIs
+        this.adminKPIs = [
+          {
+            title: 'Total Empleados',
+            value: data.totalEmpleados.toString(),
+            trend: 'Activos',
+            isPositive: true,
+            color: 'blue'
+          },
+          {
+            title: 'Proyectos Activos',
+            value: data.totalProyectosActivos.toString(),
+            trend: 'En curso',
+            isPositive: true,
+            color: 'green'
+          },
+          {
+            title: 'Gastos Aprobados',
+            value: `$${data.totalGastosAprobados}`,
+            trend: 'Total Acumulado',
+            isPositive: false, // Podría ser false si es un gasto alto
+            color: 'orange'
+          },
+          {
+            title: 'Asistencia Hoy',
+            value: `${data.tasaAsistenciaHoy}%`,
+            trend: 'Del personal',
+            isPositive: data.tasaAsistenciaHoy > 80,
+            color: 'purple'
+          }
+        ];
+
+        // Opcional: Podrías mapear la distribución de 9-Box al gráfico de pastel
+        // si quisieras mostrar "Alto Potencial" vs "Bajo Potencial".
+
+        this.isLoading = false;
+        this.cdr.markForCheck(); // Asegurar actualización de vista
+      },
+      error: (err) => {
+        console.error('❌ Error cargando KPIs:', err);
+        this.isLoading = false;
+        // En caso de error, podrías mostrar datos vacíos o un mensaje
+        this.adminKPIs = [
+          { title: 'Error de Carga', value: '-', trend: 'Intente recargar', isPositive: false, color: 'red' }
+        ];
+      }
+    });
+  }
+
   requestLeave(): void {
     if (this.leaveRequestForm.invalid) {
       this.leaveRequestForm.markAllAsTouched();
       return;
     }
     const { startDate, endDate } = this.leaveRequestForm.value;
-    console.log('Solicitando vacaciones desde:', startDate, 'hasta:', endDate);
-    
-    // --- TODO: Abrir modal de confirmación y llamar API ---
-    alert(`Vacaciones solicitadas (simulación):\nInicio: ${startDate.toLocaleDateString()}\nFin: ${endDate.toLocaleDateString()}`);
-    
-    // Limpiar formulario y resetear estado
+    console.log('Solicitando vacaciones:', startDate, endDate);
+
+    // Simulación de llamada
+    alert(`Solicitud enviada:\n${startDate} - ${endDate}`);
     this.leaveRequestForm.reset();
-    Object.keys(this.leaveRequestForm.controls).forEach(key => {
-      this.leaveRequestForm.get(key)?.setErrors(null) ;
-    });
   }
 
-  // --- Método de Administrador ---
   approveRequest(id: number): void {
-    console.log('Aprobando solicitud (simulación):', id);
-    // --- TODO: Llamar API para aprobar ---
+    console.log('Aprobando:', id);
     this.pendingApprovals = this.pendingApprovals.filter(req => req.id !== id);
   }
 
-  // --- Métodos de Administrador (Placeholders) ---
   rejectRequest(id: number): void {
-    console.log('Rechazando solicitud (simulación):', id);
-    // --- TODO: Llamar API para rechazar ---
+    console.log('Rechazando:', id);
     this.pendingApprovals = this.pendingApprovals.filter(req => req.id !== id);
   }
 }
