@@ -453,4 +453,12 @@ export class ProductividadController {
   getDashboardKpis(@Payload() data: { empresaId: string }) {
     return this.productividadService.getDashboardKPIs(data.empresaId);
   }
+  @MessagePattern({ cmd: 'get_ciclo_activo' })
+  getCicloActivo(@Payload() data: { empresaId: string }) {
+    return this.productividadService.getCicloActivo(data.empresaId);
+  }
+  @MessagePattern({ cmd: 'get_asistencia_summary' })
+  getAsistenciaSummary(@Payload() data: { empresaId: string, empleadoId: string }) {
+    return this.productividadService.getAsistenciaSummary(data.empresaId, data.empleadoId);
+  }
 }

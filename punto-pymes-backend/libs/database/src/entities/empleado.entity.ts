@@ -26,6 +26,7 @@ import { InscripcionCurso } from './inscripcionCurso.entity';
 import { RegistroAsistencia } from './registroAsistencia.entity';
 import { ActivoAsignado } from './activoAsignado.entity';
 import { ReporteGasto } from './reporteGasto.entity';
+import { DocumentoEmpleado } from './documentoEmpleado.entity';
 
 /**
  * Entidad que representa al Empleado (LA PERSONA).
@@ -108,6 +109,13 @@ export class Empleado extends BaseEntity {
     comment: 'Campos custom definidos por la empresa (RF)',
   })
   datosPersonalizados: any;
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+    comment: 'URL de la foto de perfil',
+  })
+  fotoUrl: string;
 
   // --- (CAMBIO CLAVE: 'deletedAt' ELIMINADA) ---
   // (El estado de "Desvinculado" (RF-01-04) ahora se
@@ -214,4 +222,6 @@ export class Empleado extends BaseEntity {
    */
   @OneToMany(() => AsignacionTarea, (asignacion) => asignacion.empleado)
   asignaciones: AsignacionTarea[]; // <--- Esta es la propiedad que faltaba
+  @OneToMany(() => DocumentoEmpleado, (doc) => doc.empleado)
+  documentos: DocumentoEmpleado[];
 }

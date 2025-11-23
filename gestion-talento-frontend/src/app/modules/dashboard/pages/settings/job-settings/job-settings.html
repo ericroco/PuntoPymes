@@ -1,40 +1,100 @@
 <div class="settings-subpage-container">
-  <app-subpage-header title="Cargos y Salarios" backRoute="/dashboard/settings">
-     <button mat-flat-button color="primary" (click)="openJobDialog()">
-       <mat-icon>add_circle_outline</mat-icon>
-       Crear Nuevo Cargo
-     </button>
+  <app-subpage-header title="Estructura Organizacional" backRoute="/dashboard/settings">
   </app-subpage-header>
 
-  <p class="description">
-    Define los cargos oficiales de tu empresa, el departamento al que pertenecen y los rangos salariales (bandas) asociados.
-  </p>
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" animationDuration="0ms">
 
-  <div class="list-container">
-    <div class="list-item header">
-      <span>Nombre del Cargo</span>
-      <span>Departamento</span>
-      <span>Salario Mínimo (USD)</span>
-      <span>Salario Máximo (USD)</span>
-      <span>Acciones</span>
-    </div>
+    <mat-tab label="Cargos y Salarios">
+      <div class="tab-content">
 
-    <div *ngFor="let job of jobs" class="list-item">
-      <span class="job-name">{{ job.name }}</span>
-      <span>{{ job.department }}</span>
-      <span class="salary">{{ job.minSalary | currency:'USD':'symbol':'1.0-0' }}</span>
-      <span class="salary">{{ job.maxSalary | currency:'USD':'symbol':'1.0-0' }}</span>
-      <td class="actions">
-        <button mat-icon-button matTooltip="Editar Cargo" (click)="openJobDialog(job)">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button color="warn" matTooltip="Eliminar Cargo" (click)="deleteJob(job)">
-          <mat-icon>delete_outline</mat-icon>
-        </button>
-      </td>
-    </div>
-     <div *ngIf="jobs.length === 0" class="empty-list-placeholder">
-       No hay cargos definidos.
-     </div>
-  </div>
+        <div class="actions-bar">
+          <p class="description">
+            Define los cargos oficiales, sus departamentos y rangos salariales.
+          </p>
+          <button mat-flat-button color="primary" (click)="openJobDialog()">
+            <mat-icon>add_circle_outline</mat-icon>
+            Nuevo Cargo
+          </button>
+        </div>
+
+        <div class="list-container">
+          <div class="list-item header">
+            <span>Nombre del Cargo</span>
+            <span>Departamento</span>
+            <span>Mínimo</span>
+            <span>Máximo</span>
+            <span class="actions-header">Acciones</span>
+          </div>
+
+          <div *ngFor="let job of jobs" class="list-item">
+            <span class="job-name">{{ job.nombre }}</span>
+
+            <span>{{ job.departamento?.nombre || '---' }}</span>
+
+            <span class="salary">{{ job.salarioMin | currency:'USD':'symbol':'1.0-0' }}</span>
+            <span class="salary">{{ job.salarioMax | currency:'USD':'symbol':'1.0-0' }}</span>
+
+            <div class="actions">
+              <button mat-icon-button matTooltip="Editar Cargo" (click)="openJobDialog(job)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Eliminar Cargo" (click)="deleteJob(job)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="jobs.length === 0" class="empty-list-placeholder">
+            No hay cargos definidos aún.
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Departamentos">
+      <div class="tab-content">
+
+        <div class="actions-bar">
+          <p class="description">
+            Gestiona las áreas funcionales de tu empresa (Marketing, TI, RRHH).
+          </p>
+          <button mat-flat-button color="primary" (click)="openDepartmentDialog()">
+            <mat-icon>domain_add</mat-icon>
+            Nuevo Departamento
+          </button>
+        </div>
+
+        <div class="list-container">
+          <div class="list-item header department-header">
+            <span>Nombre del Departamento</span>
+            <span>Descripción</span>
+            <span class="actions-header">Acciones</span>
+          </div>
+
+          <div *ngFor="let dept of departments" class="list-item department-item">
+
+            <span class="job-name">{{ dept.nombre }}</span>
+
+            <span class="dept-desc">{{ dept.descripcion || '---' }}</span>
+
+            <div class="actions">
+              <button mat-icon-button matTooltip="Editar Departamento" (click)="openDepartmentDialog(dept)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Eliminar Departamento" (click)="deleteDepartment(dept)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="departments.length === 0" class="empty-list-placeholder">
+            No hay departamentos creados.
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
 </div>

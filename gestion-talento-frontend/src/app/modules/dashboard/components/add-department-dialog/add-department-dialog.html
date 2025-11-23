@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>{{ data.department ? 'Editar' : 'Nuevo' }} Departamento</h2>
+
+<mat-dialog-content [formGroup]="form">
+    <p class="dialog-instruction">
+        Ingresa el nombre del área funcional de la empresa.
+    </p>
+
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre del Departamento</mat-label>
+        <input matInput formControlName="nombre" placeholder="Ej: Marketing, Finanzas" required>
+        <mat-error *ngIf="form.get('name')?.hasError('required')">
+            El nombre es obligatorio.
+        </mat-error>
+    </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">
+        {{ data.department ? 'Actualizar' : 'Crear' }}
+    </button>
+</mat-dialog-actions>

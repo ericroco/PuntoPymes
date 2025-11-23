@@ -205,10 +205,11 @@ export class AuthService {
       rolId: membresiaActiva.rolId,
       rol: membresiaActiva.rol.nombre, // Ej: 'Administrador'
       permisos: membresiaActiva.rol.permisos, // Ej: { "esAdmin": true }
+      fotoUrl: membresiaActiva.fotoUrl
     };
     // (FIN DEL CAMBIO)
 
-    
+
     // --- e. Firmar y devolver el Token ---
     const accessToken = await this.jwtService.signAsync(payload);
 
@@ -219,6 +220,40 @@ export class AuthService {
       // pueda mostrar una pantalla de "Seleccionar Empresa"
       // si el usuario pertenece a más de una.
       membresias: membresias,
+    };
+  }
+  async createUserForEmployee(data: {
+    empleadoId: string;
+    email: string;
+    nombre: string;
+    empresaId: string
+  }) {
+    // 1. Generar contraseña aleatoria (8 caracteres)
+    const randomPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
+
+    // 2. Hashear contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+    // 3. Crear Usuario (SOLO DATOS DE LOGIN)
+    const nuevoUsuario = this.usuarioRepository.create({
+      email: data.email,
+      passwordHash: hashedPassword, // <--- Usa passwordHash
+      emailVerificado: true,
+    });
+
+    const usuarioGuardado = await this.usuarioRepository.save(nuevoUsuario);
+
+    // 4. VINCULAR EL EMPLEADO AL USUARIO
+    // Actualizamos la tabla 'empleados' para decirle: "Tu usuario de login es este nuevo"
+    await this.empleadoRepository.update(data.empleadoId, {
+      usuarioId: usuarioGuardado.id
+    });
+
+    // 5. Devolver credenciales originales (para el correo)
+    return {
+      email: data.email,
+      password: randomPassword
     };
   }
 }

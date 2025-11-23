@@ -8,7 +8,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 // Tu import ya incluye 'Contrato', lo cual es perfecto.
-import { Empleado, Rol, Cargo, Departamento, Contrato, Candidato, Vacante, EstadoCandidato, EstadoVacante } from 'default/database';
+import {
+  Empleado, Rol, Cargo, Departamento, Contrato, Candidato,
+  Vacante, EstadoCandidato, EstadoVacante, DocumentoEmpleado
+} from 'default/database';
 import { Repository, Not } from 'typeorm';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -26,6 +29,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as fs from 'fs';
 import { join } from 'path';
 import axios from 'axios';
+import { Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { MailerService } from '@nestjs-modules/mailer';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class PersonalService {
@@ -48,6 +55,10 @@ export class PersonalService {
     private readonly vacanteRepository: Repository<Vacante>,
     @InjectRepository(Candidato)
     private readonly candidatoRepository: Repository<Candidato>,
+    @InjectRepository(DocumentoEmpleado)
+    private readonly documentoRepository: Repository<DocumentoEmpleado>,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy, // Inyectar Cliente Auth
+    private readonly mailerService: MailerService,
   ) {
     // 3. Usar getOrThrow (Lanza error si no existe, y TypeScript sabe que es string)
     const apiKey = this.configService.getOrThrow<string>('GEMINI_API_KEY');
@@ -70,10 +81,21 @@ export class PersonalService {
       relations: ['cargo', 'rol'],
     });
   }
+  async getEmpleado(empresaId: string, empleadoId: string): Promise<Empleado> {
+    const empleado = await this.empleadoRepository.findOne({
+      where: { id: empleadoId, empresaId },
+      // Cargamos cargo, rol y el departamento del cargo para mostrarlo en el perfil
+      relations: ['cargo', 'rol', 'cargo.departamento'],
+    });
 
+    if (!empleado) {
+      throw new NotFoundException('Empleado no encontrado.');
+    }
+    return empleado;
+  }
   /**
    * Lógica de negocio para crear un nuevo Empleado (RF-01-01)
-   * (Tu método existente - sin cambios)
+   * Crea el registro, genera usuario automático y envía credenciales.
    */
   async createEmpleado(
     empresaId: string,
@@ -83,7 +105,7 @@ export class PersonalService {
       `Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`,
     );
 
-    // --- 1. Validación de Seguridad Multi-Tenant (RNF20) ---
+    // --- 1. Validación de Seguridad Multi-Tenant ---
     const rol = await this.rolRepository.findOneBy({
       id: dto.rolId,
       empresaId: empresaId,
@@ -120,15 +142,64 @@ export class PersonalService {
       }
     }
 
-    // --- 2. Creación del Empleado ---
+    // --- 2. Creación y Guardado del Empleado ---
     const nuevoEmpleado = this.empleadoRepository.create({
       ...dto,
       empresaId: empresaId,
     });
 
-    return this.empleadoRepository.save(nuevoEmpleado);
-  }
+    const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
 
+    // --- 3. Lógica Automática: Crear Usuario y Enviar Correo ---
+    // Usamos un try-catch para que, si falla el correo, no falle la creación del empleado.
+    if (dto.emailPersonal) {
+      try {
+        console.log('🔄 Solicitando creación de usuario automático...');
+
+        // A. Pedir al servicio de AUTH que genere credenciales
+        const credenciales = await firstValueFrom(
+          this.authClient.send(
+            { cmd: 'create_user_auto' },
+            {
+              empleadoId: empleadoGuardado.id,
+              email: dto.emailPersonal,
+              nombre: dto.nombre,
+              empresaId: empresaId,
+            }
+          )
+        );
+
+        // B. Enviar las credenciales por correo
+        await this.mailerService.sendMail({
+          to: dto.emailPersonal,
+          subject: 'Bienvenido a PuntoPyMES - Tus Credenciales de Acceso',
+          html: `
+            <div style="font-family: Arial, sans-serif; color: #333;">
+              <h1 style="color: #3f51b5;">¡Bienvenido/a ${dto.nombre}!</h1>
+              <p>Has sido registrado exitosamente en la plataforma de Recursos Humanos de tu empresa.</p>
+              <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><b>Usuario:</b> ${credenciales.email}</p>
+                <p style="margin: 5px 0;"><b>Contraseña Temporal:</b> ${credenciales.password}</p>
+              </div>
+              <p>Por favor, ingresa al sistema y cambia tu contraseña lo antes posible.</p>
+              <p>
+                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ir al Sistema</a>
+              </p>
+            </div>
+          `,
+        });
+
+        console.log(`📧 Credenciales enviadas a ${dto.emailPersonal}`);
+
+      } catch (error) {
+        console.error('❌ Error en flujo automático (Usuario/Correo):', error);
+        // No lanzamos error para no hacer rollback del empleado, 
+        // pero el admin deberá crear el usuario manualmente si esto falla.
+      }
+    }
+
+    return empleadoGuardado;
+  }
   /**
    * Lógica de negocio para actualizar un Empleado (RF-01-03)
    * (Tu método existente - sin cambios)
@@ -889,5 +960,112 @@ export class PersonalService {
     });
 
     return candidato;
+  }
+  async getDocumentosEmpleado(empresaId: string, empleadoId: string) {
+    const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+    if (!empleado) throw new NotFoundException('Empleado no encontrado');
+
+    // Array donde acumularemos todos los docs
+    const documentos: {
+      id?: string;
+      name: string;
+      type: string;
+      origin: string;
+      date: Date;
+      url: string;
+      canDelete: boolean
+    }[] = [];
+
+    // 1. BUSCAR EL CV (Si existe desde Reclutamiento)
+    const candidato = await this.candidatoRepository.findOneBy({ email: empleado.emailPersonal });
+    if (candidato && candidato.cvUrl) {
+      documentos.push({
+        name: 'Currículum Vitae (CV)',
+        type: 'Reclutamiento',
+        origin: 'Empleado', // El candidato lo subió
+        date: candidato.fechaPostulacion,
+        url: candidato.cvUrl,
+        canDelete: false // CV original no se borra
+      });
+    }
+
+    // 2. BUSCAR DOCUMENTOS MANUALES (¡ESTO ES LO QUE FALTABA!)
+    // Consultamos la tabla 'documentos_empleados' que acabamos de crear
+    const docsSubidos = await this.documentoRepository.find({
+      where: { empleadoId },
+      order: { fechaSubida: 'DESC' }
+    });
+
+    // Los agregamos a la lista unificada
+    docsSubidos.forEach(doc => {
+      documentos.push({
+        id: doc.id, // <--- ¡AQUÍ ESTÁ LA CLAVE!
+        name: doc.nombre,
+        type: doc.tipo,
+        origin: 'Empresa',
+        date: doc.fechaSubida,
+        url: doc.url,
+        canDelete: true
+      });
+    });
+
+    return documentos;
+  }
+  // ==========================================
+  //        GESTIÓN DOCUMENTAL
+  // ==========================================
+
+  /**
+   * Guarda la referencia de un documento subido en la BD.
+   */
+  async uploadDocumentoEmpleado(
+    empresaId: string,
+    empleadoId: string,
+    dto: { nombre: string; tipo: string; url: string },
+  ): Promise<DocumentoEmpleado> {
+    console.log(`Microservicio PERSONAL: Guardando documento para empleado ${empleadoId}`);
+
+    // 1. Validar que el empleado pertenezca a la empresa (Seguridad)
+    const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+
+    if (!empleado) {
+      throw new NotFoundException('Empleado no encontrado o no pertenece a tu empresa.');
+    }
+
+    // 2. Crear el registro del documento
+    const nuevoDocumento = this.documentoRepository.create({
+      empleadoId,
+      nombre: dto.nombre,
+      tipo: dto.tipo,
+      url: dto.url,
+      fechaSubida: new Date(),
+    });
+
+    return this.documentoRepository.save(nuevoDocumento);
+  }
+  async updateFotoPerfil(empresaId: string, empleadoId: string, fileUrl: string) {
+    const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+    if (!empleado) throw new NotFoundException('Empleado no encontrado');
+
+    empleado.fotoUrl = fileUrl;
+    return this.empleadoRepository.save(empleado);
+  }
+  async deleteDocumento(empresaId: string, documentoId: string): Promise<{ message: string }> {
+    // 1. Buscar el documento y validar que sea de un empleado de la empresa
+    const documento = await this.documentoRepository.findOne({
+      where: { id: documentoId },
+      relations: ['empleado']
+    });
+
+    if (!documento || documento.empleado.empresaId !== empresaId) {
+      throw new NotFoundException('Documento no encontrado o no tienes permiso.');
+    }
+
+    // 2. Borrar de la BD
+    await this.documentoRepository.remove(documento);
+
+    // (Opcional: Aquí podrías devolver la URL para que el Gateway borre el archivo físico)
+
+    return { message: 'Documento eliminado correctamente.' };
   }
 }

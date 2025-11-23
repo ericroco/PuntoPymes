@@ -9,7 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   Proyecto, Sprint, Empleado, Tarea, AsignacionTarea, CicloEvaluacion,
   Objetivo, Evaluacion, EstadoCiclo, Curso, InscripcionCurso, EstadoInscripcion, RegistroAsistencia,
-  Activo, ActivoAsignado, EstadoActivo, EstadoAsignacion, ReporteGasto, ItemGasto, EstadoReporte,
+  Activo, ActivoAsignado, EstadoActivo, EstadoAsignacion, ReporteGasto,
+  ItemGasto, EstadoReporte,
 } from 'default/database';
 import { Repository, Not, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import {
@@ -1459,6 +1460,68 @@ export class ProductividadService {
         medioDesempenoBajoPotencial: 0,
         medioDesempenoMedioPotencial: 0,
       }
+    };
+  }
+  async getCicloActivo(empresaId: string) {
+    return this.cicloRepository.findOne({
+      where: {
+        empresaId,
+        estado: EstadoCiclo.ACTIVO
+      }
+    });
+  }
+  /**
+   * Calcular resumen de asistencia del mes actual
+   */
+  async getAsistenciaSummary(empresaId: string, empleadoId: string) {
+    // 1. Definir rango de fechas (Desde el 1ro del mes hasta HOY)
+    const hoy = new Date();
+    // Ajustamos 'hoy' al final del día para incluirlo en el conteo si ya pasó
+    const finDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59);
+
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+    // 2. Obtener registros de asistencia de este mes
+    const registros = await this.asistenciaRepository.find({
+      where: {
+        empleadoId,
+        fecha: MoreThanOrEqual(inicioMes),
+      },
+    });
+
+    const diasTrabajados = registros.length;
+
+    // 3. Calcular Días Hábiles Transcurridos (Lunes a Viernes)
+    let diasHabiles = 0;
+    const cursor = new Date(inicioMes); // Clonamos fecha inicio para iterar
+
+    // Iteramos día a día hasta llegar a hoy
+    while (cursor <= hoy) {
+      const diaSemana = cursor.getDay(); // 0 = Domingo, 6 = Sábado
+
+      // Si no es Sábado (6) ni Domingo (0), es día hábil
+      if (diaSemana !== 0 && diaSemana !== 6) {
+        diasHabiles++;
+      }
+
+      // Avanzamos un día
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    // 4. Calcular Porcentaje
+    // Evitamos división por cero (si es el 1ro del mes y es domingo)
+    let porcentaje = 0;
+    if (diasHabiles > 0) {
+      porcentaje = Math.round((diasTrabajados / diasHabiles) * 100);
+    }
+
+    // Lógica visual: Si trabajó extra (fines de semana), no mostramos más de 100%
+    if (porcentaje > 100) porcentaje = 100;
+
+    return {
+      asistenciaPercentage: porcentaje,
+      diasTrabajados: diasTrabajados,
+      diasHabilesEsperados: diasHabiles
     };
   }
 }

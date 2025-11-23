@@ -1,104 +1,158 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterModule } from '@angular/router';
 // Material
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTabGroup, MatTab } from '@angular/material/tabs';
 // Shared Header
 import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header'; // Ajusta la ruta
+import { AddDepartmentDialog } from '../../../components/add-department-dialog/add-department-dialog';
 
 import { AddJobDialog } from '../../../components/add-job-dialog/add-job-dialog';
-
-// Interface para Cargo
-interface JobPosition {
-  id: number;
-  name: string;
-  department: string;
-  minSalary: number;
-  maxSalary: number;
-}
+// Importa el servicio
+import { CatalogService, JobPosition, Department } from '../../../services/catalog';
 
 @Component({
   selector: 'app-job-settings',
   standalone: true,
   imports: [
     CommonModule, RouterModule, MatDialogModule, MatButtonModule,
-    MatIconModule, MatTooltipModule, SubpageHeader
+    MatIconModule, MatTooltipModule, SubpageHeader, MatTabGroup, MatTab
   ],
   templateUrl: './job-settings.html',
   styleUrls: ['./job-settings.scss']
 })
 export class JobSettings implements OnInit {
+  private catalogService = inject(CatalogService);
+  private snackBar = inject(MatSnackBar);
 
-  jobs: JobPosition[] = [ // Datos de ejemplo
-    { id: 1, name: 'Desarrollador Frontend', department: 'Tecnología', minSalary: 1500, maxSalary: 2200 },
-    { id: 2, name: 'Diseñador UX/UI', department: 'Diseño', minSalary: 1400, maxSalary: 2000 },
-    { id: 3, name: 'Contador Principal', department: 'Contabilidad', minSalary: 2000, maxSalary: 2800 },
-    { id: 4, name: 'Líder de Proyecto', department: 'Tecnología', minSalary: 2300, maxSalary: 3500 }
-  ];
-
-  // TODO: Cargar dinámicamente
-  availableDepartments: string[] = ['Tecnología', 'Diseño', 'Contabilidad', 'Marketing', 'RRHH'];
+  jobs: JobPosition[] = [];
+  departments: Department[] = [];
 
   constructor(public dialog: MatDialog) { }
 
   ngOnInit(): void {
-    // --- TODO: Cargar cargos y departamentos desde la API ---
+    this.loadData();
   }
 
-  openJobDialog(job?: JobPosition): void {
-    const isEditMode = !!job; // Verifica si estamos editando (si 'job' existe)
+  loadData() {
+    // Cargar Departamentos
+    this.catalogService.getDepartments().subscribe({
+      next: (data) => this.departments = data,
+      error: (err) => console.error('Error cargando deptos', err)
+    });
 
+    // Cargar Cargos
+    this.catalogService.getJobs().subscribe({
+      next: (data) => this.jobs = data,
+      error: (err) => console.error('Error cargando cargos', err)
+    });
+  }
+
+  // --- CARGOS ---
+  openJobDialog(job?: JobPosition): void {
     const dialogRef = this.dialog.open(AddJobDialog, {
       width: '500px',
-      disableClose: true,
       data: {
-        job: job ? { ...job } : null, // Pasa una *copia* del cargo si es edición, o null si es creación
-        availableDepartments: this.availableDepartments // Pasa la lista de departamentos
+        job: job ? { ...job } : null,
+        availableDepartments: this.departments // Pasamos la lista REAL de deptos
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // 'result' contiene los valores del formulario si se guardó
       if (result) {
-        if (isEditMode && job) {
-          // --- LÓGICA DE EDICIÓN ---
-          console.log('Actualizar cargo:', result);
-          // --- TODO: Llamar API para ACTUALIZAR el 'job.id' con 'result' ---
+        // Mapear datos del formulario al DTO del backend
+        // (Asegúrate que AddJobDialog devuelva { nombre, departamentoId, salarioMin, salarioMax })
+        const dto = {
+          nombre: result.name,
+          departamentoId: result.departmentId, // El ID del depto seleccionado
+          salarioMin: result.minSalary,
+          salarioMax: result.maxSalary
+        };
 
-          // Simulación local (actualiza el item en el array 'jobs')
-          const index = this.jobs.findIndex(j => j.id === job.id);
-          if (index > -1) {
-            this.jobs[index] = { ...this.jobs[index], ...result }; // Sobrescribe con los nuevos datos
-            this.jobs = [...this.jobs]; // Forzar detección de cambios
-          }
-
+        if (job) {
+          this.catalogService.updateJob(job.id, dto).subscribe(() => {
+            this.snackBar.open('Cargo actualizado', 'Cerrar', { duration: 3000 });
+            this.loadData();
+          });
         } else {
-          // --- LÓGICA DE CREACIÓN ---
-          console.log('Crear cargo:', result);
-          // --- TODO: Llamar API para CREAR nuevo cargo con 'result' ---
-
-          // Simulación local (añade al array 'jobs')
-          const newJob: JobPosition = {
-            id: Date.now(), // ID temporal
-            ...result
-          };
-          this.jobs = [...this.jobs, newJob]; // Añade al final y fuerza detección
+          this.catalogService.createJob(dto).subscribe(() => {
+            this.snackBar.open('Cargo creado', 'Cerrar', { duration: 3000 });
+            this.loadData();
+          });
         }
-      } else {
-        console.log('Modal cerrado sin guardar');
       }
     });
   }
+
   deleteJob(job: JobPosition): void {
-    console.log('Eliminar cargo:', job);
-    // --- TODO: Abrir modal de confirmación ---
-    // --- TODO: Llamar API para eliminar ---
-    // Simulación local
-    // this.jobs = this.jobs.filter(j => j.id !== job.id);
+    if (confirm(`¿Eliminar cargo ${job.nombre}?`)) {
+      this.catalogService.deleteJob(job.id).subscribe(() => {
+        this.snackBar.open('Cargo eliminado', 'Cerrar', { duration: 3000 });
+        this.loadData();
+      });
+    }
+  }
+
+  // --- DEPARTAMENTOS ---
+  openDepartmentDialog(dept?: Department): void {
+    const dialogRef = this.dialog.open(AddDepartmentDialog, {
+      width: '400px',
+      disableClose: true,
+      data: { department: dept ? { ...dept } : null }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // DEBUG: Ver qué estamos enviando
+        console.log('Datos del diálogo:', result);
+
+        // Como el formulario ya usa 'nombre', 'result' es { nombre: '...' }
+        // ¡Ya no necesitamos mapear result.name!
+        const dto = result;
+
+        if (dept) {
+          // EDITAR
+          this.catalogService.updateDepartment(dept.id, dto).subscribe({
+            next: () => {
+              this.snackBar.open('Departamento actualizado', 'Cerrar', { duration: 3000 });
+              this.loadData();
+            },
+            error: (err) => {
+              console.error(err);
+              this.snackBar.open('Error al actualizar', 'Cerrar', { duration: 3000 });
+            }
+          });
+        } else {
+          // CREAR
+          this.catalogService.createDepartment(dto).subscribe({
+            next: () => {
+              this.snackBar.open('Departamento creado', 'Cerrar', { duration: 3000 });
+              this.loadData();
+            },
+            error: (err) => {
+              console.error(err); // Mira la consola si falla de nuevo
+              this.snackBar.open('Error al crear', 'Cerrar', { duration: 3000 });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  deleteDepartment(dept: Department): void {
+    if (confirm(`¿Eliminar departamento ${dept.nombre}?`)) {
+      this.catalogService.deleteDepartment(dept.id).subscribe({
+        next: () => {
+          this.snackBar.open('Departamento eliminado', 'Cerrar', { duration: 3000 });
+          this.loadData();
+        },
+        error: (err) => alert('No se puede eliminar: Es posible que tenga cargos o empleados asignados.')
+      });
+    }
   }
 }
-
-

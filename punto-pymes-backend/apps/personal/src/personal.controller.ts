@@ -27,6 +27,10 @@ export class PersonalController {
   getEmpleados(@Payload() data: { empresaId: string }) {
     return this.personalService.getEmpleados(data.empresaId);
   }
+  @MessagePattern({ cmd: 'get_empleado' })
+  getEmpleado(@Payload() data: { empresaId: string; empleadoId: string }) {
+    return this.personalService.getEmpleado(data.empresaId, data.empleadoId);
+  }
 
   /**
    * Escucha el comando 'create_empleado' (RF-01-01)
@@ -312,5 +316,31 @@ export class PersonalController {
   @MessagePattern({ cmd: 'reanalizar_candidato' })
   reanalizarCandidato(@Payload() data: { candidatoId: string }) {
     return this.personalService.reanalizarCandidato(data.candidatoId);
+  }
+  @MessagePattern({ cmd: 'get_documentos_empleado' })
+  getDocumentosEmpleado(@Payload() data: { empresaId: string; empleadoId: string }) {
+    return this.personalService.getDocumentosEmpleado(data.empresaId, data.empleadoId);
+  }
+  // ... 
+
+  @MessagePattern({ cmd: 'upload_documento_empleado' })
+  uploadDocumentoEmpleado(@Payload() data: {
+    empresaId: string;
+    empleadoId: string;
+    dto: { nombre: string; tipo: string; url: string }
+  }) {
+    return this.personalService.uploadDocumentoEmpleado(
+      data.empresaId,
+      data.empleadoId,
+      data.dto
+    );
+  }
+  @MessagePattern({ cmd: 'update_foto_perfil' })
+  updateFotoPerfil(@Payload() data: { empresaId: string; empleadoId: string; fileUrl: string }) {
+    return this.personalService.updateFotoPerfil(data.empresaId, data.empleadoId, data.fileUrl);
+  }
+  @MessagePattern({ cmd: 'delete_documento' })
+  deleteDocumento(@Payload() data: { empresaId: string; documentoId: string }) {
+    return this.personalService.deleteDocumento(data.empresaId, data.documentoId);
   }
 }

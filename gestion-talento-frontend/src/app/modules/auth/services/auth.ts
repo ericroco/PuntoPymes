@@ -13,6 +13,7 @@ interface JwtPayload {
   rol: string; // "Administrador"
   permisos?: any;
   exp: number;
+  fotoUrl?: string;
 }
 
 // 2. Interfaz de la RESPUESTA DEL BACKEND (Lo que te llega en el subscribe)
@@ -52,7 +53,8 @@ export class AuthService {
             email: decoded.email,
             empresaId: decoded.empresaId,
             empleadoId: decoded.empleadoId,
-            role: decoded.rol // Mapeamos 'rol' del token a 'role' del usuario
+            role: decoded.rol, // Mapeamos 'rol' del token a 'role' del usuario
+            fotoUrl: decoded.fotoUrl
           };
 
           localStorage.setItem('user', JSON.stringify(userFromToken));

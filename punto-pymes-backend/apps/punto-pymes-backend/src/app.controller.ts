@@ -158,7 +158,19 @@ export class AppController {
       },
     );
   }// --- 4. ¡NUEVO ENDPOINT PATCH /empleados/:id! (RF-01-03) ---
-
+  // NUEVO: Obtener un empleado por ID
+  @UseGuards(JwtAuthGuard) // Protegido, pero accesible para empleados (si ajustas permisos)
+  @Get('empleados/:id')
+  getEmpleado(
+    @Request() req,
+    @Param('id') empleadoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.personalService.send(
+      { cmd: 'get_empleado' },
+      { empresaId, empleadoId },
+    );
+  }
   /**
    * Actualiza un empleado (RF-01-03)
    * @param id El ID del empleado a actualizar (de la URL)
@@ -208,6 +220,48 @@ export class AppController {
         empresaId: empresaId,
         empleadoId: empleadoId,
       },
+    );
+  }
+
+  // ==========================================
+  //        FOTO DE PERFIL
+  // ==========================================
+  @UseGuards(JwtAuthGuard)
+  @Post('empleados/:id/foto')
+  @UseInterceptors(
+    FileInterceptor('file', createMulterOptions(
+      (req) => `empleados/${req.params.id}/foto`, // Carpeta específica
+      2, // Max 2MB para fotos
+      /\/(jpg|jpeg|png)$/ // Solo imágenes
+    ))
+  )
+  async uploadFotoPerfil(
+    @Request() req,
+    @Param('id') empleadoId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('Imagen requerida');
+
+    const { empresaId } = req.user;
+    const empresaFolder = empresaId;
+    const fileUrl = `http://localhost:3000/uploads/${empresaFolder}/empleados/${empleadoId}/foto/${file.filename}`;
+
+    return this.personalService.send(
+      { cmd: 'update_foto_perfil' },
+      { empresaId, empleadoId, fileUrl },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('empleados/:id/documentos')
+  getDocumentosEmpleado(
+    @Request() req,
+    @Param('id') empleadoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.personalService.send(
+      { cmd: 'get_documentos_empleado' },
+      { empresaId, empleadoId },
     );
   }
   /**
@@ -1643,6 +1697,62 @@ export class AppController {
     return this.personalService.send(
       { cmd: 'reanalizar_candidato' },
       { candidatoId },
+    );
+  }
+  @UseGuards(JwtAuthGuard) // Permite a empleados y admins
+  @Post('empleados/:id/documentos')
+  @UseInterceptors(
+    FileInterceptor('file', createMulterOptions(
+      (req) => `empleados/${req.params.id}/documentos`, // Carpeta dinámica por ID de empleado
+      10 // Max 10MB
+    ))
+  )
+  async uploadDocumentoEmpleado(
+    @Request() req,
+    @Param('id') empleadoId: string,
+    @Body('nombre') nombre: string,
+    @Body('tipo') tipo: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    const { empresaId } = req.user;
+    const empresaFolder = empresaId; // O lógica para sacar folder
+
+    const fileUrl = `http://localhost:3000/uploads/${empresaFolder}/empleados/${empleadoId}/documentos/${file.filename}`;
+
+    // Llamamos al microservicio Personal para guardar en BD
+    return this.personalService.send(
+      { cmd: 'upload_documento_empleado' },
+      {
+        empresaId,
+        empleadoId,
+        dto: { nombre, tipo, url: fileUrl }
+      },
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('desempeno/ciclos/activo')
+  getCicloActivo(@Request() req) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'get_ciclo_activo' }, { empresaId });
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('asistencia/empleados/:id/resumen')
+  getAsistenciaSummary(@Request() req, @Param('id') empleadoId: string) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'get_asistencia_summary' }, { empresaId, empleadoId });
+  }
+  @UseGuards(JwtAuthGuard)
+  @Delete('empleados/documentos/:id') // Ruta: /empleados/documentos/DOC_ID
+  deleteDocumento(
+    @Request() req,
+    @Param('id') documentoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.personalService.send(
+      { cmd: 'delete_documento' },
+      { empresaId, documentoId },
     );
   }
 }

@@ -1,9 +1,27 @@
 <div class="page-container" *ngIf="employee; else loading">
   <header class="profile-header">
-    <img [src]="employee.avatar" alt="Avatar" class="avatar">
+    <div class="avatar-wrapper">
+      <img *ngIf="employee.fotoUrl" [src]="employee.fotoUrl" alt="Avatar" class="avatar-img">
+      <div *ngIf="!employee.fotoUrl" class="avatar-placeholder">
+        {{ getInitials(employee.nombre, employee.apellido) }}
+      </div>
+
+      <div class="avatar-overlay" *ngIf="viewingAsAdmin || !viewingAsAdmin" (click)="openEditAvatarDialog()">
+        <mat-icon>camera_alt</mat-icon>
+        <span>Editar</span>
+      </div>
+    </div>
+
     <div class="info">
-      <h1>{{ employee.name }}</h1>
-      <p>{{ employee.role }} | {{ employee.department }}</p>
+      <h1>{{ employee.nombre }} {{ employee.apellido }}</h1>
+      <p class="job-title">
+        {{ employee.cargo?.nombre || 'Sin Cargo' }}
+        <span *ngIf="employee.cargo?.departamento?.nombre"> | {{ employee.cargo!.departamento!.nombre }}</span>
+      </p>
+      <span class="status-badge"
+        [ngClass]="{'active': employee.estado === 'Activo', 'inactive': employee.estado !== 'Activo'}">
+        {{ employee.estado }}
+      </span>
     </div>
 
     <button *ngIf="!viewingAsAdmin" mat-stroked-button color="primary" class="edit-contact-btn"
@@ -16,35 +34,34 @@
     </button>
     <button *ngIf="viewingAsAdmin" class="btn btn-secondary">Exportar Perfil a PDF</button>
   </header>
+
   <section class="details-section general-info-section">
     <h3>Información General</h3>
     <div class="info-grid">
       <div class="info-item">
-        <span class="info-label">Correo Electrónico:</span>
-        <span class="info-value">{{ employee.email || '---' }}</span>
+        <span class="info-label">Correo Personal:</span>
+        <span class="info-value">{{ employee.emailPersonal || '---' }}</span>
       </div>
       <div class="info-item">
         <span class="info-label">Teléfono / Celular:</span>
-        <span class="info-value">{{ employee.phone || '---' }}</span>
+        <span class="info-value">{{ employee.telefono || '---' }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label">Fecha de Contratación:</span>
-        <span class="info-value">{{ employee.hireDate ? (employee.hireDate | date:'longDate') : '---' }}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Reporta a:</span>
-        <span class="info-value">{{ employee.reportsTo || '---' }}</span>
+        <span class="info-label">Rol de Sistema:</span>
+        <span class="info-value">{{ employee.rol?.nombre || '---' }}</span>
       </div>
       <div class="info-item">
         <span class="info-label">Dirección:</span>
-        <span class="info-value">{{ employee.address || '---' }}</span>
+        <span class="info-value">{{ employee.direccion || '---' }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label">Contacto de Emergencia:</span>
-        <span class="info-value">{{ employee.emergencyContact || '---' }}</span>
+        <span class="info-label">Fecha Nacimiento:</span>
+        <span class="info-value">{{ employee.fechaNacimiento ? (employee.fechaNacimiento | date:'longDate') : '---'
+          }}</span>
       </div>
     </div>
   </section>
+
   <section class="details-section schedule-section" *ngIf="viewingAsAdmin">
     <div class="section-header">
       <h3>Horario Asignado</h3>
@@ -69,23 +86,16 @@
     </div>
   </section>
 
-  <section class="details-section custom-fields-section">
+  <section class="details-section custom-fields-section" *ngIf="definedCustomFields.length > 0">
     <h3>Información Adicional</h3>
-    <div class="custom-fields-grid" *ngIf="definedCustomFields.length > 0; else noCustomFields">
+    <div class="custom-fields-grid">
       <div *ngFor="let field of definedCustomFields" class="field-item">
         <span class="field-label">{{ field.label }}:</span>
-        <span class="field-value">
-          {{ employee.customFields && employee.customFields[field.key] ?
-          (field.type === 'date' ? (employee.customFields[field.key] | date:'longDate') :
-          employee.customFields[field.key])
-          : '---' }}
-        </span>
+        <span class="field-value">---</span>
       </div>
     </div>
-    <ng-template #noCustomFields>
-      <p class="no-data-placeholder">No hay campos personalizados definidos.</p>
-    </ng-template>
   </section>
+
   <section class="details-section salary-section" *ngIf="viewingAsAdmin">
     <h3>Historial Salarial y Compensación</h3>
     <div class="document-list" *ngIf="salaryHistory.length > 0; else noSalaryHistory">
@@ -140,6 +150,7 @@
       </div>
     </div>
   </div>
+
   <section class="details-section document-section">
     <div class="section-header">
       <h3>Gestión de Documentos</h3>
@@ -154,16 +165,13 @@
         </select>
       </div>
       <button *ngIf="!viewingAsAdmin" class="btn btn-secondary" (click)="openAddDocumentDialog()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-        </svg>
+        <mat-icon>upload_file</mat-icon>
         <span>Añadir Documento</span>
       </button>
     </div>
     <div class="document-list">
       <div class="document-item header">
-        <span>Nombre del Archivo / Certificado</span>
+        <span>Nombre del Archivo</span>
         <span>Tipo</span>
         <span>Origen</span>
         <span>Fecha</span>
@@ -171,23 +179,23 @@
       </div>
       <div *ngFor="let doc of unifiedDocuments" class="document-item">
         <div class="file-info">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5A1.5 1.5 0 0115.5 18h-11A1.5 1.5 0 013 16.5v-13zM11.5 2.5v1.625c0 .414.336.75.75.75H14.5v.001l-3-3z"
-              clip-rule="evenodd" />
-          </svg>
+          <mat-icon>description</mat-icon>
           <span>{{ doc.name }}</span>
         </div>
         <span>{{ doc.type }}</span>
-        <td> <span class="origin-badge" [ngClass]="doc.origin === 'Empresa' ? 'origin-empresa' : 'origin-empleado'">
+        <td>
+          <span class="origin-badge" [ngClass]="doc.origin === 'Empresa' ? 'origin-empresa' : 'origin-empleado'">
             {{ doc.origin }}
           </span>
         </td>
         <span>{{ doc.date | date:'dd MMM, yyyy' }}</span>
         <div class="actions">
-          <button class="btn-icon" title="Descargar">📥</button>
-          <button *ngIf="viewingAsAdmin || (!viewingAsAdmin && doc.origin === 'Empleado')" class="btn-icon btn-danger"
-            (click)="deleteDocument(doc)" title="Eliminar">🗑️</button>
+          <button class="btn-icon" title="Descargar" (click)="downloadDocument(doc)">
+            📥
+          </button>
+          <button *ngIf="doc.canDelete" class="btn-icon btn-danger" (click)="deleteDocument(doc)" title="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
         </div>
       </div>
       <div *ngIf="unifiedDocuments.length === 0" class="empty-list-placeholder list-item">
@@ -196,10 +204,11 @@
     </div>
   </section>
 
+</div>
 
-
-</div> <ng-template #loading>
+<ng-template #loading>
   <div class="loading-container">
-    <p>Cargando perfil del empleado...</p>
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Cargando perfil...</p>
   </div>
 </ng-template>

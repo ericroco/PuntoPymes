@@ -7,9 +7,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/jwt.strategy';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../../..', 'uploads'), // Sube niveles hasta la raíz
+      serveRoot: '/uploads', // La URL pública empezará con /uploads
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: './.env',

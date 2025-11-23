@@ -1,38 +1,36 @@
-<h1 mat-dialog-title>Añadir Nuevo Documento</h1>
+<h2 mat-dialog-title>Subir Documento</h2>
+<mat-dialog-content [formGroup]="documentForm">
 
-<div mat-dialog-content [formGroup]="documentForm">
-
-  <mat-form-field appearance="outline">
-    <mat-label>Tipo de Documento</mat-label>
-    <mat-select formControlName="documentType">
-      <mat-option *ngFor="let type of documentTypes" [value]="type">
-        {{ type }}
-      </mat-option>
-    </mat-select>
-    <mat-error *ngIf="documentForm.get('documentType')?.hasError('required')">
-      Debe seleccionar un tipo.
-    </mat-error>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nombre del Documento</mat-label>
+    <input matInput formControlName="fileName" placeholder="Ej: Título Universitario">
   </mat-form-field>
 
-  <div class="file-input-container">
-    <label for="file-upload" class="file-upload-label btn btn-secondary">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z" />
-        <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
-      </svg>
-      <span>Seleccionar Archivo</span>
-    </label>
-    <input id="file-upload" type="file" (change)="onFileSelected($event)" #fileInput hidden>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Tipo de Documento</mat-label>
+    <mat-select formControlName="documentType">
+      <mat-option value="Legal">Legal</mat-option>
+      <mat-option value="Certificación Externa">Certificación Externa</mat-option>
+      <mat-option value="Reconocimiento Interno">Reconocimiento</mat-option>
+      <mat-option value="Otros">Otros</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none">
+
+  <div class="file-upload-area">
+    <button mat-stroked-button type="button" (click)="fileInput.click()">
+      <mat-icon>attach_file</mat-icon> Seleccionar Archivo
+    </button>
     <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
-    <span class="file-name placeholder" *ngIf="!selectedFile">Ningún archivo seleccionado</span>
-     <mat-error *ngIf="documentForm.get('fileInput')?.hasError('required') && documentForm.get('fileInput')?.touched">
-      Debe seleccionar un archivo.
-    </mat-error>
+    <span class="file-error" *ngIf="!selectedFile && documentForm.touched">Requerido *</span>
   </div>
 
-</div>
+</mat-dialog-content>
 
-<div mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="documentForm.invalid">Guardar Documento</button>
-</div>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]=" documentForm.invalid || !selectedFile">
+    Subir
+  </button>
+</mat-dialog-actions>

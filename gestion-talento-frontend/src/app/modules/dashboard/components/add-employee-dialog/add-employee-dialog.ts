@@ -10,10 +10,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatStepperModule } from '@angular/material/stepper'; // <-- Importar Stepper
+import { MatStepperModule } from '@angular/material/stepper';
 import { MatIconModule } from '@angular/material/icon';
+import { EmployeesService, CreateEmployeeDto } from '../../services/employees';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
-// Interfaz para los datos recibidos
+// Interfaces para los datos recibidos
 interface DialogData {
   availableJobs: JobPosition[];
   availableManagers: Manager[];
@@ -33,74 +35,63 @@ interface Manager { id: number | string; name: string; }
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatDatepickerModule,
-    MatNativeDateModule, MatStepperModule, MatIconModule, MatDivider // <-- Añadir MatStepperModule
+    MatNativeDateModule, MatStepperModule, MatIconModule, MatDivider
   ],
   templateUrl: './add-employee-dialog.html',
   styleUrls: ['./add-employee-dialog.scss']
 })
 export class AddEmployeeDialog implements OnInit {
-  // Un FormGroup por cada paso
+  isLoading = false;
   step1Form: FormGroup; // Personal
   step2Form: FormGroup; // Laboral
   step3Form: FormGroup; // Compensación
 
-  // Listas para los dropdowns
   availableJobs: JobPosition[] = [];
   availableManagers: Manager[] = [];
   selectedJobSalaryRange: string | null = null;
-  // Propiedad para el hint de salario (asegúrate de que esté definida en la clase
 
   constructor(
     public dialogRef: MatDialogRef<AddEmployeeDialog>,
     private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private employeesService: EmployeesService,
+    private snackBar: MatSnackBar
   ) {
     this.availableJobs = data.availableJobs || [];
     this.availableManagers = data.availableManagers || [];
 
-    // --- Paso 1 (COMPLETADO) ---
+    // Paso 1
     this.step1Form = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
-      dateOfBirth: [null] // Opcional
+      dateOfBirth: [null]
     });
 
-    // --- Paso 2 (Modificado) ---
+    // Paso 2
     this.step2Form = this.fb.group({
-      job: [null, Validators.required], // Almacenará el objeto JobPosition completo
-      reportsTo: [null, Validators.required],
-      hireDate: [new Date(), Validators.required] // Fecha de hoy por defecto
+      job: [null, Validators.required],
+      reportsTo: [null, Validators.required], // Este campo es para jefeId, asegúrate de mapearlo si lo usas
+      hireDate: [new Date(), Validators.required]
     });
 
-    // --- Paso 3 (Modificado) ---
+    // Paso 3
     this.step3Form = this.fb.group({
-      initialSalary: [null, [Validators.required, Validators.min(1)]] // Validación base
+      initialSalary: [null, [Validators.required, Validators.min(1)]]
     });
 
-    // --- LÓGICA CLAVE: Escuchar cambios en el Cargo seleccionado ---
+    // Lógica de salario
     this.step2Form.get('job')?.valueChanges.subscribe((selectedJob: JobPosition | null) => {
       if (selectedJob) {
-        // Rellenar automáticamente el departamento (y deshabilitarlo)
-        // (Asegúrate de que el control 'department' exista en step2Form si quieres hacer esto)
-        // this.step2Form.patchValue({ department: selectedJob.department });
-
-        // Actualizar el hint de salario
         this.selectedJobSalaryRange = `Rango sugerido: ${selectedJob.minSalary} - ${selectedJob.maxSalary}`;
-
-        // --- VALIDACIÓN DE RANGO ---
-        // Añadir validadores dinámicamente al campo de salario
         this.step3Form.get('initialSalary')?.setValidators([
           Validators.required,
           Validators.min(selectedJob.minSalary),
           Validators.max(selectedJob.maxSalary)
         ]);
-        this.step3Form.get('initialSalary')?.updateValueAndValidity(); // Actualiza la validación
-
+        this.step3Form.get('initialSalary')?.updateValueAndValidity();
       } else {
-        // Limpiar si no hay cargo seleccionado
         this.selectedJobSalaryRange = null;
-        // Resetea los validadores al estado base
         this.step3Form.get('initialSalary')?.setValidators([Validators.required, Validators.min(1)]);
         this.step3Form.get('initialSalary')?.updateValueAndValidity();
       }
@@ -113,46 +104,80 @@ export class AddEmployeeDialog implements OnInit {
     this.dialogRef.close();
   }
 
-  // Se llama en el último paso para guardar
+  // Método Helper para formatear fechas a 'YYYY-MM-DD'
+  private formatDate(date: Date | null): string | undefined {
+    if (!date) return undefined;
+    const d = new Date(date);
+    // Ajustar zona horaria para evitar que se retrase un día
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split('T')[0];
+  }
+
   onSave(): void {
-    // Doble chequeo de validez (aunque el botón de guardar debería estar deshabilitado)
     if (this.step1Form.invalid || this.step2Form.invalid || this.step3Form.invalid) {
-      // Marca todos los campos como tocados para mostrar errores en todos los pasos (si el usuario intenta forzar el guardado)
       this.step1Form.markAllAsTouched();
       this.step2Form.markAllAsTouched();
       this.step3Form.markAllAsTouched();
       return;
     }
 
-    // Helper de formato de fecha (maneja zona horaria)
-    const formatDt = (date: Date | null): string | null => {
-      if (!date) return null;
-      // Ajusta la fecha para evitar problemas de zona horaria (resta el offset)
-      const adjustedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-      // Devuelve solo la parte de la fecha en formato YYYY-MM-DD
-      return adjustedDate.toISOString().split('T')[0];
+    this.isLoading = true;
+
+    // 1. Procesar Nombre y Apellido
+    const rawName = this.step1Form.value.name || '';
+    const fullName = rawName.trim().split(' ');
+    const nombre = fullName[0];
+    // Si no puso apellido, ponemos un punto para que no falle la validación del backend
+    const apellido = fullName.length > 1 ? fullName.slice(1).join(' ') : '.';
+
+    // 2. IDs (Usamos los hardcoded si no vienen del formulario)
+    // ⚠️ IMPORTANTE: Asegúrate de que estos UUIDs existen en tu tabla 'roles' y 'cargos' de Postgres
+    const HARDCODED_ROL_ID = '63b5fcb2-2fd6-4454-bf05-0f75a13a1227';
+    const HARDCODED_CARGO_ID = '3420e657-2590-4b90-b767-ae21ce4376ad';
+
+    const cargoId = HARDCODED_CARGO_ID;
+
+    // 3. Construir el DTO exacto para el backend
+    const employeeData: CreateEmployeeDto = {
+      nombre: nombre,
+      apellido: apellido,
+      emailPersonal: this.step1Form.value.email,
+      telefono: this.step1Form.value.phone,
+      // Formateamos la fecha para que IsDateString no se queje
+      fechaNacimiento: this.formatDate(this.step1Form.value.dateOfBirth),
+
+      cargoId: cargoId,
+      rolId: HARDCODED_ROL_ID,
+      // jefeId: ... (Si tuvieras el ID del jefe real, iría aquí. Si 'reportsTo' es solo nombre, no lo mandes)
     };
 
-    // Combina los datos de todos los formularios
-    const finalData = {
-      personal: {
-        ...this.step1Form.value,
-        dateOfBirth: formatDt(this.step1Form.value.dateOfBirth) // Formatea la fecha de nacimiento
-      },
-      job: {
-        ...this.step2Form.value,
-        // Extraer datos clave del objeto 'job'
-        role: this.step2Form.value.job.name,
-        department: this.step2Form.value.job.department,
-        hireDate: formatDt(this.step2Form.value.hireDate) // Formatea la fecha de contratación
-      },
-      compensation: this.step3Form.value
-    };
+    console.log('📤 Enviando datos al backend:', employeeData);
 
-    // Eliminamos el objeto 'job' completo que ya no necesitamos en la data final
-    delete finalData.job.job;
+    // 4. Llamar al servicio
+    this.employeesService.createEmployee(employeeData).subscribe({
+      next: (res) => {
+        console.log('✅ Empleado creado:', res);
+        this.isLoading = false;
+        this.snackBar.open('¡Empleado creado y credenciales enviadas!', 'Cerrar', {
+          duration: 4000,
+          panelClass: ['success-snackbar']
+        });
+        this.dialogRef.close(res);
+      },
+      error: (err) => {
+        console.error('❌ Error creando empleado:', err);
+        this.isLoading = false;
 
-    // Cerramos el modal y devolvemos el objeto combinado
-    this.dialogRef.close(finalData);
+        // Mostrar mensaje detallado si el backend devuelve errores de validación
+        let errorMsg = 'Error al crear empleado.';
+        if (err.error?.message && Array.isArray(err.error.message)) {
+          errorMsg = err.error.message.join(', '); // Ej: "email must be an email, apellido should not be empty"
+        } else if (err.error?.message) {
+          errorMsg = err.error.message;
+        }
+
+        this.snackBar.open(errorMsg, 'Cerrar', { duration: 5000 });
+      }
+    });
   }
 }

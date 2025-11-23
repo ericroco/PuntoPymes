@@ -148,7 +148,7 @@
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   flex: 1 1 300px;
-  max-width: calc(50% - 0.75rem); 
+  max-width: calc(50% - 0.75rem);
 
 
 
@@ -162,9 +162,48 @@
 .card-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 16px;
+
+  /* CONTENEDOR DEL AVATAR (Define el tamaño fijo) */
+  .avatar-wrapper {
+    width: 50px;
+    /* Ancho fijo */
+    height: 50px;
+    /* Alto fijo */
+    min-width: 50px;
+    /* Evita que se aplaste */
+    margin-right: 15px;
+    /* Espacio con el texto */
+    border-radius: 50%;
+    /* Círculo perfecto */
+    overflow: hidden;
+    /* Corta lo que sobresalga */
+    border: 2px solid #e0e0e0;
+    /* Borde opcional */
+  }
+
+  /* LA IMAGEN REAL (Se adapta al contenedor) */
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* CLAVE: Recorta la imagen para llenar el círculo sin deformarla */
+    display: block;
+    /* Quita espacios extra de imágenes inline */
+  }
+
+  /* EL PLACEHOLDER (Iniciales) */
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #3f51b5;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+  }
 }
 
 .avatar {
@@ -292,4 +331,29 @@
   padding: 3rem;
   color: var(--color-text-secondary);
   font-style: italic;
+}
+
+/* Agrega esto si no lo tienes */
+.avatar-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #3f51b5;
+  /* Color primario */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  margin-right: 15px;
+  /* Espacio con el texto */
+}
+
+.info-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  color: #666;
 }

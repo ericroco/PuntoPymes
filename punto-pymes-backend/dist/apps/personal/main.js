@@ -96,6 +96,9 @@ let PersonalController = class PersonalController {
     getEmpleados(data) {
         return this.personalService.getEmpleados(data.empresaId);
     }
+    getEmpleado(data) {
+        return this.personalService.getEmpleado(data.empresaId, data.empleadoId);
+    }
     createEmpleado(data) {
         console.log(`Microservicio PERSONAL: Recibido create_empleado para empresa: ${data.empresaId}`);
         return this.personalService.createEmpleado(data.empresaId, data.dto);
@@ -174,6 +177,18 @@ let PersonalController = class PersonalController {
     reanalizarCandidato(data) {
         return this.personalService.reanalizarCandidato(data.candidatoId);
     }
+    getDocumentosEmpleado(data) {
+        return this.personalService.getDocumentosEmpleado(data.empresaId, data.empleadoId);
+    }
+    uploadDocumentoEmpleado(data) {
+        return this.personalService.uploadDocumentoEmpleado(data.empresaId, data.empleadoId, data.dto);
+    }
+    updateFotoPerfil(data) {
+        return this.personalService.updateFotoPerfil(data.empresaId, data.empleadoId, data.fileUrl);
+    }
+    deleteDocumento(data) {
+        return this.personalService.deleteDocumento(data.empresaId, data.documentoId);
+    }
 };
 exports.PersonalController = PersonalController;
 __decorate([
@@ -185,6 +200,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PersonalController.prototype, "getEmpleados", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_empleado' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "getEmpleado", null);
 __decorate([
     openapi.ApiOperation({ summary: "Escucha el comando 'create_empleado' (RF-01-01)" }),
     (0, microservices_1.MessagePattern)({ cmd: 'create_empleado' }),
@@ -378,6 +401,38 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PersonalController.prototype, "reanalizarCandidato", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_documentos_empleado' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "getDocumentosEmpleado", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'upload_documento_empleado' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts").DocumentoEmpleado) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "uploadDocumentoEmpleado", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_foto_perfil' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "updateFotoPerfil", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_documento' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "deleteDocumento", null);
 exports.PersonalController = PersonalController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [personal_service_1.PersonalService])
@@ -405,6 +460,8 @@ const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const personal_controller_1 = __webpack_require__(/*! ./personal.controller */ "./apps/personal/src/personal.controller.ts");
 const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
+const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 let PersonalModule = class PersonalModule {
@@ -425,7 +482,33 @@ exports.PersonalModule = PersonalModule = __decorate([
                 database_1.Rol, database_1.Contrato,
                 database_1.Vacante,
                 database_1.Candidato,
+                database_1.Usuario,
+                database_1.DocumentoEmpleado,
             ]),
+            microservices_1.ClientsModule.register([
+                {
+                    name: 'AUTH_SERVICE',
+                    transport: microservices_1.Transport.TCP,
+                    options: {
+                        host: 'auth_service',
+                        port: 3001
+                    },
+                },
+            ]),
+            mailer_1.MailerModule.forRoot({
+                transport: {
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: 'erickrodas559@gmail.com',
+                        pass: 'tqhl basq ufjw vyor',
+                    },
+                },
+                defaults: {
+                    from: '"PuntoPyMES RRHH" <noreply@puntopymes.com>',
+                },
+            }),
         ],
         controllers: [personal_controller_1.PersonalController],
         providers: [personal_service_1.PersonalService],
@@ -501,6 +584,10 @@ const generative_ai_1 = __webpack_require__(/*! @google/generative-ai */ "@googl
 const fs = __importStar(__webpack_require__(/*! fs */ "fs"));
 const path_1 = __webpack_require__(/*! path */ "path");
 const axios_1 = __importDefault(__webpack_require__(/*! axios */ "axios"));
+const common_2 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
+const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
 let PersonalService = class PersonalService {
     empleadoRepository;
     rolRepository;
@@ -510,8 +597,11 @@ let PersonalService = class PersonalService {
     deptoRepository;
     vacanteRepository;
     candidatoRepository;
+    documentoRepository;
+    authClient;
+    mailerService;
     genAI;
-    constructor(empleadoRepository, rolRepository, cargoRepository, configService, contratoRepository, deptoRepository, vacanteRepository, candidatoRepository) {
+    constructor(empleadoRepository, rolRepository, cargoRepository, configService, contratoRepository, deptoRepository, vacanteRepository, candidatoRepository, documentoRepository, authClient, mailerService) {
         this.empleadoRepository = empleadoRepository;
         this.rolRepository = rolRepository;
         this.cargoRepository = cargoRepository;
@@ -520,6 +610,9 @@ let PersonalService = class PersonalService {
         this.deptoRepository = deptoRepository;
         this.vacanteRepository = vacanteRepository;
         this.candidatoRepository = candidatoRepository;
+        this.documentoRepository = documentoRepository;
+        this.authClient = authClient;
+        this.mailerService = mailerService;
         const apiKey = this.configService.getOrThrow('GEMINI_API_KEY');
         this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
     }
@@ -531,6 +624,16 @@ let PersonalService = class PersonalService {
             },
             relations: ['cargo', 'rol'],
         });
+    }
+    async getEmpleado(empresaId, empleadoId) {
+        const empleado = await this.empleadoRepository.findOne({
+            where: { id: empleadoId, empresaId },
+            relations: ['cargo', 'rol', 'cargo.departamento'],
+        });
+        if (!empleado) {
+            throw new common_1.NotFoundException('Empleado no encontrado.');
+        }
+        return empleado;
     }
     async createEmpleado(empresaId, dto) {
         console.log(`Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`);
@@ -565,7 +668,41 @@ let PersonalService = class PersonalService {
             ...dto,
             empresaId: empresaId,
         });
-        return this.empleadoRepository.save(nuevoEmpleado);
+        const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
+        if (dto.emailPersonal) {
+            try {
+                console.log('🔄 Solicitando creación de usuario automático...');
+                const credenciales = await (0, rxjs_1.firstValueFrom)(this.authClient.send({ cmd: 'create_user_auto' }, {
+                    empleadoId: empleadoGuardado.id,
+                    email: dto.emailPersonal,
+                    nombre: dto.nombre,
+                    empresaId: empresaId,
+                }));
+                await this.mailerService.sendMail({
+                    to: dto.emailPersonal,
+                    subject: 'Bienvenido a PuntoPyMES - Tus Credenciales de Acceso',
+                    html: `
+            <div style="font-family: Arial, sans-serif; color: #333;">
+              <h1 style="color: #3f51b5;">¡Bienvenido/a ${dto.nombre}!</h1>
+              <p>Has sido registrado exitosamente en la plataforma de Recursos Humanos de tu empresa.</p>
+              <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><b>Usuario:</b> ${credenciales.email}</p>
+                <p style="margin: 5px 0;"><b>Contraseña Temporal:</b> ${credenciales.password}</p>
+              </div>
+              <p>Por favor, ingresa al sistema y cambia tu contraseña lo antes posible.</p>
+              <p>
+                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ir al Sistema</a>
+              </p>
+            </div>
+          `,
+                });
+                console.log(`📧 Credenciales enviadas a ${dto.emailPersonal}`);
+            }
+            catch (error) {
+                console.error('❌ Error en flujo automático (Usuario/Correo):', error);
+            }
+        }
+        return empleadoGuardado;
     }
     async updateEmpleado(empresaId, empleadoId, dto) {
         console.log(`Microservicio PERSONAL: Actualizando empleado ${empleadoId} para empresaId: ${empresaId}`);
@@ -991,6 +1128,72 @@ let PersonalService = class PersonalService {
         });
         return candidato;
     }
+    async getDocumentosEmpleado(empresaId, empleadoId) {
+        const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+        if (!empleado)
+            throw new common_1.NotFoundException('Empleado no encontrado');
+        const documentos = [];
+        const candidato = await this.candidatoRepository.findOneBy({ email: empleado.emailPersonal });
+        if (candidato && candidato.cvUrl) {
+            documentos.push({
+                name: 'Currículum Vitae (CV)',
+                type: 'Reclutamiento',
+                origin: 'Empleado',
+                date: candidato.fechaPostulacion,
+                url: candidato.cvUrl,
+                canDelete: false
+            });
+        }
+        const docsSubidos = await this.documentoRepository.find({
+            where: { empleadoId },
+            order: { fechaSubida: 'DESC' }
+        });
+        docsSubidos.forEach(doc => {
+            documentos.push({
+                id: doc.id,
+                name: doc.nombre,
+                type: doc.tipo,
+                origin: 'Empresa',
+                date: doc.fechaSubida,
+                url: doc.url,
+                canDelete: true
+            });
+        });
+        return documentos;
+    }
+    async uploadDocumentoEmpleado(empresaId, empleadoId, dto) {
+        console.log(`Microservicio PERSONAL: Guardando documento para empleado ${empleadoId}`);
+        const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+        if (!empleado) {
+            throw new common_1.NotFoundException('Empleado no encontrado o no pertenece a tu empresa.');
+        }
+        const nuevoDocumento = this.documentoRepository.create({
+            empleadoId,
+            nombre: dto.nombre,
+            tipo: dto.tipo,
+            url: dto.url,
+            fechaSubida: new Date(),
+        });
+        return this.documentoRepository.save(nuevoDocumento);
+    }
+    async updateFotoPerfil(empresaId, empleadoId, fileUrl) {
+        const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
+        if (!empleado)
+            throw new common_1.NotFoundException('Empleado no encontrado');
+        empleado.fotoUrl = fileUrl;
+        return this.empleadoRepository.save(empleado);
+    }
+    async deleteDocumento(empresaId, documentoId) {
+        const documento = await this.documentoRepository.findOne({
+            where: { id: documentoId },
+            relations: ['empleado']
+        });
+        if (!documento || documento.empleado.empresaId !== empresaId) {
+            throw new common_1.NotFoundException('Documento no encontrado o no tienes permiso.');
+        }
+        await this.documentoRepository.remove(documento);
+        return { message: 'Documento eliminado correctamente.' };
+    }
 };
 exports.PersonalService = PersonalService;
 exports.PersonalService = PersonalService = __decorate([
@@ -1002,6 +1205,8 @@ exports.PersonalService = PersonalService = __decorate([
     __param(5, (0, typeorm_1.InjectRepository)(database_1.Departamento)),
     __param(6, (0, typeorm_1.InjectRepository)(database_1.Vacante)),
     __param(7, (0, typeorm_1.InjectRepository)(database_1.Candidato)),
+    __param(8, (0, typeorm_1.InjectRepository)(database_1.DocumentoEmpleado)),
+    __param(9, (0, common_2.Inject)('AUTH_SERVICE')),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -1009,7 +1214,10 @@ exports.PersonalService = PersonalService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        microservices_1.ClientProxy,
+        mailer_1.MailerService])
 ], PersonalService);
 
 
@@ -2324,6 +2532,76 @@ exports.Departamento = Departamento = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/documentoEmpleado.entity.ts":
+/*!****************************************************************!*\
+  !*** ./libs/database/src/entities/documentoEmpleado.entity.ts ***!
+  \****************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DocumentoEmpleado = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+let DocumentoEmpleado = class DocumentoEmpleado extends base_entity_1.BaseEntity {
+    nombre;
+    tipo;
+    url;
+    fechaSubida;
+    empleado;
+    empleadoId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String }, tipo: { required: true, type: () => String }, url: { required: true, type: () => String }, fechaSubida: { required: true, type: () => Date }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+    }
+};
+exports.DocumentoEmpleado = DocumentoEmpleado;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100 }),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 500 }),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "url", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_DATE' }),
+    __metadata("design:type", Date)
+], DocumentoEmpleado.prototype, "fechaSubida", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.documentos, {
+        nullable: false,
+        onDelete: 'CASCADE'
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], DocumentoEmpleado.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "empleadoId", void 0);
+exports.DocumentoEmpleado = DocumentoEmpleado = __decorate([
+    (0, typeorm_1.Entity)({ name: 'documentos_empleados' }),
+    (0, typeorm_1.Index)(['empleadoId'])
+], DocumentoEmpleado);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/empleado.entity.ts":
 /*!*******************************************************!*\
   !*** ./libs/database/src/entities/empleado.entity.ts ***!
@@ -2360,6 +2638,7 @@ const inscripcionCurso_entity_1 = __webpack_require__(/*! ./inscripcionCurso.ent
 const registroAsistencia_entity_1 = __webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts");
 const activoAsignado_entity_1 = __webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts");
 const reporteGasto_entity_1 = __webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts");
+const documentoEmpleado_entity_1 = __webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts");
 let Empleado = class Empleado extends base_entity_1.BaseEntity {
     nombre;
     apellido;
@@ -2371,6 +2650,7 @@ let Empleado = class Empleado extends base_entity_1.BaseEntity {
     fechaNacimiento;
     estado;
     datosPersonalizados;
+    fotoUrl;
     empresa;
     empresaId;
     usuario;
@@ -2394,8 +2674,9 @@ let Empleado = class Empleado extends base_entity_1.BaseEntity {
     activosAsignados;
     reportesGastos;
     asignaciones;
+    documentos;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, tipoIdentificacion: { required: true, type: () => String }, nroIdentificacion: { required: true, type: () => String }, emailPersonal: { required: true, type: () => String }, telefono: { required: true, type: () => String }, direccion: { required: true, type: () => String }, fechaNacimiento: { required: true, type: () => Date }, estado: { required: true, type: () => String }, datosPersonalizados: { required: true, type: () => Object }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, usuario: { required: true, type: () => (__webpack_require__(/*! ./usuario.entity */ "./libs/database/src/entities/usuario.entity.ts").Usuario) }, usuarioId: { required: true, type: () => String }, rol: { required: true, type: () => (__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol) }, rolId: { required: true, type: () => String }, cargo: { required: true, type: () => (__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo) }, cargoId: { required: true, type: () => String }, jefe: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, jefeId: { required: true, type: () => String }, contratos: { required: true, type: () => [(__webpack_require__(/*! ./contrato.entity */ "./libs/database/src/entities/contrato.entity.ts").Contrato)] }, nominas: { required: true, type: () => [(__webpack_require__(/*! ./nominaEmpleado.entity */ "./libs/database/src/entities/nominaEmpleado.entity.ts").NominaEmpleado)] }, beneficiosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] }, tareasAsignadas: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)] }, timesheets: { required: true, type: () => [(__webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts").Timesheet)] }, objetivos: { required: true, type: () => [(__webpack_require__(/*! ./objetivo.entity */ "./libs/database/src/entities/objetivo.entity.ts").Objetivo)] }, evaluacionesRecibidas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, evaluacionesHechas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, inscripcionesCursos: { required: true, type: () => [(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").InscripcionCurso)] }, registrosAsistencia: { required: true, type: () => [(__webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts").RegistroAsistencia)] }, activosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] }, reportesGastos: { required: true, type: () => [(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").ReporteGasto)] }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)], description: "Relaci\u00F3n: Un Empleado puede tener MUCHAS asignaciones de tareas." } };
+        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, tipoIdentificacion: { required: true, type: () => String }, nroIdentificacion: { required: true, type: () => String }, emailPersonal: { required: true, type: () => String }, telefono: { required: true, type: () => String }, direccion: { required: true, type: () => String }, fechaNacimiento: { required: true, type: () => Date }, estado: { required: true, type: () => String }, datosPersonalizados: { required: true, type: () => Object }, fotoUrl: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, usuario: { required: true, type: () => (__webpack_require__(/*! ./usuario.entity */ "./libs/database/src/entities/usuario.entity.ts").Usuario) }, usuarioId: { required: true, type: () => String }, rol: { required: true, type: () => (__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol) }, rolId: { required: true, type: () => String }, cargo: { required: true, type: () => (__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo) }, cargoId: { required: true, type: () => String }, jefe: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, jefeId: { required: true, type: () => String }, contratos: { required: true, type: () => [(__webpack_require__(/*! ./contrato.entity */ "./libs/database/src/entities/contrato.entity.ts").Contrato)] }, nominas: { required: true, type: () => [(__webpack_require__(/*! ./nominaEmpleado.entity */ "./libs/database/src/entities/nominaEmpleado.entity.ts").NominaEmpleado)] }, beneficiosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] }, tareasAsignadas: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)] }, timesheets: { required: true, type: () => [(__webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts").Timesheet)] }, objetivos: { required: true, type: () => [(__webpack_require__(/*! ./objetivo.entity */ "./libs/database/src/entities/objetivo.entity.ts").Objetivo)] }, evaluacionesRecibidas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, evaluacionesHechas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, inscripcionesCursos: { required: true, type: () => [(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").InscripcionCurso)] }, registrosAsistencia: { required: true, type: () => [(__webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts").RegistroAsistencia)] }, activosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] }, reportesGastos: { required: true, type: () => [(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").ReporteGasto)] }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)], description: "Relaci\u00F3n: Un Empleado puede tener MUCHAS asignaciones de tareas." }, documentos: { required: true, type: () => [(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts").DocumentoEmpleado)] } };
     }
 };
 exports.Empleado = Empleado;
@@ -2473,6 +2754,15 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], Empleado.prototype, "datosPersonalizados", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 500,
+        nullable: true,
+        comment: 'URL de la foto de perfil',
+    }),
+    __metadata("design:type", String)
+], Empleado.prototype, "fotoUrl", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.empleados, {
         nullable: false,
@@ -2585,6 +2875,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => asignacionTarea_entity_1.AsignacionTarea, (asignacion) => asignacion.empleado),
     __metadata("design:type", Array)
 ], Empleado.prototype, "asignaciones", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => documentoEmpleado_entity_1.DocumentoEmpleado, (doc) => doc.empleado),
+    __metadata("design:type", Array)
+], Empleado.prototype, "documentos", void 0);
 exports.Empleado = Empleado = __decorate([
     (0, typeorm_1.Entity)({ name: 'empleados' }),
     (0, typeorm_1.Index)(['empresaId', 'estado']),
@@ -2881,6 +3175,7 @@ __exportStar(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/
 __exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts"), exports);
 
 
 /***/ }),
@@ -4368,6 +4663,16 @@ module.exports = require("@google/generative-ai");
 
 /***/ }),
 
+/***/ "@nestjs-modules/mailer":
+/*!*****************************************!*\
+  !*** external "@nestjs-modules/mailer" ***!
+  \*****************************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs-modules/mailer");
+
+/***/ }),
+
 /***/ "@nestjs/common":
 /*!*********************************!*\
   !*** external "@nestjs/common" ***!
@@ -4465,6 +4770,16 @@ module.exports = require("fs");
 /***/ ((module) => {
 
 module.exports = require("path");
+
+/***/ }),
+
+/***/ "rxjs":
+/*!***********************!*\
+  !*** external "rxjs" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("rxjs");
 
 /***/ }),
 

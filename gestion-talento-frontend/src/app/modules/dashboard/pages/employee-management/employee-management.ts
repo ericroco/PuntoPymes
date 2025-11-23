@@ -1,23 +1,19 @@
-import { Component, OnInit } from '@angular/core'; // Import OnInit
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AddEmployeeDialog } from '../../components/add-employee-dialog/add-employee-dialog';
 import { RouterModule } from '@angular/router';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
-import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
 
-// Keep your EmployeeData interface
-interface EmployeeData {
-  id: number;
-  name: string;
-  role: string;
-  department: string;
-  email: string;
-  status: 'active' | 'vacation' | 'inactive';
-  avatar: string;
-  goalProgress: number;
-}
+// Importamos la interfaz REAL del servicio
+import { EmployeesService, Employee } from '../../services/employees';
 
 @Component({
   selector: 'app-employee-management',
@@ -28,6 +24,11 @@ interface EmployeeData {
     RouterModule,
     FormsModule,
     MatIconModule,
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatProgressBarModule,
+    MatMenuModule
   ],
   templateUrl: './employee-management.html',
   styleUrls: ['./employee-management.scss'],
@@ -44,127 +45,124 @@ interface EmployeeData {
     ])
   ]
 })
-export class EmployeeManagement {
-  // Update sample data with avatar and goalProgress
-  employees: EmployeeData[] = [
-    { id: 1, name: 'Jeimy Torres', role: 'Desarrolladora Frontend', department: 'Tecnología', email: 'jtorres@empresa.com', status: 'active', avatar: 'https://i.pravatar.cc/80?u=jeimytorres', goalProgress: 82 },
-    { id: 2, name: 'Valentina Samaniego', role: 'Diseñadora UX/UI', department: 'Diseño', email: 'vsamaniego@empresa.com', status: 'active', avatar: 'https://i.pravatar.cc/80?u=valentinasamaniego', goalProgress: 75 },
-    { id: 3, name: 'Gabriela Loyola', role: 'Contadora Principal', department: 'Contabilidad', email: 'gloyola@empresa.com', status: 'vacation', avatar: 'https://i.pravatar.cc/80?u=gabrielaloyola', goalProgress: 95 },
-    { id: 4, name: 'Erick Rodas', role: 'Líder de Proyecto', department: 'Tecnología', email: 'erodas@empresa.com', status: 'inactive', avatar: 'https://i.pravatar.cc/80?u=erickrodas', goalProgress: 60 }
-  ];
-  availableJobs = [ // Esta es la nueva lista que pasaremos
+export class EmployeeManagement implements OnInit {
+  private employeesService = inject(EmployeesService);
+  public dialog = inject(MatDialog);
+
+  // --- DATOS REALES ---
+  employees: Employee[] = [];
+  filteredEmployees: Employee[] = []; // Usamos la interfaz real Employee
+  isLoading = true;
+
+  // --- DATOS AUXILIARES (Simulados por ahora hasta que conectes los catálogos) ---
+  availableJobs = [
     { id: 1, name: 'Desarrollador Frontend', department: 'Tecnología', minSalary: 1500, maxSalary: 2200 },
     { id: 2, name: 'Diseñador UX/UI', department: 'Diseño', minSalary: 1400, maxSalary: 2000 },
     { id: 3, name: 'Contador Principal', department: 'Contabilidad', minSalary: 2000, maxSalary: 2800 },
     { id: 4, name: 'Líder de Proyecto', department: 'Tecnología', minSalary: 2300, maxSalary: 3500 }
   ];
-  availableDepartments: string[] = ['Tecnología', 'Diseño', 'Contabilidad', 'Marketing'];
-  availableManagers: any[] = [ // Lista de empleados que pueden ser managers
+  availableManagers: any[] = [
     { id: 4, name: 'Erick Rodas' },
-    { id: 10, name: 'Gerencia General' } // Ejemplo
+    { id: 10, name: 'Gerencia General' }
   ];
-  filteredEmployees: EmployeeData[] = []; // List actually displayed
-  searchTerm: string = '';
-  selectedDepartment: string = ''; // '' means 'Todos'
-  departments: string[] = []; // List of unique departments
-  sortBy: 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' = 'name-asc'; // Default sort
 
-  constructor(public dialog: MatDialog) { }
+  // --- FILTROS ---
+  searchTerm: string = '';
+  selectedDepartment: string = '';
+  departments: string[] = [];
+  sortBy: 'name-asc' | 'name-desc' = 'name-asc'; // Simplifiqué el sort porque 'progress' no existe en backend aún
+
   ngOnInit(): void {
-    // Get unique departments from the employee list
-    this.departments = [...new Set(this.employees.map(emp => emp.department))].sort();
-    // Initialize the filtered list
-    this.applyFiltersAndSort();
+    this.loadEmployees();
   }
 
-  // --- Filter and Sort Logic ---
-  applyFiltersAndSort(): void {
-    let tempEmployees = [...this.employees]; // Start with the full list
+  loadEmployees() {
+    this.isLoading = true;
+    this.employeesService.getEmployees().subscribe({
+      next: (data) => {
+        console.log('✅ Empleados cargados:', data);
+        this.employees = data;
 
-    // 1. Filter by Search Term (Name or Role)
+        // Extraer departamentos únicos de los datos reales (si tienen departamento asignado)
+        // Nota: Tu backend devuelve cargo y rol, asumimos que el departamento viene dentro del cargo o lo añadirás.
+        // Por ahora, si no viene, usamos una lista vacía o la simulada.
+        this.departments = ['Tecnología', 'Diseño', 'Contabilidad', 'RRHH'];
+
+        this.applyFiltersAndSort();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('❌ Error cargando empleados:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // --- Lógica de Filtrado y Ordenamiento (ADAPTADA A DATOS REALES) ---
+  applyFiltersAndSort(): void {
+    let tempEmployees = [...this.employees];
+
+    // 1. Filtrar por Buscador (Nombre, Apellido o Cargo)
     if (this.searchTerm) {
       const lowerSearch = this.searchTerm.toLowerCase();
       tempEmployees = tempEmployees.filter(emp =>
-        emp.name.toLowerCase().includes(lowerSearch) ||
-        emp.role.toLowerCase().includes(lowerSearch)
+        emp.nombre.toLowerCase().includes(lowerSearch) ||
+        emp.apellido.toLowerCase().includes(lowerSearch) ||
+        (emp.cargo?.nombre || '').toLowerCase().includes(lowerSearch)
       );
     }
 
-    // 2. Filter by Department
-    if (this.selectedDepartment) {
+    // 2. Filtrar por Departamento (Si tuviéramos el dato en el objeto Employee)
+    /* if (this.selectedDepartment) {
       tempEmployees = tempEmployees.filter(emp =>
-        emp.department === this.selectedDepartment
+        emp.departamento?.nombre === this.selectedDepartment
       );
     }
+    */
 
-    // 3. Apply Sorting
+    // 3. Ordenar
     switch (this.sortBy) {
       case 'name-asc':
-        tempEmployees.sort((a, b) => a.name.localeCompare(b.name));
+        tempEmployees.sort((a, b) => a.nombre.localeCompare(b.nombre));
         break;
       case 'name-desc':
-        tempEmployees.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'progress-asc':
-        tempEmployees.sort((a, b) => a.goalProgress - b.goalProgress);
-        break;
-      case 'progress-desc':
-        tempEmployees.sort((a, b) => b.goalProgress - a.goalProgress);
+        tempEmployees.sort((a, b) => b.nombre.localeCompare(a.nombre));
         break;
     }
 
-    // Update the list that the template iterates over
     this.filteredEmployees = tempEmployees;
   }
 
-  // --- Simple Sort Toggle (Example) ---
   toggleSort(): void {
-    // Cycle through sorting options (simple example)
     if (this.sortBy === 'name-asc') {
       this.sortBy = 'name-desc';
-    } else if (this.sortBy === 'name-desc') {
-      this.sortBy = 'progress-desc';
-    } else if (this.sortBy === 'progress-desc') {
-      this.sortBy = 'progress-asc';
     } else {
       this.sortBy = 'name-asc';
     }
-    this.applyFiltersAndSort(); // Re-apply filters and sorting
+    this.applyFiltersAndSort();
   }
-
 
   openAddEmployeeDialog(): void {
     const dialogRef = this.dialog.open(AddEmployeeDialog, {
-      width: '700px',
+      width: '800px',
       disableClose: true,
       data: {
-        availableJobs: this.availableJobs, // <-- Pasa la lista de Cargos
-        // availableDepartments: this.availableDepartments, // Ya no es necesario si el cargo define el depto
+        availableJobs: this.availableJobs,
         availableManagers: this.availableManagers
       }
     });
 
-    dialogRef.afterClosed().subscribe(newEmployeeData => {
-      if (newEmployeeData) {
-        console.log('Nuevo empleado a crear:', newEmployeeData);
-        // --- TODO: Llamar API para crear el empleado con el objeto 'newEmployeeData' ---
-
-        // --- Simulación de añadir localmente ---
-        const newEmployee: EmployeeData = {
-          id: Date.now(),
-          name: newEmployeeData.personal.name,
-          role: newEmployeeData.job.role,
-          department: newEmployeeData.job.department,
-          email: newEmployeeData.personal.email,
-          status: 'active', // Por defecto 'activo'
-          avatar: `https://i.pravatar.cc/80?u=${newEmployeeData.personal.email}`, // Avatar genérico
-          goalProgress: 0, // Progreso inicial
-          // ... (otros campos como hireDate, etc., si se devuelven)
-        };
-        // Añade al array principal y refresca la vista filtrada
-        this.employees = [newEmployee, ...this.employees];
-        this.applyFiltersAndSort();
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Si se creó el empleado exitosamente en el diálogo, 
+        // simplemente recargamos la lista desde el servidor.
+        this.loadEmployees();
       }
     });
+  }
+
+  // Helper para el HTML
+  getInitials(nombre: string, apellido: string): string {
+    return (nombre.charAt(0) + (apellido ? apellido.charAt(0) : '')).toUpperCase();
   }
 }

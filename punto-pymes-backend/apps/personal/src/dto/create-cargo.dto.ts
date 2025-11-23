@@ -1,5 +1,5 @@
 // apps/personal/src/dto/create-cargo.dto.ts
-import { IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, MaxLength, IsOptional, IsNumber, Min } from 'class-validator';
 
 /**
  * DTO para crear un nuevo Cargo (RF-02)
@@ -16,4 +16,14 @@ export class CreateCargoDto {
   @IsNotEmpty({ message: 'El departamento es requerido.' })
   @IsUUID()
   departamentoId: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  salarioMin?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  salarioMax?: number;
 }

@@ -588,11 +588,13 @@ class CreateEmpleadoDto {
     nombre;
     apellido;
     emailPersonal;
+    telefono;
+    fechaNacimiento;
     cargoId;
     rolId;
     jefeId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, emailPersonal: { required: false, type: () => String, format: "email" }, cargoId: { required: true, type: () => String, format: "uuid" }, rolId: { required: true, type: () => String, description: "El ID del Rol (permisos) que tendr\u00E1.\n(Ej: 'Empleado', 'Manager')", format: "uuid" }, jefeId: { required: false, type: () => String, description: "(Opcional) ID del Empleado que ser\u00E1 su jefe.", format: "uuid" } };
+        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, emailPersonal: { required: false, type: () => String, format: "email" }, telefono: { required: false, type: () => String }, fechaNacimiento: { required: false, type: () => String }, cargoId: { required: true, type: () => String, format: "uuid" }, rolId: { required: true, type: () => String, description: "El ID del Rol (permisos) que tendr\u00E1.", format: "uuid" }, jefeId: { required: false, type: () => String, description: "(Opcional) ID del Empleado que ser\u00E1 su jefe.", format: "uuid" } };
     }
 }
 exports.CreateEmpleadoDto = CreateEmpleadoDto;
@@ -612,18 +614,28 @@ __decorate([
     __metadata("design:type", String)
 ], CreateEmpleadoDto.prototype, "emailPersonal", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateEmpleadoDto.prototype, "telefono", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de nacimiento debe ser una fecha válida (YYYY-MM-DD).' }),
+    __metadata("design:type", String)
+], CreateEmpleadoDto.prototype, "fechaNacimiento", void 0);
+__decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'El cargo es requerido.' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsUUID)('4', { message: 'El cargoId debe ser un UUID válido.' }),
     __metadata("design:type", String)
 ], CreateEmpleadoDto.prototype, "cargoId", void 0);
 __decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'El rol es requerido.' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsUUID)('4', { message: 'El rolId debe ser un UUID válido.' }),
     __metadata("design:type", String)
 ], CreateEmpleadoDto.prototype, "rolId", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsUUID)('4', { message: 'El jefeId debe ser un UUID válido.' }),
     __metadata("design:type", String)
 ], CreateEmpleadoDto.prototype, "jefeId", void 0);
 
@@ -2182,6 +2194,10 @@ let AppController = class AppController {
             dto: dto,
         });
     }
+    getEmpleado(req, empleadoId) {
+        const { empresaId } = req.user;
+        return this.personalService.send({ cmd: 'get_empleado' }, { empresaId, empleadoId });
+    }
     updateEmpleado(req, empleadoId, dto) {
         const { empresaId } = req.user;
         console.log(`Gateway: Petición PATCH /empleados/${empleadoId} para empresaId: ${empresaId}`);
@@ -2198,6 +2214,18 @@ let AppController = class AppController {
             empresaId: empresaId,
             empleadoId: empleadoId,
         });
+    }
+    async uploadFotoPerfil(req, empleadoId, file) {
+        if (!file)
+            throw new common_1.BadRequestException('Imagen requerida');
+        const { empresaId } = req.user;
+        const empresaFolder = empresaId;
+        const fileUrl = `http://localhost:3000/uploads/${empresaFolder}/empleados/${empleadoId}/foto/${file.filename}`;
+        return this.personalService.send({ cmd: 'update_foto_perfil' }, { empresaId, empleadoId, fileUrl });
+    }
+    getDocumentosEmpleado(req, empleadoId) {
+        const { empresaId } = req.user;
+        return this.personalService.send({ cmd: 'get_documentos_empleado' }, { empresaId, empleadoId });
     }
     createDepartamento(req, dto) {
         const { empresaId } = req.user;
@@ -2597,6 +2625,30 @@ let AppController = class AppController {
     reanalizarCandidato(candidatoId) {
         return this.personalService.send({ cmd: 'reanalizar_candidato' }, { candidatoId });
     }
+    async uploadDocumentoEmpleado(req, empleadoId, nombre, tipo, file) {
+        if (!file)
+            throw new common_1.BadRequestException('Archivo requerido');
+        const { empresaId } = req.user;
+        const empresaFolder = empresaId;
+        const fileUrl = `http://localhost:3000/uploads/${empresaFolder}/empleados/${empleadoId}/documentos/${file.filename}`;
+        return this.personalService.send({ cmd: 'upload_documento_empleado' }, {
+            empresaId,
+            empleadoId,
+            dto: { nombre, tipo, url: fileUrl }
+        });
+    }
+    getCicloActivo(req) {
+        const { empresaId } = req.user;
+        return this.productividadService.send({ cmd: 'get_ciclo_activo' }, { empresaId });
+    }
+    getAsistenciaSummary(req, empleadoId) {
+        const { empresaId } = req.user;
+        return this.productividadService.send({ cmd: 'get_asistencia_summary' }, { empresaId, empleadoId });
+    }
+    deleteDocumento(req, documentoId) {
+        const { empresaId } = req.user;
+        return this.personalService.send({ cmd: 'delete_documento' }, { empresaId, documentoId });
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -2663,6 +2715,17 @@ __decorate([
 ], AppController.prototype, "createEmpleado", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('empleados/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getEmpleado", null);
+__decorate([
+    openapi.ApiOperation({ summary: "Actualiza un empleado (RF-01-03)" }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Patch)('empleados/:id'),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
     openapi.ApiResponse({ status: 200, type: Object }),
@@ -2684,6 +2747,28 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "deleteEmpleado", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('empleados/:id/foto'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', (0, multer_config_util_1.createMulterOptions)((req) => `empleados/${req.params.id}/foto`, 2, /\/(jpg|jpeg|png)$/))),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "uploadFotoPerfil", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('empleados/:id/documentos'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getDocumentosEmpleado", null);
 __decorate([
     openapi.ApiOperation({ summary: "Crea un nuevo departamento (RF-02)" }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -3705,6 +3790,49 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "reanalizarCandidato", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('empleados/:id/documentos'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', (0, multer_config_util_1.createMulterOptions)((req) => `empleados/${req.params.id}/documentos`, 10))),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('nombre')),
+    __param(3, (0, common_1.Body)('tipo')),
+    __param(4, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "uploadDocumentoEmpleado", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('desempeno/ciclos/activo'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getCicloActivo", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('asistencia/empleados/:id/resumen'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getAsistenciaSummary", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Delete)('empleados/documentos/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "deleteDocumento", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -3744,12 +3872,18 @@ const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
 const passport_1 = __webpack_require__(/*! @nestjs/passport */ "@nestjs/passport");
 const jwt_strategy_1 = __webpack_require__(/*! ./auth/jwt.strategy */ "./apps/punto-pymes-backend/src/auth/jwt.strategy.ts");
+const serve_static_1 = __webpack_require__(/*! @nestjs/serve-static */ "@nestjs/serve-static");
+const path_1 = __webpack_require__(/*! path */ "path");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            serve_static_1.ServeStaticModule.forRoot({
+                rootPath: (0, path_1.join)(__dirname, '../../..', 'uploads'),
+                serveRoot: '/uploads',
+            }),
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
                 envFilePath: './.env',
@@ -5219,6 +5353,76 @@ exports.Departamento = Departamento = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/documentoEmpleado.entity.ts":
+/*!****************************************************************!*\
+  !*** ./libs/database/src/entities/documentoEmpleado.entity.ts ***!
+  \****************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DocumentoEmpleado = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+let DocumentoEmpleado = class DocumentoEmpleado extends base_entity_1.BaseEntity {
+    nombre;
+    tipo;
+    url;
+    fechaSubida;
+    empleado;
+    empleadoId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String }, tipo: { required: true, type: () => String }, url: { required: true, type: () => String }, fechaSubida: { required: true, type: () => Date }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+    }
+};
+exports.DocumentoEmpleado = DocumentoEmpleado;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100 }),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 500 }),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "url", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_DATE' }),
+    __metadata("design:type", Date)
+], DocumentoEmpleado.prototype, "fechaSubida", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.documentos, {
+        nullable: false,
+        onDelete: 'CASCADE'
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], DocumentoEmpleado.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], DocumentoEmpleado.prototype, "empleadoId", void 0);
+exports.DocumentoEmpleado = DocumentoEmpleado = __decorate([
+    (0, typeorm_1.Entity)({ name: 'documentos_empleados' }),
+    (0, typeorm_1.Index)(['empleadoId'])
+], DocumentoEmpleado);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/empleado.entity.ts":
 /*!*******************************************************!*\
   !*** ./libs/database/src/entities/empleado.entity.ts ***!
@@ -5255,6 +5459,7 @@ const inscripcionCurso_entity_1 = __webpack_require__(/*! ./inscripcionCurso.ent
 const registroAsistencia_entity_1 = __webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts");
 const activoAsignado_entity_1 = __webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts");
 const reporteGasto_entity_1 = __webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts");
+const documentoEmpleado_entity_1 = __webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts");
 let Empleado = class Empleado extends base_entity_1.BaseEntity {
     nombre;
     apellido;
@@ -5266,6 +5471,7 @@ let Empleado = class Empleado extends base_entity_1.BaseEntity {
     fechaNacimiento;
     estado;
     datosPersonalizados;
+    fotoUrl;
     empresa;
     empresaId;
     usuario;
@@ -5289,8 +5495,9 @@ let Empleado = class Empleado extends base_entity_1.BaseEntity {
     activosAsignados;
     reportesGastos;
     asignaciones;
+    documentos;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, tipoIdentificacion: { required: true, type: () => String }, nroIdentificacion: { required: true, type: () => String }, emailPersonal: { required: true, type: () => String }, telefono: { required: true, type: () => String }, direccion: { required: true, type: () => String }, fechaNacimiento: { required: true, type: () => Date }, estado: { required: true, type: () => String }, datosPersonalizados: { required: true, type: () => Object }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, usuario: { required: true, type: () => (__webpack_require__(/*! ./usuario.entity */ "./libs/database/src/entities/usuario.entity.ts").Usuario) }, usuarioId: { required: true, type: () => String }, rol: { required: true, type: () => (__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol) }, rolId: { required: true, type: () => String }, cargo: { required: true, type: () => (__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo) }, cargoId: { required: true, type: () => String }, jefe: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, jefeId: { required: true, type: () => String }, contratos: { required: true, type: () => [(__webpack_require__(/*! ./contrato.entity */ "./libs/database/src/entities/contrato.entity.ts").Contrato)] }, nominas: { required: true, type: () => [(__webpack_require__(/*! ./nominaEmpleado.entity */ "./libs/database/src/entities/nominaEmpleado.entity.ts").NominaEmpleado)] }, beneficiosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] }, tareasAsignadas: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)] }, timesheets: { required: true, type: () => [(__webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts").Timesheet)] }, objetivos: { required: true, type: () => [(__webpack_require__(/*! ./objetivo.entity */ "./libs/database/src/entities/objetivo.entity.ts").Objetivo)] }, evaluacionesRecibidas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, evaluacionesHechas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, inscripcionesCursos: { required: true, type: () => [(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").InscripcionCurso)] }, registrosAsistencia: { required: true, type: () => [(__webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts").RegistroAsistencia)] }, activosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] }, reportesGastos: { required: true, type: () => [(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").ReporteGasto)] }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)], description: "Relaci\u00F3n: Un Empleado puede tener MUCHAS asignaciones de tareas." } };
+        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, tipoIdentificacion: { required: true, type: () => String }, nroIdentificacion: { required: true, type: () => String }, emailPersonal: { required: true, type: () => String }, telefono: { required: true, type: () => String }, direccion: { required: true, type: () => String }, fechaNacimiento: { required: true, type: () => Date }, estado: { required: true, type: () => String }, datosPersonalizados: { required: true, type: () => Object }, fotoUrl: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, usuario: { required: true, type: () => (__webpack_require__(/*! ./usuario.entity */ "./libs/database/src/entities/usuario.entity.ts").Usuario) }, usuarioId: { required: true, type: () => String }, rol: { required: true, type: () => (__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol) }, rolId: { required: true, type: () => String }, cargo: { required: true, type: () => (__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo) }, cargoId: { required: true, type: () => String }, jefe: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, jefeId: { required: true, type: () => String }, contratos: { required: true, type: () => [(__webpack_require__(/*! ./contrato.entity */ "./libs/database/src/entities/contrato.entity.ts").Contrato)] }, nominas: { required: true, type: () => [(__webpack_require__(/*! ./nominaEmpleado.entity */ "./libs/database/src/entities/nominaEmpleado.entity.ts").NominaEmpleado)] }, beneficiosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] }, tareasAsignadas: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)] }, timesheets: { required: true, type: () => [(__webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts").Timesheet)] }, objetivos: { required: true, type: () => [(__webpack_require__(/*! ./objetivo.entity */ "./libs/database/src/entities/objetivo.entity.ts").Objetivo)] }, evaluacionesRecibidas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, evaluacionesHechas: { required: true, type: () => [(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts").Evaluacion)] }, inscripcionesCursos: { required: true, type: () => [(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").InscripcionCurso)] }, registrosAsistencia: { required: true, type: () => [(__webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts").RegistroAsistencia)] }, activosAsignados: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] }, reportesGastos: { required: true, type: () => [(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").ReporteGasto)] }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts").AsignacionTarea)], description: "Relaci\u00F3n: Un Empleado puede tener MUCHAS asignaciones de tareas." }, documentos: { required: true, type: () => [(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts").DocumentoEmpleado)] } };
     }
 };
 exports.Empleado = Empleado;
@@ -5368,6 +5575,15 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], Empleado.prototype, "datosPersonalizados", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 500,
+        nullable: true,
+        comment: 'URL de la foto de perfil',
+    }),
+    __metadata("design:type", String)
+], Empleado.prototype, "fotoUrl", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.empleados, {
         nullable: false,
@@ -5480,6 +5696,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => asignacionTarea_entity_1.AsignacionTarea, (asignacion) => asignacion.empleado),
     __metadata("design:type", Array)
 ], Empleado.prototype, "asignaciones", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => documentoEmpleado_entity_1.DocumentoEmpleado, (doc) => doc.empleado),
+    __metadata("design:type", Array)
+], Empleado.prototype, "documentos", void 0);
 exports.Empleado = Empleado = __decorate([
     (0, typeorm_1.Entity)({ name: 'empleados' }),
     (0, typeorm_1.Index)(['empresaId', 'estado']),
@@ -7245,6 +7465,16 @@ module.exports = require("@nestjs/passport");
 /***/ ((module) => {
 
 module.exports = require("@nestjs/platform-express");
+
+/***/ }),
+
+/***/ "@nestjs/serve-static":
+/*!***************************************!*\
+  !*** external "@nestjs/serve-static" ***!
+  \***************************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs/serve-static");
 
 /***/ }),
 

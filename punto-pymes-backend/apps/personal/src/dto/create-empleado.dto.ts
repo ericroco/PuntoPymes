@@ -1,11 +1,10 @@
-// apps/personal/src/dto/create-empleado.dto.ts
 import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
-  // IsDateString ya no es necesario aquí
+  IsDateString, // <--- 1. HABILITADO (Antes estaba comentado o faltaba)
 } from 'class-validator';
 
 /**
@@ -25,34 +24,36 @@ export class CreateEmpleadoDto {
   @IsEmail({}, { message: 'El email personal no es válido.' })
   emailPersonal?: string;
 
-  // --- INICIO DEL CAMBIO ---
-  /*
-   * Se elimina 'fechaContratacion'. 
-   * Esta lógica ahora vivirá en un DTO separado (ej. CreateContratoDto)
-   * que se usará para crear la entidad 'Contrato'.
-   */
-  // --- FIN DEL CAMBIO ---
+  // --- NUEVOS CAMPOS AGREGADOS ---
+
+  @IsOptional()
+  @IsString()
+  telefono?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha de nacimiento debe ser una fecha válida (YYYY-MM-DD).' })
+  fechaNacimiento?: string;
+
+  // --------------------------------
 
   /**
    * El ID del Cargo (puesto) que ocupará.
-   * (Ej: 'Desarrollador Backend Sr.')
    */
   @IsNotEmpty({ message: 'El cargo es requerido.' })
-  @IsUUID()
+  @IsUUID('4', { message: 'El cargoId debe ser un UUID válido.' })
   cargoId: string;
 
   /**
    * El ID del Rol (permisos) que tendrá.
-   * (Ej: 'Empleado', 'Manager')
    */
   @IsNotEmpty({ message: 'El rol es requerido.' })
-  @IsUUID()
+  @IsUUID('4', { message: 'El rolId debe ser un UUID válido.' })
   rolId: string;
 
   /**
    * (Opcional) ID del Empleado que será su jefe.
    */
   @IsOptional()
-  @IsUUID()
+  @IsUUID('4', { message: 'El jefeId debe ser un UUID válido.' })
   jefeId?: string;
 }
