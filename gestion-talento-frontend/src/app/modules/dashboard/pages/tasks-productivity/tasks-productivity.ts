@@ -1,147 +1,212 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { AddSprintDialog } from '../../components/add-sprint-dialog/add-sprint-dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
+
+// Componentes de Diálogo
+import { AddSprintDialog } from '../../components/add-sprint-dialog/add-sprint-dialog';
 import { EditSprintDialog } from '../../components/edit-sprint-dialog/edit-sprint-dialog';
 
-interface Sprint {
-  id: string;
-  name: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  status: 'Activo' | 'Planificado' | 'Completado';
-  tasks: number;
-  completedTasks: number;
-}
+// Servicios e Interfaces Reales
+import { ProductivityService, Sprint, Project } from '../../services/productivity';
 
 @Component({
-  selector: 'app-tasks-productivity', // Mantenemos el selector que corresponde a la página de lista de Sprints
+  selector: 'app-tasks-productivity',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule, // Necesario para [routerLink] en el HTML
-    MatDialogModule // Necesario para usar MatDialog
+    RouterModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatFormFieldModule, // Necesario para el selector de proyectos
+    MatSelectModule,    // Necesario para el selector de proyectos
+    FormsModule,
+    MatSnackBarModule
   ],
-  templateUrl: './tasks-productivity.html', // El HTML que muestra la lista de Sprints
+  templateUrl: './tasks-productivity.html',
   styleUrls: ['./tasks-productivity.scss'],
   animations: [
-    // Animación para la aparición de las tarjetas de sprint en la lista
     trigger('listAnimation', [
       transition('* => *', [
         query(':enter', [
           style({ opacity: 0, transform: 'translateY(20px)' }),
-          stagger('100ms',
-            animate('500ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-          )
+          stagger('100ms', animate('500ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })))
         ], { optional: true })
       ])
     ])
   ]
 })
-export class TasksProductivity {
-  // Lista de sprints (datos de ejemplo actualizados con fechas)
-  sprints: Sprint[] = [
-    { id: 'sprint-oct-25', name: 'Sprint Octubre 2025', description: 'Enfoque en refactorización del módulo de autenticación y diseño del nuevo dashboard.', startDate: '2025-10-01', endDate: '2025-10-31', status: 'Activo', tasks: 15, completedTasks: 8 },
-    { id: 'sprint-nov-25', name: 'Sprint Noviembre 2025', description: 'Desarrollo de funcionalidades del módulo de nómina y pruebas iniciales.', startDate: '2025-11-01', endDate: '2025-11-30', status: 'Planificado', tasks: 0, completedTasks: 0 },
-    { id: 'sprint-sep-25', name: 'Sprint Septiembre 2025', description: 'Lanzamiento inicial de la plataforma (MVP).', startDate: '2025-09-01', endDate: '2025-09-30', status: 'Completado', tasks: 22, completedTasks: 22 }
-  ];
+export class TasksProductivity implements OnInit {
+  private productivityService = inject(ProductivityService);
+  private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
 
-  // Inyecta MatDialog (para abrir modales) y Router (para navegar)
+  // Datos Reales
+  projects: Project[] = [];
+  sprints: Sprint[] = [];
+
+  // Estado de la vista
+  selectedProjectId: string = '';
+  isLoading = true;
+
   constructor(
     public dialog: MatDialog,
     private router: Router
   ) { }
 
-  // Función para abrir el modal de "Crear Nuevo Sprint"
+  ngOnInit(): void {
+    this.loadProjects();
+  }
+
+  // --- 1. Carga Inicial: Obtener Proyectos ---
+  loadProjects() {
+    this.isLoading = true;
+    this.productivityService.getProjects().subscribe({
+      next: (data) => {
+        this.projects = data;
+
+        if (this.projects.length > 0) {
+          // Lógica inteligente para seleccionar proyecto inicial:
+          // 1. Si viene por URL (?projectId=...), usar ese.
+          // 2. Si no, usar el primero de la lista.
+          const paramId = this.route.snapshot.queryParamMap.get('projectId');
+
+          if (paramId && this.projects.find(p => p.id === paramId)) {
+            this.selectedProjectId = paramId;
+          } else {
+            this.selectedProjectId = this.projects[0].id;
+          }
+
+          // Cargar los sprints del proyecto seleccionado
+          this.loadSprints(this.selectedProjectId);
+        } else {
+          this.isLoading = false;
+          // Aquí podrías mostrar un mensaje de "Crea tu primer proyecto"
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando proyectos:', err);
+        this.isLoading = false;
+        this.snackBar.open('Error al conectar con el servidor', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  // --- 2. Cargar Sprints del Proyecto Activo ---
+  loadSprints(projectId: string) {
+    this.isLoading = true;
+    console.log(`Cargando sprints para proyecto: ${projectId}`);
+
+    this.productivityService.getSprintsByProject(projectId).subscribe({
+      next: (data) => {
+        this.sprints = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando sprints:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Evento al cambiar el dropdown
+  onProjectChange(newProjectId: string) {
+    this.selectedProjectId = newProjectId;
+    this.loadSprints(newProjectId);
+  }
+
+  // --- 3. Crear Sprint (Backend Real) ---
   openAddSprintDialog(): void {
-    const dialogRef = this.dialog.open(AddSprintDialog, {
-      width: '500px', // Ancho del modal
-      disableClose: true // Evita que se cierre al hacer clic fuera
-    });
-
-    // Escucha el resultado cuando el modal se cierra
-    dialogRef.afterClosed().subscribe(result => {
-      // Si el modal devolvió datos (el usuario hizo clic en "Crear y Abrir Sprint")
-      if (result && result.name && result.startDate && result.endDate) {
-        console.log('Nuevo Sprint a crear:', result); // Muestra datos: { name, description, startDate, endDate }
-
-        // --- Lógica de Creación (Simulada por ahora) ---
-        // 1. En una aplicación real: Llamarías a tu servicio/API aquí para guardar el sprint.
-        //    Ej: this.sprintService.createSprint(result).subscribe(response => { ... });
-        // 2. La API debería devolver el ID real del sprint recién creado (ej., response.id).
-
-        // --- Simulación para el frontend ---
-        // Generamos un ID temporal único para poder navegar
-        const newSprintId = `sprint-${Date.now()}`;
-        console.log('Sprint simulado creado con ID:', newSprintId);
-
-        // Creamos el objeto del nuevo sprint con todos los datos (incluyendo fechas)
-        const newSprintData: Sprint = {
-          id: newSprintId,
-          name: result.name,
-          description: result.description || '', // Asegura que la descripción sea string
-          startDate: result.startDate,          // Fecha ya formateada desde el modal
-          endDate: result.endDate,              // Fecha ya formateada desde el modal
-          status: 'Planificado',                // Estado inicial por defecto
-          tasks: 0,                             // Inicialmente sin tareas
-          completedTasks: 0
-        };
-
-        // Opcional: Añadir el nuevo sprint a la lista visible inmediatamente
-        // Descomenta la siguiente línea para verlo sin recargar (mejor si la API lo devuelve)
-        this.sprints = [...this.sprints, newSprintData];
-
-        // --- NAVEGACIÓN ---
-        // Navega a la página de detalle (Kanban) del nuevo sprint usando el ID generado
-        this.router.navigate(['/dashboard/sprints', newSprintId]);
-        // Esto activará la ruta 'sprints/:sprintId' que carga SprintBoardComponent
-
-      } else if (result) {
-        // Si el resultado existe pero le faltan datos requeridos (ej. fechas)
-        console.warn('Datos incompletos desde el modal:', result);
-        // Podrías mostrar un mensaje de error al usuario aquí
-      }
-      else {
-        // Si el modal se cerró con "Cancelar" (result será null o undefined)
-        console.log('Modal cerrado sin guardar');
-      }
-    });
-  }
-
-  // Función para calcular el progreso (usada en el HTML)
-  getProgress(sprint: Sprint): number {
-    if (!sprint.tasks || sprint.tasks === 0) {
-      return 0; // Evita división por cero
+    // Validación: No se puede crear sprint sin proyecto padre
+    if (!this.selectedProjectId) {
+      this.snackBar.open('Selecciona un proyecto primero', 'Cerrar', { duration: 3000 });
+      return;
     }
-    return Math.round((sprint.completedTasks / sprint.tasks) * 100);
+
+    const dialogRef = this.dialog.open(AddSprintDialog, {
+      width: '500px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        // Llamada al servicio
+        this.productivityService.createSprint(this.selectedProjectId, result).subscribe({
+          next: (newSprint) => {
+            console.log('Sprint creado:', newSprint);
+            this.snackBar.open('Sprint creado exitosamente', 'Cerrar', { duration: 3000 });
+            this.loadSprints(this.selectedProjectId); // Recargar lista
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            this.snackBar.open('Error al crear sprint', 'Cerrar', { duration: 3000 });
+          }
+        });
+      }
+    });
   }
+
+  // --- 4. Editar Sprint (Backend Real) ---
   openEditSprintDialog(sprint: Sprint): void {
-    console.log("Editing sprint:", sprint);
     const dialogRef = this.dialog.open(EditSprintDialog, {
-      width: '500px', // Same width as add dialog
+      width: '500px',
       disableClose: true,
-      data: { ...sprint } // Pass a copy of the current sprint data
+      data: { ...sprint } // Pasamos copia para no afectar vista si cancela
     });
 
     dialogRef.afterClosed().subscribe(updatedData => {
       if (updatedData) {
-        console.log('Sprint updated:', updatedData);
-        // --- Simulate Update Locally ---
-        const index = this.sprints.findIndex(s => s.id === sprint.id);
-        if (index > -1) {
-          // Merge existing data with updated data
-          this.sprints[index] = { ...this.sprints[index], ...updatedData };
-          // Trigger change detection
-          this.sprints = [...this.sprints];
-        }
-        // --- TODO: Call API to save changes ---
-        // Example: this.sprintService.updateSprint(sprint.id, updatedData).subscribe();
-      } else {
-        console.log('Edit Sprint dialog closed without saving.');
+        this.isLoading = true;
+        this.productivityService.updateSprint(sprint.id, updatedData).subscribe({
+          next: () => {
+            this.snackBar.open('Sprint actualizado', 'Cerrar', { duration: 3000 });
+            this.loadSprints(this.selectedProjectId);
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            this.snackBar.open('Error al actualizar', 'Cerrar', { duration: 3000 });
+          }
+        });
       }
     });
+  }
+
+  // --- Helpers Visuales ---
+
+  // Calcular progreso real si el backend no lo manda
+  // (Idealmente el backend debería mandar 'progress' calculado)
+  getProgress(sprint: any): number {
+    // Si el objeto sprint ya trae propiedades de conteo (gracias al seed o DTO avanzado)
+    if (sprint.totalTasks && sprint.totalTasks > 0) {
+      return Math.round((sprint.completedTasks / sprint.totalTasks) * 100);
+    }
+    // Fallback: Si no hay datos de tareas, devolvemos 0 o un random para demo visual si prefieres
+    return 0;
+  }
+
+  getStatusClass(status: string): string {
+    // Mapear estados del backend a clases CSS
+    switch (status?.toLowerCase()) {
+      case 'activo': return 'status-active';
+      case 'completado': return 'status-completed';
+      default: return 'status-planned';
+    }
+  }
+  getProjectName(id: string): string {
+    const project = this.projects.find(p => p.id === id);
+    return project ? project.nombre : 'Seleccionar Proyecto';
   }
 }

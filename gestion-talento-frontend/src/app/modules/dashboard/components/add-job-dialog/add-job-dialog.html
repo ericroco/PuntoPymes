@@ -1,41 +1,44 @@
-<h2 mat-dialog-title>{{ data.job ? 'Editar' : 'Crear' }} Cargo</h2>
+<h2 mat-dialog-title>{{ isEditMode ? 'Editar Cargo' : 'Crear Nuevo Cargo' }}</h2>
 
-<mat-dialog-content [formGroup]="jobForm">
+<form [formGroup]="jobForm" (ngSubmit)="onSave()">
+  <mat-dialog-content class="job-form-content">
 
-  <mat-form-field appearance="outline">
-    <mat-label>Nombre del Cargo</mat-label>
-    <input matInput formControlName="nombre" placeholder="Ej: Desarrollador" required>
-    <mat-error *ngIf="jobForm.get('nombre')?.hasError('required')">Obligatorio</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Departamento</mat-label>
-    <mat-select formControlName="departamentoId" required>
-      <mat-option *ngFor="let dept of data.availableDepartments" [value]="dept.id">
-        {{ dept.nombre }}
-      </mat-option>
-    </mat-select>
-    <mat-error>Requerido</mat-error>
-  </mat-form-field>
-  <div class="row" style="display: flex; gap: 10px;">
-    <mat-form-field appearance="outline" style="flex: 1;">
-      <mat-label>Salario Mínimo</mat-label>
-      <input matInput type="number" formControlName="salarioMin" min="0">
-      <span matPrefix>$&nbsp;</span>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nombre del Cargo</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej: Desarrollador Backend" required>
+      <mat-error *ngIf="jobForm.get('nombre')?.hasError('required')">Requerido</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" style="flex: 1;">
-      <mat-label>Salario Máximo</mat-label>
-      <input matInput type="number" formControlName="salarioMax" min="0">
-      <span matPrefix>$&nbsp;</span>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Departamento</mat-label>
+      <mat-select formControlName="departamentoId" required>
+        <mat-option *ngFor="let dept of data.availableDepartments" [value]="dept.id">
+          {{ dept.nombre }}
+        </mat-option>
+      </mat-select>
+      <mat-error>Requerido</mat-error>
     </mat-form-field>
-  </div>
 
-</mat-dialog-content>
+    <div class="form-row">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Salario Mínimo</mat-label>
+        <input matInput type="number" formControlName="salarioMin">
+        <span matPrefix>$&nbsp;</span>
+      </mat-form-field>
 
-<mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="jobForm.invalid">
-    Guardar
-  </button>
-</mat-dialog-actions>
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Salario Máximo</mat-label>
+        <input matInput type="number" formControlName="salarioMax">
+        <span matPrefix>$&nbsp;</span>
+      </mat-form-field>
+    </div>
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button type="button" mat-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-flat-button color="primary" [disabled]="jobForm.invalid">
+      Guardar
+    </button>
+  </mat-dialog-actions>
+</form>

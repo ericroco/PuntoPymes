@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'; // Para los filtros
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { MatTabsModule } from '@angular/material/tabs'; // Para las pestañas
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,10 +11,21 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { NgxChartsModule, Color, ScaleType, LegendPosition } from '@swimlane/ngx-charts'; // Importamos la librería
-import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
-import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header'; // Ajusta la ruta
 import { MatDividerModule } from '@angular/material/divider';
+import { NgxChartsModule, Color, ScaleType, LegendPosition } from '@swimlane/ngx-charts';
+import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
+
+// Componentes compartidos
+import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header';
+
+// Servicios y Modelos
+import { DashboardService, DashboardKPIs } from '../../services/dashboard';
+
+// Interfaz para los datos de los gráficos (Soluciona el error de tipo 'never')
+interface ChartData {
+  name: string;
+  value: number;
+}
 
 @Component({
   selector: 'app-reports',
@@ -39,7 +50,7 @@ import { MatDividerModule } from '@angular/material/divider';
   ],
   templateUrl: './reports.html',
   styleUrls: ['./reports.scss'],
-  animations: [ // Animación para que los contenedores de los gráficos aparezcan suavemente
+  animations: [
     trigger('fadeSlideIn', [
       transition(':enter', [
         query('.report-container', [
@@ -53,108 +64,119 @@ import { MatDividerModule } from '@angular/material/divider';
   ]
 })
 export class Reports implements OnInit {
+  private dashboardService = inject(DashboardService);
+
   legendPos: LegendPosition = LegendPosition.Below;
-  // --- Filtros Globales ---
-  // TODO: Conectar esto a un FormGroup si se necesita lógica compleja
+
+  // Filtros Globales
   selectedDateRange = { start: null, end: null };
   selectedDepartment: string = 'todos';
   departments: string[] = ['Tecnología', 'Diseño', 'Contabilidad', 'Marketing', 'RRHH'];
 
-  // --- Datos Pestaña 1: Personal y Demografía ---
-  headcount = { total: 74, newHires: 6, departures: 2 };
-  // Datos para gráfico de pastel (Distribución por Depto)
-  employeeDistribution = [
-    { name: 'Tecnología', value: 25 },
-    { name: 'Diseño', value: 15 },
-    { name: 'Contabilidad', value: 12 },
-    { name: 'Marketing', value: 10 },
-    { name: 'RRHH', value: 8 },
-    { name: 'Ventas', value: 4 }
-  ];
-  // Datos para gráfico de barras (Antigüedad)
-  employeeTenure = [
-    { name: '0-1 Año', value: 20 },
-    { name: '1-3 Años', value: 35 },
-    { name: '3-5 Años', value: 12 },
-    { name: '5+ Años', value: 7 }
-  ];
+  // KPIs (Tarjetas)
+  headcount = { total: 0, newHires: 0, departures: 0 };
+  kpiMasaSalarial = { label: 'Gastos Totales (Aprobados)', value: 0, subLabel: 'Acumulado' };
+  avgGoalProgress = { total: 0, label: 'Asistencia Hoy' }; // Reutilizamos para mostrar asistencia real
 
-  // Esquema de color para gráficos (usando variables CSS)
+  // --- GRÁFICOS (Aquí estaba el error: ahora tienen tipo explícito) ---
+
+  // Distribución (Pastel)
+  employeeDistribution: ChartData[] = [];
+
+  // Estado de Tareas/Proyectos (Barras o Pastel)
+  tasksStatusData: ChartData[] = [];
+
+  // Esquema de Colores
   chartColorScheme: Color = {
     name: 'puntopymesReports',
     selectable: true,
     group: ScaleType.Ordinal,
     domain: [
-      'var(--color-primary)',
-      'var(--color-accent)',
-      'var(--color-warning)',
-      'var(--color-success)',
-      'var(--color-secondary)',
-      '#2C3E50' // Un color oscuro extra
+      '#3f51b5', // Primary
+      '#ff4081', // Accent
+      '#ff9800', // Warning
+      '#4caf50', // Success
+      '#9c27b0', // Secondary
+      '#2C3E50'  // Dark
     ]
   };
-  tasksStatusData = [
-    { name: 'Pendiente', value: 45 },
-    { name: 'En Progreso', value: 22 },
-    { name: 'Completada', value: 138 }
+
+  // --- Datos Simulados (Placeholders para gráficos que aún no tienen backend directo) ---
+
+  employeeTenure: ChartData[] = [
+    { name: '0-1 Año', value: 20 }, { name: '1-3 Años', value: 35 },
+    { name: '3-5 Años', value: 12 }, { name: '5+ Años', value: 7 }
   ];
 
-  // Datos para gráfico de barras (Productividad por Equipo)
-  teamProductivityData = [
-    { name: 'Tecnología', value: 85 }, // Valor puede ser % de tareas completadas
-    { name: 'Diseño', value: 92 },
-    { name: 'Contabilidad', value: 78 },
-    { name: 'Marketing', value: 81 }
+  teamProductivityData: ChartData[] = [
+    { name: 'Tecnología', value: 85 }, { name: 'Diseño', value: 92 },
+    { name: 'Contabilidad', value: 78 }, { name: 'Marketing', value: 81 }
   ];
 
-  // KPI: Progreso medio de metas
-  avgGoalProgress = {
-    total: 72, // 72%
-    label: 'Progreso Medio de Metas (Q4)'
-  };
-  kpiMasaSalarial = {
-    label: 'Masa Salarial Mensual',
-    value: 125300, // Valor en USD
-    subLabel: 'Nómina activa'
-  };
-
-  // Datos para gráfico de barras (Salario Promedio por Depto)
-  salarioPromedioData = [
-    { name: 'Tecnología', value: 2150 },
-    { name: 'Diseño', value: 1800 },
-    { name: 'Contabilidad', value: 2000 },
-    { name: 'Marketing', value: 1750 },
+  salarioPromedioData: ChartData[] = [
+    { name: 'Tecnología', value: 2150 }, { name: 'Diseño', value: 1800 },
     { name: 'RRHH', value: 1900 }
   ];
 
-  // Datos para gráfico de pastel (Adopción de Beneficios)
-  adopcionBeneficiosData = [
-    { name: 'Seguro Médico Privado', value: 68 }, // 68 empleados inscritos
-    { name: 'Vales de Alimentación', value: 74 },
-    { name: 'Plan de Gimnasio', value: 45 }
+  adopcionBeneficiosData: ChartData[] = [
+    { name: 'Seguro Médico', value: 68 }, { name: 'Gimnasio', value: 45 }
   ];
 
-  // Datos para la tabla (Últimas Novedades Registradas)
+  turnoverTrend = [
+    {
+      name: 'Rotación',
+      series: [
+        { name: 'Ene', value: 1 }, { name: 'Feb', value: 2 }, { name: 'Mar', value: 0 }
+      ]
+    }
+  ];
+
   novedadesRecientes = [
-    { id: 'N-101', empleado: 'Jeimy Torres', tipo: 'Bono Productividad', monto: 300, estado: 'Aprobado' },
-    { id: 'N-102', empleado: 'Erick Rodas', tipo: 'Anticipo Salarial', monto: -400, estado: 'Aprobado' },
-    { id: 'N-103', empleado: 'Valentina Samaniego', tipo: 'Comisión Ventas', monto: 250, estado: 'Pendiente' },
+    { id: 'N-101', empleado: 'Juan Perez', tipo: 'Bono', monto: 300, estado: 'Aprobado' }
   ];
 
   constructor() { }
 
   ngOnInit(): void {
-    // --- TODO: Cargar datos iniciales para los reportes ---
+    this.loadReportData();
   }
 
-  // --- Funciones (Placeholders) ---
-  applyGlobalFilters(): void {
-    console.log('Aplicando filtros:', this.selectedDateRange, this.selectedDepartment);
-    // --- TODO: Recargar todos los datos de los gráficos/KPIs basado en los filtros ---
+  loadReportData() {
+    // Llamada al servicio real
+    this.dashboardService.getKPIs().subscribe({
+      next: (data: DashboardKPIs) => {
+        console.log('Datos Reportes:', data);
+
+        // 1. Mapear Headcount (Empleados Reales)
+        this.headcount.total = data.totalEmpleados;
+
+        // 2. Mapear Gastos (Total Dinero)
+        this.kpiMasaSalarial.value = data.totalGastosAprobados;
+
+        // 3. Mapear Asistencia (Porcentaje)
+        this.avgGoalProgress.total = data.tasaAsistenciaHoy;
+        this.avgGoalProgress.label = 'Asistencia Hoy (%)';
+
+        // 4. Gráfico 1: Distribución de Talento (9-Box)
+        this.employeeDistribution = [
+          { name: 'Alto Potencial', value: data.distribucion9Box.altoDesempenoAltoPotencial },
+          { name: 'Bajo Desempeño', value: data.distribucion9Box.bajoDesempenoBajoPotencial },
+          // Calculamos el resto como "Otros"
+          { name: 'Otros', value: Math.max(0, data.totalEmpleados - data.distribucion9Box.altoDesempenoAltoPotencial - data.distribucion9Box.bajoDesempenoBajoPotencial) }
+        ];
+
+        // 5. Gráfico 2: Estado de Proyectos
+        this.tasksStatusData = [
+          { name: 'Proyectos Activos', value: data.totalProyectosActivos },
+          // Simulación de inactivos (o podrías calcularlo si tuvieras el total histórico)
+          { name: 'Inactivos / Completados', value: 0 }
+        ];
+      },
+      error: (err) => console.error('Error cargando reportes:', err)
+    });
   }
 
-  exportReports(): void {
-    console.log('Exportando reportes...');
-    // --- TODO: Implementar lógica de exportación (PDF/Excel) ---
-  }
+  // Funciones Placeholder
+  applyGlobalFilters(): void { console.log('Filtros aplicados...'); }
+  exportReports(): void { console.log('Exportando...'); }
 }

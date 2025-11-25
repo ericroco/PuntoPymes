@@ -65,14 +65,11 @@ export class JobSettings implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Mapear datos del formulario al DTO del backend
-        // (Asegúrate que AddJobDialog devuelva { nombre, departamentoId, salarioMin, salarioMax })
-        const dto = {
-          nombre: result.name,
-          departamentoId: result.departmentId, // El ID del depto seleccionado
-          salarioMin: result.minSalary,
-          salarioMax: result.maxSalary
-        };
+        // ✅ Ya no necesitas mapear, el formulario ya usa nombres en español
+        const dto = result; // O simplemente result
+
+        // Si necesitas agregar campos extra:
+        // const dto = { ...result, otroCampo: valor };
 
         if (job) {
           this.catalogService.updateJob(job.id, dto).subscribe(() => {

@@ -72,6 +72,7 @@ import { UpdateReporteEstadoDto } from 'apps/productividad/src/dto/update-report
 import { createMulterOptions } from './shared/utils/multer-config.util';
 import { CreateCandidatoDto } from 'apps/personal/src/dto/create-candidato.dto';
 import { CreateVacanteDto } from 'apps/personal/src/dto/create-vacante.dto';
+import { CreateSolicitudDto } from 'apps/nomina/src/dto/create-solicitud.dto';
 
 @Controller()
 export class AppController {
@@ -1754,5 +1755,40 @@ export class AppController {
       { cmd: 'delete_documento' },
       { empresaId, documentoId },
     );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('nomina/vacaciones')
+  solicitarVacaciones(@Request() req, @Body() dto: CreateSolicitudDto) {
+    const { empresaId, empleadoId } = req.user; // Usamos el ID del token para seguridad
+    // Forzamos el empleadoId del token si es un empleado normal
+    // O permitimos que venga en el DTO si es admin creando para otro.
+    // Para simplificar "Mi Solicitud":
+    dto.empleadoId = empleadoId;
+
+    return this.nominaService.send({ cmd: 'crear_solicitud_vacaciones' }, { empresaId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard) // Solo admin debería ver todas
+  @Get('nomina/vacaciones')
+  getSolicitudes(@Request() req) {
+    const { empresaId } = req.user;
+    return this.nominaService.send({ cmd: 'get_solicitudes_vacaciones' }, { empresaId });
+  }
+  // ==========================================
+  //        UTILIDAD: SEEDER (Poblar BD)
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard)
+  @Post('admin/seed-data')
+  async seedData(@Request() req) {
+    // 👇 2. USA EL ID DEL USUARIO LOGUEADO
+    const { empresaId } = req.user;
+
+    // Validación de seguridad para desarrollo
+    if (!empresaId) {
+      throw new BadRequestException('Necesitas estar logueado para ejecutar el seed.');
+    }
+
+    return this.productividadService.send({ cmd: 'seed_data' }, { empresaId });
   }
 }

@@ -359,6 +359,57 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/nomina/src/dto/create-solicitud.dto.ts":
+/*!*****************************************************!*\
+  !*** ./apps/nomina/src/dto/create-solicitud.dto.ts ***!
+  \*****************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateSolicitudDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class CreateSolicitudDto {
+    empleadoId;
+    fechaInicio;
+    fechaFin;
+    comentario;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleadoId: { required: true, type: () => String, format: "uuid" }, fechaInicio: { required: true, type: () => String }, fechaFin: { required: true, type: () => String }, comentario: { required: false, type: () => String } };
+    }
+}
+exports.CreateSolicitudDto = CreateSolicitudDto;
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], CreateSolicitudDto.prototype, "empleadoId", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateSolicitudDto.prototype, "fechaInicio", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateSolicitudDto.prototype, "fechaFin", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateSolicitudDto.prototype, "comentario", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/nomina/src/dto/procesar-nomina.dto.ts":
 /*!****************************************************!*\
   !*** ./apps/nomina/src/dto/procesar-nomina.dto.ts ***!
@@ -507,8 +558,10 @@ const class_validator_1 = __webpack_require__(/*! class-validator */ "class-vali
 class CreateCargoDto {
     nombre;
     departamentoId;
+    salarioMin;
+    salarioMax;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, maxLength: 255 }, departamentoId: { required: true, type: () => String, description: "ID del Departamento al que pertenecer\u00E1 este cargo.", format: "uuid" } };
+        return { nombre: { required: true, type: () => String, maxLength: 255 }, departamentoId: { required: true, type: () => String, description: "ID del Departamento al que pertenecer\u00E1 este cargo.", format: "uuid" }, salarioMin: { required: false, type: () => Number, minimum: 0 }, salarioMax: { required: false, type: () => Number, minimum: 0 } };
     }
 }
 exports.CreateCargoDto = CreateCargoDto;
@@ -523,6 +576,18 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateCargoDto.prototype, "departamentoId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreateCargoDto.prototype, "salarioMin", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreateCargoDto.prototype, "salarioMax", void 0);
 
 
 /***/ }),
@@ -2146,6 +2211,7 @@ const create_item_gasto_dto_1 = __webpack_require__(/*! apps/productividad/src/d
 const update_reporte_estado_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/update-reporte-estado.dto */ "./apps/productividad/src/dto/update-reporte-estado.dto.ts");
 const multer_config_util_1 = __webpack_require__(/*! ./shared/utils/multer-config.util */ "./apps/punto-pymes-backend/src/shared/utils/multer-config.util.ts");
 const create_vacante_dto_1 = __webpack_require__(/*! apps/personal/src/dto/create-vacante.dto */ "./apps/personal/src/dto/create-vacante.dto.ts");
+const create_solicitud_dto_1 = __webpack_require__(/*! apps/nomina/src/dto/create-solicitud.dto */ "./apps/nomina/src/dto/create-solicitud.dto.ts");
 let AppController = class AppController {
     appService;
     authService;
@@ -2648,6 +2714,22 @@ let AppController = class AppController {
     deleteDocumento(req, documentoId) {
         const { empresaId } = req.user;
         return this.personalService.send({ cmd: 'delete_documento' }, { empresaId, documentoId });
+    }
+    solicitarVacaciones(req, dto) {
+        const { empresaId, empleadoId } = req.user;
+        dto.empleadoId = empleadoId;
+        return this.nominaService.send({ cmd: 'crear_solicitud_vacaciones' }, { empresaId, dto });
+    }
+    getSolicitudes(req) {
+        const { empresaId } = req.user;
+        return this.nominaService.send({ cmd: 'get_solicitudes_vacaciones' }, { empresaId });
+    }
+    async seedData(req) {
+        const { empresaId } = req.user;
+        if (!empresaId) {
+            throw new common_1.BadRequestException('Necesitas estar logueado para ejecutar el seed.');
+        }
+        return this.productividadService.send({ cmd: 'seed_data' }, { empresaId });
     }
 };
 exports.AppController = AppController;
@@ -3833,6 +3915,34 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "deleteDocumento", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('nomina/vacaciones'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_solicitud_dto_1.CreateSolicitudDto]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "solicitarVacaciones", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('nomina/vacaciones'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getSolicitudes", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('admin/seed-data'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "seedData", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -4866,11 +4976,13 @@ const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
+    salarioMin;
+    salarioMax;
     departamento;
     departamentoId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del puesto de trabajo\nMapea: string nombre \"Nombre puesto trabajo\"" }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String, description: "Mapea: string departamentoId FK \"Departamento padre\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)], description: "Columna para Soft Delete (Borrado L\u00F3gico)\nSi es NULL, el cargo est\u00E1 activo.\nSi tiene fecha, est\u00E1 \"borrado\" y se ocultar\u00E1." } };
+        return { nombre: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Cargo = Cargo;
@@ -4882,6 +4994,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Cargo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'float',
+        nullable: true,
+        default: 0,
+        comment: 'Salario mínimo de la banda salarial',
+    }),
+    __metadata("design:type", Number)
+], Cargo.prototype, "salarioMin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'float',
+        nullable: true,
+        default: 0,
+        comment: 'Salario máximo de la banda salarial',
+    }),
+    __metadata("design:type", Number)
+], Cargo.prototype, "salarioMax", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => departamento_entity_1.Departamento, (departamento) => departamento.cargos, {
         nullable: false,

@@ -12,7 +12,7 @@ import {
   Activo, ActivoAsignado, EstadoActivo, EstadoAsignacion, ReporteGasto,
   ItemGasto, EstadoReporte,
 } from 'default/database';
-import { Repository, Not, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { Repository, Not, Between, MoreThanOrEqual, LessThanOrEqual, In } from 'typeorm';
 import {
   CreateProyectoDto,
   EstadoProyecto,
@@ -1523,5 +1523,259 @@ export class ProductividadService {
       diasTrabajados: diasTrabajados,
       diasHabilesEsperados: diasHabiles
     };
+  }
+  async seedData(empresaIdParam: string) {
+    console.log('🌱 Iniciando Seed de Productividad...');
+    const empresaId = empresaIdParam || 'd845d7a9-9dcf-4db3-95f3-131b93e40673';
+
+    try {
+      // 🧹 LIMPIEZA: Eliminar datos existentes del seed
+      console.log('🧹 Limpiando datos anteriores del seed...');
+
+      const nombresProyectosSeed = ['App Móvil v2', 'Rediseño Web Corporativa', 'Migración a Nube'];
+
+      // Buscar los proyectos existentes primero
+      const proyectosExistentes = await this.proyectoRepository.find({
+        where: {
+          nombre: In(nombresProyectosSeed),
+          empresaId
+        }
+      });
+
+      // Si hay proyectos, eliminar sus tareas y sprints
+      if (proyectosExistentes.length > 0) {
+        const proyectoIds = proyectosExistentes.map(p => p.id);
+
+        // Eliminar tareas
+        await this.tareaRepository.delete({
+          proyectoId: In(proyectoIds)
+        });
+
+        // Eliminar sprints
+        await this.sprintRepository.delete({
+          proyectoId: In(proyectoIds)
+        });
+
+        // Eliminar proyectos
+        await this.proyectoRepository.delete({
+          id: In(proyectoIds)
+        });
+      }
+
+      console.log('✅ Datos anteriores eliminados');
+
+      // 1. Crear Proyectos
+      console.log('📁 Creando proyectos...');
+      const proyectosData = [
+        { nombre: 'App Móvil v2', descripcion: 'Desarrollo de nueva versión mobile' },
+        { nombre: 'Rediseño Web Corporativa', descripcion: 'Actualización del sitio web principal' },
+        { nombre: 'Migración a Nube', descripcion: 'Migración de infraestructura a AWS' }
+      ];
+
+      const proyectos: Proyecto[] = [];
+
+      for (const { nombre, descripcion } of proyectosData) {
+        const p = this.proyectoRepository.create({
+          nombre,
+          descripcion,
+          empresaId,
+          estado: 'Activo'
+        });
+        const saved = await this.proyectoRepository.save(p);
+        proyectos.push(saved);
+      }
+      console.log(`✅ ${proyectos.length} proyectos creados`);
+
+      // 2. Crear Sprints y Tareas para el primer proyecto
+      const proyectoPrincipal = proyectos[0];
+      console.log(`🏃 Creando sprints para: ${proyectoPrincipal.nombre}`);
+
+      // Sprint 1 (Pasado/Completado)
+      const fechaInicioSprint1 = new Date();
+      fechaInicioSprint1.setDate(fechaInicioSprint1.getDate() - 28);
+
+      const fechaFinSprint1 = new Date();
+      fechaFinSprint1.setDate(fechaFinSprint1.getDate() - 14);
+
+      const sprint1 = await this.sprintRepository.save(
+        this.sprintRepository.create({
+          nombre: 'Sprint 1: Fundamentos',
+          fechaInicio: fechaInicioSprint1,
+          fechaFin: fechaFinSprint1,
+          proyectoId: proyectoPrincipal.id
+        })
+      );
+      console.log('✅ Sprint 1 creado (Completado)');
+
+      // Tareas Sprint 1
+      const tareasSprint1 = this.tareaRepository.create([
+        {
+          titulo: 'Configurar Repositorio Git',
+          descripcion: 'Inicializar repo y configurar ramas',
+          estado: EstadoTarea.COMPLETADA,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint1.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 3
+        },
+        {
+          titulo: 'Diseñar Esquema DB',
+          descripcion: 'Crear diagrama ER y tablas principales',
+          estado: EstadoTarea.COMPLETADA,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint1.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 5
+        },
+        {
+          titulo: 'Setup CI/CD',
+          descripcion: 'Configurar pipeline de despliegue',
+          estado: EstadoTarea.COMPLETADA,
+          prioridad: PrioridadTarea.MEDIA,
+          sprintId: sprint1.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 3
+        }
+      ]);
+      await this.tareaRepository.save(tareasSprint1);
+      console.log('✅ 3 tareas creadas para Sprint 1');
+
+      // Sprint 2 (Actual/Activo)
+      const fechaInicioSprint2 = new Date();
+      fechaInicioSprint2.setDate(fechaInicioSprint2.getDate() - 7);
+
+      const fechaFinSprint2 = new Date();
+      fechaFinSprint2.setDate(fechaFinSprint2.getDate() + 7);
+
+      const sprint2 = await this.sprintRepository.save(
+        this.sprintRepository.create({
+          nombre: 'Sprint 2: Autenticación',
+          fechaInicio: fechaInicioSprint2,
+          fechaFin: fechaFinSprint2,
+          proyectoId: proyectoPrincipal.id
+        })
+      );
+      console.log('✅ Sprint 2 creado (En Progreso)');
+
+      // Tareas Sprint 2
+      const tareasSprint2 = this.tareaRepository.create([
+        {
+          titulo: 'API Endpoint Login',
+          descripcion: 'Crear endpoint POST /auth/login con validación',
+          estado: EstadoTarea.COMPLETADA,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint2.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 8
+        },
+        {
+          titulo: 'Pantalla Login Mobile',
+          descripcion: 'Diseñar e implementar UI de login',
+          estado: EstadoTarea.EN_PROGRESO,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint2.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 5
+        },
+        {
+          titulo: 'Validación JWT',
+          descripcion: 'Implementar middleware de validación de tokens',
+          estado: EstadoTarea.EN_PROGRESO,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint2.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 3
+        },
+        {
+          titulo: 'Registro de Usuarios',
+          descripcion: 'Crear flujo completo de registro',
+          estado: EstadoTarea.PENDIENTE,
+          prioridad: PrioridadTarea.MEDIA,
+          sprintId: sprint2.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 5
+        },
+        {
+          titulo: 'Reset de Password',
+          descripcion: 'Implementar recuperación de contraseña',
+          estado: EstadoTarea.PENDIENTE,
+          prioridad: PrioridadTarea.BAJA,
+          sprintId: sprint2.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 3
+        }
+      ]);
+      await this.tareaRepository.save(tareasSprint2);
+      console.log('✅ 5 tareas creadas para Sprint 2');
+
+      // Sprint 3 (Futuro/Planificado)
+      const fechaInicioSprint3 = new Date();
+      fechaInicioSprint3.setDate(fechaInicioSprint3.getDate() + 8);
+
+      const fechaFinSprint3 = new Date();
+      fechaFinSprint3.setDate(fechaFinSprint3.getDate() + 22);
+
+      const sprint3 = await this.sprintRepository.save(
+        this.sprintRepository.create({
+          nombre: 'Sprint 3: Dashboard Principal',
+          fechaInicio: fechaInicioSprint3,
+          fechaFin: fechaFinSprint3,
+          proyectoId: proyectoPrincipal.id
+        })
+      );
+      console.log('✅ Sprint 3 creado (Planificado)');
+
+      // Tareas Sprint 3
+      const tareasSprint3 = this.tareaRepository.create([
+        {
+          titulo: 'Diseño UI Dashboard',
+          descripcion: 'Crear mockups y flujo de navegación',
+          estado: EstadoTarea.PENDIENTE,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint3.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 5
+        },
+        {
+          titulo: 'API de Métricas',
+          descripcion: 'Endpoint para estadísticas del usuario',
+          estado: EstadoTarea.PENDIENTE,
+          prioridad: PrioridadTarea.ALTA,
+          sprintId: sprint3.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 8
+        },
+        {
+          titulo: 'Gráficos Interactivos',
+          descripcion: 'Implementar charts con animaciones',
+          estado: EstadoTarea.PENDIENTE,
+          prioridad: PrioridadTarea.MEDIA,
+          sprintId: sprint3.id,
+          proyectoId: proyectoPrincipal.id,
+          puntosHistoria: 13
+        }
+      ]);
+      await this.tareaRepository.save(tareasSprint3);
+      console.log('✅ 3 tareas creadas para Sprint 3');
+
+      console.log('🎉 Seed de Productividad completado exitosamente!');
+
+      return {
+        message: 'Datos de productividad inyectados exitosamente',
+        resumen: {
+          proyectos: proyectos.length,
+          sprints: 3,
+          tareas: 11,
+          proyectoPrincipal: {
+            id: proyectoPrincipal.id,
+            nombre: proyectoPrincipal.nombre
+          }
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ Error en seed de productividad:', error);
+      throw error;
+    }
   }
 }

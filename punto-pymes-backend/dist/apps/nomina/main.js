@@ -224,6 +224,12 @@ let NominaController = class NominaController {
         console.log(`Microservicio NOMINA: Recibido procesar_nomina para período: ${data.dto.periodoId}`);
         return this.nominaService.procesarNomina(data.empresaId, data.dto.periodoId);
     }
+    crearSolicitud(data) {
+        return this.nominaService.solicitarVacaciones(data.empresaId, data.dto);
+    }
+    getSolicitudes(data) {
+        return this.nominaService.getSolicitudes(data.empresaId);
+    }
 };
 exports.NominaController = NominaController;
 __decorate([
@@ -375,6 +381,22 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], NominaController.prototype, "procesarNomina", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'crear_solicitud_vacaciones' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").SolicitudVacaciones) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "crearSolicitud", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_solicitudes_vacaciones' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").SolicitudVacaciones)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "getSolicitudes", null);
 exports.NominaController = NominaController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [nomina_service_1.NominaService])
@@ -425,6 +447,7 @@ exports.NominaModule = NominaModule = __decorate([
                 database_1.NominaEmpleado,
                 database_1.RubroNomina,
                 database_1.ConceptoNomina,
+                database_1.SolicitudVacaciones,
             ]),
         ],
         controllers: [nomina_controller_1.NominaController],
@@ -473,7 +496,8 @@ let NominaService = class NominaService {
     rubroNominaRepository;
     conceptoNominaRepository;
     entityManager;
-    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager) {
+    solicitudRepo;
+    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager, solicitudRepo) {
         this.contratoRepository = contratoRepository;
         this.empleadoRepository = empleadoRepository;
         this.beneficioRepository = beneficioRepository;
@@ -483,6 +507,7 @@ let NominaService = class NominaService {
         this.rubroNominaRepository = rubroNominaRepository;
         this.conceptoNominaRepository = conceptoNominaRepository;
         this.entityManager = entityManager;
+        this.solicitudRepo = solicitudRepo;
     }
     async getContratosByEmpleado(empresaId, empleadoId) {
         console.log(`Microservicio NOMINA: Buscando contratos para empleado ${empleadoId}`);
@@ -825,6 +850,33 @@ let NominaService = class NominaService {
             };
         });
     }
+    async solicitarVacaciones(empresaId, dto) {
+        const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+        if (!empleado)
+            throw new common_1.NotFoundException('Empleado no válido.');
+        const inicio = new Date(dto.fechaInicio);
+        const fin = new Date(dto.fechaFin);
+        if (fin < inicio)
+            throw new common_1.BadRequestException('La fecha fin debe ser posterior al inicio.');
+        const diffTime = Math.abs(fin.getTime() - inicio.getTime());
+        const diasSolicitados = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const solicitud = this.solicitudRepo.create({
+            empleadoId: dto.empleadoId,
+            fechaInicio: inicio,
+            fechaFin: fin,
+            diasSolicitados,
+            comentario: dto.comentario,
+            estado: database_1.EstadoSolicitud.PENDIENTE
+        });
+        return this.solicitudRepo.save(solicitud);
+    }
+    async getSolicitudes(empresaId) {
+        return this.solicitudRepo.find({
+            where: { empleado: { empresaId } },
+            relations: ['empleado'],
+            order: { createdAt: 'DESC' }
+        });
+    }
 };
 exports.NominaService = NominaService;
 exports.NominaService = NominaService = __decorate([
@@ -837,6 +889,7 @@ exports.NominaService = NominaService = __decorate([
     __param(5, (0, typeorm_1.InjectRepository)(database_1.NominaEmpleado)),
     __param(6, (0, typeorm_1.InjectRepository)(database_1.RubroNomina)),
     __param(7, (0, typeorm_1.InjectRepository)(database_1.ConceptoNomina)),
+    __param(9, (0, typeorm_1.InjectRepository)(database_1.SolicitudVacaciones)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -845,7 +898,8 @@ exports.NominaService = NominaService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.EntityManager])
+        typeorm_2.EntityManager,
+        typeorm_2.Repository])
 ], NominaService);
 
 
@@ -1673,11 +1727,13 @@ const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
+    salarioMin;
+    salarioMax;
     departamento;
     departamentoId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del puesto de trabajo\nMapea: string nombre \"Nombre puesto trabajo\"" }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String, description: "Mapea: string departamentoId FK \"Departamento padre\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)], description: "Columna para Soft Delete (Borrado L\u00F3gico)\nSi es NULL, el cargo est\u00E1 activo.\nSi tiene fecha, est\u00E1 \"borrado\" y se ocultar\u00E1." } };
+        return { nombre: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Cargo = Cargo;
@@ -1689,6 +1745,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Cargo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'float',
+        nullable: true,
+        default: 0,
+        comment: 'Salario mínimo de la banda salarial',
+    }),
+    __metadata("design:type", Number)
+], Cargo.prototype, "salarioMin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'float',
+        nullable: true,
+        default: 0,
+        comment: 'Salario máximo de la banda salarial',
+    }),
+    __metadata("design:type", Number)
+], Cargo.prototype, "salarioMax", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => departamento_entity_1.Departamento, (departamento) => departamento.cargos, {
         nullable: false,
@@ -2804,6 +2878,7 @@ __exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database
 __exportStar(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
 
 
 /***/ }),
@@ -3726,6 +3801,93 @@ exports.RubroNomina = RubroNomina = __decorate([
     (0, typeorm_1.Entity)({ name: 'rubros_nomina' }),
     (0, typeorm_1.Index)(['nominaEmpleadoId'])
 ], RubroNomina);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/solicitudVacaciones.entity.ts":
+/*!******************************************************************!*\
+  !*** ./libs/database/src/entities/solicitudVacaciones.entity.ts ***!
+  \******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SolicitudVacaciones = exports.EstadoSolicitud = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+var EstadoSolicitud;
+(function (EstadoSolicitud) {
+    EstadoSolicitud["PENDIENTE"] = "PENDIENTE";
+    EstadoSolicitud["APROBADA"] = "APROBADA";
+    EstadoSolicitud["RECHAZADA"] = "RECHAZADA";
+})(EstadoSolicitud || (exports.EstadoSolicitud = EstadoSolicitud = {}));
+let SolicitudVacaciones = class SolicitudVacaciones extends base_entity_1.BaseEntity {
+    fechaInicio;
+    fechaFin;
+    diasSolicitados;
+    estado;
+    comentario;
+    respuestaAdmin;
+    empleado;
+    empleadoId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+    }
+};
+exports.SolicitudVacaciones = SolicitudVacaciones;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de inicio de las vacaciones' }),
+    __metadata("design:type", Date)
+], SolicitudVacaciones.prototype, "fechaInicio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de fin de las vacaciones' }),
+    __metadata("design:type", Date)
+], SolicitudVacaciones.prototype, "fechaFin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', comment: 'Cantidad de días solicitados' }),
+    __metadata("design:type", Number)
+], SolicitudVacaciones.prototype, "diasSolicitados", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        default: EstadoSolicitud.PENDIENTE
+    }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Motivo o comentario del empleado' }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "comentario", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Respuesta del aprobador' }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "respuestaAdmin", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], SolicitudVacaciones.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "empleadoId", void 0);
+exports.SolicitudVacaciones = SolicitudVacaciones = __decorate([
+    (0, typeorm_1.Entity)({ name: 'solicitudes_vacaciones' }),
+    (0, typeorm_1.Index)(['empleadoId'])
+], SolicitudVacaciones);
 
 
 /***/ }),

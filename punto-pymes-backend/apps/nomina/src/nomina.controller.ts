@@ -11,6 +11,7 @@ import { UpdatePeriodoNominaDto } from './dto/update-periodo-nomina.dto';
 import { CreateConceptoNominaDto } from './dto/create-concepto-nomina.dto';
 import { UpdateConceptoNominaDto } from './dto/update-concepto-nomina.dto';
 import { ProcesarNominaDto } from './dto/procesar-nomina.dto';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
 
 @Controller()
 export class NominaController {
@@ -227,5 +228,14 @@ export class NominaController {
       `Microservicio NOMINA: Recibido procesar_nomina para período: ${data.dto.periodoId}`,
     );
     return this.nominaService.procesarNomina(data.empresaId, data.dto.periodoId);
+  }
+  @MessagePattern({ cmd: 'crear_solicitud_vacaciones' })
+  crearSolicitud(@Payload() data: { empresaId: string, dto: CreateSolicitudDto }) {
+    return this.nominaService.solicitarVacaciones(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'get_solicitudes_vacaciones' })
+  getSolicitudes(@Payload() data: { empresaId: string }) {
+    return this.nominaService.getSolicitudes(data.empresaId);
   }
 }

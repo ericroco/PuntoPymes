@@ -461,4 +461,8 @@ export class ProductividadController {
   getAsistenciaSummary(@Payload() data: { empresaId: string, empleadoId: string }) {
     return this.productividadService.getAsistenciaSummary(data.empresaId, data.empleadoId);
   }
+  @MessagePattern({ cmd: 'seed_data' })
+  seedData(@Payload() data: { empresaId: string }) {
+    return this.productividadService.seedData(data.empresaId);
+  }
 }

@@ -379,6 +379,9 @@ let ProductividadController = class ProductividadController {
     getAsistenciaSummary(data) {
         return this.productividadService.getAsistenciaSummary(data.empresaId, data.empleadoId);
     }
+    seedData(data) {
+        return this.productividadService.seedData(data.empresaId);
+    }
 };
 exports.ProductividadController = ProductividadController;
 __decorate([
@@ -839,6 +842,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductividadController.prototype, "getAsistenciaSummary", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'seed_data' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "seedData", null);
 exports.ProductividadController = ProductividadController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [productividad_service_1.ProductividadService])
@@ -1804,6 +1815,214 @@ let ProductividadService = class ProductividadService {
             diasHabilesEsperados: diasHabiles
         };
     }
+    async seedData(empresaIdParam) {
+        console.log('🌱 Iniciando Seed de Productividad...');
+        const empresaId = empresaIdParam || 'd845d7a9-9dcf-4db3-95f3-131b93e40673';
+        try {
+            console.log('🧹 Limpiando datos anteriores del seed...');
+            const nombresProyectosSeed = ['App Móvil v2', 'Rediseño Web Corporativa', 'Migración a Nube'];
+            const proyectosExistentes = await this.proyectoRepository.find({
+                where: {
+                    nombre: (0, typeorm_2.In)(nombresProyectosSeed),
+                    empresaId
+                }
+            });
+            if (proyectosExistentes.length > 0) {
+                const proyectoIds = proyectosExistentes.map(p => p.id);
+                await this.tareaRepository.delete({
+                    proyectoId: (0, typeorm_2.In)(proyectoIds)
+                });
+                await this.sprintRepository.delete({
+                    proyectoId: (0, typeorm_2.In)(proyectoIds)
+                });
+                await this.proyectoRepository.delete({
+                    id: (0, typeorm_2.In)(proyectoIds)
+                });
+            }
+            console.log('✅ Datos anteriores eliminados');
+            console.log('📁 Creando proyectos...');
+            const proyectosData = [
+                { nombre: 'App Móvil v2', descripcion: 'Desarrollo de nueva versión mobile' },
+                { nombre: 'Rediseño Web Corporativa', descripcion: 'Actualización del sitio web principal' },
+                { nombre: 'Migración a Nube', descripcion: 'Migración de infraestructura a AWS' }
+            ];
+            const proyectos = [];
+            for (const { nombre, descripcion } of proyectosData) {
+                const p = this.proyectoRepository.create({
+                    nombre,
+                    descripcion,
+                    empresaId,
+                    estado: 'Activo'
+                });
+                const saved = await this.proyectoRepository.save(p);
+                proyectos.push(saved);
+            }
+            console.log(`✅ ${proyectos.length} proyectos creados`);
+            const proyectoPrincipal = proyectos[0];
+            console.log(`🏃 Creando sprints para: ${proyectoPrincipal.nombre}`);
+            const fechaInicioSprint1 = new Date();
+            fechaInicioSprint1.setDate(fechaInicioSprint1.getDate() - 28);
+            const fechaFinSprint1 = new Date();
+            fechaFinSprint1.setDate(fechaFinSprint1.getDate() - 14);
+            const sprint1 = await this.sprintRepository.save(this.sprintRepository.create({
+                nombre: 'Sprint 1: Fundamentos',
+                fechaInicio: fechaInicioSprint1,
+                fechaFin: fechaFinSprint1,
+                proyectoId: proyectoPrincipal.id
+            }));
+            console.log('✅ Sprint 1 creado (Completado)');
+            const tareasSprint1 = this.tareaRepository.create([
+                {
+                    titulo: 'Configurar Repositorio Git',
+                    descripcion: 'Inicializar repo y configurar ramas',
+                    estado: create_tarea_dto_1.EstadoTarea.COMPLETADA,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint1.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 3
+                },
+                {
+                    titulo: 'Diseñar Esquema DB',
+                    descripcion: 'Crear diagrama ER y tablas principales',
+                    estado: create_tarea_dto_1.EstadoTarea.COMPLETADA,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint1.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 5
+                },
+                {
+                    titulo: 'Setup CI/CD',
+                    descripcion: 'Configurar pipeline de despliegue',
+                    estado: create_tarea_dto_1.EstadoTarea.COMPLETADA,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.MEDIA,
+                    sprintId: sprint1.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 3
+                }
+            ]);
+            await this.tareaRepository.save(tareasSprint1);
+            console.log('✅ 3 tareas creadas para Sprint 1');
+            const fechaInicioSprint2 = new Date();
+            fechaInicioSprint2.setDate(fechaInicioSprint2.getDate() - 7);
+            const fechaFinSprint2 = new Date();
+            fechaFinSprint2.setDate(fechaFinSprint2.getDate() + 7);
+            const sprint2 = await this.sprintRepository.save(this.sprintRepository.create({
+                nombre: 'Sprint 2: Autenticación',
+                fechaInicio: fechaInicioSprint2,
+                fechaFin: fechaFinSprint2,
+                proyectoId: proyectoPrincipal.id
+            }));
+            console.log('✅ Sprint 2 creado (En Progreso)');
+            const tareasSprint2 = this.tareaRepository.create([
+                {
+                    titulo: 'API Endpoint Login',
+                    descripcion: 'Crear endpoint POST /auth/login con validación',
+                    estado: create_tarea_dto_1.EstadoTarea.COMPLETADA,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint2.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 8
+                },
+                {
+                    titulo: 'Pantalla Login Mobile',
+                    descripcion: 'Diseñar e implementar UI de login',
+                    estado: create_tarea_dto_1.EstadoTarea.EN_PROGRESO,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint2.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 5
+                },
+                {
+                    titulo: 'Validación JWT',
+                    descripcion: 'Implementar middleware de validación de tokens',
+                    estado: create_tarea_dto_1.EstadoTarea.EN_PROGRESO,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint2.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 3
+                },
+                {
+                    titulo: 'Registro de Usuarios',
+                    descripcion: 'Crear flujo completo de registro',
+                    estado: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.MEDIA,
+                    sprintId: sprint2.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 5
+                },
+                {
+                    titulo: 'Reset de Password',
+                    descripcion: 'Implementar recuperación de contraseña',
+                    estado: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.BAJA,
+                    sprintId: sprint2.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 3
+                }
+            ]);
+            await this.tareaRepository.save(tareasSprint2);
+            console.log('✅ 5 tareas creadas para Sprint 2');
+            const fechaInicioSprint3 = new Date();
+            fechaInicioSprint3.setDate(fechaInicioSprint3.getDate() + 8);
+            const fechaFinSprint3 = new Date();
+            fechaFinSprint3.setDate(fechaFinSprint3.getDate() + 22);
+            const sprint3 = await this.sprintRepository.save(this.sprintRepository.create({
+                nombre: 'Sprint 3: Dashboard Principal',
+                fechaInicio: fechaInicioSprint3,
+                fechaFin: fechaFinSprint3,
+                proyectoId: proyectoPrincipal.id
+            }));
+            console.log('✅ Sprint 3 creado (Planificado)');
+            const tareasSprint3 = this.tareaRepository.create([
+                {
+                    titulo: 'Diseño UI Dashboard',
+                    descripcion: 'Crear mockups y flujo de navegación',
+                    estado: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint3.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 5
+                },
+                {
+                    titulo: 'API de Métricas',
+                    descripcion: 'Endpoint para estadísticas del usuario',
+                    estado: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.ALTA,
+                    sprintId: sprint3.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 8
+                },
+                {
+                    titulo: 'Gráficos Interactivos',
+                    descripcion: 'Implementar charts con animaciones',
+                    estado: create_tarea_dto_1.EstadoTarea.PENDIENTE,
+                    prioridad: create_tarea_dto_1.PrioridadTarea.MEDIA,
+                    sprintId: sprint3.id,
+                    proyectoId: proyectoPrincipal.id,
+                    puntosHistoria: 13
+                }
+            ]);
+            await this.tareaRepository.save(tareasSprint3);
+            console.log('✅ 3 tareas creadas para Sprint 3');
+            console.log('🎉 Seed de Productividad completado exitosamente!');
+            return {
+                message: 'Datos de productividad inyectados exitosamente',
+                resumen: {
+                    proyectos: proyectos.length,
+                    sprints: 3,
+                    tareas: 11,
+                    proyectoPrincipal: {
+                        id: proyectoPrincipal.id,
+                        nombre: proyectoPrincipal.nombre
+                    }
+                }
+            };
+        }
+        catch (error) {
+            console.error('❌ Error en seed de productividad:', error);
+            throw error;
+        }
+    }
 };
 exports.ProductividadService = ProductividadService;
 exports.ProductividadService = ProductividadService = __decorate([
@@ -2592,11 +2811,13 @@ const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
+    salarioMin;
+    salarioMax;
     departamento;
     departamentoId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del puesto de trabajo\nMapea: string nombre \"Nombre puesto trabajo\"" }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String, description: "Mapea: string departamentoId FK \"Departamento padre\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)], description: "Columna para Soft Delete (Borrado L\u00F3gico)\nSi es NULL, el cargo est\u00E1 activo.\nSi tiene fecha, est\u00E1 \"borrado\" y se ocultar\u00E1." } };
+        return { nombre: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Cargo = Cargo;
@@ -2608,6 +2829,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Cargo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'float',
+        nullable: true,
+        default: 0,
+        comment: 'Salario mínimo de la banda salarial',
+    }),
+    __metadata("design:type", Number)
+], Cargo.prototype, "salarioMin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'float',
+        nullable: true,
+        default: 0,
+        comment: 'Salario máximo de la banda salarial',
+    }),
+    __metadata("design:type", Number)
+], Cargo.prototype, "salarioMax", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => departamento_entity_1.Departamento, (departamento) => departamento.cargos, {
         nullable: false,
@@ -3723,6 +3962,7 @@ __exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database
 __exportStar(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
 
 
 /***/ }),
@@ -4645,6 +4885,93 @@ exports.RubroNomina = RubroNomina = __decorate([
     (0, typeorm_1.Entity)({ name: 'rubros_nomina' }),
     (0, typeorm_1.Index)(['nominaEmpleadoId'])
 ], RubroNomina);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/solicitudVacaciones.entity.ts":
+/*!******************************************************************!*\
+  !*** ./libs/database/src/entities/solicitudVacaciones.entity.ts ***!
+  \******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SolicitudVacaciones = exports.EstadoSolicitud = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+var EstadoSolicitud;
+(function (EstadoSolicitud) {
+    EstadoSolicitud["PENDIENTE"] = "PENDIENTE";
+    EstadoSolicitud["APROBADA"] = "APROBADA";
+    EstadoSolicitud["RECHAZADA"] = "RECHAZADA";
+})(EstadoSolicitud || (exports.EstadoSolicitud = EstadoSolicitud = {}));
+let SolicitudVacaciones = class SolicitudVacaciones extends base_entity_1.BaseEntity {
+    fechaInicio;
+    fechaFin;
+    diasSolicitados;
+    estado;
+    comentario;
+    respuestaAdmin;
+    empleado;
+    empleadoId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+    }
+};
+exports.SolicitudVacaciones = SolicitudVacaciones;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de inicio de las vacaciones' }),
+    __metadata("design:type", Date)
+], SolicitudVacaciones.prototype, "fechaInicio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de fin de las vacaciones' }),
+    __metadata("design:type", Date)
+], SolicitudVacaciones.prototype, "fechaFin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', comment: 'Cantidad de días solicitados' }),
+    __metadata("design:type", Number)
+], SolicitudVacaciones.prototype, "diasSolicitados", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        default: EstadoSolicitud.PENDIENTE
+    }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Motivo o comentario del empleado' }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "comentario", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Respuesta del aprobador' }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "respuestaAdmin", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], SolicitudVacaciones.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "empleadoId", void 0);
+exports.SolicitudVacaciones = SolicitudVacaciones = __decorate([
+    (0, typeorm_1.Entity)({ name: 'solicitudes_vacaciones' }),
+    (0, typeorm_1.Index)(['empleadoId'])
+], SolicitudVacaciones);
 
 
 /***/ }),

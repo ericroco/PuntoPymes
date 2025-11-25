@@ -21,7 +21,7 @@ interface DialogData {
   availableManagers: Manager[];
 }
 interface JobPosition {
-  id: number;
+  id: number | string;
   name: string;
   department: string;
   minSalary: number;
@@ -133,9 +133,12 @@ export class AddEmployeeDialog implements OnInit {
     // 2. IDs (Usamos los hardcoded si no vienen del formulario)
     // ⚠️ IMPORTANTE: Asegúrate de que estos UUIDs existen en tu tabla 'roles' y 'cargos' de Postgres
     const HARDCODED_ROL_ID = '63b5fcb2-2fd6-4454-bf05-0f75a13a1227';
-    const HARDCODED_CARGO_ID = '3420e657-2590-4b90-b767-ae21ce4376ad';
-
-    const cargoId = HARDCODED_CARGO_ID;
+    const cargoSeleccionado = this.step2Form.value.job;
+    if (!cargoSeleccionado || !cargoSeleccionado.id) {
+      this.snackBar.open('Error: Cargo no válido seleccionado', 'Cerrar');
+      this.isLoading = false;
+      return;
+    }
 
     // 3. Construir el DTO exacto para el backend
     const employeeData: CreateEmployeeDto = {
@@ -146,7 +149,7 @@ export class AddEmployeeDialog implements OnInit {
       // Formateamos la fecha para que IsDateString no se queje
       fechaNacimiento: this.formatDate(this.step1Form.value.dateOfBirth),
 
-      cargoId: cargoId,
+      cargoId: cargoSeleccionado.id,
       rolId: HARDCODED_ROL_ID,
       // jefeId: ... (Si tuvieras el ID del jefe real, iría aquí. Si 'reportsTo' es solo nombre, no lo mandes)
     };

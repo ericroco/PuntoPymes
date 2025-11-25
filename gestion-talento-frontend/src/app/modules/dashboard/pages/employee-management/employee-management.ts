@@ -14,6 +14,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 // Importamos la interfaz REAL del servicio
 import { EmployeesService, Employee } from '../../services/employees';
+import { CatalogService, JobPosition } from '../../services/catalog';
 
 @Component({
   selector: 'app-employee-management',
@@ -48,6 +49,7 @@ import { EmployeesService, Employee } from '../../services/employees';
 export class EmployeeManagement implements OnInit {
   private employeesService = inject(EmployeesService);
   public dialog = inject(MatDialog);
+  private catalogService = inject(CatalogService);
 
   // --- DATOS REALES ---
   employees: Employee[] = [];
@@ -143,21 +145,32 @@ export class EmployeeManagement implements OnInit {
   }
 
   openAddEmployeeDialog(): void {
-    const dialogRef = this.dialog.open(AddEmployeeDialog, {
-      width: '800px',
-      disableClose: true,
-      data: {
-        availableJobs: this.availableJobs,
-        availableManagers: this.availableManagers
-      }
-    });
+    // 3. CARGAR CARGOS REALES ANTES DE ABRIR
+    this.catalogService.getJobs().subscribe(realJobs => {
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Si se creó el empleado exitosamente en el diálogo, 
-        // simplemente recargamos la lista desde el servidor.
-        this.loadEmployees();
-      }
+      const dialogRef = this.dialog.open(AddEmployeeDialog, {
+        width: '800px',
+        disableClose: true,
+        data: {
+          // Mapeamos los cargos reales al formato que espera el diálogo
+          // (El backend devuelve { id, nombre, ... }, el dialogo espera { id, name, ... })
+          availableJobs: realJobs.map(job => ({
+            id: job.id,
+            name: job.nombre,
+            department: job.departamento?.nombre || 'General',
+            minSalary: job.salarioMin || 0,
+            maxSalary: job.salarioMax || 0
+          })),
+          // Managers simulados por ahora
+          availableManagers: this.availableManagers
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.loadEmployees();
+        }
+      });
     });
   }
 

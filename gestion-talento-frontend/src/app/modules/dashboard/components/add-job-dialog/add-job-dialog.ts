@@ -1,15 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-// Material Imports
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-
-// Importamos las interfaces correctas del servicio
+// Importa la interfaz correcta
 import { JobPosition, Department } from '../../services/catalog';
 
 interface DialogData {
@@ -25,11 +23,7 @@ interface DialogData {
     MatFormFieldModule, MatInputModule, MatSelectModule, MatIconModule
   ],
   templateUrl: './add-job-dialog.html',
-  styles: [
-    `.full-width { width: 100%; margin-bottom: 10px; }
-     .form-row { display: flex; gap: 15px; }
-     .form-field { flex: 1; }`
-  ]
+  styles: [`.full-width { width: 100%; margin-bottom: 10px; } .form-row { display: flex; gap: 10px; }`]
 })
 export class AddJobDialog implements OnInit {
   jobForm: FormGroup;
@@ -41,34 +35,25 @@ export class AddJobDialog implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     this.isEditMode = !!this.data.job;
-    const jobData = this.data.job;
+    const job = this.data.job;
 
-    // --- LÓGICA DE EXTRACCIÓN SEGURA DEL ID ---
+    // Lógica para obtener el ID del departamento de forma segura
     let currentDeptId = '';
-
-    if (jobData) {
-      // Caso 1: Viene la propiedad departamentoId (Lo ideal)
-      if (jobData.departamentoId) {
-        currentDeptId = jobData.departamentoId;
+    if (job) {
+      // Si ya es string (ID) o si es objeto con ID
+      if (typeof job.departamentoId === 'string') {
+        currentDeptId = job.departamentoId;
+      } else if (job.departamento && typeof job.departamento === 'object') {
+        currentDeptId = (job.departamento as any).id;
       }
-      // Caso 2: Viene el objeto completo 'departamento'
-      else if (jobData.departamento && typeof jobData.departamento === 'object') {
-        currentDeptId = jobData.departamento.id;
-      }
-      // Caso 3: Viene 'departamento' pero es solo un string (ID)
-      // Aquí usamos 'typeof' para evitar el error de TypeScript
-      else if (typeof jobData.departamento === 'string') {
-        currentDeptId = jobData.departamento;
-      }
-      // Si es undefined, se queda en '' y el validador required se encargará
     }
 
-    // Inicializamos el formulario
+    // 👇 FORMULARIO CON NOMBRES EN ESPAÑOL (Coinciden con Backend)
     this.jobForm = this.fb.group({
-      nombre: [jobData?.nombre || '', [Validators.required]],
+      nombre: [job?.nombre || '', [Validators.required]],
       departamentoId: [currentDeptId, [Validators.required]],
-      salarioMin: [jobData?.salarioMin || 0, [Validators.required, Validators.min(0)]],
-      salarioMax: [jobData?.salarioMax || 0, [Validators.required, Validators.min(0)]]
+      salarioMin: [job?.salarioMin || 0, [Validators.min(0)]],
+      salarioMax: [job?.salarioMax || 0, [Validators.min(0)]]
     });
   }
 

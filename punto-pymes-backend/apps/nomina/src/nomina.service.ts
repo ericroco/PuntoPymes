@@ -6,7 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Contrato, Empleado, Beneficio, BeneficioAsignado, PeriodoNomina, NominaEmpleado, RubroNomina, ConceptoNomina } from 'default/database';
+import {
+  Contrato, Empleado, Beneficio, BeneficioAsignado, PeriodoNomina, NominaEmpleado,
+  RubroNomina, ConceptoNomina, SolicitudVacaciones, EstadoSolicitud
+} from 'default/database';
 import { Repository, Not, LessThanOrEqual, MoreThanOrEqual, EntityManager } from 'typeorm';
 import {
   CreateContratoDto,
@@ -24,6 +27,8 @@ import { CreateConceptoNominaDto } from './dto/create-concepto-nomina.dto';
 import { UpdateConceptoNominaDto } from './dto/update-concepto-nomina.dto';
 import { ProcesarNominaDto } from './dto/procesar-nomina.dto';
 import { TipoRubro } from '../../../libs/database/src/entities/conceptoNomina.entity';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+
 
 @Injectable()
 export class NominaService {
@@ -45,6 +50,8 @@ export class NominaService {
     @InjectRepository(ConceptoNomina)
     private readonly conceptoNominaRepository: Repository<ConceptoNomina>,
     private readonly entityManager: EntityManager,
+    @InjectRepository(SolicitudVacaciones)
+    private solicitudRepo: Repository<SolicitudVacaciones>
   ) { }
 
   /**
@@ -701,5 +708,40 @@ export class NominaService {
         };
       }, // --- Fin de la transacción
     );
+  }
+  async solicitarVacaciones(empresaId: string, dto: CreateSolicitudDto): Promise<SolicitudVacaciones> {
+    // 1. Validar Empleado
+    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+    if (!empleado) throw new NotFoundException('Empleado no válido.');
+
+    // 2. Calcular días (Simplificado: Diferencia de fechas)
+    const inicio = new Date(dto.fechaInicio);
+    const fin = new Date(dto.fechaFin);
+
+    if (fin < inicio) throw new BadRequestException('La fecha fin debe ser posterior al inicio.');
+
+    const diffTime = Math.abs(fin.getTime() - inicio.getTime());
+    const diasSolicitados = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 para incluir el día final
+
+    // 3. Crear Solicitud
+    const solicitud = this.solicitudRepo.create({
+      empleadoId: dto.empleadoId,
+      fechaInicio: inicio,
+      fechaFin: fin,
+      diasSolicitados,
+      comentario: dto.comentario,
+      estado: EstadoSolicitud.PENDIENTE
+    });
+
+    return this.solicitudRepo.save(solicitud);
+  }
+
+  async getSolicitudes(empresaId: string): Promise<SolicitudVacaciones[]> {
+    // Retorna todas las solicitudes de la empresa (para el admin)
+    return this.solicitudRepo.find({
+      where: { empleado: { empresaId } },
+      relations: ['empleado'],
+      order: { createdAt: 'DESC' }
+    });
   }
 }

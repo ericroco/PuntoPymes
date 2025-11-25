@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-// Importaciones de Angular Material
+// Material Imports
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -15,14 +15,16 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
 
-// Servicios y Modelos Reales
+// Servicios
 import { DashboardService, DashboardKPIs } from '../../services/dashboard';
 import { AuthService } from '../../../auth/services/auth';
+import { VacationService } from '../../services/vacation';
 
-// Interfaces Locales (Vista)
+// Interfaces
 interface AdminKPI { title: string; value: string; trend: string; isPositive: boolean; color: string; }
 interface Approval { id: number; type: 'Vacaciones' | 'Gastos'; description: string; }
 interface EmployeeKPI { title: string; value: number; unit: '%' | 'cursos' | 'días'; }
@@ -48,6 +50,7 @@ interface Holiday { date: string; name: string; }
     MatListModule,
     MatProgressBarModule,
     MatTooltipModule,
+    MatSnackBarModule, // Importante para notificaciones
     NgxChartsModule
   ],
   templateUrl: './overview.html',
@@ -67,79 +70,54 @@ interface Holiday { date: string; name: string; }
 })
 export class Overview implements OnInit {
   private dashboardService = inject(DashboardService);
-  private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
+  private vacationService = inject(VacationService);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   viewingAsAdmin: boolean = false;
   isLoading: boolean = true;
+  leaveRequestForm: FormGroup;
 
-  // --- DATOS REALES (Mapeados del Backend) ---
+  // Datos
   adminKPIs: AdminKPI[] = [];
-
-  // --- DATOS SIMULADOS (Aún no conectados al backend en esta fase) ---
-  // Mantenemos estos para que la UI no se rompa mientras conectas los otros módulos
-  surveySummary = { latestSurvey: 'Clima Laboral Q4 2025', participationRate: 78, overallSatisfaction: 4.2 };
-  pendingApprovals: Approval[] = [
-    { id: 1, type: 'Vacaciones', description: 'Jeimy Torres (5 días)' },
-    { id: 2, type: 'Gastos', description: 'Erick Rodas ($120)' }
-  ];
-
+  pendingApprovals: Approval[] = [];
   employeeKPIs: EmployeeKPI[] = [
-    { title: 'Progreso de Metas (Q4)', value: 82, unit: '%' },
-    { title: 'Cursos Completados', value: 3, unit: 'cursos' },
+    { title: 'Progreso de Metas (Q4)', value: 0, unit: '%' },
+    { title: 'Cursos Completados', value: 0, unit: 'cursos' },
     { title: 'Días de Vacaciones Restantes', value: 15, unit: 'días' }
   ];
-  employeePendingTasks: EmployeeTask[] = [
-    { id: 1, title: 'Diseñar la nueva pantalla de login', priority: 'alta' },
-    { id: 2, title: 'Crear componentes reutilizables', priority: 'media' },
-  ];
+
   upcomingHolidays: Holiday[] = [
     { date: '2025-11-03', name: 'Independencia de Cuenca' },
     { date: '2025-12-25', name: 'Navidad' }
   ];
-
-  // Gráfico de distribución (simulado por ahora o podrías mapearlo de distribucion9Box)
-  employeeDistribution = [
-    { name: 'Tecnología', value: 25 },
-    { name: 'Diseño', value: 15 },
-    { name: 'Contabilidad', value: 12 },
-    { name: 'Marketing', value: 10 },
-    { name: 'RRHH', value: 8 },
-  ];
-  turnoverTrend = [
-    {
-      name: 'Rotación',
-      series: [
-        { name: 'Jul', value: 2 },
-        { name: 'Ago', value: 1 },
-        { name: 'Sep', value: 3 },
-        { name: 'Oct', value: 1 }
-      ]
-    }
-  ];
-  upcomingEvents = [
-    { date: '2025-10-31', description: 'Finaliza Sprint Octubre 2025' },
-    { date: '2025-11-05', description: 'Revisión Política Teletrabajo' }
+  employeePendingTasks: EmployeeTask[] = [
+    { id: 1, title: 'Completar perfil', priority: 'alta' }
   ];
 
   chartColorScheme: Color = {
     name: 'puntopymesCharts',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: [
-      '#3f51b5', // Primary
-      '#ff4081', // Accent
-      '#ff9800', // Warning
-      '#4caf50', // Success
-      '#9c27b0'  // Secondary
-    ]
+    domain: ['#3f51b5', '#ff4081', '#ff9800', '#4caf50', '#9c27b0']
   };
+  employeeDistribution = [
+    { name: 'Tecnología', value: 25 }, { name: 'Diseño', value: 15 },
+    { name: 'Contabilidad', value: 12 }, { name: 'RRHH', value: 8 }
+  ];
+  turnoverTrend = [{ name: 'Rotación', series: [] }];
 
-  leaveRequestForm: FormGroup;
+  // Simulación de datos (se reemplazarían con backend real de encuestas/eventos)
+  surveySummary = { latestSurvey: 'Clima Laboral Q4 2025', participationRate: 78, overallSatisfaction: 4.2 };
+  upcomingEvents = [
+    { date: '2025-10-31', description: 'Finaliza Sprint Octubre 2025' },
+    { date: '2025-11-05', description: 'Revisión Política Teletrabajo' }
+  ];
 
   get availableLeaveDays(): number {
-    const leaveKPI = this.employeeKPIs.find(k => k.title.includes('Vacaciones'));
-    return leaveKPI ? leaveKPI.value : 0;
+    const kpi = this.employeeKPIs.find(k => k.title.includes('Vacaciones'));
+    return kpi ? kpi.value : 0;
   }
 
   constructor(private fb: FormBuilder) {
@@ -150,71 +128,58 @@ export class Overview implements OnInit {
   }
 
   ngOnInit(): void {
-    // --- 4. DETERMINAR EL ROL AL INICIAR ---
     this.viewingAsAdmin = this.authService.isAdmin();
     console.log('¿Es Admin?', this.viewingAsAdmin);
 
-    // Cargar datos según el rol
     if (this.viewingAsAdmin) {
-      this.loadDashboardData(); // Datos globales (KPIs de empresa)
+      this.loadDashboardData();
+      this.loadPendingApprovals();
     } else {
-      this.isLoading = false; // Para que no se quede cargando infinito si no hay datos de empleado aún
+      // Aquí podrías cargar datos específicos del empleado
+      this.isLoading = false;
     }
   }
 
   loadDashboardData() {
     this.isLoading = true;
-
     this.dashboardService.getKPIs().subscribe({
       next: (data: DashboardKPIs) => {
-        console.log('✅ Datos del Dashboard recibidos:', data);
-
-        // Mapear la respuesta del backend a la estructura visual de AdminKPIs
-        this.adminKPIs = [
-          {
-            title: 'Total Empleados',
-            value: data.totalEmpleados.toString(),
-            trend: 'Activos',
-            isPositive: true,
-            color: 'blue'
-          },
-          {
-            title: 'Proyectos Activos',
-            value: data.totalProyectosActivos.toString(),
-            trend: 'En curso',
-            isPositive: true,
-            color: 'green'
-          },
-          {
-            title: 'Gastos Aprobados',
-            value: `$${data.totalGastosAprobados}`,
-            trend: 'Total Acumulado',
-            isPositive: false, // Podría ser false si es un gasto alto
-            color: 'orange'
-          },
-          {
-            title: 'Asistencia Hoy',
-            value: `${data.tasaAsistenciaHoy}%`,
-            trend: 'Del personal',
-            isPositive: data.tasaAsistenciaHoy > 80,
-            color: 'purple'
-          }
-        ];
-
-        // Opcional: Podrías mapear la distribución de 9-Box al gráfico de pastel
-        // si quisieras mostrar "Alto Potencial" vs "Bajo Potencial".
-
+        // Si no hay datos, simulamos para demo
+        if (data.totalEmpleados === 0 && data.totalProyectosActivos === 0) {
+          this.adminKPIs = [
+            { title: 'Total Empleados', value: '0', trend: 'Sin datos', isPositive: false, color: 'grey' },
+            { title: 'Proyectos', value: '0', trend: '-', isPositive: false, color: 'grey' },
+          ];
+        } else {
+          this.adminKPIs = [
+            { title: 'Total Empleados', value: data.totalEmpleados.toString(), trend: 'Activos', isPositive: true, color: 'blue' },
+            { title: 'Proyectos Activos', value: data.totalProyectosActivos.toString(), trend: 'En curso', isPositive: true, color: 'green' },
+            { title: 'Gastos Aprobados', value: `$${data.totalGastosAprobados}`, trend: 'Total', isPositive: false, color: 'orange' },
+            { title: 'Asistencia Hoy', value: `${data.tasaAsistenciaHoy}%`, trend: 'Global', isPositive: data.tasaAsistenciaHoy > 80, color: 'purple' }
+          ];
+        }
         this.isLoading = false;
-        this.cdr.markForCheck(); // Asegurar actualización de vista
+        this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('❌ Error cargando KPIs:', err);
+        console.error('❌ Error KPIs:', err);
         this.isLoading = false;
-        // En caso de error, podrías mostrar datos vacíos o un mensaje
-        this.adminKPIs = [
-          { title: 'Error de Carga', value: '-', trend: 'Intente recargar', isPositive: false, color: 'red' }
-        ];
       }
+    });
+  }
+
+  loadPendingApprovals() {
+    this.vacationService.getRequests().subscribe({
+      next: (data) => {
+        const pendientes = data.filter(req => req.estado === 'PENDIENTE');
+        this.pendingApprovals = pendientes.map(req => ({
+          id: req.id,
+          type: 'Vacaciones',
+          // Manejo seguro de empleado nulo
+          description: `${req.empleado?.nombre || 'Empleado'} ${req.empleado?.apellido || ''} (${req.diasSolicitados} días)`
+        }));
+      },
+      error: (err) => console.error(err)
     });
   }
 
@@ -223,21 +188,60 @@ export class Overview implements OnInit {
       this.leaveRequestForm.markAllAsTouched();
       return;
     }
-    const { startDate, endDate } = this.leaveRequestForm.value;
-    console.log('Solicitando vacaciones:', startDate, endDate);
 
-    // Simulación de llamada
-    alert(`Solicitud enviada:\n${startDate} - ${endDate}`);
-    this.leaveRequestForm.reset();
+    // 1. Obtener el usuario actual para sacar su ID
+    const currentUser = this.authService.getUser();
+
+    if (!currentUser || !currentUser.empleadoId) {
+      this.snackBar.open('No se pudo identificar al empleado. Intenta iniciar sesión de nuevo.', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    const { startDate, endDate } = this.leaveRequestForm.value;
+
+    // Helper para fechas
+    const formatDate = (date: Date) => {
+      const d = new Date(date);
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().split('T')[0];
+    };
+
+    // 2. Construir el Payload COMPLETO (Incluyendo empleadoId)
+    const payload = {
+      empleadoId: currentUser.empleadoId, // <--- ¡ESTO FALTABA!
+      fechaInicio: formatDate(startDate),
+      fechaFin: formatDate(endDate),
+      comentario: 'Solicitud desde Dashboard' // Opcional, puedes agregar un campo en el form si quieres
+    };
+
+    console.log('Enviando solicitud:', payload);
+
+    this.vacationService.requestLeave(payload).subscribe({
+      next: () => {
+        this.snackBar.open('Solicitud enviada con éxito', 'Cerrar', { duration: 3000 });
+        this.leaveRequestForm.reset();
+
+        // Recargar la lista de pendientes si soy admin
+        if (this.viewingAsAdmin) {
+          this.loadPendingApprovals();
+        }
+      },
+      error: (err) => {
+        console.error('Error backend:', err);
+        this.snackBar.open('Error al solicitar vacaciones', 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 
+  // Placeholders
   approveRequest(id: number): void {
     console.log('Aprobando:', id);
-    this.pendingApprovals = this.pendingApprovals.filter(req => req.id !== id);
+    // Aquí iría la llamada al servicio para aprobar
+    this.snackBar.open('Solicitud aprobada (simulación)', 'Cerrar', { duration: 2000 });
   }
 
   rejectRequest(id: number): void {
     console.log('Rechazando:', id);
-    this.pendingApprovals = this.pendingApprovals.filter(req => req.id !== id);
+    this.snackBar.open('Solicitud rechazada (simulación)', 'Cerrar', { duration: 2000 });
   }
 }

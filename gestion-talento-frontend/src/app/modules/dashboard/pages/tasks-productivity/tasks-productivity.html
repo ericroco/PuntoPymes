@@ -1,31 +1,81 @@
 <div class="page-container">
+
   <header class="page-header">
-    <h2>Sprints de Proyecto</h2>
-    <button class="btn btn-primary" (click)="openAddSprintDialog()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
-      <span>Crear Nuevo Sprint</span>
-    </button>
+    <div class="header-left">
+      <h2>Sprints de Proyecto</h2>
+      <p class="subtitle" *ngIf="projects.length > 0">Gestionando: <strong>{{ getProjectName(selectedProjectId)
+          }}</strong></p>
+    </div>
+
+    <div class="header-actions">
+      <mat-form-field appearance="outline" class="project-select" *ngIf="projects.length > 0">
+        <mat-label>Cambiar Proyecto</mat-label>
+        <mat-select [value]="selectedProjectId" (selectionChange)="onProjectChange($event.value)">
+          <mat-option *ngFor="let project of projects" [value]="project.id">
+            {{ project.nombre }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button class="btn btn-primary" (click)="openAddSprintDialog()" [disabled]="!selectedProjectId">
+        <mat-icon>add_circle_outline</mat-icon>
+        <span>Crear Nuevo Sprint</span>
+      </button>
+    </div>
   </header>
 
-  <div class="sprints-grid" @listAnimation>
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="loading-bar"></mat-progress-bar>
+
+  <div *ngIf="!isLoading && projects.length === 0" class="empty-state">
+    <mat-icon>folder_off</mat-icon>
+    <h3>No tienes proyectos activos</h3>
+    <p>Crea un proyecto primero (desde el Backend Seeder o módulo de Proyectos) para comenzar.</p>
+  </div>
+
+  <div class="sprints-grid" @listAnimation *ngIf="!isLoading && projects.length > 0">
+
     <div *ngFor="let sprint of sprints" class="sprint-card">
       <div class="card-header">
-        <h3 class="sprint-name">{{ sprint.name }}</h3>
-        <span class="status-badge" [ngClass]="'status-' + sprint.status.toLowerCase()">
-          {{ sprint.status }}
+        <h3 class="sprint-name">{{ sprint.nombre }}</h3>
+
+        <span class="status-badge" [ngClass]="'status-' + (sprint.estado || 'planificado').toLowerCase()">
+          {{ sprint.estado || 'Planificado' }}
         </span>
       </div>
-      <p class="sprint-description">{{ sprint.description }}</p>
+
+      <p class="sprint-description">
+        {{ sprint.objetivo || 'Sin objetivo definido.' }}
+      </p>
+
       <span class="sprint-dates">
-        🗓️ {{ sprint.startDate | date:'dd MMM' }} - {{ sprint.endDate | date:'dd MMM, yyyy' }}
+        <mat-icon>date_range</mat-icon>
+        {{ sprint.fechaInicio | date:'dd MMM' }} - {{ sprint.fechaFin | date:'dd MMM, yyyy' }}
       </span>
-      <div class="card-footer">
-        <button class="btn-icon" title="Editar Sprint" (click)="openEditSprintDialog(sprint)">✏️</button>
-        <button class="btn btn-secondary" [routerLink]="['/dashboard/sprints', sprint.id]">Ver Tablero</button>
+
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>Progreso</span>
+          <span>{{ getProgress(sprint) }}%</span>
         </div>
+        <mat-progress-bar mode="determinate" [value]="getProgress(sprint)"></mat-progress-bar>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-icon" title="Editar Sprint" (click)="openEditSprintDialog(sprint)">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <button class="btn btn-secondary" [routerLink]="['/dashboard/sprints', sprint.id]">
+          Ver Tablero
+        </button>
+      </div>
     </div>
+
     <div *ngIf="sprints.length === 0" class="empty-list-placeholder">
-      No hay sprints creados todavía.
+      <mat-icon>view_week</mat-icon>
+      <p>Este proyecto no tiene sprints creados todavía.</p>
+      <button mat-stroked-button color="primary" (click)="openAddSprintDialog()">Crear el Primero</button>
     </div>
+
   </div>
 </div>
