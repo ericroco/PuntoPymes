@@ -15,6 +15,8 @@ import { CreateVacanteDto } from './dto/create-vacante.dto';
 import { UpdateVacanteDto } from './dto/update-vacante.dto';
 import { UpdateCandidatoAIDto } from './dto/update-candidato-ai.dto';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { CreateSucursalDto } from './dto/create-sucursal.dto';
+import { UpdateSucursalDto } from './dto/update-sucursal.dto';
 
 @Controller()
 export class PersonalController {
@@ -37,7 +39,7 @@ export class PersonalController {
    */
   @MessagePattern({ cmd: 'create_empleado' })
   @UsePipes(new ValidationPipe())
-  createEmpleado(@Payload() data: { empresaId: string; dto: CreateEmpleadoDto }) {
+  createEmpleado(@Payload() data: { empresaId: string; dto: CreateEmpleadoDto; usuarioCreador?: { sucursalId?: string } }) {
     console.log(
       `Microservicio PERSONAL: Recibido create_empleado para empresa: ${data.empresaId}`,
     );
@@ -342,5 +344,32 @@ export class PersonalController {
   @MessagePattern({ cmd: 'delete_documento' })
   deleteDocumento(@Payload() data: { empresaId: string; documentoId: string }) {
     return this.personalService.deleteDocumento(data.empresaId, data.documentoId);
+  }
+  @MessagePattern({ cmd: 'fix_permissions' })
+  fixPermissions(@Payload() data: { empresaId: string }) {
+    return this.personalService.fixEmployeePermissions(data.empresaId);
+  }
+  // --- SUCURSALES ---
+
+  @MessagePattern({ cmd: 'create_sucursal' })
+  @UsePipes(new ValidationPipe())
+  createSucursal(@Payload() data: { empresaId: string; dto: CreateSucursalDto }) {
+    return this.personalService.createSucursal(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'get_sucursales' })
+  getSucursales(@Payload() data: { empresaId: string }) {
+    return this.personalService.getSucursales(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'update_sucursal' })
+  @UsePipes(new ValidationPipe())
+  updateSucursal(@Payload() data: { empresaId: string; sucursalId: string; dto: UpdateSucursalDto }) {
+    return this.personalService.updateSucursal(data.empresaId, data.sucursalId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'delete_sucursal' })
+  deleteSucursal(@Payload() data: { empresaId: string; sucursalId: string }) {
+    return this.personalService.deleteSucursal(data.empresaId, data.sucursalId);
   }
 }

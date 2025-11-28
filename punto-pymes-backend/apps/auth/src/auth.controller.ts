@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 // 2. Importar el DTO de Registro
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { SwitchCompanyDto } from './dto/switch-company.dto';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -45,5 +46,14 @@ export class AuthController {
   @MessagePattern({ cmd: 'create_user_auto' })
   async createUserAuto(@Payload() data: { empleadoId: string; email: string; nombre: string; empresaId: string }) {
     return this.authService.createUserForEmployee(data);
+  }
+
+  @MessagePattern({ cmd: 'switch_company' })
+  switchCompany(@Payload() data: SwitchCompanyDto) {
+    return this.authService.switchCompany(data);
+  }
+  @MessagePattern({ cmd: 'create_company_user' })
+  createCompanyUser(@Payload() data: { usuarioId: string; nombre: string; plan: string; branding: any }) {
+    return this.authService.createCompanyForUser(data.usuarioId, data);
   }
 }

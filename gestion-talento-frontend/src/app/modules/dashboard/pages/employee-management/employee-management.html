@@ -17,8 +17,8 @@
       </button>
     </div>
 
-    <button class="btn btn-primary" (click)="openAddEmployeeDialog()">
-      <mat-icon>add_circle_outline</mat-icon>
+    <button mat-flat-button color="primary" (click)="openAddEmployeeDialog()">
+      <mat-icon>add</mat-icon>
       Añadir Empleado
     </button>
   </header>
@@ -73,7 +73,7 @@
           <mat-icon>edit</mat-icon>
         </button>
 
-        <button class="btn-icon btn-danger" title="Desactivar">
+        <button class="btn-icon btn-danger" title="Desactivar" (click)="deleteEmployee(employee)">
           <mat-icon>delete</mat-icon>
         </button>
       </div>

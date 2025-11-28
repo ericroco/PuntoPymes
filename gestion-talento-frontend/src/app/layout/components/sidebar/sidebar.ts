@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../../modules/auth/services/auth'; // Importar AuthService
 
 @Component({
   selector: 'app-sidebar',
@@ -8,6 +9,14 @@ import { RouterModule } from '@angular/router';
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss']
 })
-export class Sidebar {
-  // Cuerpo vacío ahora
+export class Sidebar implements OnInit {
+  private authService = inject(AuthService);
+
+  companyLogo: string = 'assets/logo.svg'; // Default
+  companyName: string = 'TalenTrack Empresa'; // Default
+
+  ngOnInit() {
+    this.companyLogo = this.authService.getCompanyLogo();
+    this.companyName = this.authService.getCompanyName();
+  }
 }

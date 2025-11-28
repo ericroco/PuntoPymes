@@ -80,6 +80,12 @@ export class Contrato extends BaseEntity {
   })
   estado: string;
 
+  /**
+ * Mapea: string empleadoId FK "Empleado contratado"
+ */
+  @Column({ comment: 'ID del Empleado al que pertenece el contrato' })
+  empleadoId: string;
+
   // ---
   // RELACIONES "MUCHOS A UNO" (Un Contrato PERTENECE A...)
   // ---
@@ -96,9 +102,5 @@ export class Contrato extends BaseEntity {
   @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
   empleado: Empleado;
 
-  /**
-   * Mapea: string empleadoId FK "Empleado contratado"
-   */
-  @Column({ comment: 'ID del Empleado al que pertenece el contrato' })
-  empleadoId: string;
+
 }

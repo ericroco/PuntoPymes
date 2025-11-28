@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 // Material
@@ -10,35 +10,29 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
-// --- CORRECCIÓN 1: Importar el MÓDULO, no el componente ---
-import { MatDividerModule } from '@angular/material/divider'; 
+import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
-// --- NUEVO: Importar NGX Charts ---
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
-// Animaciones
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
-// Cabecera y Modal
-// --- CORRECCIÓN 2: Importar el COMPONENTE standalone (asumiendo que se llama SubpageHeaderComponent) ---
-import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header'; 
-import { UpdateProgressDialog } from '../../components/update-progress-dialog/update-progress-dialog';
-// import { CreateGoalDialog } from '../../components/create-goal-dialog/create-goal-dialog'; // (Futuro)
 
-// Interface para Meta
-interface Goal {
-  id: number;
+// Componentes y Servicios
+import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header';
+import { UpdateProgressDialog } from '../../components/update-progress-dialog/update-progress-dialog';
+import { AddGoalDialog } from '../../components/add-goal-dialog/add-goal-dialog';
+import { AuthService } from '../../../auth/services/auth';
+import { PerformanceService, Objetivo } from '../../services/performance';
+import { EmployeesService, Employee } from '../../services/employees';
+import { CatalogService, Department } from '../../services/catalog'; // <--- IMPORTAR
+
+// Interfaces Locales
+interface AdminGoal {
+  id: string;
   title: string;
-  description: string;
+  assigneeName: string;
   progress: number;
-  status: 'pendiente' | 'en-progreso' | 'completada';
+  status: string;
   dueDate: string;
-}
-// Interface para Empleado (necesaria para la 9-Box)
-interface Employee { id: number, name: string };
-// Interface para 9-Box (necesaria para el tooltip)
-interface NineBoxCell {
-  label: string;
-  count: number;
-  employees: Employee[];
 }
 
 @Component({
@@ -48,9 +42,7 @@ interface NineBoxCell {
     CommonModule, RouterModule, MatDialogModule, MatButtonModule, MatIconModule,
     MatTooltipModule, MatCardModule, MatProgressBarModule,
     MatTabsModule, MatTableModule, MatMenuModule,
-    NgxChartsModule,
-    MatDividerModule, // <-- CORRECCIÓN 3: Usar el Módulo
-    SubpageHeader // <-- CORRECCIÓN 4: Usar el Componente Standalone
+    NgxChartsModule, MatDividerModule, SubpageHeader, MatSnackBarModule
   ],
   templateUrl: './goals.html',
   styleUrls: ['./goals.scss'],
@@ -67,116 +59,225 @@ interface NineBoxCell {
     ])
   ]
 })
-export class Goals implements OnInit { // Nombre de clase corregido
+export class Goals implements OnInit {
+  private authService = inject(AuthService);
+  private performanceService = inject(PerformanceService);
+  private employeesService = inject(EmployeesService);
+  public dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private catalogService = inject(CatalogService);
 
-  // --- Simulación de Rol ---
-  viewingAsAdmin: boolean = false; // Cambia a 'true' para ver la vista de Admin
+  viewingAsAdmin: boolean = false;
+  activeCycleId: string | null = null;
+  isLoading = true;
+  employeesList: Employee[] = [];
+  departmentsList: Department[] = [];
 
-  // --- Datos de Empleado ---
-  myGoals: Goal[] = [
-    { id: 1, title: 'Refactorizar Módulo Auth', description: '...', progress: 90, status: 'en-progreso', dueDate: '2025-11-15' },
-    { id: 2, title: 'Certificación Angular', description: '...', progress: 60, status: 'en-progreso', dueDate: '2025-12-31' },
-  ];
+  // --- Datos ---
+  myGoals: Objetivo[] = [];
+  adminDeptGoals: Objetivo[] = []; // Metas de departamento (Vista Admin)
+  deptGoals: Objetivo[] = [];      // Metas de mi departamento (Vista Empleado)
 
-  // --- Datos de Admin ---
-  teamGoalProgress = {
-    total: 120,
-    onTrack: 85,
-    atRisk: 15,
-    completed: 20
-  };
-  
-  // Datos para el gráfico de barras de Desempeño
+  // --- Datos Admin ---
+  allGoalsTable = { dataSource: [] as AdminGoal[] };
+  teamGoalProgress = { total: 0, onTrack: 0, atRisk: 0, completed: 0 };
   performanceDistributionData = [
-    { "name": "Bajo Desempeño", "value": 3 },
-    { "name": "Cumple Expectativas", "value": 28 },
-    { "name": "Supera Expectativas", "value": 15 },
-    { "name": "Alto Potencial", "value": 7 }
+    { "name": "Bajo Desempeño", "value": 0 },
+    { "name": "Cumple Expectativas", "value": 0 },
+    { "name": "Alto Potencial", "value": 0 }
   ];
 
-  // Esquema de color para gráficos
   chartColorScheme: Color = {
     name: 'puntopymesGoals',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: [
-        'var(--color-danger-light)', 'var(--color-info)', 
-        'var(--color-success)', 'var(--color-accent)'
-      ]
+    domain: ['#e57373', '#64b5f6', '#81c784', '#ffb74d']
   };
-  
-  // Datos para la Tabla de "Gestión de Metas"
-  allGoalsTable = {
-    displayedColumns: ['title', 'assignee', 'progress', 'dueDate', 'status', 'actions'],
-    dataSource: [
-      { id: 1, title: 'Refactorizar Módulo Auth', assigneeName: 'Jeimy Torres', progress: 90, status: 'en-progreso', dueDate: '2025-11-15' },
-      { id: 4, title: 'Optimizar LCP Página de Inicio', assigneeName: 'Valentina Samaniego', progress: 0, status: 'pendiente', dueDate: '2025-11-10' },
-      // ... (más metas)
-    ]
-  };
-
-  constructor(public dialog: MatDialog) {}
 
   ngOnInit(): void {
+    this.viewingAsAdmin = this.authService.isAdmin();
+    this.loadData();
     if (this.viewingAsAdmin) {
-      // Cargar datos admin
-    } else {
-      // Cargar this.myGoals
+      this.loadEmployeesForAdmin();
+      this.catalogService.getDepartments().subscribe(data => this.departmentsList = data);
     }
   }
 
-  // --- Funciones de Empleado ---
-  // --- CORRECCIÓN 5: Implementación completa de la función ---
-  openUpdateProgressDialog(goal: Goal): void {
-    // No permitir actualizar metas completadas
-    if (goal.status === 'completada') return; 
+  loadData() {
+    this.isLoading = true;
+    const user = this.authService.getUser();
+
+    this.performanceService.getActiveCycle().subscribe({
+      next: (cycle) => {
+        if (cycle) {
+          this.activeCycleId = cycle.id;
+
+          // 1. Vista de Empleado (Cargar sus cosas)
+          if (!this.viewingAsAdmin && user?.empleadoId) {
+            this.loadEmployeeView(cycle.id, user.empleadoId);
+          }
+
+          // 2. Vista de Admin (Cargar todo)
+          if (this.viewingAsAdmin) {
+            this.loadAdminView(cycle.id);
+          }
+
+        } else {
+          this.isLoading = false;
+        }
+      },
+      error: () => this.isLoading = false
+    });
+  }
+
+  // --- MÉTODO NUEVO: Cargar Vista Empleado ---
+  loadEmployeeView(cycleId: string, employeeId: string) {
+    // Mis Metas
+    this.performanceService.getEmployeeGoals(cycleId, employeeId).subscribe(data => {
+      this.myGoals = data;
+      this.isLoading = false;
+    });
+
+    // Metas de mi Departamento
+    this.employeesService.getEmployeeById(employeeId).subscribe(emp => {
+      const depto = emp.cargo?.departamento as any;
+      if (depto && depto.id) {
+        this.performanceService.getDepartmentGoals(cycleId, depto.id).subscribe(data => {
+          this.deptGoals = data;
+        });
+      }
+    });
+  }
+
+  // --- MÉTODO NUEVO: Cargar Vista Admin ---
+  loadAdminView(cycleId: string) {
+    this.performanceService.getAllGoals(cycleId).subscribe({
+      next: (allGoals) => {
+        console.log('Admin Data:', allGoals);
+
+        // Calcular KPIs
+        this.teamGoalProgress.total = allGoals.length;
+        this.teamGoalProgress.completed = allGoals.filter(g => g.progreso === 100).length;
+        this.teamGoalProgress.onTrack = allGoals.filter(g => g.progreso > 0 && g.progreso < 100).length;
+        this.teamGoalProgress.atRisk = allGoals.filter(g => g.progreso === 0).length;
+
+        // Filtrar Metas de Departamento
+        this.adminDeptGoals = allGoals.filter(g => g.tipo === 'DEPARTAMENTO');
+
+        // Llenar Tabla Global
+        this.allGoalsTable.dataSource = allGoals.map(g => ({
+          id: g.id,
+          title: g.descripcion,
+          assigneeName: g.empleado
+            ? `${g.empleado.nombre} ${g.empleado.apellido}`
+            : (g.departamento ? `Depto. ${g.departamento.nombre}` : 'Sin asignar'),
+          progress: g.progreso,
+          status: g.progreso === 100 ? 'Completada' : 'En Progreso',
+          dueDate: ''
+        }));
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadEmployeesForAdmin() {
+    this.employeesService.getEmployees().subscribe(emps => this.employeesList = emps);
+  }
+
+  // --- Funciones de Interacción ---
+
+  openUpdateProgressDialog(goal: Objetivo): void {
+    if (goal.progreso === 100) return;
 
     const dialogRef = this.dialog.open(UpdateProgressDialog, {
       width: '450px',
       disableClose: true,
-      data: { 
-        currentProgress: goal.progress,
-        goalTitle: goal.title 
+      data: {
+        currentProgress: goal.progreso,
+        goalTitle: goal.descripcion
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(newProgress => {
+      if (typeof newProgress === 'number') {
+        this.performanceService.updateGoalProgress(goal.id, newProgress).subscribe({
+          next: (updated) => {
+            this.snackBar.open('Progreso actualizado', 'Cerrar', { duration: 3000 });
+            goal.progreso = updated.progreso;
+            // Si es admin, recargamos todo para actualizar KPIs
+            if (this.viewingAsAdmin && this.activeCycleId) this.loadAdminView(this.activeCycleId);
+          },
+          error: () => this.snackBar.open('Error al actualizar', 'Cerrar')
+        });
+      }
+    });
+  }
+
+  openCreateGoalDialog(): void {
+    if (!this.activeCycleId) {
+      this.snackBar.open('No hay ciclo activo.', 'Cerrar');
+      return;
+    }
+
+    const user = this.authService.getUser();
+    const dialogRef = this.dialog.open(AddGoalDialog, {
+      width: '500px',
+      disableClose: true,
+      data: {
+        isAdmin: this.viewingAsAdmin,
+        employees: this.employeesList,
+        departments: this.departmentsList,
+        currentUserId: user?.empleadoId
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // result = { progress: 85, comment: '...' }
       if (result) {
-        console.log(`Actualizando meta ${goal.id}:`, result);
-        // --- TODO: Llamar API para guardar el progreso y el comentario ---
-        
-        // --- Simulación local ---
-        const index = this.myGoals.findIndex(g => g.id === goal.id);
-        if (index > -1) {
-          this.myGoals[index].progress = result.progress;
-          if (result.progress === 100) {
-            this.myGoals[index].status = 'completada';
-          } else if (result.progress > 0) {
-            this.myGoals[index].status = 'en-progreso';
-          } else {
-            this.myGoals[index].status = 'pendiente';
+        this.isLoading = true;
+        this.performanceService.createGoal(this.activeCycleId!, result).subscribe({
+          next: () => {
+            this.snackBar.open('Objetivo creado', 'Cerrar', { duration: 3000 });
+            this.loadData();
+          },
+          error: () => {
+            this.snackBar.open('Error al crear objetivo', 'Cerrar');
+            this.isLoading = false;
           }
-          this.myGoals = [...this.myGoals]; // Forzar detección de cambios
-        }
+        });
       }
     });
   }
 
-  // --- Funciones de Admin ---
-  openCreateGoalDialog(): void {
-    console.log('Abrir modal para crear nueva meta...');
+  // Placeholders
+  editGoal(goal: any) { } deleteGoal(goal: any): void {
+    // Usamos confirm nativo o tu ConfirmationDialog si prefieres
+    if (confirm(`¿Estás seguro de eliminar la meta "${goal.title}"?`)) {
+      this.performanceService.deleteGoal(goal.id).subscribe({
+        next: () => {
+          this.snackBar.open('Objetivo eliminado', 'Cerrar', { duration: 3000 });
+          // Recargar la tabla
+          this.loadData();
+        },
+        error: (err) => {
+          console.error(err);
+          this.snackBar.open('Error al eliminar', 'Cerrar');
+        }
+      });
+    }
   }
-  
-  editGoal(goal: any): void {
-    console.log('Abrir modal para editar meta:', goal);
+  // Helper para editar desde la tabla de admin (Reutilizamos el diálogo de progreso)
+  openAdminEdit(adminGoal: AdminGoal) {
+    // Mapeamos AdminGoal -> Objetivo (formato que espera el diálogo)
+    const goal: any = {
+      id: adminGoal.id,
+      descripcion: adminGoal.title,
+      progreso: adminGoal.progress
+    };
+    this.openUpdateProgressDialog(goal);
   }
-
-  deleteGoal(goal: any): void {
-    console.log('Eliminar meta:', goal);
-  }
-  
-  // Función para el Tooltip (ya no usa 9-Box)
-  // (Si la necesitas para otra cosa, defínela aquí)
-  // getEmployeeTooltip(cell: any): string { ... }
 }

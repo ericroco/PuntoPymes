@@ -1,15 +1,8 @@
 /* ==========================================================================
-   ESTILOS PARA LA PÁGINA DE LISTA DE SPRINTS (tasks-productivity.scss)
+   ESTILOS COMPLETOS: LISTA DE SPRINTS
    ========================================================================== */
 
-// --- Reutilizamos estilos comunes ---
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
+// --- 1. Botones Originales (Preservados) ---
 .btn {
   display: inline-flex;
   align-items: center;
@@ -25,9 +18,11 @@
   text-decoration: none;
   transition: all 0.2s ease-out;
 
-  svg {
+  svg,
+  mat-icon {
     width: 20px;
     height: 20px;
+    font-size: 20px;
   }
 }
 
@@ -41,35 +36,30 @@
   transition: background-color 0.2s ease;
   vertical-align: middle;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
 
-  svg {
+  svg,
+  mat-icon {
     width: 20px;
     height: 20px;
+    font-size: 20px;
   }
 
   &:hover {
     background-color: var(--color-border);
-  }
-}
-
-.btn.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: var(--color-primary);
   }
 }
 
 .btn.btn-secondary {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface, #fff);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   font-weight: 500;
-  padding: 0.6rem 1.2rem; // Ligeramente más pequeño para botones dentro de tarjetas
+  padding: 0.6rem 1.2rem;
 
   &:hover {
     background-color: var(--color-background);
@@ -78,12 +68,99 @@
   }
 }
 
-// --- Estilos específicos para la cuadrícula y tarjetas de Sprint ---
+// --- 2. Header y Selector Premium ---
+
+.page-container {
+  padding-bottom: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+
+  .header-left {
+    h2 {
+      margin: 0;
+      color: var(--color-text-primary);
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      font-size: 0.95rem;
+      color: var(--color-text-secondary);
+
+      strong {
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px; // Espacio entre selector y botón
+    flex-wrap: wrap;
+
+    // ESTILOS DEL SELECTOR "PREMIUM"
+    .custom-project-select {
+      width: 260px;
+      font-size: 0.95rem;
+      margin-bottom: -1.25em; // Alineación con el botón
+
+      .select-icon {
+        margin-right: 8px;
+        color: var(--color-primary);
+        opacity: 0.9;
+      }
+
+      // Hack para modificar estilos internos de Material
+      ::ng-deep {
+        .mat-mdc-text-field-wrapper {
+          background-color: white !important;
+          border-radius: 50px !important; // Forma de píldora
+          padding-left: 16px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); // Sombra suave
+          border: 1px solid transparent;
+          transition: all 0.3s ease;
+        }
+
+        // Hover
+        &:hover .mat-mdc-text-field-wrapper {
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+          transform: translateY(-1px);
+        }
+
+        // Focus
+        &.mat-focused .mat-mdc-text-field-wrapper {
+          border-color: var(--color-primary);
+        }
+
+        // Eliminar bordes por defecto
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+          border: none !important;
+        }
+      }
+    }
+  }
+}
+
+.loading-bar {
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+}
+
+// --- 3. Grid y Tarjetas ---
+
 .sprints-grid {
   display: grid;
-  // Define cuántas columnas quieres y cómo se adaptan
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); // Columnas adaptables
-  gap: 1.5rem; // Espacio entre tarjetas
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
 .sprint-card {
@@ -92,100 +169,142 @@
   box-shadow: var(--box-shadow);
   padding: 1.5rem;
   display: flex;
-  flex-direction: column; // Apila contenido verticalmente
-  // Borde izquierdo distintivo (puedes cambiar el color si quieres)
+  flex-direction: column;
   border-left: 5px solid var(--color-primary);
-  transition: transform 0.2s ease, box-shadow 0.2s ease; // Animación hover
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(-5px); // Efecto de elevación
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); // Sombra más pronunciada
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    gap: 10px;
+
+    .sprint-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.3;
+      color: var(--color-text-primary);
+      word-break: break-word;
+    }
+  }
+
+  .sprint-description {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: calc(1.5em * 3);
+  }
+
+  .sprint-dates {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      opacity: 0.8;
+    }
+  }
+
+  .progress-container {
+    margin-bottom: 1.5rem;
+    margin-top: auto;
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    mat-progress-bar {
+      height: 8px;
+      border-radius: 4px;
+    }
+  }
+
+  .card-footer {
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between; // Nombre a la izquierda, estado a la derecha
-  align-items: flex-start; // Alinea arriba si el nombre es largo
-  margin-bottom: 0.75rem;
-}
+// --- 4. Badges y Estados ---
 
-.sprint-name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.3;
-  color: var(--color-text-primary); // Color de texto principal
-  // Para evitar que el nombre empuje el estado si es muy largo
-  max-width: calc(100% - 100px); // Ajusta 100px según el ancho del badge
-  word-break: break-word;
-}
-
-// Estilos para la insignia de estado (reutilizados)
 .status-badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 1rem; // Más redondeado
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-  flex-shrink: 0; // Evita que se encoja
-  white-space: nowrap; // Evita que el texto se parta
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 
   &.status-activo {
-    background-color: #2ECC71;
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
   }
 
-  // Verde
   &.status-planificado {
-    background-color: #3498DB;
+    background-color: rgba(52, 152, 219, 0.15);
+    color: #2980b9;
   }
 
-  // Azul
   &.status-completado {
-    background-color: #7F8C8D;
+    background-color: rgba(149, 165, 166, 0.15);
+    color: #7f8c8d;
   }
-
-  // Gris
 }
 
-.sprint-description {
-  color: var(--color-text-secondary); // Color de texto secundario
-  font-size: 0.95rem;
-  line-height: 1.5; // Espaciado de línea
-  margin-bottom: 1.5rem;
-  flex-grow: 1; // Hace que la descripción empuje el footer hacia abajo
-  // Limita el número de líneas visibles y añade puntos suspensivos
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  // Muestra máximo 3 líneas
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: calc(1.5em * 3); // Altura mínima para 3 líneas
-}
-
-.card-footer {
-  border-top: 1px solid var(--color-border); // Línea divisoria
-  padding-top: 1rem;
-  margin-top: auto; // Asegura que el footer esté al fondo
-  display: flex;
-  justify-content: flex-end; // Alinea el botón a la derecha
-}
-
-// Placeholder si no hay sprints
+.empty-state,
 .empty-list-placeholder {
-  grid-column: 1 / -1; // Ocupa todo el ancho del grid
+  grid-column: 1 / -1;
   text-align: center;
   padding: 3rem;
   color: var(--color-text-secondary);
-  font-style: italic;
-}
+  background: var(--color-surface, #f9f9f9);
+  border-radius: var(--border-radius);
+  border: 2px dashed var(--color-border, #ccc);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-.sprint-dates {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    color: #bdbdbd;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text-primary);
+  }
 }

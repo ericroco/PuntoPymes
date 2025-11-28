@@ -1,5 +1,5 @@
 // apps/auth/src/auth.service.ts
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import {
@@ -54,7 +54,7 @@ export class AuthService {
    * @param registerDto Los datos del formulario de registro
    */
   async register(registerDto: RegisterDto) {
-    const { email, password, nombreEmpresa, nombreAdmin, apellidoAdmin } = registerDto;
+    const { email, password, nombreEmpresa, nombreAdmin, apellidoAdmin, logoUrl, colorCorporativo, planSuscripcion } = registerDto;
 
     // --- 1. Validaciones de negocio ---
     const usuarioExistente = await this.usuarioRepository.findOneBy({ email });
@@ -75,7 +75,11 @@ export class AuthService {
       // a. Crear la nueva Empresa (Tenant)
       const nuevaEmpresa = manager.create(Empresa, {
         nombre: nombreEmpresa,
-        planSuscripcion: 'basic', // Plan por defecto
+        planSuscripcion: planSuscripcion || 'basic',
+        branding: {
+          logoUrl: logoUrl || null,
+          primaryColor: colorCorporativo || '#3f51b5',
+        } // Plan por defecto
       });
       await manager.save(nuevaEmpresa);
 
@@ -228,32 +232,155 @@ export class AuthService {
     nombre: string;
     empresaId: string
   }) {
-    // 1. Generar contraseña aleatoria (8 caracteres)
-    const randomPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
+    console.log(`AUTH: Procesando acceso para ${data.email}`);
 
-    // 2. Hashear contraseña
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+    // 1. BUSCAR SI YA EXISTE UN USUARIO CON ESTE EMAIL
+    let usuario = await this.usuarioRepository.findOneBy({ email: data.email });
+    let esNuevo = false;
+    let randomPassword = '';
 
-    // 3. Crear Usuario (SOLO DATOS DE LOGIN)
-    const nuevoUsuario = this.usuarioRepository.create({
-      email: data.email,
-      passwordHash: hashedPassword, // <--- Usa passwordHash
-      emailVerificado: true,
-    });
+    if (!usuario) {
+      // --- CASO A: NO EXISTE -> LO CREAMOS ---
+      esNuevo = true;
+      // Generar contraseña aleatoria segura
+      randomPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
 
-    const usuarioGuardado = await this.usuarioRepository.save(nuevoUsuario);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
-    // 4. VINCULAR EL EMPLEADO AL USUARIO
-    // Actualizamos la tabla 'empleados' para decirle: "Tu usuario de login es este nuevo"
+      usuario = this.usuarioRepository.create({
+        email: data.email,
+        passwordHash: hashedPassword,
+        emailVerificado: true,
+        // isActive: true // Descomenta si tu entidad tiene este campo
+      });
+
+      await this.usuarioRepository.save(usuario);
+      console.log('AUTH: Usuario nuevo creado exitosamente.');
+    } else {
+      // --- CASO B: YA EXISTE -> SOLO VINCULAMOS ---
+      console.log('AUTH: Usuario existente detectado. Vinculando cuenta...');
+    }
+
+    // 2. VINCULAR EL EMPLEADO AL USUARIO (Sea nuevo o viejo)
+    // Esto es lo vital: Actualizamos la tabla 'empleados' con el ID del usuario
     await this.empleadoRepository.update(data.empleadoId, {
-      usuarioId: usuarioGuardado.id
+      usuarioId: usuario.id
     });
 
-    // 5. Devolver credenciales originales (para el correo)
+    // 3. RETORNAR RESULTADO
+    // El microservicio de Personal usará 'isNew' para saber qué correo enviar
     return {
+      isNew: esNuevo,
       email: data.email,
-      password: randomPassword
+      password: randomPassword // Solo tendrá valor si es nuevo, si no, va vacío
     };
+  }
+  async switchCompany(dto: { usuarioId: string; empresaId: string }) {
+    console.log('🔍 DTO recibido:', dto);
+
+    // 1. Buscar la membresía del usuario en esa empresa
+    const membresia = await this.empleadoRepository.findOne({
+      where: {
+        usuarioId: dto.usuarioId,
+        empresaId: dto.empresaId
+      },
+      relations: ['empresa', 'rol', 'usuario'],
+    });
+
+    console.log('👤 Membresía encontrada:', membresia ? {
+      id: membresia.id,
+      usuarioId: membresia.usuarioId,
+      empresaId: membresia.empresaId
+    } : 'NO ENCONTRADA');
+
+    if (!membresia) {
+      throw new UnauthorizedException('No tienes acceso a esta empresa');
+    }
+
+    if (!membresia.rol) {
+      throw new UnauthorizedException('El empleado no tiene un rol asignado');
+    }
+
+    // 2. Crear payload con TODOS los campos necesarios (incluyendo sub)
+    const payload = {
+      sub: dto.usuarioId,  // ✅ ID del usuario (CRÍTICO)
+      email: membresia.usuario?.email || membresia.emailPersonal,
+      empresaId: membresia.empresaId,
+      empleadoId: membresia.id,
+      rolId: membresia.rolId,
+      rol: membresia.rol.nombre,
+      permisos: membresia.rol.permisos,
+      fotoUrl: membresia.fotoUrl
+    };
+
+    console.log('📝 Payload a firmar:', payload);
+
+    // 3. Generar el token
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    console.log('✅ Token generado correctamente');
+
+    return {
+      accessToken,
+      usuario: {
+        ...payload,
+        nombreEmpresa: membresia.empresa.nombre
+      }
+    };
+  }
+  async createCompanyForUser(usuarioId: string, data: { nombre: string; plan: string; branding: any }) {
+    // 1. Buscar usuario
+    const usuario = await this.usuarioRepository.findOneBy({ id: usuarioId });
+    if (!usuario) throw new NotFoundException('Usuario no encontrado');
+
+    return this.entityManager.transaction(async (manager) => {
+      // a. Crear Empresa
+      const nuevaEmpresa = manager.create(Empresa, {
+        nombre: data.nombre,
+        planSuscripcion: data.plan,
+        branding: data.branding
+      });
+      await manager.save(nuevaEmpresa);
+
+      // b. Crear Rol Admin
+      const rolAdmin = manager.create(Rol, {
+        empresaId: nuevaEmpresa.id,
+        nombre: 'Administrador',
+        permisos: { esAdmin: true, puedeVerTodo: true },
+      });
+      await manager.save(rolAdmin);
+
+      // c. Depto/Cargo Default
+      const depto = manager.create(Departamento, { empresaId: nuevaEmpresa.id, nombre: 'Gerencia' });
+      await manager.save(depto);
+      const cargo = manager.create(Cargo, { departamentoId: depto.id, nombre: 'CEO' });
+      await manager.save(cargo);
+
+      // d. Crear Empleado (Vinculado al usuario existente)
+      const nuevoEmpleado = manager.create(Empleado, {
+        empresaId: nuevaEmpresa.id,
+        usuarioId: usuario.id, // <--- VINCULACIÓN CLAVE
+        rolId: rolAdmin.id,
+        cargoId: cargo.id,
+        nombre: 'Admin', // Puedes pedir estos datos o tomarlos del usuario si los tuviera
+        apellido: 'Principal',
+        estado: 'Activo'
+      });
+      await manager.save(nuevoEmpleado);
+
+      // e. Contrato
+      const contrato = manager.create(Contrato, {
+        empleadoId: nuevoEmpleado.id,
+        tipo: 'Fundador',
+        salario: 0,
+        moneda: 'USD',
+        fechaInicio: new Date(),
+        estado: 'Vigente'
+      });
+      await manager.save(contrato);
+
+      return nuevaEmpresa;
+    });
   }
 }

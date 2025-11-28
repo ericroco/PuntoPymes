@@ -1,129 +1,104 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-// Material
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatCard, MatCardModule } from '@angular/material/card';
 
-// Interface para los detalles de la vacante (simplificada)
-interface VacancyDetails {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  description: string; // HTML o texto plano
-  requirements: string[];
-}
+import { RecruitmentService, Vacancy } from '../../../modules/dashboard/services/recruitment';
 
 @Component({
   selector: 'app-vacancy-public-page',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatCardModule
+    CommonModule, ReactiveFormsModule, RouterModule,
+    MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule,
+    MatSnackBarModule, MatCardModule, MatProgressSpinnerModule
   ],
   templateUrl: './vacancy-public-page.html',
   styleUrls: ['./vacancy-public-page.scss']
 })
 export class VacancyPublicPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private recruitmentService = inject(RecruitmentService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
 
   vacancyId: string | null = null;
-  vacancy: VacancyDetails | null = null; // Para guardar los detalles
-  applicationForm: FormGroup;
-  selectedFile: File | null = null;
-  fileName: string = '';
-  
-  isLoading: boolean = true; // Para simular carga
-  isSubmitting: boolean = false; // Para el botón de enviar
-  submissionComplete: boolean = false; // Para mostrar mensaje de éxito
+  vacancy: Vacancy | null = null;
+  isLoading = true;
+  isSubmitting = false;
+  successMessage = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private fb: FormBuilder
-  ) {
-    this.applicationForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
-      cvFile: [null, Validators.required] // Para el control del archivo
-    });
-  }
+  applyForm: FormGroup = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(3)]],
+    email: ['', [Validators.required, Validators.email]],
+    telefono: ['', [Validators.required]],
+    // El archivo se maneja separado del formControl nativo para file input
+  });
+
+  selectedFile: File | null = null;
 
   ngOnInit(): void {
     this.vacancyId = this.route.snapshot.paramMap.get('id');
-    console.log("Cargando página pública para vacante ID:", this.vacancyId);
-    
-    // --- TODO: Llamar API pública para obtener detalles de la vacante ---
-    // Simulación de carga
-    setTimeout(() => {
-      // Simulación de datos (basado en el ID de la ruta)
-      if (this.vacancyId === 'dev-frontend-sr') {
-        this.vacancy = {
-          id: 'dev-frontend-sr',
-          title: 'Desarrollador Frontend Senior',
-          department: 'Tecnología',
-          location: 'Trabajo Remoto',
-          description: 'Estamos buscando un Desarrollador Frontend con experiencia para unirse a nuestro equipo. Serás responsable de construir la próxima generación de nuestra plataforma SaaS de RRHH, creando interfaces de usuario limpias, eficientes y escalables.',
-          requirements: [
-            '5+ años de experiencia con Angular (TypeScript).',
-            'Experiencia profunda con Angular Material y SCSS.',
-            'Conocimiento de arquitecturas standalone y NgRx (deseable).',
-            'Experiencia construyendo tableros y visualización de datos.'
-          ]
-        };
-      } else {
-        // Vacante no encontrada (placeholder)
-        this.vacancy = { id: 'not-found', title: 'Vacante no encontrada', department: '', location: '', description: 'La vacante que buscas no existe o ya ha sido cerrada.', requirements: [] };
+    if (this.vacancyId) {
+      this.loadVacancy(this.vacancyId);
+    } else {
+      this.isLoading = false; // Error: Sin ID
+    }
+  }
+
+  loadVacancy(id: string) {
+    this.recruitmentService.getVacancyById(id).subscribe({
+      next: (data) => {
+        this.vacancy = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+        this.snackBar.open('No se pudo cargar la vacante.', 'Cerrar');
       }
-      this.isLoading = false;
-    }, 1000); // Simula 1 segundo de carga
+    });
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      // Validar tamaño o tipo si es necesario
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      // Validar PDF
+      if (file.type !== 'application/pdf') {
+        this.snackBar.open('Solo se permiten archivos PDF.', 'Cerrar', { duration: 3000 });
+        return;
+      }
       this.selectedFile = file;
-      this.fileName = file.name;
-      this.applicationForm.patchValue({ cvFile: file });
-      this.applicationForm.get('cvFile')?.updateValueAndValidity();
     }
   }
 
-  onSubmit(): void {
-    if (this.applicationForm.invalid || !this.selectedFile) {
-      this.applicationForm.markAllAsTouched();
-      return;
-    }
+  onSubmit() {
+    if (this.applyForm.invalid || !this.selectedFile || !this.vacancyId) return;
 
     this.isSubmitting = true;
-    console.log('Enviando postulación:', {
-      name: this.applicationForm.value.name,
-      email: this.applicationForm.value.email,
-      phone: this.applicationForm.value.phone,
-      file: this.selectedFile
-    });
+    const { nombre, email, telefono } = this.applyForm.value;
 
-    // --- TODO: Llamar API (Endpoint Público) para subir el CV y los datos ---
-    // (Usar FormData para enviar el archivo)
-    
-    // Simulación de envío exitoso
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.submissionComplete = true; // Muestra el mensaje de éxito
-    }, 2000); // Simula 2 segundos de subida
+    this.recruitmentService.applyToVacancy(this.vacancyId, {
+      nombre, email, telefono, file: this.selectedFile
+    }).subscribe({
+      next: (res) => {
+        console.log('Postulación exitosa:', res);
+        this.isSubmitting = false;
+        this.successMessage = true;
+        this.snackBar.open('¡Postulación enviada con éxito!', 'Cerrar', { duration: 5000 });
+      },
+      error: (err) => {
+        console.error('Error al postular:', err);
+        this.isSubmitting = false;
+        this.snackBar.open('Error al enviar tu solicitud. Intenta de nuevo.', 'Cerrar');
+      }
+    });
   }
 }

@@ -1,0 +1,188 @@
+<div class="create-container">
+
+    <div class="form-section">
+        <div class="header">
+            <a routerLink="/auth/login" class="back-link">
+                <mat-icon>arrow_back</mat-icon> Volver
+            </a>
+            <div class="progress-indicator">
+                Paso {{ stepper.selectedIndex + 1 }} de 3
+            </div>
+            <h1>Crea tu Organización</h1>
+            <p>Personaliza tu espacio de trabajo en Talent Track.</p>
+        </div>
+
+        <mat-stepper #stepper orientation="vertical" [linear]="true" class="custom-stepper">
+
+            <mat-step [stepControl]="identityForm">
+                <form [formGroup]="identityForm">
+                    <ng-template matStepLabel>Identidad Corporativa</ng-template>
+
+                    <div class="step-content">
+
+                        <div class="logo-upload-section">
+                            <div class="logo-preview"
+                                [style.background-image]="logoPreview ? 'url(' + logoPreview + ')' : ''">
+                                <mat-icon *ngIf="!logoPreview">add_photo_alternate</mat-icon>
+                            </div>
+                            <div class="upload-info">
+                                <label class="upload-btn">
+                                    Subir Logo
+                                    <input type="file" (change)="onLogoSelected($event)" accept="image/*" hidden>
+                                </label>
+                                <span>Recomendado: PNG transparente, 500x500px</span>
+                            </div>
+                        </div>
+
+                        <div class="admin-data-row" style="display: flex; gap: 15px; margin-bottom: 10px;">
+                            <mat-form-field appearance="outline" style="flex: 1;">
+                                <mat-label>Tu Nombre</mat-label>
+                                <input matInput formControlName="nombreAdmin" placeholder="Ej. Juan" required>
+                                <mat-error>Requerido</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" style="flex: 1;">
+                                <mat-label>Tu Apellido</mat-label>
+                                <input matInput formControlName="apellidoAdmin" placeholder="Ej. Pérez" required>
+                                <mat-error>Requerido</mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Nombre de la Empresa</mat-label>
+                            <input matInput formControlName="nombre" placeholder="Ej. TechSolutions S.A." required>
+                            <mat-icon matSuffix>business</mat-icon>
+                            <mat-error>El nombre es requerido</mat-error>
+                        </mat-form-field>
+
+                        <div class="color-picker-section">
+                            <label>Color Principal</label>
+                            <div class="color-grid">
+                                <div *ngFor="let c of brandColors" class="color-item" [style.background]="c"
+                                    [class.active]="identityForm.get('color')?.value === c" (click)="selectColor(c)">
+                                    <mat-icon>check</mat-icon>
+                                </div>
+                                <div class="color-input-wrapper">
+                                    <input type="color" formControlName="color" title="Color personalizado">
+                                    <mat-icon>palette</mat-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button mat-flat-button color="primary" matStepperNext [disabled]="identityForm.invalid">
+                                Continuar <mat-icon>arrow_forward</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </mat-step>
+
+            <mat-step [stepControl]="subscriptionForm">
+                <form [formGroup]="subscriptionForm">
+                    <ng-template matStepLabel>Selecciona tu Plan</ng-template>
+
+                    <div class="plans-container">
+                        <div *ngFor="let plan of planes" class="plan-option"
+                            [class.selected]="subscriptionForm.get('planSuscripcion')?.value === plan.id"
+                            (click)="selectPlan(plan.id)">
+
+                            <div class="plan-top">
+                                <span class="plan-badge" *ngIf="plan.id === 'Pro'">RECOMENDADO</span>
+                                <h3 class="plan-title">{{ plan.name }}</h3>
+                                <div class="plan-cost">{{ plan.price }}<span>/mes</span></div>
+                            </div>
+
+                            <div class="plan-details">
+                                <div *ngFor="let f of plan.features" class="feature-item">
+                                    <mat-icon>check</mat-icon> {{ f }}
+                                </div>
+                            </div>
+
+                            <div class="selection-ring"></div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button mat-stroked-button matStepperPrevious>Atrás</button>
+                        <button mat-flat-button color="primary" matStepperNext>Siguiente</button>
+                    </div>
+                </form>
+            </mat-step>
+
+            <mat-step>
+                <ng-template matStepLabel>Resumen</ng-template>
+                <div class="review-box">
+                    <div class="review-header">
+                        <div class="company-summary">
+                            <div class="mini-logo"
+                                [style.background-image]="logoPreview ? 'url(' + logoPreview + ')' : ''">
+                                <span *ngIf="!logoPreview">{{ previewName.charAt(0) }}</span>
+                            </div>
+                            <div>
+                                <h4>{{ previewName }}</h4>
+                                <span>Plan {{ previewPlan?.name }}</span>
+                            </div>
+                        </div>
+                        <div class="color-dot" [style.background]="previewColor"></div>
+                    </div>
+
+                    <div class="info-alert">
+                        <mat-icon>info</mat-icon>
+                        <p>Al crear la empresa, se te asignará automáticamente el rol de <strong>Administrador
+                                Principal</strong>.</p>
+                    </div>
+
+                    <div class="actions">
+                        <button mat-stroked-button matStepperPrevious>Atrás</button>
+                        <button mat-flat-button color="primary" (click)="onSubmit()">
+                            <mat-icon>rocket_launch</mat-icon> Lanzar Plataforma
+                        </button>
+                    </div>
+                </div>
+            </mat-step>
+
+        </mat-stepper>
+    </div>
+
+    <div class="preview-section">
+        <div class="preview-wrapper">
+            <div class="preview-header">
+                <h3>Vista Previa</h3>
+                <p>Así verán tus empleados la plataforma</p>
+            </div>
+
+            <div class="mock-dashboard">
+                <div class="mock-sidebar"
+                    [style.background]="'linear-gradient(180deg, ' + previewColor + ' 0%, #1a237e 100%)'">
+                    <div class="mock-logo-area">
+                        <img *ngIf="logoPreview" [src]="logoPreview" class="uploaded-logo-mock">
+                        <div *ngIf="!logoPreview" class="mock-logo-icon">P</div>
+                    </div>
+                    <div class="mock-nav-items">
+                        <div class="mock-item active"></div>
+                        <div class="mock-item"></div>
+                        <div class="mock-item"></div>
+                        <div class="mock-item"></div>
+                    </div>
+                </div>
+
+                <div class="mock-content">
+                    <div class="mock-topbar">
+                        <div class="mock-title">Bienvenido a {{ previewName }}</div>
+                        <div class="mock-avatar" [style.color]="previewColor">A</div>
+                    </div>
+
+                    <div class="mock-widgets">
+                        <div class="mock-card big">
+                            <div class="mock-line"></div>
+                            <div class="mock-chart-area" [style.opacity]="0.15" [style.background]="previewColor"></div>
+                        </div>
+                        <div class="mock-card small"></div>
+                        <div class="mock-card small"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

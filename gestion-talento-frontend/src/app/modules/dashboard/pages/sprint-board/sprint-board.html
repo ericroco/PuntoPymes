@@ -6,17 +6,19 @@
       <div class="sprint-dates-header" *ngIf="startDate && endDate">
         🗓️ {{ startDate | date:'longDate' }} - {{ endDate | date:'longDate' }}
       </div>
+
       <div class="assigned-team">
         <h4>Equipo Asignado:</h4>
         <div class="team-avatars" *ngIf="assignedEmployees.length > 0; else noTeam">
-          <img *ngFor="let emp of assignedEmployees" [src]="emp.avatar" [alt]="emp.name" matTooltip="{{emp.name}}"
-            matTooltipPosition="above" class="avatar">
+          <img *ngFor="let emp of assignedEmployees" [src]="emp.fotoUrl || 'assets/default-avatar.png'"
+            [alt]="emp.nombre" matTooltip="{{emp.nombre}}" matTooltipPosition="above" class="avatar">
         </div>
         <ng-template #noTeam>
           <span class="no-team-text">Aún no hay empleados asignados a este sprint.</span>
         </ng-template>
       </div>
     </div>
+
     <div class="sprint-actions">
       <button *ngIf="sprintStatus === 'Planificado'" class="btn btn-success" (click)="startSprint()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -35,6 +37,7 @@
         </svg>
         <span>Completar Sprint</span>
       </button>
+
       <button class="btn btn-secondary" (click)="openAssignEmployeeDialog()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
           <path
@@ -42,6 +45,7 @@
         </svg>
         <span>Asignar Empleados</span>
       </button>
+
       <button class="btn btn-primary" (click)="openAddTaskDialog()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
           <path
@@ -60,12 +64,11 @@
         (cdkDropListDropped)="drop($event)">
         <div class="task-card" *ngFor="let task of pendingTasks" cdkDrag @taskAnimation>
           <div class="task-card-main">
-            <div class="task-priority priority-{{task.priority}}"></div>
+            <div class="task-priority priority-{{task.prioridad}}"></div>
             <div class="task-content">
-              <p class="task-title">{{ task.title }}</p>
+              <p class="task-title">{{ task.titulo }}</p>
               <div class="task-meta">
-                <span>{{ task.assignedTo }}</span>
-                <span class="due-date">{{ task.dueDate | date:'dd MMM' }}</span>
+                <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
               </div>
             </div>
             <div class="task-card-actions">
@@ -81,8 +84,8 @@
             </div>
           </div>
           <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
-            <p *ngIf="task.description; else noDescription">{{ task.description }}</p>
-            <ng-template #noDescription>
+            <p *ngIf="task.descripcion; else noDescriptionPending">{{ task.descripcion }}</p>
+            <ng-template #noDescriptionPending>
               <p><i>No hay descripción para esta tarea.</i></p>
             </ng-template>
           </div>
@@ -97,12 +100,11 @@
         (cdkDropListDropped)="drop($event)">
         <div class="task-card" *ngFor="let task of inProgressTasks" cdkDrag @taskAnimation>
           <div class="task-card-main">
-            <div class="task-priority priority-{{task.priority}}"></div>
+            <div class="task-priority priority-{{task.prioridad}}"></div>
             <div class="task-content">
-              <p class="task-title">{{ task.title }}</p>
+              <p class="task-title">{{ task.titulo }}</p>
               <div class="task-meta">
-                <span>{{ task.assignedTo }}</span>
-                <span class="due-date">{{ task.dueDate | date:'dd MMM' }}</span>
+                <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
               </div>
             </div>
             <div class="task-card-actions">
@@ -118,8 +120,8 @@
             </div>
           </div>
           <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
-            <p *ngIf="task.description; else noDescription">{{ task.description }}</p>
-            <ng-template #noDescription>
+            <p *ngIf="task.descripcion; else noDescriptionProgress">{{ task.descripcion }}</p>
+            <ng-template #noDescriptionProgress>
               <p><i>No hay descripción para esta tarea.</i></p>
             </ng-template>
           </div>
@@ -134,12 +136,11 @@
         (cdkDropListDropped)="drop($event)">
         <div class="task-card" *ngFor="let task of completedTasks" cdkDrag @taskAnimation>
           <div class="task-card-main">
-            <div class="task-priority priority-{{task.priority}}"></div>
+            <div class="task-priority priority-{{task.prioridad}}"></div>
             <div class="task-content">
-              <p class="task-title">{{ task.title }}</p>
+              <p class="task-title">{{ task.titulo }}</p>
               <div class="task-meta">
-                <span>{{ task.assignedTo }}</span>
-                <span class="due-date">{{ task.dueDate | date:'dd MMM' }}</span>
+                <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
               </div>
             </div>
             <div class="task-card-actions">
@@ -155,8 +156,8 @@
             </div>
           </div>
           <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
-            <p *ngIf="task.description; else noDescription">{{ task.description }}</p>
-            <ng-template #noDescription>
+            <p *ngIf="task.descripcion; else noDescriptionCompleted">{{ task.descripcion }}</p>
+            <ng-template #noDescriptionCompleted>
               <p><i>No hay descripción para esta tarea.</i></p>
             </ng-template>
           </div>

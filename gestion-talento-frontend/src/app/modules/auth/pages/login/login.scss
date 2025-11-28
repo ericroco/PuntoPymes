@@ -1,125 +1,235 @@
-// Usamos las variables globales definidas en styles.scss
-:host {
+$primary: #E74C3C;
+$primary-dark: #C0392B;
+$text-main: #333;
+$text-light: #7F8C8D;
+$bg-gray: #F4F6F7;
+
+.auth-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-}
+  min-height: 100vh;
+  background: white;
 
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-}
-
-.login-card {
-  background-color: var(--color-surface);
-  padding: 2.5rem 3rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  width: 100%;
-  max-width: 450px;
-  text-align: center;
-}
-
-.login-header {
-  margin-bottom: 2rem;
-
-  .logo {
-    margin-bottom: 1rem;
-  }
-
-  h2 {
-    color: var(--color-text-primary);
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    color: var(--color-text-secondary);
+  @media (max-width: 900px) {
+    flex-direction: column;
   }
 }
 
-.form-group {
-  text-align: left;
-  margin-bottom: 1.5rem;
-
-  label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    font-family: var(--font-family-base);
-    font-size: 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
-
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
-    }
-  }
-}
-
-.btn-submit {
-  width: 100%;
-  padding: 0.85rem;
-  border: none;
-  border-radius: var(--border-radius);
-  background-color: var(--color-primary);
+// LADO IZQUIERDO (Visual)
+.auth-visual {
+  flex: 1;
+  background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
   color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  // --- LÍNEA MODIFICADA ---
-  transition: background-color 0.3s, transform 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem;
+  position: relative;
+  overflow: hidden;
 
-  &:hover {
-    background-color: var(--color-primary-dark);
-    // --- LÍNEA A AÑADIR ---
-    transform: scale(1.03);
-    /* Ligeramente más grande al pasar el cursor */
+  @media (max-width: 900px) {
+    display: none; // Ocultar en móviles para simplificar
   }
-}
 
-.form-footer {
-  margin-top: 1.5rem;
+  .visual-content {
+    position: relative;
+    z-index: 2;
+    max-width: 500px;
 
-  a {
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
+    .logo-white {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      margin-bottom: 3rem;
 
-    &:hover {
-      text-decoration: underline;
-      color: var(--color-primary-dark);
+      mat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    h2 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 2rem;
+    }
+
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+
+      li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  // Decoración de fondo
+  .circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+
+    &.c1 {
+      width: 300px;
+      height: 300px;
+      top: -50px;
+      right: -50px;
+    }
+
+    &.c2 {
+      width: 500px;
+      height: 500px;
+      bottom: -100px;
+      left: -100px;
     }
   }
 }
 
-/* ESTILOS PARA EL BOTÓN CUANDO ESTÁ DESHABILITADO */
-.btn-submit.btn-disabled {
-  background-color: #E0E0E0;
-  /* Un gris neutro y claro */
-  color: #BDBDBD;
-  /* Un gris más claro para el texto */
-  cursor: not-allowed;
-  /* Cambia el cursor para indicar que no se puede hacer clic */
-  transform: none;
-  /* Anula el efecto de escala del hover */
-  box-shadow: none;
-  /* Anula la sombra del estado activo */
+// LADO DERECHO (Formulario)
+.auth-form-wrapper {
+  flex: 1; // Ocupa un poco menos que la imagen si se desea, o igual
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: white;
 
-  &:hover {
-    background-color: #E0E0E0;
-    /* Mantiene el color gris incluso en hover */
+  .auth-form-content {
+    width: 100%;
+    max-width: 450px;
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: $text-main;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: $text-light;
+        font-size: 1rem;
+      }
+    }
+
+    .full-width {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .terms-check {
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+      color: $text-light;
+
+      .link {
+        color: $primary;
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .checkbox-error {
+        color: $primary;
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 5px;
+        margin-left: 2px;
+      }
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 2rem 0;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #eee;
+      }
+
+      span {
+        background: white;
+        padding: 0 10px;
+        color: $text-light;
+        font-size: 0.9rem;
+        position: relative;
+      }
+    }
+
+    .social-buttons {
+      display: flex;
+      gap: 1rem;
+
+      .social-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        color: $text-main;
+        transition: all 0.2s;
+
+        &:hover {
+          background: $bg-gray;
+        }
+
+        // Estilo fallback si no hay icono
+        span {
+          font-weight: 900;
+          color: #EA4335;
+        }
+      }
+    }
+
+    .login-redirect {
+      text-align: center;
+      margin-top: 2rem;
+      color: $text-light;
+      font-size: 0.95rem;
+
+      .link {
+        color: $primary;
+        text-decoration: none;
+        font-weight: 600;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
   }
 }

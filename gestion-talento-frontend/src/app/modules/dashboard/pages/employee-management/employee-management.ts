@@ -11,6 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // Importamos la interfaz REAL del servicio
 import { EmployeesService, Employee } from '../../services/employees';
@@ -50,6 +51,7 @@ export class EmployeeManagement implements OnInit {
   private employeesService = inject(EmployeesService);
   public dialog = inject(MatDialog);
   private catalogService = inject(CatalogService);
+  private snackBar = inject(MatSnackBar);
 
   // --- DATOS REALES ---
   employees: Employee[] = [];
@@ -177,5 +179,22 @@ export class EmployeeManagement implements OnInit {
   // Helper para el HTML
   getInitials(nombre: string, apellido: string): string {
     return (nombre.charAt(0) + (apellido ? apellido.charAt(0) : '')).toUpperCase();
+  }
+  deleteEmployee(employee: Employee): void {
+    // Mensaje más preciso para el usuario
+    if (!confirm(`¿Estás seguro de desvincular a ${employee.nombre} ${employee.apellido}? \nSe finalizará su contrato actual y pasará a estado Inactivo.`)) {
+      return;
+    }
+
+    this.employeesService.deleteEmployee(employee.id).subscribe({
+      next: () => {
+        this.snackBar.open('Empleado desvinculado correctamente', 'Cerrar', { duration: 3000 });
+        this.loadEmployees(); // Recargar la lista para ver el cambio de estado
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('Error al desvincular empleado', 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 }

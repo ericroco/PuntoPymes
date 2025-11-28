@@ -16,6 +16,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ClientProxy } from '@nestjs/microservices';
@@ -73,6 +74,8 @@ import { createMulterOptions } from './shared/utils/multer-config.util';
 import { CreateCandidatoDto } from 'apps/personal/src/dto/create-candidato.dto';
 import { CreateVacanteDto } from 'apps/personal/src/dto/create-vacante.dto';
 import { CreateSolicitudDto } from 'apps/nomina/src/dto/create-solicitud.dto';
+import { CreateSucursalDto } from '../../personal/src/dto/create-sucursal.dto';
+import { UpdateSucursalDto } from '../../personal/src/dto/update-sucursal.dto';
 
 @Controller()
 export class AppController {
@@ -146,7 +149,10 @@ export class AppController {
     @Body() dto: CreateEmpleadoDto, // 3. Para obtener el body (con los datos del nuevo empleado)
   ) {
     // 4. Extraemos el 'empresaId' del token del admin
-    const { empresaId } = req.user;
+    const { empresaId, sucursalId } = req.user; // Asumiendo que el token tiene sucursalId
+
+    // Pasamos los datos del creador para aplicar la regla de negocio
+    const usuarioCreador = sucursalId ? { sucursalId } : undefined;
 
     console.log(`Gateway: Petición POST /empleados para empresaId: ${empresaId}`);
 
@@ -156,6 +162,7 @@ export class AppController {
       {
         empresaId: empresaId,
         dto: dto,
+        usuarioCreador,
       },
     );
   }// --- 4. ¡NUEVO ENDPOINT PATCH /empleados/:id! (RF-01-03) ---
@@ -1115,20 +1122,6 @@ export class AppController {
     );
   }
 
-  // 4. BORRAR OBJETIVO (DELETE /desempeno/objetivos/:id)
-  @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission('desempeno.objetivos.delete')
-  @Delete('desempeno/objetivos/:id')
-  deleteObjetivo(
-    @Request() req,
-    @Param('id') objetivoId: string,
-  ) {
-    const { empresaId } = req.user;
-    return this.productividadService.send(
-      { cmd: 'delete_objetivo' },
-      { empresaId, objetivoId },
-    );
-  }
   // ==========================================
   //        DESEMPEÑO: EVALUACIONES (9-BOX)
   // ==========================================
@@ -1790,5 +1783,124 @@ export class AppController {
     }
 
     return this.productividadService.send({ cmd: 'seed_data' }, { empresaId });
+  }
+  // ==========================================
+  //        REGISTRO: SUBIDA DE LOGO
+  // ==========================================
+  // Este endpoint es público porque el usuario aún no tiene token
+  @Post('auth/upload-logo')
+  @UseInterceptors(
+    FileInterceptor('file', createMulterOptions(
+      'temp/logos', // Lo guardamos en una carpeta temporal o pública
+      2, // Max 2MB
+      /\/(jpg|jpeg|png)$/
+    ))
+  )
+  uploadCompanyLogo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    // Como es público, no tenemos empresaId. Usamos una ruta genérica.
+    // El helper createMulterOptions usará 'public' o lo que definimos.
+    // Asumimos que el helper usa 'public' si no hay user.
+
+    // Construimos la URL pública
+    // Nota: Ajusta la ruta si tu helper usa 'public' por defecto cuando no hay usuario
+    const fileUrl = `http://localhost:3000/uploads/public/temp/logos/${file.filename}`;
+
+    return { url: fileUrl };
+  }
+  @UseGuards(JwtAuthGuard) // Solo admin puede ejecutar esto
+  @Post('admin/fix-permissions')
+  async fixPermissions(@Request() req) {
+    const { empresaId } = req.user;
+    return this.personalService.send({ cmd: 'fix_permissions' }, { empresaId });
+  }
+  // ==========================================
+  //        GESTIÓN DE SUCURSALES
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('sucursales.gestion') // Puedes crear este permiso o usar uno genérico
+  @Post('sucursales')
+  @UsePipes(new ValidationPipe())
+  createSucursal(@Request() req, @Body() dto: CreateSucursalDto) {
+    const { empresaId } = req.user;
+    return this.personalService.send({ cmd: 'create_sucursal' }, { empresaId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('sucursales.gestion')
+  @Get('sucursales')
+  getSucursales(@Request() req) {
+    const { empresaId } = req.user;
+    return this.personalService.send({ cmd: 'get_sucursales' }, { empresaId });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('sucursales.gestion')
+  @Patch('sucursales/:id')
+  @UsePipes(new ValidationPipe())
+  updateSucursal(@Request() req, @Param('id') sucursalId: string, @Body() dto: UpdateSucursalDto) {
+    const { empresaId } = req.user;
+    return this.personalService.send({ cmd: 'update_sucursal' }, { empresaId, sucursalId, dto });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('sucursales.gestion')
+  @Delete('sucursales/:id')
+  deleteSucursal(@Request() req, @Param('id') sucursalId: string) {
+    const { empresaId } = req.user;
+    return this.personalService.send({ cmd: 'delete_sucursal' }, { empresaId, sucursalId });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('auth/switch-company')
+  switchCompany(@Request() req, @Body('empresaId') empresaId: string) {
+    console.log('🔍 req.user:', req.user);
+
+    // ✅ Usar userId en lugar de sub
+    const usuarioId = req.user?.userId;
+
+    if (!usuarioId) {
+      throw new UnauthorizedException('No se pudo obtener el usuario del token');
+    }
+
+    console.log('📤 Enviando al microservicio:', { usuarioId, empresaId });
+
+    return this.authService.send({ cmd: 'switch_company' }, { usuarioId, empresaId });
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('auth/create-company-user')
+  createCompanyUser(@Request() req, @Body() body: any) {
+    const usuarioId = req.user.sub;
+    return this.authService.send({ cmd: 'create_company_user' }, { usuarioId, ...body });
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('desempeno/ciclos/:cicloId/departamentos/:deptoId/objetivos')
+  getObjetivosDepto(
+    @Request() req,
+    @Param('cicloId') cicloId: string,
+    @Param('deptoId') deptoId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'get_objetivos_departamento' }, { empresaId, cicloId, departamentoId: deptoId });
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.objetivos.read')
+  @Get('desempeno/ciclos/:cicloId/objetivos-globales') // <--- Nueva ruta
+  getAllObjetivos(
+    @Request() req,
+    @Param('cicloId') cicloId: string
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'get_all_objetivos' }, { empresaId, cicloId });
+  }
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('desempeno.objetivos.delete') // O un permiso genérico de admin
+  @Delete('desempeno/objetivos/:id')
+  deleteObjetivo(@Request() req, @Param('id') objetivoId: string) {
+    const { empresaId } = req.user;
+    return this.productividadService.send({ cmd: 'delete_objetivo' }, { empresaId, objetivoId });
   }
 }

@@ -4,7 +4,9 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  IsDateString, // <--- 1. HABILITADO (Antes estaba comentado o faltaba)
+  IsDateString,
+  IsNumber,
+  Min,// <--- 1. HABILITADO (Antes estaba comentado o faltaba)
 } from 'class-validator';
 
 /**
@@ -56,4 +58,26 @@ export class CreateEmpleadoDto {
   @IsOptional()
   @IsUUID('4', { message: 'El jefeId debe ser un UUID válido.' })
   jefeId?: string;
+
+  @IsOptional() // Opcional porque el Admin Local no necesita enviarlo (se infiere)
+  @IsUUID()
+  sucursalId?: string;
+  // 👇 AGREGAR ESTOS CAMPOS NUEVOS PARA EL CONTRATO 👇
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  salario?: number;
+
+  @IsOptional()
+  @IsString()
+  tipoContrato?: string;
+
+  @IsOptional()
+  @IsDateString()
+  fechaInicio?: string;
+
+  @IsOptional()
+  @IsDateString()
+  fechaFin?: string;
 }

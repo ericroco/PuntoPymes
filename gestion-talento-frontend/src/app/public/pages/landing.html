@@ -1,0 +1,335 @@
+<div class="landing-container">
+
+    <!-- ========================================
+         NAVBAR
+         ======================================== -->
+    <nav class="landing-nav" [class.scrolled]="isScrolled">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <mat-icon>all_inclusive</mat-icon>
+            </div>
+            <span class="logo-text">TALEN<span class="highlight">TRACK</span></span>
+        </div>
+
+        <div class="nav-links desktop-only">
+            <a href="#features" class="nav-item">Características</a>
+            <a href="#benefits" class="nav-item">Beneficios</a>
+            <a href="#testimonials" class="nav-item">Testimonios</a>
+            <a href="#pricing" class="nav-item">Precios</a>
+
+            <div class="auth-buttons">
+                <a routerLink="/auth/login" class="login-link">Iniciar Sesión</a>
+                <button mat-flat-button color="primary" routerLink="/auth/register" class="register-btn">
+                    Comenzar Gratis
+                </button>
+            </div>
+        </div>
+
+        <button mat-icon-button class="mobile-toggle mobile-only" (click)="toggleMobileMenu()">
+            <mat-icon>{{ mobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" [class.open]="mobileMenuOpen">
+        <a href="#features" (click)="toggleMobileMenu()">Características</a>
+        <a href="#benefits" (click)="toggleMobileMenu()">Beneficios</a>
+        <a href="#testimonials" (click)="toggleMobileMenu()">Testimonios</a>
+        <a href="#pricing" (click)="toggleMobileMenu()">Precios</a>
+        <div class="mobile-divider"></div>
+        <a routerLink="/auth/login" (click)="toggleMobileMenu()">Iniciar Sesión</a>
+        <a routerLink="/auth/register" class="mobile-cta" (click)="toggleMobileMenu()">Registrar Empresa</a>
+    </div>
+
+    <!-- ========================================
+         HERO SECTION
+         ======================================== -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="badge">
+                <mat-icon>rocket_launch</mat-icon>
+                <span>Gestión de RRHH 2.0</span>
+            </div>
+
+            <h1>
+                Gestiona tu capital humano
+                <span class="text-gradient">de forma inteligente</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                Automatiza nómina, gestiona asistencias, evalúa desempeño y recluta talento
+                desde una sola plataforma. Potenciada por IA para PyMES que quieren crecer.
+            </p>
+
+            <div class="hero-actions">
+                <button mat-flat-button color="primary" class="cta-primary" routerLink="/auth/register">
+                    Comenzar Ahora - Gratis
+                    <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+                </button>
+                <button mat-stroked-button class="cta-secondary" (click)="openDemo()">
+                    <mat-icon>play_circle</mat-icon>
+                    Ver Demo en Vivo
+                </button>
+            </div>
+
+            <div class="trust-badges">
+                <div class="trust-item">
+                    <mat-icon>verified</mat-icon>
+                    <span>Sin tarjeta de crédito</span>
+                </div>
+                <div class="trust-item">
+                    <mat-icon>lock</mat-icon>
+                    <span>100% Seguro</span>
+                </div>
+                <div class="trust-item">
+                    <mat-icon>support_agent</mat-icon>
+                    <span>Soporte 24/7</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="ui-window">
+                <div class="window-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="window-title">Talentrack Dashboard</span>
+                </div>
+                <div class="window-body">
+                    <div class="sidebar-mock">
+                        <div class="sidebar-item"></div>
+                        <div class="sidebar-item"></div>
+                        <div class="sidebar-item active"></div>
+                        <div class="sidebar-item"></div>
+                        <div class="sidebar-item"></div>
+                    </div>
+                    <div class="content-mock">
+                        <div class="header-mock">
+                            <div class="title-line"></div>
+                            <div class="header-actions">
+                                <div class="action-btn"></div>
+                                <div class="user-circle"></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-row">
+                            <div class="stat-card blue"></div>
+                            <div class="stat-card green"></div>
+                            <div class="stat-card orange"></div>
+                        </div>
+
+                        <div class="chart-area"></div>
+
+                        <div class="table-mock">
+                            <div class="table-row"></div>
+                            <div class="table-row"></div>
+                            <div class="table-row"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="floating-card card-1">
+                <mat-icon class="card-icon success">trending_up</mat-icon>
+                <div class="card-content">
+                    <strong>+127%</strong>
+                    <span>Productividad</span>
+                </div>
+            </div>
+
+            <div class="floating-card card-2">
+                <mat-icon class="card-icon primary">groups</mat-icon>
+                <div class="card-content">
+                    <strong>158</strong>
+                    <span>Empleados Activos</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         STATS BANNER
+         ======================================== -->
+    <section class="stats-banner">
+        <div class="stat-item">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Empresas Activas</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <div class="stat-number">15K+</div>
+            <div class="stat-label">Empleados Gestionados</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">Satisfacción</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Soporte Técnico</div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         FEATURES SECTION
+         ======================================== -->
+    <section id="features" class="features-section">
+        <div class="section-header">
+            <span class="section-badge">CARACTERÍSTICAS</span>
+            <h2>Todo lo que necesitas en un solo lugar</h2>
+            <p>Una suite completa de herramientas diseñadas para PyMES modernas.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card" *ngFor="let feature of features">
+                <div class="icon-box" [ngClass]="feature.color">
+                    <mat-icon>{{ feature.icon }}</mat-icon>
+                </div>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.desc }}</p>
+                <a class="feature-link" href="#">
+                    Conocer más
+                    <mat-icon>arrow_forward</mat-icon>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         BENEFITS SECTION (Nueva)
+         ======================================== -->
+    <section id="benefits" class="benefits-section">
+        <div class="benefits-container">
+            <div class="benefits-content">
+                <span class="section-badge">BENEFICIOS</span>
+                <h2>¿Por qué elegir Talentrack?</h2>
+                <p class="benefits-intro">
+                    Diseñado específicamente para PyMES que buscan profesionalizar
+                    su gestión de recursos humanos sin complicaciones.
+                </p>
+
+                <div class="benefits-list">
+                    <div class="benefit-item" *ngFor="let benefit of benefits">
+                        <div class="benefit-icon">
+                            <mat-icon>{{ benefit.icon }}</mat-icon>
+                        </div>
+                        <div class="benefit-text">
+                            <h4>{{ benefit.title }}</h4>
+                            <p>{{ benefit.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="benefits-visual">
+                <div class="visual-card">
+                    <mat-icon class="visual-icon">analytics</mat-icon>
+                    <h3>Dashboard en Tiempo Real</h3>
+                    <p>Visualiza métricas clave de tu equipo instantáneamente</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         TESTIMONIALS SECTION
+         ======================================== -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="section-header">
+            <span class="section-badge light">TESTIMONIOS</span>
+            <h2>Lo que dicen nuestros clientes</h2>
+        </div>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+                <div class="testimonial-header">
+                    <mat-icon class="quote-icon">format_quote</mat-icon>
+                    <div class="rating">
+                        <mat-icon *ngFor="let star of [1,2,3,4,5]">star</mat-icon>
+                    </div>
+                </div>
+                <p class="testimonial-text">{{ testimonial.quote }}</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">{{ testimonial.author.charAt(0) }}</div>
+                    <div class="author-info">
+                        <strong>{{ testimonial.author }}</strong>
+                        <span>{{ testimonial.role }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ========================================
+         FOOTER
+         ======================================== -->
+    <footer class="landing-footer">
+        <div class="footer-content">
+            <div class="footer-col footer-brand">
+                <div class="footer-logo">
+                    <mat-icon>all_inclusive</mat-icon>
+                    <span>TALEN<strong>TRACK</strong></span>
+                </div>
+                <p>Software de gestión de RRHH diseñado para pequeñas y medianas empresas.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="LinkedIn">
+                        <mat-icon>business</mat-icon>
+                    </a>
+                    <a href="#" aria-label="Twitter">
+                        <mat-icon>tag</mat-icon>
+                    </a>
+                    <a href="#" aria-label="Facebook">
+                        <mat-icon>facebook</mat-icon>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Producto</h4>
+                <a href="#features">Características</a>
+                <a href="#pricing">Precios</a>
+                <a href="#">Integraciones</a>
+                <a href="#">API</a>
+                <a href="#">Seguridad</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Empresa</h4>
+                <a href="#">Nosotros</a>
+                <a href="#">Blog</a>
+                <a href="#">Casos de Éxito</a>
+                <a href="#">Contacto</a>
+                <a href="#">Trabaja con nosotros</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Soporte</h4>
+                <a href="#">Centro de Ayuda</a>
+                <a href="#">Documentación</a>
+                <a href="#">Estado del Sistema</a>
+                <a href="#">Términos de Servicio</a>
+                <a href="#">Política de Privacidad</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Talentrack. Todos los derechos reservados.</p>
+            <div class="footer-badges">
+                <span class="badge-item">
+                    <mat-icon>security</mat-icon>
+                    SSL Seguro
+                </span>
+                <span class="badge-item">
+                    <mat-icon>verified_user</mat-icon>
+                    Datos Protegidos
+                </span>
+            </div>
+        </div>
+    </footer>
+
+</div>

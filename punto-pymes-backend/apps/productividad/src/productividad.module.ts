@@ -19,6 +19,7 @@ import {
   ActivoAsignado,
   ReporteGasto,
   ItemGasto,
+  Departamento,
 } from 'default/database';
 import { ProductividadController } from './productividad.controller';
 import { ProductividadService } from './productividad.service';
@@ -50,6 +51,7 @@ import { ProductividadService } from './productividad.service';
       ActivoAsignado,
       ReporteGasto,
       ItemGasto,
+      Departamento,
     ]),
   ],
   controllers: [ProductividadController],

@@ -3,13 +3,16 @@
   <header class="page-header">
     <div class="header-left">
       <h2>Sprints de Proyecto</h2>
-      <p class="subtitle" *ngIf="projects.length > 0">Gestionando: <strong>{{ getProjectName(selectedProjectId)
-          }}</strong></p>
+      <p class="subtitle" *ngIf="projects.length > 0">
+        Gestionando: <strong>{{ getProjectName(selectedProjectId) }}</strong>
+      </p>
     </div>
 
     <div class="header-actions">
-      <mat-form-field appearance="outline" class="project-select" *ngIf="projects.length > 0">
-        <mat-label>Cambiar Proyecto</mat-label>
+      <mat-form-field appearance="outline" class="custom-project-select" *ngIf="projects.length > 0">
+        <mat-icon matPrefix class="select-icon">folder_open</mat-icon>
+        <mat-label>Proyecto Actual</mat-label>
+
         <mat-select [value]="selectedProjectId" (selectionChange)="onProjectChange($event.value)">
           <mat-option *ngFor="let project of projects" [value]="project.id">
             {{ project.nombre }}
@@ -17,8 +20,8 @@
         </mat-select>
       </mat-form-field>
 
-      <button class="btn btn-primary" (click)="openAddSprintDialog()" [disabled]="!selectedProjectId">
-        <mat-icon>add_circle_outline</mat-icon>
+      <button mat-flat-button color="primary" (click)="openAddSprintDialog()" [disabled]="!selectedProjectId">
+        <mat-icon>add</mat-icon>
         <span>Crear Nuevo Sprint</span>
       </button>
     </div>
@@ -47,10 +50,10 @@
         {{ sprint.objetivo || 'Sin objetivo definido.' }}
       </p>
 
-      <span class="sprint-dates">
+      <div class="sprint-dates">
         <mat-icon>date_range</mat-icon>
-        {{ sprint.fechaInicio | date:'dd MMM' }} - {{ sprint.fechaFin | date:'dd MMM, yyyy' }}
-      </span>
+        <span>{{ sprint.fechaInicio | date:'dd MMM' }} - {{ sprint.fechaFin | date:'dd MMM, yyyy' }}</span>
+      </div>
 
       <div class="progress-container">
         <div class="progress-label">

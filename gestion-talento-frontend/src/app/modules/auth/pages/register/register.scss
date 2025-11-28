@@ -1,0 +1,235 @@
+$primary: #E74C3C;
+$primary-dark: #C0392B;
+$text-main: #333;
+$text-light: #7F8C8D;
+$bg-gray: #F4F6F7;
+
+.auth-container {
+    display: flex;
+    min-height: 100vh;
+    background: white;
+
+    @media (max-width: 900px) {
+        flex-direction: column;
+    }
+}
+
+// LADO IZQUIERDO (Visual)
+.auth-visual {
+    flex: 1;
+    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem;
+    position: relative;
+    overflow: hidden;
+
+    @media (max-width: 900px) {
+        display: none; // Ocultar en móviles para simplificar
+    }
+
+    .visual-content {
+        position: relative;
+        z-index: 2;
+        max-width: 500px;
+
+        .logo-white {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+
+            mat-icon {
+                font-size: 32px;
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+        }
+
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+
+            li {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                opacity: 0.9;
+            }
+        }
+    }
+
+    // Decoración de fondo
+    .circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+
+        &.c1 {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            right: -50px;
+        }
+
+        &.c2 {
+            width: 500px;
+            height: 500px;
+            bottom: -100px;
+            left: -100px;
+        }
+    }
+}
+
+// LADO DERECHO (Formulario)
+.auth-form-wrapper {
+    flex: 1; // Ocupa un poco menos que la imagen si se desea, o igual
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: white;
+
+    .auth-form-content {
+        width: 100%;
+        max-width: 450px;
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+
+            h1 {
+                font-size: 2rem;
+                font-weight: 700;
+                color: $text-main;
+                margin-bottom: 0.5rem;
+            }
+
+            p {
+                color: $text-light;
+                font-size: 1rem;
+            }
+        }
+
+        .full-width {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .terms-check {
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+            color: $text-light;
+
+            .link {
+                color: $primary;
+                text-decoration: none;
+                font-weight: 500;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .checkbox-error {
+                color: $primary;
+                font-size: 0.75rem;
+                display: block;
+                margin-top: 5px;
+                margin-left: 2px;
+            }
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 2rem 0;
+            position: relative;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: #eee;
+            }
+
+            span {
+                background: white;
+                padding: 0 10px;
+                color: $text-light;
+                font-size: 0.9rem;
+                position: relative;
+            }
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 1rem;
+
+            .social-btn {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                padding: 0.8rem;
+                border: 1px solid #ddd;
+                background: white;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 500;
+                color: $text-main;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: $bg-gray;
+                }
+
+                // Estilo fallback si no hay icono
+                span {
+                    font-weight: 900;
+                    color: #EA4335;
+                }
+            }
+        }
+
+        .login-redirect {
+            text-align: center;
+            margin-top: 2rem;
+            color: $text-light;
+            font-size: 0.95rem;
+
+            .link {
+                color: $primary;
+                text-decoration: none;
+                font-weight: 600;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}

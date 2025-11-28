@@ -2,13 +2,13 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 export const routes: Routes = [
- 
-  
+
+
   {
     path: 'auth',
     loadChildren: () => import('./modules/auth/auth-module').then(m => m.AuthModule)
   },
-  
+
   {
     path: 'dashboard',
     loadComponent: () => import('./layout/main-layout/main-layout').then(c => c.MainLayout),
@@ -21,16 +21,14 @@ export const routes: Routes = [
   // Si alguien entra a la URL raíz, lo enviamos a /auth
   {
     path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
+    loadComponent: () => import('./public/pages/landing').then(c => c.LandingComponent)
   },
 
   // Si la URL no coincide con ninguna anterior, también lo enviamos a /auth
   {
     path: '**',
     redirectTo: 'auth'
-  }
-  
+  },
 ];
 
 @NgModule({

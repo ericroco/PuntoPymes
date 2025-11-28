@@ -1,0 +1,122 @@
+.selector-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f7fa;
+    padding: 20px;
+}
+
+.selector-content {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+
+    .header {
+        margin-bottom: 40px;
+
+        .logo mat-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            color: #3f51b5;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+        }
+    }
+}
+
+.company-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.company-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+
+    &:hover {
+        border-color: #3f51b5;
+        background-color: #f8f9ff;
+        transform: translateX(5px);
+    }
+
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.5rem;
+        margin-right: 20px;
+    }
+
+    .card-info {
+        flex: 1;
+
+        h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .role-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .detail {
+            color: #999;
+            font-size: 0.85rem;
+        }
+    }
+
+    .card-action {
+        color: #ccc;
+    }
+
+    /* Estilo para la tarjeta de crear */
+    .create-card {
+        border-style: dashed;
+        background-color: #f9f9f9;
+
+        &:hover {
+            border-color: var(--color-primary, #3f51b5);
+            background-color: #fff;
+        }
+
+        .add-icon {
+            background-color: #eee;
+            color: #666;
+        }
+    }
+}

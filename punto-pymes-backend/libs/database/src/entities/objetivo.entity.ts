@@ -3,41 +3,33 @@ import {
   Entity,
   Column,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   Index,
-  Unique,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { CicloEvaluacion } from './cicloEvaluacion.entity';
 import { Empleado } from './empleado.entity';
+import { Departamento } from './departamento.entity'; // <--- 1. IMPORTAR DEPARTAMENTO
 
-/**
- * Entidad que representa un Objetivo de desempeño individual
- * asignado a un Empleado dentro de un Ciclo de Evaluación.
- * (Ej: 'Completar curso de NestJS', 'Cerrar 10 ventas').
- * Mapea la tabla 'objetivos'
- */
+export enum TipoObjetivo {
+  PERSONAL = 'PERSONAL',
+  DEPARTAMENTO = 'DEPARTAMENTO',
+  EMPRESA = 'EMPRESA'
+}
+
 @Entity({ name: 'objetivos' })
-// Indexamos las FKs para búsquedas rápidas
 @Index(['cicloId'])
 @Index(['empleadoId'])
-// Un empleado no debería tener el mismo objetivo dos veces en el mismo ciclo,
-// aunque la descripción lo haría único. Indexar es suficiente.
+@Index(['departamentoId']) // <--- INDEXAR NUEVO CAMPO
 export class Objetivo extends BaseEntity {
-  /**
-   * Descripción del objetivo a medir
-   * Mapea: string descripcion "Descripcion objetivo medir"
-   */
+
   @Column({
     type: 'text',
     comment: 'Descripción del objetivo a medir',
   })
   descripcion: string;
 
-  /**
-   * Porcentaje de progreso del objetivo (0-100)
-   * Mapea: float progreso "Porcentaje progreso 0-100"
-   */
   @Column({
     type: 'float',
     default: 0,
@@ -45,43 +37,62 @@ export class Objetivo extends BaseEntity {
   })
   progreso: number;
 
-  // ---
-  // RELACIONES "MUCHOS A UNO" (Un Objetivo PERTENECE A...)
-  // ---
+  // 👇 NUEVO: Tipo de Objetivo (Jerarquía)
+  @Column({
+    type: 'varchar',
+    length: 50,
+    default: TipoObjetivo.PERSONAL,
+    comment: 'Tipo de objetivo (PERSONAL, DEPARTAMENTO, EMPRESA)'
+  })
+  tipo: TipoObjetivo;
 
-  /**
-   * Relación: El objetivo pertenece a UN Ciclo de Evaluación.
-   * onDelete: 'CASCADE' = Si el Ciclo (ej. "Evaluación 2025") se borra,
-   * todos los objetivos definidos en él también se borran.
-   */
+  // --- RELACIONES ---
+
   @ManyToOne(() => CicloEvaluacion, (ciclo) => ciclo.objetivos, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'cicloId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'cicloId' })
   ciclo: CicloEvaluacion;
 
-  /**
-   * Mapea: string cicloId FK "Ciclo evaluacion pertenece"
-   */
-  @Column({ comment: 'ID del Ciclo de Evaluación al que pertenece' })
+  @Column({ comment: 'ID del Ciclo de Evaluación' })
   cicloId: string;
 
-  /**
-   * Relación: El objetivo está asignado a UN Empleado.
-   * onDelete: 'CASCADE' = Si el Empleado es borrado, sus objetivos
-   * (que no tienen sentido sin él) también se borran.
-   */
+  // --- DUEÑO DEL OBJETIVO (Puede ser Empleado O Departamento) ---
+
+  // 👇 CAMBIO: Ahora es NULLABLE (Si es meta de depto, no tiene empleado directo)
   @ManyToOne(() => Empleado, (empleado) => empleado.objetivos, {
-    nullable: false, // Requerido
+    nullable: true,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
-  /**
-   * Mapea: string empleadoId FK "Empleado objetivo asignado"
-   */
-  @Column({ comment: 'ID del Empleado al que se asignó el objetivo' })
+  @Column({ nullable: true, comment: 'ID del Empleado (si es personal)' })
   empleadoId: string;
+
+  // 👇 NUEVO: Relación con Departamento
+  @ManyToOne(() => Departamento, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'departamentoId' })
+  departamento: Departamento;
+
+  @Column({ nullable: true, comment: 'ID del Departamento (si es grupal)' })
+  departamentoId: string;
+
+  // --- ALINEACIÓN (Padre - Hijo) ---
+
+  // 👇 NUEVO: Meta Padre ("Esta meta contribuye a...")
+  @ManyToOne(() => Objetivo, (obj) => obj.subObjetivos, {
+    nullable: true,
+    onDelete: 'SET NULL'
+  })
+  @JoinColumn({ name: 'parentObjetivoId' })
+  parentObjetivo: Objetivo;
+
+  @Column({ nullable: true, comment: 'ID de la Meta superior a la que contribuye' })
+  parentObjetivoId: string;
+
+  // 👇 NUEVO: Sub-Metas ("Metas que contribuyen a esta")
+  @OneToMany(() => Objetivo, (obj) => obj.parentObjetivo)
+  subObjetivos: Objetivo[];
 }

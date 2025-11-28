@@ -13,6 +13,10 @@ export interface CreateEmployeeDto {
     rolId: string;   // UUID
     cargoId: string; // UUID
     jefeId?: string; // UUID
+    salario?: number;
+    tipoContrato?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
 }
 
 // Interfaz del Empleado (Datos que recibimos)
@@ -23,6 +27,10 @@ export interface Employee {
     emailPersonal: string;
     telefono?: string;
     estado: string;
+    salario?: number;
+    tipoContrato?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
     fotoUrl?: string; // Agregado
     direccion?: string; // Agregado para el perfil
     fechaNacimiento?: string; // Agregado

@@ -35,6 +35,7 @@ export interface Task {
   puntosHistoria: number;
   sprintId: string;
   asignaciones?: any[]; // Para ver quién la tiene
+  objetivoId?: string;
 }
 
 @Injectable({

@@ -1,5 +1,3 @@
-# punto-pymes-backend/docker-compose.yml
-
 services:
   # --- Aplicación: API Gateway ---
   gateway:
@@ -17,16 +15,25 @@ services:
       - /usr/src/app/node_modules
       - ./uploads:/usr/src/app/uploads
     depends_on:
-      - postgres_db
-      - mongo_db
-    # 🔧 SOLUCIÓN: Limita la memoria
+      postgres_db:
+        condition: service_healthy
+      mongo_db:
+        condition: service_healthy
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${GATEWAY_PORT}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:
           memory: 2G
         reservations:
           memory: 512M
-    # 🔧 SOLUCIÓN: Variables de entorno para optimizar Node.js
     environment:
       - NODE_OPTIONS=--max-old-space-size=1536
 
@@ -45,8 +52,19 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - postgres_db
-      - mongo_db
+      postgres_db:
+        condition: service_healthy
+      mongo_db:
+        condition: service_healthy
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${AUTH_SERVICE_PORT}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -72,8 +90,19 @@ services:
       - /usr/src/app/node_modules
       - ./uploads:/usr/src/app/uploads
     depends_on:
-      - postgres_db
-      - mongo_db
+      postgres_db:
+        condition: service_healthy
+      mongo_db:
+        condition: service_healthy
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PERSONAL_SERVICE_PORT}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -82,43 +111,81 @@ services:
           memory: 256M
     environment:
       - NODE_OPTIONS=--max-old-space-size=768
+
+  # --- Aplicación: Microservicio Nómina ---
   nomina_service:
     build:
       context: .
       dockerfile: Dockerfile.dev
       target: development
-    # Corre el servicio 'nomina'
     command: npm run start:dev nomina
     env_file:
       - .env
     ports:
-      # Exponemos el nuevo puerto (asegúrate de añadir NOMINA_SERVICE_PORT a tu .env)
       - "${NOMINA_SERVICE_PORT}:${NOMINA_SERVICE_PORT}" 
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - postgres_db
-      - mongo_db
-    # --- Aplicación: Microservicio Productividad ---
+      postgres_db:
+        condition: service_healthy
+      mongo_db:
+        condition: service_healthy
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${NOMINA_SERVICE_PORT}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=768
+
+  # --- Aplicación: Microservicio Productividad ---
   productividad_service:
     build:
       context: .
       dockerfile: Dockerfile.dev
       target: development
-    # Corre el servicio 'productividad'
     command: npm run start:dev productividad
     env_file:
       - .env
     ports:
-      # Exponemos el nuevo puerto (¡añade esto a tu .env!)
       - "${PRODUCTIVIDAD_SERVICE_PORT}:${PRODUCTIVIDAD_SERVICE_PORT}" 
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - postgres_db
-      - mongo_db
+      postgres_db:
+        condition: service_healthy
+      mongo_db:
+        condition: service_healthy
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PRODUCTIVIDAD_SERVICE_PORT}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=768
+
   # --- Base de Datos PostgreSQL ---
   postgres_db:
     image: postgres:15-alpine
@@ -131,6 +198,15 @@ services:
       - "${DB_POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ${DB_POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -149,12 +225,25 @@ services:
       - "${DB_MONGO_PORT}:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
           memory: 512M
         reservations:
           memory: 128M
+
+networks:
+  puntopymes_network:
+    driver: bridge
 
 volumes:
   postgres_data:

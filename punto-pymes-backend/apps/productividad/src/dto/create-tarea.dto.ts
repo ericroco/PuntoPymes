@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, Min, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, Min, IsEnum, IsUUID } from 'class-validator';
 
 export enum EstadoTarea {
     PENDIENTE = 'PENDIENTE',
@@ -35,4 +35,8 @@ export class CreateTareaDto {
     @IsEnum(PrioridadTarea)
     @IsOptional() // Es opcional porque si no lo envían, pondremos MEDIA por defecto en el servicio
     prioridad?: PrioridadTarea;
+
+    @IsOptional()
+    @IsUUID()
+    objetivoId?: string; // <--- AGREGAR ESTO
 }

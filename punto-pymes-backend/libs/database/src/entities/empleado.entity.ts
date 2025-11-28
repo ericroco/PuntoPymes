@@ -27,6 +27,7 @@ import { RegistroAsistencia } from './registroAsistencia.entity';
 import { ActivoAsignado } from './activoAsignado.entity';
 import { ReporteGasto } from './reporteGasto.entity';
 import { DocumentoEmpleado } from './documentoEmpleado.entity';
+import { Sucursal } from './sucursal.entity';
 
 /**
  * Entidad que representa al Empleado (LA PERSONA).
@@ -116,6 +117,17 @@ export class Empleado extends BaseEntity {
     comment: 'URL de la foto de perfil',
   })
   fotoUrl: string;
+
+  // 👇 RELACIÓN CON SUCURSAL
+  @ManyToOne(() => Sucursal, (sucursal) => sucursal.empleados, {
+    nullable: true, // Null = Admin Global o Sin Asignar
+    onDelete: 'SET NULL'
+  })
+  @JoinColumn({ name: 'sucursalId' })
+  sucursal: Sucursal;
+
+  @Column({ nullable: true, comment: 'ID de la Sucursal a la que pertenece' })
+  sucursalId: string;
 
   // --- (CAMBIO CLAVE: 'deletedAt' ELIMINADA) ---
   // (El estado de "Desvinculado" (RF-01-04) ahora se

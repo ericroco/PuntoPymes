@@ -1,6 +1,16 @@
 /* ==========================================================================
-   ESTILOS PARA LA PÁGINA DE METAS (goals.scss) - VERSIÓN LIMPIA (SIN 9-BOX)
+   ESTILOS PARA LA PÁGINA DE METAS (goals.scss) - VERSIÓN MEJORADA
    ========================================================================== */
+
+// --- Contenedor Principal ---
+.page-container.goals-page {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; // Evita scroll horizontal
+}
 
 // --- Estilos Globales Reutilizables ---
 .page-header {
@@ -42,25 +52,70 @@
 
 .no-data-placeholder {
   text-align: center;
-  padding: 3rem;
+  padding: 4rem 2rem;
   color: var(--color-text-secondary);
   font-style: italic;
   font-size: 1rem;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius);
+  margin: 2rem 0;
+}
+
+.dept-goal {
+  border-left-color: #ff4081 !important; // Rosa/Accent para diferenciar
+
+  .dept-icon {
+    background: #fce4ec;
+    color: #c2185b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+  }
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.cycle-warning {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin-left: 15px;
+}
+
+.tab-content-wrapper {
+  padding-top: 24px;
 }
 
 .description {
   color: var(--color-text-secondary);
   margin-bottom: 2rem;
   font-size: 0.95rem;
+  line-height: 1.6;
   max-width: 700px;
 }
 
 ::ng-deep app-subpage-header {
   width: 100%;
+  margin-bottom: 1.5rem;
 }
 
 mat-progress-bar {
   --mat-progress-bar-active-indicator-color: var(--color-primary);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 // --- Estilos Vista Empleado ---
@@ -68,6 +123,7 @@ mat-progress-bar {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .goal-card {
@@ -77,58 +133,128 @@ mat-progress-bar {
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
   }
 
-  mat-card-header { padding-bottom: 0.75rem; }
-  mat-card-title { font-size: 1.15rem; font-weight: 600; line-height: 1.4; }
-  mat-card-subtitle { color: var(--color-text-secondary); font-weight: 500; }
-  mat-card-content { flex-grow: 1; padding-top: 0.5rem; }
-  .goal-description {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
+  mat-card-header {
+    padding: 1.5rem 1.5rem 0.75rem;
   }
-  .progress-area { margin-top: auto; }
-  .progress-text {
+
+  mat-card-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+  }
+
+  mat-card-subtitle {
+    color: var(--color-text-secondary);
+    font-weight: 400;
     font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
   }
 
-  // Estilos por Estado
-  &.status-completada {
-    mat-card-title {
-       text-decoration: line-through;
-       color: var(--color-text-secondary);
-    }
-    mat-progress-bar {
-      --mat-progress-bar-active-indicator-color: var(--color-success); // Verde
+  mat-card-content {
+    flex-grow: 1;
+    padding: 1rem 1.5rem 1.5rem;
+  }
+
+  .progress-area {
+    margin-top: auto;
+  }
+
+  .progress-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  mat-card-actions {
+    padding: 0 1rem 1rem;
+    margin: 0;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+
+    button {
+      width: 100%;
     }
   }
-  &.status-pendiente {
-     mat-progress-bar {
-      --mat-progress-bar-active-indicator-color: var(--color-secondary-light); // Gris
+
+  // Estado completado
+  &.status-completada {
+    border-left: 4px solid var(--color-success);
+
+    mat-progress-bar {
+      --mat-progress-bar-active-indicator-color: var(--color-success);
     }
+  }
+
+  &.status-pendiente {
+    border-left: 4px solid var(--color-warning);
+
+    mat-progress-bar {
+      --mat-progress-bar-active-indicator-color: var(--color-secondary-light);
+    }
+  }
+
+  &.status-en-progreso {
+    border-left: 4px solid var(--color-info);
   }
 }
 
 // --- Estilos Vista Administrador ---
+.admin-goals-view {
+  width: 100%;
+  overflow-x: hidden;
+
+  mat-tab-group {
+    margin-top: 1.5rem;
+  }
+}
 
 .report-tab-content {
-  padding: 2rem 0.5rem;
+  padding: 2rem 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 // Cuadrícula para KPIs de Resumen
 .report-widget-grid.kpi-summary {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); 
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   align-items: stretch;
+  margin-bottom: 2.5rem;
+}
+
+// Sección de performance con mejor distribución
+.performance-section {
+  margin-top: 2.5rem;
+  width: 100%;
+  overflow-x: hidden;
+
+  h3 {
+    margin-bottom: 1.5rem;
+  }
+
+  // Contenedor para gráficos de performance
+  .performance-charts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+
+    // Si hay múltiples gráficos de performance
+    &.has-multiple {
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    }
+  }
 }
 
 // Estilo para tarjetas de KPI
@@ -136,20 +262,32 @@ mat-progress-bar {
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  padding: 1.5rem;
+  padding: 1.75rem 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  mat-card-header { padding-bottom: 0.5rem; }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  mat-card-header {
+    padding-bottom: 0.5rem;
+  }
+
   mat-card-title {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 0.9rem;
+    font-weight: 600;
     text-align: center;
     width: 100%;
     color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
+
   mat-card-content {
     text-align: center;
     padding-top: 0 !important;
@@ -159,26 +297,61 @@ mat-progress-bar {
     align-items: center;
     justify-content: center;
   }
+
   .kpi-main-value {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 700;
     display: block;
-    line-height: 1.1;
-    &.success { color: var(--color-success-dark); }
-    &.warning { color: var(--color-warning); }
-    &.info { color: var(--color-info); }
+    line-height: 1;
+    margin-top: 0.5rem;
+
+    &.success {
+      color: var(--color-success-dark);
+    }
+
+    &.warning {
+      color: var(--color-warning);
+    }
+
+    &.info {
+      color: var(--color-info);
+    }
+
     &:not(.success):not(.warning):not(.info) {
-        color: var(--color-primary);
+      color: var(--color-primary);
     }
   }
+}
+
+// Divider entre secciones
+mat-divider {
+  margin: 2.5rem 0 2rem;
+}
+
+// Títulos de secciones
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 1.5rem;
+  margin-top: 0;
 }
 
 // --- Cuadrícula para Gráficos ---
 .report-widget-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
-  margin-top: 1.5rem; // Espacio después del divider
+
+  &:not(.kpi-summary) {
+    margin-top: 1.5rem;
+    // Por defecto, los gráficos ocupan todo el ancho disponible
+    grid-template-columns: 1fr;
+  }
+
+  // Si hay múltiples gráficos, se distribuyen en 2 columnas
+  &.multi-chart {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
 }
 
 // Contenedor base para .report-container (usado por gráficos)
@@ -188,33 +361,64 @@ mat-progress-bar {
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  padding: 1.5rem; // Padding general
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden; // Evita que el contenido se desborde
 
   mat-card-header {
-    padding-bottom: 0.5rem;
+    padding-bottom: 1rem;
   }
+
   mat-card-title {
     font-size: 1.1rem;
     font-weight: 600;
-    text-align: center; // Centra títulos de gráficos
+    text-align: center;
     width: 100%;
+    color: var(--color-text-primary);
   }
+
   mat-card-content {
     flex-grow: 1;
     padding-top: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
 // Estilo para el contenedor del gráfico
 .chart-widget.report-container {
   mat-card-content.chart-container {
-    min-height: 300px;
+    min-height: 400px; // Altura aumentada para mejor visualización
     display: flex;
     justify-content: center;
     align-items: center;
     padding-top: 1rem !important;
+    overflow: hidden; // Evita scroll dentro del contenedor
+
+    // Asegura que ngx-charts se adapte al contenedor
+    ::ng-deep {
+
+      ngx-charts-bar-vertical,
+      ngx-charts-pie-chart,
+      .ngx-charts {
+        width: 100% !important;
+        max-width: 100%;
+
+        svg {
+          max-width: 100%;
+          height: auto;
+        }
+      }
+    }
   }
-  // (Estilos ::ng-deep de ngx-charts si los necesitas)
+
+  // Para gráficos que ocupan todo el ancho
+  &.full-width {
+    mat-card-content.chart-container {
+      min-height: 450px;
+    }
+  }
 }
 
 // --- Estilos para la Tabla de Gestión de Metas ---
@@ -228,46 +432,162 @@ mat-progress-bar {
 
 .list-item {
   display: grid;
-  grid-template-columns: 2.5fr 1.5fr 1.5fr 1fr 1fr 0.5fr;
+  grid-template-columns: 2.5fr 1.5fr 1.5fr 1fr 1fr;
   align-items: center;
   gap: 1.5rem;
-  padding: 1rem 1.5rem;
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
-  &:last-child { border-bottom: none; }
+  transition: background-color 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:not(.header):hover {
+    background-color: var(--color-background);
+  }
 
   &.header {
     background-color: var(--color-background);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-secondary);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+    letter-spacing: 0.5px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--color-border);
   }
 }
 
-.goal-title { font-weight: 600; }
+.goal-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+}
 
 .progress-cell-container {
-  // (mat-progress-bar ya tiene estilo global en este archivo)
+  mat-progress-bar {
+    height: 6px;
+  }
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.375rem 0.875rem;
   border-radius: 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: white;
   text-transform: capitalize;
   text-align: center;
   white-space: nowrap;
+  display: inline-block;
 
-  &.status-en-progreso { background-color: var(--color-info); }
-  &.status-completada { background-color: var(--color-success); }
-  &.status-pendiente { background-color: var(--color-warning); }
+  &.status-en-progreso {
+    background-color: var(--color-info);
+  }
+
+  &.status-completada {
+    background-color: var(--color-success);
+  }
+
+  &.status-pendiente {
+    background-color: var(--color-warning);
+  }
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+// --- Responsive Design ---
+@media (max-width: 1200px) {
+  .report-widget-grid.kpi-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .performance-section .performance-charts.has-multiple {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container.goals-page {
+    padding: 1rem;
+  }
+
+  .goals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-widget-grid.kpi-summary {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .report-widget-grid.multi-chart {
+    grid-template-columns: 1fr;
+  }
+
+  .performance-section .performance-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-widget.report-container {
+    mat-card-content.chart-container {
+      min-height: 300px;
+    }
+  }
+
+  .list-item {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+
+    &.header {
+      display: none;
+    }
+
+    &:not(.header) {
+      span {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          font-size: 0.75rem;
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+
+  .overview-widget.simple-kpi {
+    .kpi-main-value {
+      font-size: 2.5rem;
+    }
+  }
+}
+
+// --- Animaciones suaves ---
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.goal-card,
+.overview-widget {
+  animation: fadeIn 0.3s ease-out;
 }

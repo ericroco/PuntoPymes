@@ -13,39 +13,46 @@ import { PERMISSION_KEY } from '../decorators/permission.decorator';
 export class PermissionGuard implements CanActivate {
     constructor(private readonly reflector: Reflector) { }
 
-    canActivate(
-        context: ExecutionContext,
-    ): boolean | Promise<boolean> | Observable<boolean> {
-        // 1. Obtener el permiso requerido desde el decorador @RequirePermission
+    canActivate(context: ExecutionContext): boolean {
         const requiredPermission = this.reflector.get<string>(
-            PERMISSION_KEY,
+            'permission',
             context.getHandler(),
         );
 
         if (!requiredPermission) {
+            return true; // Si la ruta no pide permiso, pasa.
+        }
+
+        const request = context.switchToHttp().getRequest();
+        const user = request.user;
+
+        console.log('🛡️ PermissionGuard Check:');
+        console.log('   - Usuario:', user?.email);
+        console.log('   - Rol:', user?.rol);
+        console.log('   - Permiso Requerido:', requiredPermission);
+        console.log('   - Permisos del Usuario:', user?.permisos);
+
+        if (!user || !user.permisos) {
+            console.warn('   ⛔ Rechazado: Usuario sin permisos cargados.');
+            return false;
+        }
+
+        // 1. Si es SuperAdmin, pase usted
+        if (user.permisos.esAdmin) {
+            console.log('   ✅ Aprobado (esAdmin)');
             return true;
         }
 
-        // 2. Obtener el usuario (y sus permisos) desde el request
-        const { user } = context.switchToHttp().getRequest();
+        // 2. Verificar el permiso específico
+        const hasPermission = user.permisos[requiredPermission];
 
-        if (!user || !user.permisos) {
-            throw new ForbiddenException('No tienes permisos (payload de usuario vacío).');
+        if (hasPermission) {
+            console.log(`   ✅ Aprobado (Tiene el permiso: ${requiredPermission})`);
+            return true;
         }
 
-        // 3. Lógica de validación
-        const hasPermission = this.checkPermission(
-            user.permisos,
-            requiredPermission,
-        );
-
-        if (!hasPermission) {
-            throw new ForbiddenException(
-                `No tienes el permiso requerido: '${requiredPermission}'`,
-            );
-        }
-
-        return true;
+        console.warn(`   ⛔ Rechazado (Falta el permiso: ${requiredPermission})`);
+        return false;
     }
 
     /**

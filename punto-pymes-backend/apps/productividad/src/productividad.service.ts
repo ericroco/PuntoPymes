@@ -10,7 +10,7 @@ import {
   Proyecto, Sprint, Empleado, Tarea, AsignacionTarea, CicloEvaluacion,
   Objetivo, Evaluacion, EstadoCiclo, Curso, InscripcionCurso, EstadoInscripcion, RegistroAsistencia,
   Activo, ActivoAsignado, EstadoActivo, EstadoAsignacion, ReporteGasto,
-  ItemGasto, EstadoReporte,
+  ItemGasto, EstadoReporte, Departamento, TipoObjetivo,
 } from 'default/database';
 import { Repository, Not, Between, MoreThanOrEqual, LessThanOrEqual, In } from 'typeorm';
 import {
@@ -364,24 +364,32 @@ export class ProductividadService {
   }
 
   /**
-   * 2. LISTAR Tareas de un Sprint
-   */
+     * 2. LISTAR Tareas de un Sprint
+     * Incluye relaciones clave para el tablero (Asignados y Objetivos).
+     */
   async getTareasBySprint(
     empresaId: string,
     sprintId: string,
   ): Promise<Tarea[]> {
-    // Validar acceso (reutilizamos lógica o validamos sprint)
+    // 1. Validar acceso al Sprint
     const sprint = await this.sprintRepository.findOne({
       where: { id: sprintId },
       relations: ['proyecto'],
     });
 
     if (!sprint || sprint.proyecto.empresaId !== empresaId) {
-      throw new NotFoundException('Sprint no encontrado.');
+      throw new NotFoundException('Sprint no encontrado o no tienes acceso.');
     }
 
+    // 2. Buscar tareas con todas sus relaciones
     return this.tareaRepository.find({
       where: { sprintId: sprintId },
+      // 👇 ¡ESTO ES LO IMPORTANTE!
+      relations: [
+        'asignaciones',           // Para saber si está asignada
+        'asignaciones.empleado',  // Para mostrar el nombre/foto del empleado
+        'objetivo'                // Para saber a qué meta contribuye (y su título)
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -617,22 +625,53 @@ export class ProductividadService {
     cicloId: string,
     dto: CreateObjetivoDto,
   ): Promise<Objetivo> {
-    // 1. Validar Ciclo
     const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
     if (!ciclo) throw new NotFoundException('Ciclo no encontrado.');
 
-    // 2. Validar Empleado
-    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
-    if (!empleado) throw new BadRequestException('Empleado no válido.');
+    // Validaciones...
+    if (dto.tipo === TipoObjetivo.DEPARTAMENTO && !dto.departamentoId) { // Usa el Enum
+      throw new BadRequestException('Las metas departamentales requieren un departamentoId');
+    }
 
-    // 3. Crear
-    const objetivo = this.objetivoRepository.create({
-      ...dto,
-      cicloId,
+    // 👇 USO CORRECTO DEL ENUM
+    const nuevoObjetivo = this.objetivoRepository.create({
+      descripcion: dto.descripcion,
       progreso: dto.progreso || 0,
+      tipo: dto.tipo || TipoObjetivo.PERSONAL, // <--- AQUÍ ESTABA EL ERROR (Antes decía 'PERSONAL')
+      cicloId: ciclo.id,
+      empleadoId: dto.empleadoId,
+      departamentoId: dto.departamentoId,
+      parentObjetivoId: dto.parentObjetivoId
     });
 
-    return this.objetivoRepository.save(objetivo);
+    return this.objetivoRepository.save(nuevoObjetivo);
+  }
+  // 2. NUEVO: Obtener objetivos por Departamento
+  async getObjetivosDepartamento(
+    empresaId: string,
+    cicloId: string,
+    departamentoId: string
+  ): Promise<Objetivo[]> {
+    return this.objetivoRepository.find({
+      where: {
+        cicloId,
+        departamentoId,
+        // 👇 CORRECCIÓN AQUÍ: Usar el Enum, no el string
+        tipo: TipoObjetivo.DEPARTAMENTO
+      }
+    });
+  }
+
+  async getAllObjetivos(empresaId: string, cicloId: string) {
+    // Validar ciclo
+    const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });
+    if (!ciclo) throw new NotFoundException('Ciclo no encontrado');
+
+    return this.objetivoRepository.find({
+      where: { cicloId },
+      relations: ['empleado', 'departamento'], // Traemos info de dueños
+      order: { createdAt: 'DESC' }
+    });
   }
 
   /**
@@ -657,6 +696,7 @@ export class ProductividadService {
       relations: ['empleado'], // Para ver el nombre del responsable
     });
   }
+
 
   /**
    * Actualizar Objetivo (Descripción o Progreso)
@@ -683,21 +723,18 @@ export class ProductividadService {
   /**
    * Borrar Objetivo
    */
-  async deleteObjetivo(
-    empresaId: string,
-    objetivoId: string,
-  ): Promise<{ message: string }> {
+  async deleteObjetivo(empresaId: string, objetivoId: string) {
     const objetivo = await this.objetivoRepository.findOne({
       where: { id: objetivoId },
-      relations: ['ciclo'],
+      relations: ['ciclo'] // Para validar empresa a través del ciclo
     });
 
     if (!objetivo || objetivo.ciclo.empresaId !== empresaId) {
-      throw new NotFoundException('Objetivo no encontrado.');
+      throw new NotFoundException('Objetivo no encontrado o no tienes permisos.');
     }
 
     await this.objetivoRepository.remove(objetivo);
-    return { message: 'Objetivo eliminado.' };
+    return { message: 'Objetivo eliminado correctamente.' };
   }
   // ==========================================
   //          MÓDULO DESEMPEÑO: EVALUACIONES

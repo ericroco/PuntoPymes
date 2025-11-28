@@ -71,8 +71,10 @@ export class AddEmployeeDialog implements OnInit {
     // Paso 2
     this.step2Form = this.fb.group({
       job: [null, Validators.required],
-      reportsTo: [null, Validators.required], // Este campo es para jefeId, asegúrate de mapearlo si lo usas
-      hireDate: [new Date(), Validators.required]
+      reportsTo: [null, Validators.required],
+      contractType: [null, Validators.required],
+      hireDate: [new Date(), Validators.required],
+      contractEndDate: [null]
     });
 
     // Paso 3
@@ -146,12 +148,15 @@ export class AddEmployeeDialog implements OnInit {
       apellido: apellido,
       emailPersonal: this.step1Form.value.email,
       telefono: this.step1Form.value.phone,
-      // Formateamos la fecha para que IsDateString no se queje
       fechaNacimiento: this.formatDate(this.step1Form.value.dateOfBirth),
 
       cargoId: cargoSeleccionado.id,
       rolId: HARDCODED_ROL_ID,
-      // jefeId: ... (Si tuvieras el ID del jefe real, iría aquí. Si 'reportsTo' es solo nombre, no lo mandes)
+
+      salario: this.step3Form.value.initialSalary,
+      tipoContrato: this.step2Form.value.contractType,
+      fechaInicio: this.formatDate(this.step2Form.value.hireDate),
+      fechaFin: this.formatDate(this.step2Form.value.contractEndDate)
     };
 
     console.log('📤 Enviando datos al backend:', employeeData);

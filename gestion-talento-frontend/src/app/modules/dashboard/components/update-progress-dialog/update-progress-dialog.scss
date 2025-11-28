@@ -1,9 +1,18 @@
+// Asegúrate de que el contenedor principal del diálogo tenga un tamaño máximo
+:host {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; // Evita que el modal sea más alto que la pantalla
+  overflow: hidden; // Evita scroll en el contenedor padre, lo delegamos al contenido
+}
+
 .goal-title {
   font-size: 1rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   margin-top: -10px;
   margin-bottom: 15px;
+  flex-shrink: 0; // Evita que el título se aplaste si falta espacio
 }
 
 .progress-form-content {
@@ -11,24 +20,35 @@
   flex-direction: column;
   gap: 15px;
   padding-top: 10px;
+
+  // --- CAMBIOS PARA EVITAR EL CORTE ---
+  overflow-y: auto; // Habilita el scroll vertical si el contenido es muy alto
+  padding-right: 5px; // Espacio para que el scroll no tape contenido
+  padding-bottom: 10px; // Espacio extra abajo para que no se pegue al borde
+  flex-grow: 1; // Ocupa todo el espacio disponible
+  max-height: 100%; // Se asegura de respetar los límites del padre
+  // ------------------------------------
 }
 
 .progress-input-group {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-wrap: wrap; // Si la pantalla es muy estrecha, permite que los elementos bajen
 }
 
 .progress-slider {
   flex-grow: 1;
-  // Sobrescribe el color del track/thumb del slider
+  min-width: 150px; // Evita que el slider desaparezca si se encoge mucho
+
+  // Variables de color originales
   --mat-slider-active-track-color: var(--color-primary);
   --mat-slider-inactive-track-color: var(--color-primary-light);
   --mat-slider-handle-color: var(--color-primary);
 }
 
 .progress-input {
-  width: 100px; // Ancho fijo para el input de %
+  width: 100px;
 }
 
 .comment-field {
@@ -37,6 +57,10 @@
 
 [mat-dialog-actions] {
   padding: 16px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05); // Opcional: Separación visual sutil
+  flex-shrink: 0; // Asegura que los botones nunca se corten ni se encojan
+  background: white; // Evita transparencia si hay scroll detrás
+  z-index: 10;
 }
 
 .task-context {
@@ -48,12 +72,14 @@
   border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1.5rem;
+  flex-shrink: 0; // Evita que esta caja informativa se deforme
 
   mat-icon {
     font-size: 24px;
     width: 24px;
     height: 24px;
     color: var(--color-success-dark);
+    flex-shrink: 0; // El icono mantiene su tamaño siempre
   }
 
   div {
@@ -74,7 +100,6 @@
 }
 
 .progress-label {
-  // Etiqueta para el slider
   display: block;
   font-weight: 500;
   margin-bottom: 0.5rem;

@@ -5,7 +5,14 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 // 1. Importamos lo necesario para notificaciones y el servicio
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AuthService } from '../../services/auth'; // Asegúrate de que la ruta coincida con tu archivo creado
+import { AuthService } from '../../services/auth';
+import { MatSpinner } from '@angular/material/progress-spinner';
+import { RouterModule } from '@angular/router';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +20,14 @@ import { AuthService } from '../../services/auth'; // Asegúrate de que la ruta 
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatSnackBarModule // Necesario para mostrar mensajes de error
+    MatSnackBarModule,
+    MatSpinner,
+    RouterModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -29,6 +43,7 @@ import { AuthService } from '../../services/auth'; // Asegúrate de que la ruta 
 export class Login implements OnInit {
   loginForm!: FormGroup;
   isLoading = false; // Para deshabilitar el botón mientras carga
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
@@ -53,20 +68,17 @@ export class Login implements OnInit {
     this.isLoading = true; // Activar estado de carga
     const credentials = this.loginForm.value;
 
-    // 3. Llamada al Backend
     this.authService.login(credentials).subscribe({
       next: (response) => {
         console.log('Login exitoso:', response);
         this.isLoading = false;
-        // El token ya se guardó en el AuthService (si seguiste el paso anterior),
-        // así que solo redirigimos.
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/auth/select-company']);
       },
       error: (error) => {
         console.error('Error de login:', error);
         this.isLoading = false;
 
-        // 4. Mostrar error al usuario
+        // Mostrar error al usuario
         this.snackBar.open('Credenciales incorrectas o error de servidor', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',

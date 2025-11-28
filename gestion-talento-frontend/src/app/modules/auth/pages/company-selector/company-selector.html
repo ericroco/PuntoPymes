@@ -1,0 +1,46 @@
+<div class="selector-container">
+    <div class="selector-content">
+        <div class="header">
+            <div class="logo">
+                <mat-icon>all_inclusive</mat-icon>
+            </div>
+            <h1>Selecciona una Organización</h1>
+            <p>Hola, <strong>{{ userName }}</strong>. Tienes acceso a {{ memberships.length }} espacios de trabajo.</p>
+        </div>
+
+        <div class="company-grid">
+            <div *ngFor="let m of memberships" class="company-card" (click)="selectCompany(m)">
+
+                <div class="card-icon" [style.background]="m.empresa.branding?.primaryColor || '#3f51b5'">
+                    {{ m.empresa.nombre.charAt(0).toUpperCase() }}
+                </div>
+
+                <div class="card-info">
+                    <h3>{{ m.empresa.nombre }}</h3>
+                    <span class="role-badge">{{ m.rol.nombre }}</span>
+                    <span class="detail">{{ m.cargo?.nombre || 'Sin cargo' }}</span>
+                </div>
+
+                <div class="card-action">
+                    <mat-icon>arrow_forward</mat-icon>
+                </div>
+            </div>
+            <div class="company-card create-card" (click)="goToCreateCompany()">
+                <div class="card-icon add-icon">
+                    <mat-icon>add</mat-icon>
+                </div>
+                <div class="card-info">
+                    <h3>Nueva Organización</h3>
+                    <span class="detail">Crea un nuevo espacio de trabajo</span>
+                </div>
+                <div class="card-action">
+                    <mat-icon>arrow_forward</mat-icon>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-action">
+            <button mat-button color="warn" (click)="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+</div>

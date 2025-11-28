@@ -10,6 +10,7 @@ import { Beneficio } from './beneficio.entity';
 import { PeriodoNomina } from './periodoNomina.entity';
 import { CicloEvaluacion } from './cicloEvaluacion.entity';
 import { Vacante } from './vacante.entity';
+import { Sucursal } from './sucursal.entity';
 
 @Entity({ name: 'empresas' })
 export class Empresa extends BaseEntity {
@@ -44,7 +45,7 @@ export class Empresa extends BaseEntity {
     nullable: true,
     comment: 'Logo y colores personalizados (RNF24)',
   })
-  branding: { logoUrl: string; color: string };
+  branding: { logoUrl?: string | null; color?: string | null; primaryColor?: string | null };
 
   // ---
   // RELACIONES (Una Empresa TIENE MUCHOS...)
@@ -117,4 +118,7 @@ export class Empresa extends BaseEntity {
   ciclosEvaluacion: CicloEvaluacion[];
   @OneToMany(() => Vacante, (vacante) => vacante.empresa, { cascade: true })
   vacantes: Vacante[];
+
+  @OneToMany(() => Sucursal, (sucursal) => sucursal.empresa, { cascade: true })
+  sucursales: Sucursal[];
 }

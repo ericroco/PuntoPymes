@@ -291,11 +291,6 @@ export class ProductividadController {
     return this.productividadService.updateObjetivo(data.empresaId, data.objetivoId, data.dto);
   }
 
-  @MessagePattern({ cmd: 'delete_objetivo' })
-  deleteObjetivo(@Payload() data: { empresaId: string; objetivoId: string }) {
-    return this.productividadService.deleteObjetivo(data.empresaId, data.objetivoId);
-  }
-  // --- EVALUACIONES ---
 
   @MessagePattern({ cmd: 'create_evaluacion' })
   @UsePipes(new ValidationPipe())
@@ -464,5 +459,19 @@ export class ProductividadController {
   @MessagePattern({ cmd: 'seed_data' })
   seedData(@Payload() data: { empresaId: string }) {
     return this.productividadService.seedData(data.empresaId);
+  }
+  @MessagePattern({ cmd: 'get_objetivos_departamento' })
+  getObjetivosDepto(@Payload() data: { empresaId: string, cicloId: string, departamentoId: string }) {
+    return this.productividadService.getObjetivosDepartamento(data.empresaId, data.cicloId, data.departamentoId);
+  }
+
+  @MessagePattern({ cmd: 'get_all_objetivos' })
+  getAllObjetivos(@Payload() data: { empresaId: string, cicloId: string }) {
+    return this.productividadService.getAllObjetivos(data.empresaId, data.cicloId);
+  }
+
+  @MessagePattern({ cmd: 'delete_objetivo' })
+  deleteObjetivo(@Payload() data: { empresaId: string; objetivoId: string }) {
+    return this.productividadService.deleteObjetivo(data.empresaId, data.objetivoId);
   }
 }

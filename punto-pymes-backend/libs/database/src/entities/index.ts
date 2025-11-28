@@ -44,3 +44,4 @@ export * from './candidato.entity';
 export * from './vacante.entity';
 export * from './documentoEmpleado.entity';
 export * from './solicitudVacaciones.entity';
+export * from './sucursal.entity';

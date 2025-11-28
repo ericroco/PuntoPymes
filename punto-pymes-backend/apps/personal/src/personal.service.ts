@@ -25,7 +25,10 @@ import { CreateCandidatoDto } from './dto/create-candidato.dto';
 import { CreateVacanteDto } from './dto/create-vacante.dto';
 import { UpdateVacanteDto } from './dto/update-vacante.dto';
 import { UpdateCandidatoAIDto } from './dto/update-candidato-ai.dto';
+import { CreateSucursalDto } from './dto/create-sucursal.dto';
+import { UpdateSucursalDto } from './dto/update-sucursal.dto';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Sucursal } from 'default/database';
 import * as fs from 'fs';
 import { join } from 'path';
 import axios from 'axios';
@@ -59,6 +62,8 @@ export class PersonalService {
     private readonly documentoRepository: Repository<DocumentoEmpleado>,
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy, // Inyectar Cliente Auth
     private readonly mailerService: MailerService,
+    @InjectRepository(Sucursal)
+    private readonly sucursalRepository: Repository<Sucursal>,
   ) {
     // 3. Usar getOrThrow (Lanza error si no existe, y TypeScript sabe que es string)
     const apiKey = this.configService.getOrThrow<string>('GEMINI_API_KEY');
@@ -70,15 +75,21 @@ export class PersonalService {
    * Lógica de negocio para obtener todos los empleados
    * (Tu método existente - sin cambios)
    */
-  async getEmpleados(empresaId: string): Promise<Empleado[]> {
+  async getEmpleados(empresaId: string,
+    filtroSucursalId?: string
+  ): Promise<Empleado[]> {
     console.log(
       `Microservicio PERSONAL: Buscando empleados para empresaId: ${empresaId}`,
     );
+    const where: any = { empresaId };
+
+    // Si el usuario tiene sucursal fija, SOLO ve empleados de ahí
+    if (filtroSucursalId) {
+      where.sucursalId = filtroSucursalId;
+    }
     return this.empleadoRepository.find({
-      where: {
-        empresaId: empresaId,
-      },
-      relations: ['cargo', 'rol'],
+      where: { empresaId: empresaId, estado: 'Activo' },
+      relations: ['cargo', 'rol', 'sucursal'],
     });
   }
   async getEmpleado(empresaId: string, empleadoId: string): Promise<Empleado> {
@@ -100,101 +111,108 @@ export class PersonalService {
   async createEmpleado(
     empresaId: string,
     dto: CreateEmpleadoDto,
+    usuarioCreador?: { sucursalId?: string }
   ): Promise<Empleado> {
-    console.log(
-      `Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`,
-    );
+    console.log(`Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`);
 
-    // --- 1. Validación de Seguridad Multi-Tenant ---
-    const rol = await this.rolRepository.findOneBy({
-      id: dto.rolId,
-      empresaId: empresaId,
-    });
-    if (!rol) {
-      throw new BadRequestException(
-        'El Rol seleccionado no es válido o no pertenece a esta empresa.',
-      );
+    // --- 1. Lógica de Sucursal (Data Scope) ---
+    let sucursalDestino = dto.sucursalId;
+
+    if (usuarioCreador && usuarioCreador.sucursalId) {
+      sucursalDestino = usuarioCreador.sucursalId;
     }
+
+    if (sucursalDestino) {
+      const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalDestino, empresaId });
+      if (!sucursal) throw new BadRequestException('Sucursal no válida.');
+    }
+
+    // --- 2. Validaciones de Seguridad ---
+    const rol = await this.rolRepository.findOneBy({ id: dto.rolId, empresaId });
+    if (!rol) throw new BadRequestException('Rol no válido.');
 
     const cargo = await this.cargoRepository.findOne({
-      where: {
-        id: dto.cargoId,
-        departamento: {
-          empresaId: empresaId,
-        },
-      },
+      where: { id: dto.cargoId, departamento: { empresaId } },
     });
-    if (!cargo) {
-      throw new BadRequestException(
-        'El Cargo seleccionado no es válido o no pertenece a esta empresa.',
-      );
-    }
+    if (!cargo) throw new BadRequestException('Cargo no válido.');
 
-    if (dto.jefeId) {
-      const jefe = await this.empleadoRepository.findOneBy({
-        id: dto.jefeId,
-        empresaId: empresaId,
-      });
-      if (!jefe) {
-        throw new BadRequestException(
-          'El Jefe seleccionado no es válido o no pertenece a esta empresa.',
-        );
-      }
-    }
-
-    // --- 2. Creación y Guardado del Empleado ---
+    // --- 3. Creación del Empleado ---
     const nuevoEmpleado = this.empleadoRepository.create({
       ...dto,
-      empresaId: empresaId,
+      empresaId,
+      sucursalId: sucursalDestino,
+      estado: 'Activo'
     });
 
     const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
 
-    // --- 3. Lógica Automática: Crear Usuario y Enviar Correo ---
-    // Usamos un try-catch para que, si falla el correo, no falle la creación del empleado.
+    // --- 4. Creación del Contrato Inicial (Nómina) ---
+    if (dto.salario !== undefined) {
+      // CORRECCIÓN AQUÍ: Usamos 'undefined' en lugar de 'null' para fechaFin
+      const nuevoContrato = this.contratoRepository.create({
+        empleadoId: empleadoGuardado.id,
+        tipo: dto.tipoContrato || 'Indefinido',
+        salario: dto.salario,
+        moneda: 'USD',
+        fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : new Date(),
+        // 👇 CAMBIO CLAVE: Si no hay fechaFin, enviamos undefined (no null)
+        fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
+        estado: 'Vigente'
+      });
+      await this.contratoRepository.save(nuevoContrato);
+      console.log(`✅ Contrato inicial creado: $${dto.salario}`);
+    }
+
+    // --- 5. Lógica Automática: Usuario y Correo ---
     if (dto.emailPersonal) {
       try {
-        console.log('🔄 Solicitando creación de usuario automático...');
+        console.log('🔄 Solicitando acceso de usuario...');
 
-        // A. Pedir al servicio de AUTH que genere credenciales
-        const credenciales = await firstValueFrom(
+        const resultadoAuth = await firstValueFrom(
           this.authClient.send(
             { cmd: 'create_user_auto' },
             {
               empleadoId: empleadoGuardado.id,
               email: dto.emailPersonal,
               nombre: dto.nombre,
-              empresaId: empresaId,
+              empresaId,
             }
           )
         );
 
-        // B. Enviar las credenciales por correo
-        await this.mailerService.sendMail({
-          to: dto.emailPersonal,
-          subject: 'Bienvenido a PuntoPyMES - Tus Credenciales de Acceso',
-          html: `
-            <div style="font-family: Arial, sans-serif; color: #333;">
-              <h1 style="color: #3f51b5;">¡Bienvenido/a ${dto.nombre}!</h1>
-              <p>Has sido registrado exitosamente en la plataforma de Recursos Humanos de tu empresa.</p>
-              <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><b>Usuario:</b> ${credenciales.email}</p>
-                <p style="margin: 5px 0;"><b>Contraseña Temporal:</b> ${credenciales.password}</p>
+        // Enviar Correo
+        if (resultadoAuth.isNew) {
+          await this.mailerService.sendMail({
+            to: dto.emailPersonal,
+            subject: 'Bienvenido a PuntoPyMES - Tus Credenciales',
+            html: `
+              <div style="font-family: Arial; color: #333;">
+                <h1 style="color: #3f51b5;">¡Bienvenido ${dto.nombre}!</h1>
+                <p>Se ha creado tu cuenta.</p>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+                    <p><b>Usuario:</b> ${resultadoAuth.email}</p>
+                    <p><b>Contraseña:</b> ${resultadoAuth.password}</p>
+                </div>
+                <a href="http://localhost:4200/auth/login">Ingresar</a>
               </div>
-              <p>Por favor, ingresa al sistema y cambia tu contraseña lo antes posible.</p>
-              <p>
-                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ir al Sistema</a>
-              </p>
-            </div>
-          `,
-        });
-
-        console.log(`📧 Credenciales enviadas a ${dto.emailPersonal}`);
-
+            `
+          });
+        } else {
+          await this.mailerService.sendMail({
+            to: dto.emailPersonal,
+            subject: 'PuntoPyMES - Nuevo Acceso Asignado',
+            html: `
+              <div style="font-family: Arial; color: #333;">
+                <h1 style="color: #3f51b5;">¡Hola de nuevo ${dto.nombre}!</h1>
+                <p>Has sido vinculado a un nuevo espacio de trabajo.</p>
+                <a href="http://localhost:4200/auth/login">Ir al Dashboard</a>
+              </div>
+            `
+          });
+        }
+        console.log(`📧 Correo enviado.`);
       } catch (error) {
-        console.error('❌ Error en flujo automático (Usuario/Correo):', error);
-        // No lanzamos error para no hacer rollback del empleado, 
-        // pero el admin deberá crear el usuario manualmente si esto falla.
+        console.error('❌ Error en flujo automático:', error);
       }
     }
 
@@ -257,59 +275,50 @@ export class PersonalService {
     return this.empleadoRepository.save(empleadoActualizado);
   }
 
-  // --- (INICIO DE CAMBIOS) ---
   /**
-   * Lógica de negocio para "Desvincular" un Empleado (RF-01-04).
-   * Esto busca el contrato 'Activo' y lo pasa a 'Inactivo'.
-   */
+     * Lógica de negocio para "Despedir/Desvincular" un Empleado.
+     * Cierra el contrato vigente (si existe) y marca al empleado como Inactivo.
+     */
   async deleteEmpleado(
     empresaId: string,
     empleadoId: string,
   ): Promise<{ message: string }> {
-    console.log(
-      `Microservicio PERSONAL: Desvinculando empleado ${empleadoId} (finalizando contrato) para empresaId: ${empresaId}`,
-    );
+    console.log(`Microservicio PERSONAL: Procesando desvinculación del empleado ${empleadoId}`);
 
-    // 1. Buscar el CONTRATO ACTIVO del empleado.
-    //    Esto valida implícitamente que el empleadoId y empresaId son correctos
-    //    y cumple con tu regla de negocio (solo 1 activo).
-    const contratoActivo = await this.contratoRepository.findOne({
+    // 1. Buscar al empleado primero (para asegurar que existe y es de la empresa)
+    const empleado = await this.empleadoRepository.findOne({
+      where: { id: empleadoId, empresaId },
+    });
+
+    if (!empleado) {
+      throw new NotFoundException('Empleado no encontrado o no pertenece a esta empresa.');
+    }
+
+    // 2. Buscar si tiene un contrato VIGENTE (Nota: usamos 'Vigente', no 'Activo')
+    const contratoVigente = await this.contratoRepository.findOne({
       where: {
-        empleado: { id: empleadoId, empresaId: empresaId },
-        estado: 'Activo', // La regla de negocio clave
-      },
+        empleadoId: empleadoId,
+        estado: 'Vigente'
+      }
     });
 
-    if (!contratoActivo) {
-      throw new NotFoundException(
-        'No se encontró un contrato activo para este empleado.',
-      );
+    // 3. Si tiene contrato, lo finalizamos
+    if (contratoVigente) {
+      contratoVigente.estado = 'Finalizado'; // O 'Inactivo' si prefieres
+      contratoVigente.fechaFin = new Date(); // Cerramos con fecha de hoy
+      await this.contratoRepository.save(contratoVigente);
+      console.log(`✅ Contrato finalizado para ${empleado.nombre} ${empleado.apellido}`);
+    } else {
+      console.log(`⚠️ El empleado ${empleado.nombre} no tenía contrato vigente, solo se desactivará su perfil.`);
     }
 
-    // 2. Actualizar el estado del Contrato a 'Inactivo'
-    contratoActivo.estado = 'Inactivo';
-    // (Opcional: si tienes un campo fechaFin, establécelo aquí)
-    // contratoActivo.fechaFin = new Date();
-    await this.contratoRepository.save(contratoActivo);
+    // 4. Cambiar estado del empleado a INACTIVO
+    // Esto mantiene el registro pero lo "apaga" en el sistema
+    empleado.estado = 'Inactivo';
+    await this.empleadoRepository.save(empleado);
 
-    // 3. (Recomendado) Actualizar el estado de la propia entidad Empleado
-    //    (basado en tu 'empleado.entity.ts')
-    const empleado = await this.empleadoRepository.findOneBy({
-      id: empleadoId,
-      empresaId: empresaId,
-    });
-
-    if (empleado) {
-      // Cambia el estado del empleado de 'Activo' a 'Inactivo'
-      empleado.estado = 'Inactivo';
-      await this.empleadoRepository.save(empleado);
-    }
-
-    return {
-      message: 'Empleado desvinculado (contrato finalizado) correctamente.',
-    };
+    return { message: 'Empleado desvinculado correctamente.' };
   }
-  // --- (FIN DE CAMBIOS) ---
 
   /**
    * Lógica de negocio para crear un nuevo Departamento (RF-02)
@@ -1067,5 +1076,71 @@ export class PersonalService {
     // (Opcional: Aquí podrías devolver la URL para que el Gateway borre el archivo físico)
 
     return { message: 'Documento eliminado correctamente.' };
+  }
+  async fixEmployeePermissions(empresaId: string) {
+    // 1. Buscar el rol de "Empleado" o "Rol de Prueba"
+    // (Ajusta el nombre si tu rol se llama diferente, ej: 'Standard', 'User')
+    const roles = await this.rolRepository.find({ where: { empresaId } });
+
+    // Buscamos cualquier rol que NO sea Administrador para darle permisos básicos
+    const rolesEmpleado = roles.filter(r => r.nombre !== 'Administrador');
+
+    for (const rol of rolesEmpleado) {
+      // 2. Agregar permisos de Desempeño
+      const permisosActuales = rol.permisos || {};
+
+      const nuevosPermisos = {
+        ...permisosActuales,
+        // Permisos para ver y gestionar sus propias metas
+        'desempeno.objetivos.read': true,
+        'desempeno.objetivos.create': true,
+        'desempeno.objetivos.update': true,
+        // Permisos para ver ciclos
+        'desempeno.ciclos.read': true,
+        // Permisos para marcar asistencia
+        'asistencia.registro': true,
+        'asistencia.reportes': true // Ver su propio historial
+      };
+
+      rol.permisos = nuevosPermisos;
+      await this.rolRepository.save(rol);
+      console.log(`✅ Permisos actualizados para el rol: ${rol.nombre}`);
+    }
+
+    return { message: 'Permisos de empleados corregidos.' };
+  }
+  async createSucursal(empresaId: string, dto: CreateSucursalDto): Promise<Sucursal> {
+    const sucursal = this.sucursalRepository.create({
+      ...dto,
+      empresaId,
+      activa: true
+    });
+    return this.sucursalRepository.save(sucursal);
+  }
+
+  async getSucursales(empresaId: string): Promise<Sucursal[]> {
+    return this.sucursalRepository.find({
+      where: { empresaId },
+      order: { nombre: 'ASC' }
+    });
+  }
+
+  async updateSucursal(empresaId: string, sucursalId: string, dto: UpdateSucursalDto): Promise<Sucursal> {
+    const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalId, empresaId });
+    if (!sucursal) throw new NotFoundException('Sucursal no encontrada.');
+
+    this.sucursalRepository.merge(sucursal, dto);
+    return this.sucursalRepository.save(sucursal);
+  }
+
+  async deleteSucursal(empresaId: string, sucursalId: string): Promise<{ message: string }> {
+    const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalId, empresaId });
+    if (!sucursal) throw new NotFoundException('Sucursal no encontrada.');
+
+    const empleados = await this.empleadoRepository.count({ where: { sucursalId } });
+    if (empleados > 0) throw new ConflictException('No se puede borrar, tiene empleados asignados.');
+
+    await this.sucursalRepository.remove(sucursal);
+    return { message: 'Sucursal eliminada correctamente.' };
   }
 }

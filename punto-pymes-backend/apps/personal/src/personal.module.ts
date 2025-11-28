@@ -21,6 +21,7 @@ import {
   Candidato,
   Usuario,
   DocumentoEmpleado,
+  Sucursal,
 } from 'default/database'; // <-- Usa tu prefijo correcto
 
 @Module({
@@ -44,6 +45,7 @@ import {
       Candidato,
       Usuario,
       DocumentoEmpleado,
+      Sucursal,
     ]),
     // 1. CLIENTE PARA LLAMAR AL AUTH SERVICE
     ClientsModule.register([

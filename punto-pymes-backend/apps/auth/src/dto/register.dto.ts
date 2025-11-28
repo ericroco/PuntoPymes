@@ -1,5 +1,5 @@
 // apps/auth/src/dto/register.dto.ts
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional } from 'class-validator';
 
 /**
  * Data Transfer Object (DTO) para el registro de un nuevo Tenant (Empresa).
@@ -13,7 +13,7 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Tu nombre no puede estar vacío.' })
   @IsString()
   nombreAdmin: string;
-  
+
   @IsNotEmpty({ message: 'Tu apellido no puede estar vacío.' })
   @IsString()
   apellidoAdmin: string;
@@ -26,4 +26,16 @@ export class RegisterDto {
   @IsString()
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
   password: string;
+
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  colorCorporativo?: string;
+
+  @IsOptional()
+  @IsString()
+  planSuscripcion?: string;
 }

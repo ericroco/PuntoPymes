@@ -70,15 +70,31 @@
             Debes seleccionar un supervisor.
           </mat-error>
         </mat-form-field>
+        <div class="form-row">
+          <mat-form-field appearance="outline" style="flex: 1;">
+            <mat-label>Tipo de Contrato</mat-label>
+            <mat-select formControlName="contractType" required>
+              <mat-option value="Indefinido">Indefinido</mat-option>
+              <mat-option value="Plazo Fijo">Plazo Fijo</mat-option>
+              <mat-option value="Servicios Profesionales">Servicios Prof.</mat-option>
+              <mat-option value="Pasantía">Pasantía</mat-option>
+            </mat-select>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha de Contratación</mat-label>
-          <input matInput [matDatepicker]="hirePicker" formControlName="hireDate" required>
-          <mat-datepicker-toggle matSuffix [for]="hirePicker"></mat-datepicker-toggle>
-          <mat-datepicker #hirePicker></mat-datepicker>
-          <mat-error *ngIf="step2Form.get('hireDate')?.hasError('required')">
-            La fecha es obligatoria.
-          </mat-error>
+          <mat-form-field appearance="outline" style="flex: 1;">
+            <mat-label>Fecha de Inicio</mat-label>
+            <input matInput [matDatepicker]="pickerStart" formControlName="hireDate" required>
+            <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+            <mat-datepicker #pickerStart></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Fecha de Finalización (Opcional)</mat-label>
+          <input matInput [matDatepicker]="pickerEnd" formControlName="contractEndDate">
+          <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+          <mat-datepicker #pickerEnd></mat-datepicker>
+          <mat-hint>Dejar vacío si es indefinido</mat-hint>
         </mat-form-field>
 
         <div class="step-actions">

@@ -1,86 +1,113 @@
 <div class="public-page-container">
+
     <header class="public-header">
-        <img src="assets/logo.svg" alt="Logo Empresa" class="public-logo">
+        <div class="logo">Punto<strong>PyMES</strong> Jobs</div>
     </header>
 
-    <div class="vacancy-content-wrapper">
+    <main class="content-wrapper" *ngIf="vacancy; else loadingOrError">
 
-        <div *ngIf="isLoading" class="feedback-container">
-            <mat-spinner diameter="50"></mat-spinner>
-            <p>Cargando detalles de la vacante...</p>
-        </div>
+        <section class="vacancy-details">
+            <mat-card class="detail-card">
+                <mat-card-header>
+                    <mat-card-title>
+                        <h1>{{ vacancy.titulo }}</h1>
+                    </mat-card-title>
+                    <mat-card-subtitle>
+                        <mat-icon inline>place</mat-icon> {{ vacancy.ubicacion || 'Remoto' }} |
+                        <span class="salary" *ngIf="vacancy.salarioMin">${{ vacancy.salarioMin }} - ${{
+                            vacancy.salarioMax }}</span>
+                    </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="description-box">
+                        <h3>Descripción</h3>
+                        <p>{{ vacancy.descripcion }}</p>
 
-        <div *ngIf="submissionComplete" class="feedback-container success-message">
-            <mat-icon>check_circle</mat-icon>
-            <h2>¡Postulación Enviada!</h2>
-            <p>Hemos recibido tu información correctamente. El equipo de RRHH se pondrá en contacto contigo pronto.</p>
-            <a routerLink="/" class="back-link">Volver al inicio</a>
-        </div>
+                        <h3 *ngIf="vacancy.requisitos">Requisitos</h3>
+                        <p *ngIf="vacancy.requisitos">{{ vacancy.requisitos }}</p>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </section>
 
-        <div *ngIf="!isLoading && !submissionComplete && vacancy">
+        <section class="application-form-section">
+            <mat-card class="form-card">
 
-            <div class="vacancy-details">
-                <span class="detail-location">{{ vacancy.department }} • {{ vacancy.location }}</span>
-                <h1>{{ vacancy.title }}</h1>
-                <p class="vacancy-description">{{ vacancy.description }}</p>
+                <div *ngIf="!successMessage; else successTemplate">
+                    <h2>Postúlate a este empleo</h2>
+                    <p>Completa tus datos y sube tu CV para que nuestra IA analice tu perfil.</p>
 
-                <h3 *ngIf="vacancy.requirements.length > 0">Requisitos</h3>
-                <ul class="requirements-list">
-                    <li *ngFor="let req of vacancy.requirements">{{ req }}</li>
-                </ul>
-            </div>
+                    <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">
 
-            <div class="application-form-container">
-                <mat-card class="application-card">
-                    <mat-card-header>
-                        <mat-card-title>Postula a esta vacante</mat-card-title>
-                    </mat-card-header>
-                    <mat-card-content>
-                        <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Nombre Completo</mat-label>
+                            <input matInput formControlName="nombre" required>
+                            <mat-error>Requerido</mat-error>
+                        </mat-form-field>
 
-                            <mat-form-field appearance="outline">
-                                <mat-label>Nombre Completo</mat-label>
-                                <input matInput formControlName="name" required>
-                                <mat-error>Tu nombre es obligatorio.</mat-error>
-                            </mat-form-field>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Correo Electrónico</mat-label>
+                            <input matInput formControlName="email" type="email" required>
+                            <mat-error>Correo inválido</mat-error>
+                        </mat-form-field>
 
-                            <mat-form-field appearance="outline">
-                                <mat-label>Correo Electrónico</mat-label>
-                                <input matInput type="email" formControlName="email" required>
-                                <mat-error>Correo inválido u obligatorio.</mat-error>
-                            </mat-form-field>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Teléfono</mat-label>
+                            <input matInput formControlName="telefono" required>
+                            <mat-error>Requerido</mat-error>
+                        </mat-form-field>
 
-                            <mat-form-field appearance="outline">
-                                <mat-label>Teléfono</mat-label>
-                                <input matInput type="tel" formControlName="phone" required>
-                                <mat-error>Tu teléfono es obligatorio.</mat-error>
-                            </mat-form-field>
-
-                            <div class="file-input-group">
-                                <button type="button" mat-stroked-button color="primary" (click)="cvInput.click()">
-                                    <mat-icon>upload_file</mat-icon>
-                                    Adjuntar CV (PDF, DOCX)
+                        <div class="file-upload-area">
+                            <label>Sube tu Currículum (PDF)</label>
+                            <div class="file-input-wrapper">
+                                <button type="button" mat-stroked-button (click)="fileInput.click()">
+                                    <mat-icon>upload_file</mat-icon> Seleccionar Archivo
                                 </button>
-                                <input type="file" #cvInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
+                                <span class="file-name">{{ selectedFile?.name || 'Ningún archivo seleccionado' }}</span>
+                                <input #fileInput type="file" accept="application/pdf" (change)="onFileSelected($event)"
                                     hidden>
-                                <span class="file-name" *ngIf="fileName">{{ fileName }}</span>
-                                <mat-error
-                                    *ngIf="applicationForm.get('cvFile')?.hasError('required') && applicationForm.get('cvFile')?.touched">
-                                    Tu CV es obligatorio.
-                                </mat-error>
                             </div>
+                            <p class="hint" *ngIf="!selectedFile"
+                                style="color: #f44336; font-size: 0.8rem; margin-top: 5px;">* El CV es obligatorio</p>
+                        </div>
 
-                            <button type="submit" mat-flat-button color="primary" class="submit-button"
-                                [disabled]="isSubmitting || applicationForm.invalid">
-                                <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
-                                <span *ngIf="!isSubmitting">Enviar Aplicación</span>
+                        <div class="actions">
+                            <button mat-flat-button color="primary" class="submit-btn"
+                                [disabled]="applyForm.invalid || !selectedFile || isSubmitting">
+                                <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+                                <span *ngIf="!isSubmitting">Enviar Postulación</span>
                             </button>
+                        </div>
 
-                        </form>
-                    </mat-card-content>
-                </mat-card>
-            </div>
+                    </form>
+                </div>
 
+                <ng-template #successTemplate>
+                    <div class="success-state">
+                        <mat-icon class="success-icon">check_circle</mat-icon>
+                        <h3>¡Postulación Recibida!</h3>
+                        <p>Tu perfil está siendo analizado por nuestro sistema. Te contactaremos pronto.</p>
+                        <button mat-button color="primary" routerLink="/">Volver al inicio</button>
+                    </div>
+                </ng-template>
+
+            </mat-card>
+        </section>
+
+    </main>
+
+    <ng-template #loadingOrError>
+        <div class="loading-container" *ngIf="isLoading; else errorState">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Cargando oferta...</p>
         </div>
-    </div>
+        <ng-template #errorState>
+            <div class="error-container">
+                <mat-icon>error_outline</mat-icon>
+                <h3>Vacante no encontrada</h3>
+                <p>La oferta que buscas no existe o ha sido cerrada.</p>
+            </div>
+        </ng-template>
+    </ng-template>
+
 </div>

@@ -12,6 +12,7 @@ import { Proyecto } from './proyecto.entity';
 import { Sprint } from './sprint.entity';
 import { AsignacionTarea } from './asignacionTarea.entity';
 import { Timesheet } from './timesheet.entity';
+import { Objetivo } from './objetivo.entity';
 
 // Importamos los Enums del DTO para asegurar consistencia de tipos
 import { EstadoTarea, PrioridadTarea } from 'apps/productividad/src/dto/create-tarea.dto';
@@ -100,6 +101,13 @@ export class Tarea extends BaseEntity {
   })
   @JoinColumn({ name: 'proyectoId' }) // Define el nombre de la columna FK
   proyecto: Proyecto;
+  @ManyToOne(() => Objetivo, { nullable: true, onDelete: 'SET NULL' })
+
+  @JoinColumn({ name: 'objetivoId' })
+  objetivo: Objetivo;
+
+  @Column({ nullable: true, comment: 'Objetivo estratégico vinculado' })
+  objetivoId: string;
 
   /**
    * Mapea: string proyectoId FK "Proyecto padre tarea"
