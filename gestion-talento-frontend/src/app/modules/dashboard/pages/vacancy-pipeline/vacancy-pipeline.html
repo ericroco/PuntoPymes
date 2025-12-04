@@ -1,17 +1,17 @@
-<div class="page-container pipeline-page">
-    <app-subpage-header [title]="vacancyTitle" backRoute="/dashboard/recruitment">
+<div class="page-container pipeline-page" cdkDropListGroup>
+
+    <app-subpage-header [title]="vacancy ? vacancy.titulo : 'Cargando...'" backRoute="/dashboard/recruitment">
         <button mat-stroked-button (click)="openConfigurePhases()">
-            <mat-icon>settings</mat-icon>
-            Configurar Fases
+            <mat-icon>settings</mat-icon> Configurar
         </button>
         <button mat-flat-button color="primary" (click)="openAddCandidate()">
-            <mat-icon>person_add</mat-icon>
-            Añadir Candidato
+            <mat-icon>share</mat-icon> Link Público
         </button>
     </app-subpage-header>
+
     <div class="filter-bar">
         <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Buscar por Nombre o Cargo</mat-label>
+            <mat-label>Buscar candidato</mat-label>
             <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
             <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
@@ -19,61 +19,69 @@
         <mat-form-field appearance="outline" class="ai-filter-field">
             <mat-label>Match IA Mínimo</mat-label>
             <mat-select [(ngModel)]="selectedAiMatch" (ngModelChange)="applyFilters()">
-                <mat-option [value]="0">Todos (0% +)</mat-option>
-                <mat-option [value]="75">Recomendado (75% +)</mat-option>
-                <mat-option [value]="90">Ideal (90% +)</mat-option>
+                <mat-option [value]="0">Todos</mat-option>
+                <mat-option [value]="70">Prometedor (70%+)</mat-option>
+                <mat-option [value]="90">Ideal (90%+)</mat-option>
             </mat-select>
         </mat-form-field>
     </div>
 
-    <div class="board-columns-container" cdkDropListGroup (cdkDragStarted)="onDragStarted()"
-        (cdkDropListDropped)="onDragEnded()">
+    <div class="board-columns-container" (cdkDragStarted)="onDragStarted()" (cdkDragEnded)="onDragEnded()">
 
         <div *ngFor="let phase of pipelinePhases" class="board-column"
-            [ngClass]="{ 'col-hired': phase.id === 'fase-contratado' }">
+            [ngClass]="{ 'col-hired': phase.id === 'CONTRATADO' }">
+
             <h3 class="column-title">
                 {{ phase.name }} ({{ phase.candidates.length }})
             </h3>
 
             <div class="candidate-list" [id]="phase.id" cdkDropList [cdkDropListData]="phase.candidates"
-                [cdkDropListConnectedTo]="connectedDropLists" (cdkDropListDropped)="drop($event)">
+                (cdkDropListDropped)="drop($event)">
 
                 <div *ngFor="let candidate of phase.candidates" class="candidate-card" cdkDrag
                     (cdkDragStarted)="onDragStarted()" (cdkDragEnded)="onDragEnded()"
-                    (dblclick)="openCandidateProfile(candidate)" matTooltip="Doble clic para ver detalles">
+                    (dblclick)="openCandidateProfile(candidate)">
 
-                    <div class="ai-recommendation" *ngIf="phase.id === 'fase-1-revision'" [ngClass]="{
-                 'high': candidate.aiMatch >= 90,
-                 'medium': candidate.aiMatch >= 75 && candidate.aiMatch < 90,
-                 'low': candidate.aiMatch < 75
-               }" [matTooltip]="'IA: ' + candidate.aiReason">
-                        <mat-icon>auto_awesome</mat-icon>
-                        <span>{{ candidate.aiMatch }}%</span>
+                    <div class="ai-recommendation" *ngIf="candidate.aiScore !== undefined"
+                        [style.background-color]="getScoreColor(candidate.aiScore)"
+                        [matTooltip]="'IA: ' + (candidate.aiScore + '% de coincidencia')">
+                        <mat-icon class="tiny-icon">auto_awesome</mat-icon>
+                        <span>{{ candidate.aiScore }}%</span>
                     </div>
 
-                    <div class="candidate-info" (click)="openCandidateProfile(candidate)">
-                        <img [src]="candidate.avatar" [alt]="candidate.name" class="avatar">
+                    <div class="candidate-info">
+                        <div class="avatar-placeholder">{{ getAvatarInitial(candidate.nombre) }}</div>
                         <div class="text-info">
-                            <span class="candidate-name">{{ candidate.name }}</span>
-                            <span class="candidate-role">{{ candidate.currentRole }}</span>
+                            <span class="candidate-name">{{ candidate.nombre }}</span>
+                            <span class="candidate-role">{{ candidate.fechaPostulacion | date:'shortDate' }}</span>
                         </div>
                     </div>
 
-                    <div class="cdk-drag-handle" matTooltip="Arrastrar">
-                        <mat-icon>drag_indicator</mat-icon>
+                    <div class="card-actions-hover">
+                        <button mat-icon-button color="warn" (click)="handleRejectCandidate(candidate, null)"
+                            matTooltip="Rechazar Candidato">
+                            <mat-icon>close</mat-icon>
+                        </button>
                     </div>
 
+                    <div class="cdk-drag-handle">
+                        <mat-icon>drag_indicator</mat-icon>
+                    </div>
                 </div>
+
                 <div class="empty-list-placeholder" *ngIf="phase.candidates.length === 0">
-                    Arrastra candidatos aquí
+                    Sin candidatos
                 </div>
             </div>
         </div>
     </div>
+
     <div class="reject-drop-zone" [class.is-visible]="isDraggingCandidate" cdkDropList id="reject-zone"
         [cdkDropListData]="rejectZoneData" (cdkDropListDropped)="dropOnRejectZone($event)">
-        <mat-icon>delete_forever</mat-icon>
-        <span>Rechazar Candidato</span>
+        <div class="reject-content">
+            <mat-icon>delete_forever</mat-icon>
+            <span>Arrastra aquí para Rechazar</span>
+        </div>
     </div>
 
 </div>

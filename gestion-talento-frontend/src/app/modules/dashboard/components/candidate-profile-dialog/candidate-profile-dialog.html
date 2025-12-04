@@ -1,18 +1,19 @@
 <div class="profile-header-dialog">
     <div class="info-principal">
-        <img [src]="candidate.avatar" [alt]="candidate.name" class="avatar-large">
+        <div class="avatar-placeholder-large">
+            {{ getInitials(candidate.nombre) }}
+        </div>
+
         <div class="text-info">
-            <h1 mat-dialog-title>{{ candidate.name }}</h1>
-            <p class="subtitle">{{ candidate.currentRole }}</p>
+            <h1 mat-dialog-title>{{ candidate.nombre }}</h1>
+            <p class="subtitle">{{ candidate.email }}</p>
         </div>
     </div>
-    <div class="ai-badge-dialog" [ngClass]="{
-         'high': candidate.aiMatch >= 90,
-         'medium': candidate.aiMatch >= 75 && candidate.aiMatch < 90,
-         'low': candidate.aiMatch < 75
-       }" [matTooltip]="'IA: ' + candidate.aiReason">
+
+    <div class="ai-badge-dialog" [ngClass]="getScoreColor(candidate.aiScore)"
+        [matTooltip]="'IA: ' + (candidate.aiScore || 0) + '% de coincidencia'">
         <mat-icon>auto_awesome</mat-icon>
-        <span>{{ candidate.aiMatch }}% Match</span>
+        <span>{{ candidate.aiScore || 0 }}% Match</span>
     </div>
 </div>
 
@@ -23,38 +24,44 @@
 
         <mat-tab label="Perfil y CV">
             <div class="tab-content-container">
+
+                <div class="ai-analysis-box" *ngIf="candidate.aiAnalysis">
+                    <h4>🤖 Análisis de Inteligencia Artificial</h4>
+                    <p>{{ candidate.aiAnalysis }}</p>
+                </div>
+
                 <div class="cv-viewer-container">
                     <h4>Currículum Vitae</h4>
                     <div class="cv-placeholder">
-                        <mat-icon>picture_as_pdf</mat-icon>
-                        <span>{{ candidate.name }}_CV.pdf</span>
-                        <a [href]="candidateDetails.cvUrl" target="_blank" mat-stroked-button color="primary">
-                            Abrir CV en nueva pestaña
+                        <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
+                        <span>Documento Original</span>
+
+                        <a [href]="candidate.cvUrl" target="_blank" mat-stroked-button color="primary"
+                            [disabled]="!candidate.cvUrl">
+                            <mat-icon>open_in_new</mat-icon> Abrir CV en nueva pestaña
                         </a>
                     </div>
                 </div>
+
                 <div class="details-container">
                     <h4>Información de Contacto</h4>
                     <mat-list>
                         <mat-list-item>
                             <mat-icon matListItemIcon>email</mat-icon>
-                            <div matListItemTitle>{{ candidateDetails.email }}</div>
+                            <div matListItemTitle>Correo</div>
+                            <div matListItemLine>{{ candidate.email }}</div>
                         </mat-list-item>
                         <mat-list-item>
                             <mat-icon matListItemIcon>phone</mat-icon>
-                            <div matListItemTitle>{{ candidateDetails.phone }}</div>
+                            <div matListItemTitle>Teléfono</div>
+                            <div matListItemLine>{{ candidate.telefono }}</div>
                         </mat-list-item>
                         <mat-list-item>
-                            <mat-icon matListItemIcon>link</mat-icon>
-                            <a matListItemTitle [href]="'https://' + candidateDetails.linkedin" target="_blank">{{
-                                candidateDetails.linkedin }}</a>
+                            <mat-icon matListItemIcon>calendar_today</mat-icon>
+                            <div matListItemTitle>Fecha Postulación</div>
+                            <div matListItemLine>{{ candidate.fechaPostulacion | date:'mediumDate' }}</div>
                         </mat-list-item>
                     </mat-list>
-
-                    <h4 class="skills-title">Habilidades Clave</h4>
-                    <div class="skills-list">
-                        <span *ngFor="let skill of candidateDetails.skills" class="skill-badge">{{ skill }}</span>
-                    </div>
                 </div>
             </div>
         </mat-tab>
@@ -62,23 +69,26 @@
         <mat-tab label="Historial y Notas">
             <div class="tab-content-container">
                 <div class="notes-section">
-                    <h4>Añadir Nueva Nota</h4>
-                    <mat-form-field appearance="outline">
-                        <mat-label>Escribe un comentario (ej. "Buena entrevista")...</mat-label>
+                    <h4>Añadir Nueva Nota (Local)</h4>
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Escribe un comentario...</mat-label>
                         <textarea matInput [(ngModel)]="newNote" rows="3"></textarea>
                     </mat-form-field>
                     <button mat-stroked-button color="primary" (click)="addNote()" [disabled]="!newNote.trim()">
                         <mat-icon>add_comment</mat-icon> Guardar Nota
                     </button>
                 </div>
+
                 <div class="activity-feed-section">
                     <h4>Historial de Actividad</h4>
                     <mat-list class="activity-feed">
-                        <mat-list-item *ngFor="let item of activityHistory">
-                            <mat-icon matListItemIcon>history</mat-icon>
-                            <div matListItemTitle>{{ item.action }}</div>
-                            <div matListItemLine>{{ item.date | date:'dd MMM, yyyy' }}</div>
-                        </mat-list-item>
+                        <div *ngFor="let item of activityHistory" class="feed-item">
+                            <div class="feed-icon"><mat-icon>history</mat-icon></div>
+                            <div class="feed-content">
+                                <div class="feed-action">{{ item.action }}</div>
+                                <div class="feed-date">{{ item.date | date:'medium' }}</div>
+                            </div>
+                        </div>
                     </mat-list>
                 </div>
             </div>

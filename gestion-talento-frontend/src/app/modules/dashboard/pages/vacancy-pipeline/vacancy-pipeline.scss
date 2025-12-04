@@ -84,13 +84,45 @@
 .pipeline-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px - 4rem); // Ajusta 64px (Navbar) y 4rem (padding)
+  height: calc(100vh - 64px - 4rem);
 }
 
 // --- Header ---
 ::ng-deep app-subpage-header {
   width: 100%;
   flex-shrink: 0;
+}
+
+// --- Barra de Filtros ---
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+
+  .search-field {
+    flex: 1 1 auto;
+    min-width: 250px;
+    max-width: 400px;
+  }
+
+  .ai-filter-field {
+    min-width: 200px;
+  }
+
+  mat-form-field {
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 48px;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+  }
 }
 
 // --- Contenedor del Tablero (Scroll Horizontal) ---
@@ -101,8 +133,35 @@
   flex-grow: 1;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 1rem;
+  padding: 1.5rem;
   background-color: var(--color-background);
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 10px;
+  }
+}
+
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 // --- Columna de Fase (Kanban) ---
@@ -117,8 +176,6 @@
   height: 100%;
 
   &.col-hired {
-
-    // Columna "Contratado"
     .column-title {
       background-color: var(--color-success-light);
       border-bottom-color: var(--color-success);
@@ -167,9 +224,24 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-bottom: 1rem;
   padding: 1rem;
+  padding-right: 2.5rem; // Espacio para el drag handle
   cursor: grab;
   position: relative;
   transition: box-shadow 0.2s ease;
+
+  .card-actions-hover {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+  }
+
+  &:hover .card-actions-hover {
+    opacity: 1;
+  }
 
   &:hover {
     box-shadow: var(--box-shadow);
@@ -203,7 +275,7 @@
   font-weight: 600;
   color: white;
   border: 2px solid var(--color-surface);
-  z-index: 2; // Asegura que esté sobre la info
+  z-index: 2;
 
   mat-icon {
     font-size: 14px;
@@ -230,6 +302,7 @@
   gap: 0.75rem;
   padding-top: 0.5rem;
   cursor: pointer;
+  min-width: 0; // Permite que funcione el text-overflow
 }
 
 .avatar {
@@ -242,7 +315,8 @@
 .text-info {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-width: 0; // Crucial para que el ellipsis funcione
+  flex: 1;
 }
 
 .candidate-name {
@@ -269,7 +343,7 @@
   cursor: grab;
   opacity: 0;
   transition: opacity 0.2s ease;
-  z-index: 3; // Sobre la info pero debajo del badge
+  z-index: 3;
 
   mat-icon {
     font-size: 20px;
@@ -303,24 +377,19 @@
   font-weight: 600;
   z-index: 1500;
 
-  // --- CORRECCIÓN: Estilos de visibilidad ---
   opacity: 0;
   visibility: hidden;
   transform: scale(0.8) translateY(20px);
   transition: opacity 0.2s ease, visibility 0s linear 0.2s, transform 0.2s ease;
 
   &.is-visible {
-    // Clase aplicada por [class.is-visible]="isDraggingCandidate"
     opacity: 1;
     visibility: visible;
     transform: scale(1) translateY(0);
     transition: opacity 0.2s ease, visibility 0s linear 0s, transform 0.2s ease;
   }
 
-  // --- FIN CORRECCIÓN ---
-
   &.cdk-drop-list-dragging {
-    // Cuando se arrastra SOBRE ella
     background-color: var(--color-danger);
     color: white;
     transform: scale(1.05);
@@ -334,34 +403,12 @@
   }
 }
 
-.filter-bar {
+// --- Clase para el contenido de la zona de rechazo ---
+.reject-content {
   display: flex;
-  flex-wrap: wrap; // Permite que los filtros bajen en pantallas pequeñas
-  gap: 1.5rem;
-  align-items: center; // Alinea los campos
-  padding: 0 1rem 1.5rem 1rem; // Padding alrededor
-  background-color: var(--color-background); // Mismo fondo que el área de scroll
-  border-bottom: 1px solid var(--color-border); // Separador
-  margin: -1rem 0 0 0; // Opcional: Ajusta margen si es necesario
-  flex-shrink: 0; // Evita que se encoja
-
-  .search-field {
-    flex-grow: 1; // El buscador ocupa el espacio principal
-    min-width: 250px;
-  }
-
-  .ai-filter-field {
-    min-width: 200px;
-  }
-
-  // Ajusta la densidad de los campos de formulario en la barra
-  mat-form-field {
-    ::ng-deep .mat-mdc-form-field-flex {
-      height: 48px; // Altura más compacta
-    }
-
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none; // Oculta el espacio para errores
-    }
-  }
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
 }

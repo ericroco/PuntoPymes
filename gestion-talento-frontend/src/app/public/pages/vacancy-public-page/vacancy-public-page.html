@@ -1,111 +1,147 @@
 <div class="public-page-container">
 
+    <!-- Header Flotante / Glassmorphism -->
     <header class="public-header">
-        <div class="logo">Punto<strong>PyMES</strong> Jobs</div>
+        <div class="header-content">
+            <div class="logo">Punto<span class="highlight">PyMES</span> Jobs</div>
+            <a mat-button routerLink="/" class="back-link">
+                <mat-icon>arrow_back</mat-icon> Ver más empleos
+            </a>
+        </div>
     </header>
 
     <main class="content-wrapper" *ngIf="vacancy; else loadingOrError">
 
-        <section class="vacancy-details">
-            <mat-card class="detail-card">
-                <mat-card-header>
-                    <mat-card-title>
-                        <h1>{{ vacancy.titulo }}</h1>
-                    </mat-card-title>
-                    <mat-card-subtitle>
-                        <mat-icon inline>place</mat-icon> {{ vacancy.ubicacion || 'Remoto' }} |
-                        <span class="salary" *ngIf="vacancy.salarioMin">${{ vacancy.salarioMin }} - ${{
-                            vacancy.salarioMax }}</span>
-                    </mat-card-subtitle>
-                </mat-card-header>
-                <mat-card-content>
-                    <div class="description-box">
-                        <h3>Descripción</h3>
-                        <p>{{ vacancy.descripcion }}</p>
+        <div class="layout-grid">
 
-                        <h3 *ngIf="vacancy.requisitos">Requisitos</h3>
-                        <p *ngIf="vacancy.requisitos">{{ vacancy.requisitos }}</p>
-                    </div>
-                </mat-card-content>
-            </mat-card>
-        </section>
+            <!-- COLUMNA IZQUIERDA: Detalles -->
+            <section class="vacancy-column">
+                <mat-card class="detail-card">
+                    <mat-card-header class="custom-header">
+                        <div class="header-badges">
+                            <span class="badge remote" *ngIf="!vacancy.ubicacion">Remoto</span>
+                            <span class="badge location" *ngIf="vacancy.ubicacion">{{ vacancy.ubicacion }}</span>
+                            <span class="badge salary" *ngIf="vacancy.salarioMin">
+                                ${{ vacancy.salarioMin }} - ${{ vacancy.salarioMax }}
+                            </span>
+                        </div>
+                        <mat-card-title>
+                            <h1>{{ vacancy.titulo }}</h1>
+                        </mat-card-title>
+                        <mat-card-subtitle class="date-posted">
+                            Publicado recientemente
+                        </mat-card-subtitle>
+                    </mat-card-header>
 
-        <section class="application-form-section">
-            <mat-card class="form-card">
+                    <mat-divider></mat-divider>
 
-                <div *ngIf="!successMessage; else successTemplate">
-                    <h2>Postúlate a este empleo</h2>
-                    <p>Completa tus datos y sube tu CV para que nuestra IA analice tu perfil.</p>
+                    <mat-card-content class="content-body">
+                        <div class="description-box">
+                            <h3>Sobre el puesto</h3>
+                            <p>{{ vacancy.descripcion }}</p>
 
-                    <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">
+                            <div class="requirements-box" *ngIf="vacancy.requisitos">
+                                <h3>Requisitos</h3>
+                                <p>{{ vacancy.requisitos }}</p>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </section>
 
-                        <mat-form-field appearance="outline" class="full-width">
-                            <mat-label>Nombre Completo</mat-label>
-                            <input matInput formControlName="nombre" required>
-                            <mat-error>Requerido</mat-error>
-                        </mat-form-field>
+            <!-- COLUMNA DERECHA: Formulario (Sticky) -->
+            <section class="form-column">
+                <mat-card class="form-card">
 
-                        <mat-form-field appearance="outline" class="full-width">
-                            <mat-label>Correo Electrónico</mat-label>
-                            <input matInput formControlName="email" type="email" required>
-                            <mat-error>Correo inválido</mat-error>
-                        </mat-form-field>
+                    <div *ngIf="!successMessage; else successTemplate" class="form-content">
+                        <div class="form-header">
+                            <h2>Postúlate ahora</h2>
+                            <p>Completa el formulario para que nuestra IA analice tu perfil.</p>
+                        </div>
 
-                        <mat-form-field appearance="outline" class="full-width">
-                            <mat-label>Teléfono</mat-label>
-                            <input matInput formControlName="telefono" required>
-                            <mat-error>Requerido</mat-error>
-                        </mat-form-field>
+                        <form [formGroup]="applyForm" (ngSubmit)="onSubmit()">
 
-                        <div class="file-upload-area">
-                            <label>Sube tu Currículum (PDF)</label>
-                            <div class="file-input-wrapper">
-                                <button type="button" mat-stroked-button (click)="fileInput.click()">
-                                    <mat-icon>upload_file</mat-icon> Seleccionar Archivo
-                                </button>
-                                <span class="file-name">{{ selectedFile?.name || 'Ningún archivo seleccionado' }}</span>
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Nombre Completo</mat-label>
+                                <input matInput formControlName="nombre" required placeholder="Ej. Juan Pérez">
+                                <mat-icon matSuffix>person_outline</mat-icon>
+                                <mat-error>Requerido</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Correo Electrónico</mat-label>
+                                <input matInput formControlName="email" type="email" required
+                                    placeholder="tu@email.com">
+                                <mat-icon matSuffix>email</mat-icon>
+                                <mat-error>Correo inválido</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput formControlName="telefono" required placeholder="+52 ...">
+                                <mat-icon matSuffix>phone</mat-icon>
+                                <mat-error>Requerido</mat-error>
+                            </mat-form-field>
+
+                            <!-- Custom File Upload Zone -->
+                            <div class="file-upload-area" [class.has-file]="selectedFile" (click)="fileInput.click()">
+                                <div class="upload-content">
+                                    <mat-icon class="upload-icon">{{ selectedFile ? 'description' : 'cloud_upload'
+                                        }}</mat-icon>
+                                    <div class="upload-text">
+                                        <span class="main-text">{{ selectedFile ? selectedFile.name : 'Sube tu CV (PDF)'
+                                            }}</span>
+                                        <span class="sub-text" *ngIf="!selectedFile">Clic aquí para seleccionar</span>
+                                        <span class="sub-text change-text" *ngIf="selectedFile">Clic para cambiar
+                                            archivo</span>
+                                    </div>
+                                </div>
                                 <input #fileInput type="file" accept="application/pdf" (change)="onFileSelected($event)"
                                     hidden>
                             </div>
-                            <p class="hint" *ngIf="!selectedFile"
-                                style="color: #f44336; font-size: 0.8rem; margin-top: 5px;">* El CV es obligatorio</p>
-                        </div>
+                            <p class="error-text" *ngIf="!selectedFile && applyForm.touched">* El CV es obligatorio</p>
 
-                        <div class="actions">
-                            <button mat-flat-button color="primary" class="submit-btn"
-                                [disabled]="applyForm.invalid || !selectedFile || isSubmitting">
-                                <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
-                                <span *ngIf="!isSubmitting">Enviar Postulación</span>
-                            </button>
-                        </div>
+                            <div class="actions">
+                                <button mat-flat-button color="primary" class="submit-btn"
+                                    [disabled]="applyForm.invalid || !selectedFile || isSubmitting">
+                                    <ng-container *ngIf="!isSubmitting">
+                                        Enviar Postulación <mat-icon>send</mat-icon>
+                                    </ng-container>
+                                    <mat-spinner diameter="24" *ngIf="isSubmitting" class="white-spinner"></mat-spinner>
+                                </button>
+                            </div>
 
-                    </form>
-                </div>
-
-                <ng-template #successTemplate>
-                    <div class="success-state">
-                        <mat-icon class="success-icon">check_circle</mat-icon>
-                        <h3>¡Postulación Recibida!</h3>
-                        <p>Tu perfil está siendo analizado por nuestro sistema. Te contactaremos pronto.</p>
-                        <button mat-button color="primary" routerLink="/">Volver al inicio</button>
+                        </form>
                     </div>
-                </ng-template>
 
-            </mat-card>
-        </section>
+                    <ng-template #successTemplate>
+                        <div class="success-state">
+                            <div class="icon-circle">
+                                <mat-icon>check</mat-icon>
+                            </div>
+                            <h3>¡Postulación Enviada!</h3>
+                            <p>Hemos recibido tu perfil correctamente. Te contactaremos pronto.</p>
+                            <button mat-stroked-button color="primary" routerLink="/">Volver al inicio</button>
+                        </div>
+                    </ng-template>
 
+                </mat-card>
+            </section>
+
+        </div>
     </main>
 
     <ng-template #loadingOrError>
-        <div class="loading-container" *ngIf="isLoading; else errorState">
-            <mat-spinner diameter="50"></mat-spinner>
-            <p>Cargando oferta...</p>
+        <div class="center-state" *ngIf="isLoading; else errorState">
+            <mat-spinner diameter="50" color="primary"></mat-spinner>
+            <p>Cargando detalles...</p>
         </div>
         <ng-template #errorState>
-            <div class="error-container">
-                <mat-icon>error_outline</mat-icon>
+            <div class="center-state error">
+                <mat-icon class="big-icon">search_off</mat-icon>
                 <h3>Vacante no encontrada</h3>
-                <p>La oferta que buscas no existe o ha sido cerrada.</p>
+                <p>Esta oferta ha expirado o no existe.</p>
+                <button mat-raised-button color="primary" routerLink="/">Ver otras ofertas</button>
             </div>
         </ng-template>
     </ng-template>

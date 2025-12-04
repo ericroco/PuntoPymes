@@ -372,4 +372,9 @@ export class PersonalController {
   deleteSucursal(@Payload() data: { empresaId: string; sucursalId: string }) {
     return this.personalService.deleteSucursal(data.empresaId, data.sucursalId);
   }
+
+  @MessagePattern({ cmd: 'get_public_vacancy' })
+  getPublicVacancy(@Payload() data: { vacanteId: string }) {
+    return this.personalService.getPublicVacancy(data.vacanteId);
+  }
 }

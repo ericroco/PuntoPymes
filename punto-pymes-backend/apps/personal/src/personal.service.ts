@@ -1143,4 +1143,20 @@ export class PersonalService {
     await this.sucursalRepository.remove(sucursal);
     return { message: 'Sucursal eliminada correctamente.' };
   }
+
+  async getPublicVacancy(vacanteId: string): Promise<Vacante> {
+    const vacante = await this.vacanteRepository.findOne({
+      where: {
+        id: vacanteId,
+        estado: EstadoVacante.PUBLICA // <--- REGLA DE ORO: Solo si es pública
+      },
+      relations: ['departamento'] // Cargar depto si quieres mostrarlo
+    });
+
+    if (!vacante) {
+      throw new NotFoundException('Esta vacante no está disponible o no existe.');
+    }
+
+    return vacante;
+  }
 }

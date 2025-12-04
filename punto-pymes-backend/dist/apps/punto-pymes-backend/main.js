@@ -2685,10 +2685,6 @@ let AppController = class AppController {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'update_objetivo' }, { empresaId, objetivoId, dto });
     }
-    deleteObjetivo(req, objetivoId) {
-        const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'delete_objetivo' }, { empresaId, objetivoId });
-    }
     createEvaluacion(req, cicloId, dto) {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'create_evaluacion' }, { empresaId, cicloId, dto });
@@ -2925,6 +2921,14 @@ let AppController = class AppController {
     getAllObjetivos(req, cicloId) {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'get_all_objetivos' }, { empresaId, cicloId });
+    }
+    deleteObjetivo(req, objetivoId) {
+        const { empresaId } = req.user;
+        return this.productividadService.send({ cmd: 'delete_objetivo' }, { empresaId, objetivoId });
+    }
+    getPublicVacancy(id) {
+        console.log(`Gateway: Petición pública vacante ${id}`);
+        return this.personalService.send({ cmd: 'get_public_vacancy' }, { vacanteId: id });
     }
 };
 exports.AppController = AppController;
@@ -3660,17 +3664,6 @@ __decorate([
 ], AppController.prototype, "updateObjetivo", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
-    (0, permission_decorator_1.RequirePermission)('desempeno.objetivos.delete'),
-    (0, common_1.Delete)('desempeno/objetivos/:id'),
-    openapi.ApiResponse({ status: 200, type: Object }),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
-], AppController.prototype, "deleteObjetivo", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('desempeno.evaluaciones.create'),
     (0, common_1.Post)('desempeno/ciclos/:cicloId/evaluaciones'),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
@@ -4244,6 +4237,25 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getAllObjetivos", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('desempeno.objetivos.delete'),
+    (0, common_1.Delete)('desempeno/objetivos/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "deleteObjetivo", null);
+__decorate([
+    (0, common_1.Get)('public/vacantes/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getPublicVacancy", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),

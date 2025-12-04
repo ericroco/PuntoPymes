@@ -1903,4 +1903,16 @@ export class AppController {
     const { empresaId } = req.user;
     return this.productividadService.send({ cmd: 'delete_objetivo' }, { empresaId, objetivoId });
   }
+
+  // 1. VER VACANTE PÚBLICA (GET /public/vacantes/:id)
+  // Nota: Sin @UseGuards para que cualquiera pueda verla
+  @Get('public/vacantes/:id')
+  getPublicVacancy(@Param('id') id: string) {
+    console.log(`Gateway: Petición pública vacante ${id}`);
+    // Enviamos solo el ID, no necesitamos empresaId porque es público
+    return this.personalService.send(
+      { cmd: 'get_public_vacancy' },
+      { vacanteId: id }
+    );
+  }
 }

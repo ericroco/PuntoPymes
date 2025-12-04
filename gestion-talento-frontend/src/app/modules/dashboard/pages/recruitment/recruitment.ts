@@ -1,12 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
+
+// Importar el servicio y la interfaz
+import { RecruitmentService, Vacancy } from '../../services/recruitment';
 
 @Component({
   selector: 'app-recruitment',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatProgressBarModule
+  ],
   templateUrl: './recruitment.html',
   styleUrls: ['./recruitment.scss'],
   animations: [
@@ -22,12 +36,29 @@ import { trigger, transition, query, style, stagger, animate } from '@angular/an
     ])
   ]
 })
-export class Recruitment {
-  jobOpenings = [
-    // --- CORRECCIÓN: Añadido 'id' a cada objeto ---
-    { id: 'dev-frontend-sr', title: 'Desarrollador Frontend Senior', department: 'Tecnología', location: 'Trabajo Remoto', candidates: 12, status: 'abierta' },
-    { id: 'des-ux-ui', title: 'Diseñador UX/UI', department: 'Diseño', location: 'Oficina Loja', candidates: 25, status: 'abierta' },
-    { id: 'ana-contable', title: 'Analista Contable', department: 'Contabilidad', location: 'Oficina Loja', candidates: 8, status: 'cerrada' },
-    { id: 'esp-mkt', title: 'Especialista en Marketing Digital', department: 'Marketing', location: 'Trabajo Remoto', candidates: 31, status: 'abierta' }
-  ];
+export class Recruitment implements OnInit {
+  private recruitmentService = inject(RecruitmentService);
+
+  // Usamos la interfaz real 'Vacancy'
+  vacancies: Vacancy[] = [];
+  isLoading = true;
+
+  ngOnInit(): void {
+    this.loadVacancies();
+  }
+
+  loadVacancies() {
+    this.isLoading = true;
+    this.recruitmentService.getVacancies().subscribe({
+      next: (data) => {
+        console.log('Vacantes cargadas:', data);
+        this.vacancies = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando vacantes:', err);
+        this.isLoading = false;
+      }
+    });
+  }
 }

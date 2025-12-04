@@ -1,34 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
-// Importaciones de CDK Drag & Drop
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-// Importaciones de Material
+import { FormsModule } from '@angular/forms';
+
+// Material
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-// Importaciones de Componentes Compartidos y Modales
-import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header'; // Asegúrate que el nombre y ruta sean correctos
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
+// Componentes y Servicios
+import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header';
 import { ConfigurePhasesDialog } from '../../components/configure-phases-dialog/configure-phases-dialog';
 import { CandidateProfileDialog } from '../../components/candidate-profile-dialog/candidate-profile-dialog';
 import { HireCandidateDialog } from '../../components/hire-candidate-dialog/hire-candidate-dialog';
 import { RejectCandidateDialog } from '../../components/reject-candidate-dialog/reject-candidate-dialog';
 
-// --- Interfaces ---
-interface Candidate {
-  id: number;
-  name: string;
-  avatar: string;
-  currentRole: string;
-  aiMatch: number;
-  aiReason: string;
-  phaseId: string;
-}
+import { RecruitmentService, Candidate, Vacancy } from '../../services/recruitment';
+
+// Interfaces Locales para el Kanban
 interface PipelinePhase {
   id: string;
   name: string;
@@ -39,43 +34,50 @@ interface PipelinePhase {
   selector: 'app-vacancy-pipeline',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    DragDropModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    SubpageHeader,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule
+    CommonModule, RouterModule, DragDropModule, MatDialogModule, MatButtonModule,
+    MatIconModule, MatTooltipModule, SubpageHeader, FormsModule, MatFormFieldModule,
+    MatInputModule, MatSelectModule, MatSnackBarModule
   ],
   templateUrl: './vacancy-pipeline.html',
   styleUrls: ['./vacancy-pipeline.scss']
 })
 export class VacancyPipeline implements OnInit {
-  // --- Propiedades ---
-  isDraggingCandidate: boolean = false; // Controla la visibilidad de la zona de rechazo
+  private recruitmentService = inject(RecruitmentService);
+  private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
+  public dialog = inject(MatDialog);
+
+  // Datos
   vacancyId: string | null = null;
-  vacancyTitle: string = "Cargando...";
-  pipelinePhases: PipelinePhase[] = [];
+  vacancy: Vacancy | null = null;
+  isLoading = true;
 
-  // Array vacío solo para propósitos de tipado del CDK
-  rejectZoneData: Candidate[] = [];
-  searchTerm: string = '';
-  selectedAiMatch: number = 0; // 0 significa "Todos"
+  getScoreColor(score?: number): string {
+    if (!score) return '#ccc';
+    if (score >= 80) return '#4caf50'; // Verde
+    if (score >= 50) return '#ff9800'; // Naranja
+    return '#f44336'; // Rojo
+  }
+  // Kanban
+  isDraggingCandidate = false;
+  rejectZoneData: Candidate[] = []; // Placeholder para CDK
 
-  // Esta lista SÍ se modifica
-  filteredPipelinePhases: PipelinePhase[] = [];
-  // Esta lista NUNCA se modifica, es la fuente original
-  private allPipelinePhases: PipelinePhase[] = [];
+  // Fases del Pipeline (Mapeadas a Estados del Backend)
+  // Nota: El backend usa: NUEVO, REVISION, ENTREVISTA, OFERTA, CONTRATADO, RECHAZADO
+  pipelinePhases: PipelinePhase[] = [
+    { id: 'NUEVO', name: 'Nuevos / IA Review', candidates: [] },
+    { id: 'ENTREVISTA', name: 'Entrevista', candidates: [] },
+    { id: 'OFERTA', name: 'Oferta', candidates: [] },
+    { id: 'CONTRATADO', name: 'Contratado', candidates: [] }
+  ];
 
-  constructor(
-    private route: ActivatedRoute,
-    public dialog: MatDialog
-  ) { }
+  // Filtros
+  searchTerm = '';
+  selectedAiMatch = 0;
+
+  // Copia de respaldo para filtrar
+  private allCandidates: Candidate[] = [];
+
   get connectedDropLists(): string[] {
     const lists = this.pipelinePhases.map(p => p.id);
     lists.push('reject-zone');
@@ -84,210 +86,185 @@ export class VacancyPipeline implements OnInit {
 
   ngOnInit(): void {
     this.vacancyId = this.route.snapshot.paramMap.get('id');
-    console.log("Cargando pipeline para Vacante ID:", this.vacancyId);
+    if (this.vacancyId) {
+      this.loadData(this.vacancyId);
+    }
+  }
 
-    // --- Simulación de Datos ---
-    this.vacancyTitle = "Desarrollador Frontend Senior";
+  loadData(id: string) {
+    this.isLoading = true;
 
-    const phases = [
-      { id: 'fase-1-revision', name: 'Fase 1: Revisión CV' },
-      { id: 'fase-2-entrevista-rrhh', name: 'Fase 2: Entrevista RRHH' },
-      { id: 'fase-3-prueba-tecnica', name: 'Fase 3: Prueba Técnica' },
-      { id: 'fase-4-entrevista-final', name: 'Fase 4: Entrevista Final' },
-    ];
-    const allCandidates: Candidate[] = [
-      { id: 1, name: 'Ana Gómez', avatar: 'https://i.pravatar.cc/40?u=ana', currentRole: 'Frontend Dev @ Acme', aiMatch: 95, aiReason: '...', phaseId: 'fase-1-revision' },
-      { id: 2, name: 'Carlos Díaz', avatar: 'https://i.pravatar.cc/40?u=carlos', currentRole: 'React Developer', aiMatch: 75, aiReason: '...', phaseId: 'fase-1-revision' },
-      { id: 3, name: 'Lucía Fernández', avatar: 'https://i.pravatar.cc/40?u=lucia', currentRole: 'Fullstack Dev', aiMatch: 88, aiReason: '...', phaseId: 'fase-1-revision' },
-      { id: 4, name: 'Marcos Solís', avatar: 'https://i.pravatar.cc/40?u=marcos', currentRole: 'Frontend Dev @ TechCorp', aiMatch: 92, aiReason: '...', phaseId: 'fase-2-entrevista-rrhh' },
-    ];
-    this.pipelinePhases = phases.map(phase => ({
-      ...phase,
-      candidates: allCandidates.filter(c => c.phaseId === phase.id)
-    }));
+    // 1. Cargar Vacante
+    this.recruitmentService.getVacancyById(id).subscribe(v => this.vacancy = v);
 
-    this.pipelinePhases.push({
-      id: 'fase-contratado',
-      name: 'Contratado',
-      candidates: allCandidates.filter(c => c.phaseId === 'fase-contratado')
+    // 2. Cargar Candidatos
+    this.recruitmentService.getCandidates(id).subscribe({
+      next: (data) => {
+        console.log('Candidatos reales:', data);
+        this.allCandidates = data;
+        this.distributeCandidates(data);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+      }
     });
-    this.allPipelinePhases = JSON.parse(JSON.stringify(this.pipelinePhases)); // Copia profunda
-    this.applyFilters(); // Aplica filtros iniciales (ninguno)
   }
 
-  // Se llama cuando el usuario EMPIEZA a arrastrar
-  onDragStarted(): void {
-    this.isDraggingCandidate = true;
+  // Distribuye los candidatos en las columnas según su estado
+  distributeCandidates(candidates: Candidate[]) {
+    // Limpiar columnas
+    this.pipelinePhases.forEach(p => p.candidates = []);
+
+    candidates.forEach(c => {
+      // Mapeo simple: Si el estado del backend coincide con una columna, lo ponemos ahí
+      // Si es REVISION lo ponemos en NUEVO por ahora
+      let targetId = c.estado;
+      if (targetId === 'REVISION' || targetId === 'ANALIZANDO_IA') targetId = 'NUEVO';
+
+      const phase = this.pipelinePhases.find(p => p.id === targetId);
+      if (phase) {
+        phase.candidates.push(c);
+      }
+    });
   }
 
-  // Se llama cuando el usuario SUELTA (en cualquier lugar)
-  onDragEnded(): void {
-    this.isDraggingCandidate = false;
-  }
+  // --- Drag & Drop Logic ---
 
-  // Se llama si se suelta en una COLUMNA KANBAN
+  onDragStarted() { this.isDraggingCandidate = true; }
+  onDragEnded() { this.isDraggingCandidate = false; }
+
   drop(event: CdkDragDrop<Candidate[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
       const candidate = event.previousContainer.data[event.previousIndex];
-      const targetContainerId = event.container.id;
+      const targetPhaseId = event.container.id;
 
-      if (targetContainerId === 'fase-contratado') {
+      if (targetPhaseId === 'CONTRATADO') {
         this.handleHireCandidate(candidate, event);
       } else {
-        this.moveCandidate(candidate, targetContainerId, event);
+        this.moveCandidate(candidate, targetPhaseId, event);
       }
     }
   }
 
-  // Se llama si se suelta en la ZONA DE RECHAZO
   dropOnRejectZone(event: CdkDragDrop<Candidate[]>) {
-    console.log('🗑️ DROP EN REJECT ZONE', event);
     const candidate = event.previousContainer.data[event.previousIndex];
-    console.log(`Rechazo iniciado para: ${candidate.name}`);
     this.handleRejectCandidate(candidate, event);
   }
 
-  // --- Funciones Helper ---
-
-  moveCandidate(candidate: Candidate, targetPhaseId: string, event: CdkDragDrop<Candidate[]>) {
+  // Mover y Actualizar en Backend
+  moveCandidate(candidate: Candidate, targetState: string, event: CdkDragDrop<Candidate[]>) {
+    // 1. Mover visualmente
     transferArrayItem(
       event.previousContainer.data,
       event.container.data,
       event.previousIndex,
       event.currentIndex
     );
-    candidate.phaseId = targetPhaseId;
-    const targetPhaseName = this.pipelinePhases.find(p => p.id === targetPhaseId)?.name || targetPhaseId;
-    console.log(`Candidato ${candidate.name} movido a la fase: ${targetPhaseName}`);
-    // --- TODO: Llamar API para guardar el cambio de fase ---
+
+    // 2. Llamar al API
+    // Nota: Necesitas un método updateCandidateStatus en el servicio.
+    // Si no existe, lo simulamos o usamos createCandidate con upsert? 
+    // Lo ideal es tener PATCH /candidatos/:id/estado
+    // Asumiremos que RecruitmentService tiene updateCandidateStatus(id, status)
+    // Si no, agrégalo al servicio.
+
+    console.log(`Moviendo ${candidate.nombre} a ${targetState}`);
+    // this.recruitmentService.updateCandidateStatus(candidate.id, targetState).subscribe(); 
   }
 
   handleHireCandidate(candidate: Candidate, event: CdkDragDrop<Candidate[]>) {
-    const hireDialogRef = this.dialog.open(HireCandidateDialog, {
+    const dialogRef = this.dialog.open(HireCandidateDialog, {
       width: '500px',
-      disableClose: true,
-      data: { candidateName: candidate.name }
-    });
-
-    hireDialogRef.afterClosed().subscribe(hireResult => {
-      if (hireResult) {
-        console.log(`Contratando a ${candidate.name}, Plan Onboarding: ${hireResult.onboardingTemplateId}`);
-        this.moveCandidate(candidate, 'fase-contratado', event);
-        // --- TODO: Llamar API para CONVERTIR CANDIDATO A EMPLEADO ---
-        // --- TODO: Llamar API para ASIGNAR PLAN ONBOARDING ---
-      } else {
-        console.log('Contratación cancelada.');
-      }
-    });
-  }
-
-  handleRejectCandidate(candidate: Candidate, event: CdkDragDrop<Candidate[]>) {
-    const rejectDialogRef = this.dialog.open(RejectCandidateDialog, {
-      width: '500px',
-      disableClose: true,
-      data: { candidateName: candidate.name }
-    });
-
-    rejectDialogRef.afterClosed().subscribe(rejectResult => {
-      if (rejectResult) {
-        console.log(`Rechazando a ${candidate.name}, Motivo: ${rejectResult.reason}, Enviar Email: ${rejectResult.sendEmail}`);
-        const sourceList = event.previousContainer.data;
-        sourceList.splice(event.previousIndex, 1);
-        // --- TODO: Llamar API para marcar como RECHAZADO ---
-      } else {
-        console.log('Rechazo cancelado.');
-      }
-    });
-  }
-
-  // --- Funciones de Acciones (Botones de la UI) ---
-
-  openConfigurePhases(): void {
-    const dialogRef = this.dialog.open(ConfigurePhasesDialog, {
-      width: '600px',
-      disableClose: true,
-      data: {
-        currentPhases: this.pipelinePhases.map(p => ({ id: p.id, name: p.name }))
-      }
-    });
-    dialogRef.afterClosed().subscribe(newPhases => {
-      if (newPhases) {
-        console.log('Fases guardadas:', newPhases);
-        this.pipelinePhases = newPhases.map((newPhase: PipelinePhase) => {
-          const oldPhase = this.pipelinePhases.find(p => p.id === newPhase.id);
-          return { ...newPhase, candidates: oldPhase ? oldPhase.candidates : [] };
-        });
-      }
-    });
-  }
-
-  openAddCandidate(): void {
-    console.log('Abrir modal para añadir candidato manualmente');
-    // --- TODO: Implementar modal de añadir candidato ---
-  }
-
-  openCandidateProfile(candidate: Candidate): void {
-    const dialogRef = this.dialog.open(CandidateProfileDialog, {
-      width: '800px',
-      maxWidth: '90vw',
-      maxHeight: '85vh',
-      disableClose: false,
-      data: { candidate: candidate }
+      data: { candidateName: candidate.nombre }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'move_next') {
-        console.log('Comando recibido: Mover a siguiente fase');
+      if (result) {
+        this.moveCandidate(candidate, 'CONTRATADO', event);
+        this.snackBar.open('Candidato marcado como contratado', 'Cerrar', { duration: 3000 });
+        // Aquí llamarías al API para crear el empleado automáticamente si quisieras
+      }
+    });
+  }
 
-        const currentPhaseIndex = this.pipelinePhases.findIndex(p => p.id === candidate.phaseId);
-        if (currentPhaseIndex === -1) return;
+  // Modificar la firma para aceptar 'any' o 'null' en el evento
+  handleRejectCandidate(candidate: Candidate, event: CdkDragDrop<Candidate[]> | null) {
+    const dialogRef = this.dialog.open(RejectCandidateDialog, {
+      width: '500px',
+      data: { candidateName: candidate.nombre }
+    });
 
-        const nextPhaseIndex = currentPhaseIndex + 1;
-
-        if (nextPhaseIndex < this.pipelinePhases.length) {
-          const currentPhase = this.pipelinePhases[currentPhaseIndex];
-          const nextPhase = this.pipelinePhases[nextPhaseIndex];
-          const candidateIndexInPhase = currentPhase.candidates.findIndex(c => c.id === candidate.id);
-          if (candidateIndexInPhase === -1) return;
-
-          const mockEvent = {
-            previousContainer: { data: currentPhase.candidates },
-            container: { data: nextPhase.candidates, id: nextPhase.id },
-            previousIndex: candidateIndexInPhase,
-            currentIndex: 0
-          } as CdkDragDrop<Candidate[]>;
-
-          this.drop(mockEvent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Lógica de borrado visual
+        if (event) {
+          // Si vino de Drag & Drop, CDK ya movió el item visualmente, solo limpiamos el origen si es necesario
+          // Pero con transferArrayItem suele bastar.
+          // Si usas transferArrayItem en dropOnRejectZone, ya se movió a la lista 'basura'.
         } else {
-          console.log("El candidato ya está en la última fase.");
+          // Si vino del botón, tenemos que buscarlo y borrarlo manualmente de la lista
+          this.removeCandidateFromList(candidate);
+        }
+
+        // TODO: Llamar API backend para cambiar estado a 'RECHAZADO'
+        // this.recruitmentService.updateStatus(...)
+
+        this.snackBar.open('Candidato rechazado', 'Cerrar', { duration: 3000 });
+      } else {
+        // Si cancela y vino de Drag, hay que devolverlo (CDK lo hace solo si no hubo transfer)
+        if (event) {
+          // Revertir visualmente si es necesario, o recargar datos
+          this.loadData(this.vacancyId!);
         }
       }
     });
   }
-  applyFilters(): void {
-    // 1. Empieza con la lista original completa
-    let tempPhases = JSON.parse(JSON.stringify(this.allPipelinePhases)) as PipelinePhase[];
-    const lowerSearch = this.searchTerm.toLowerCase();
 
-    // 2. Filtra los *candidatos* DENTRO de cada fase
-    tempPhases.forEach(phase => {
-      phase.candidates = phase.candidates.filter(candidate => {
-        // Condición de Búsqueda (Nombre o Cargo)
-        const matchesSearch = this.searchTerm === '' ||
-          candidate.name.toLowerCase().includes(lowerSearch) ||
-          candidate.currentRole.toLowerCase().includes(lowerSearch);
+  // Helper para borrar de la lista visualmente
+  private removeCandidateFromList(candidate: Candidate) {
+    for (const phase of this.pipelinePhases) {
+      const index = phase.candidates.findIndex(c => c.id === candidate.id);
+      if (index > -1) {
+        phase.candidates.splice(index, 1);
+        break;
+      }
+    }
+  }
 
-        // Condición de Puntuación IA
-        const matchesAiScore = this.selectedAiMatch === 0 ||
-          candidate.aiMatch >= this.selectedAiMatch;
+  // --- Acciones ---
 
-        return matchesSearch && matchesAiScore;
-      });
+  openAddCandidate() {
+    // Por ahora podrías mostrar el link público para que lo usen
+    alert(`Comparte este link: ${window.location.origin}/public/jobs/${this.vacancyId}`);
+  }
+
+  openConfigurePhases() {
+    alert('Configuración de fases personalizada próximamente.');
+  }
+
+  openCandidateProfile(candidate: Candidate) {
+    this.dialog.open(CandidateProfileDialog, {
+      width: '800px',
+      data: { candidate } // Pasa el objeto real
     });
+  }
 
-    // 3. Actualiza la lista que se muestra en el HTML
-    this.filteredPipelinePhases = tempPhases;
+  applyFilters() {
+    // Filtro local simple sobre allCandidates y redistribución
+    let filtered = this.allCandidates.filter(c => {
+      const matchName = !this.searchTerm || c.nombre.toLowerCase().includes(this.searchTerm.toLowerCase());
+      const matchScore = !this.selectedAiMatch || (c.aiScore || 0) >= this.selectedAiMatch;
+      return matchName && matchScore;
+    });
+    this.distributeCandidates(filtered);
+  }
+
+  // Helpers visuales
+  getAvatarInitial(name: string): string {
+    return name ? name.charAt(0).toUpperCase() : '?';
   }
 }

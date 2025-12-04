@@ -292,9 +292,6 @@ let ProductividadController = class ProductividadController {
     updateObjetivo(data) {
         return this.productividadService.updateObjetivo(data.empresaId, data.objetivoId, data.dto);
     }
-    deleteObjetivo(data) {
-        return this.productividadService.deleteObjetivo(data.empresaId, data.objetivoId);
-    }
     createEvaluacion(data) {
         return this.productividadService.createEvaluacion(data.empresaId, data.cicloId, data.dto);
     }
@@ -393,6 +390,9 @@ let ProductividadController = class ProductividadController {
     }
     getAllObjetivos(data) {
         return this.productividadService.getAllObjetivos(data.empresaId, data.cicloId);
+    }
+    deleteObjetivo(data) {
+        return this.productividadService.deleteObjetivo(data.empresaId, data.objetivoId);
     }
 };
 exports.ProductividadController = ProductividadController;
@@ -592,14 +592,6 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductividadController.prototype, "updateObjetivo", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_objetivo' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], ProductividadController.prototype, "deleteObjetivo", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'create_evaluacion' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
@@ -878,6 +870,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductividadController.prototype, "getAllObjetivos", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_objetivo' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "deleteObjetivo", null);
 exports.ProductividadController = ProductividadController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [productividad_service_1.ProductividadService])
@@ -1377,13 +1377,13 @@ let ProductividadService = class ProductividadService {
     async deleteObjetivo(empresaId, objetivoId) {
         const objetivo = await this.objetivoRepository.findOne({
             where: { id: objetivoId },
-            relations: ['ciclo'],
+            relations: ['ciclo']
         });
         if (!objetivo || objetivo.ciclo.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Objetivo no encontrado.');
+            throw new common_1.NotFoundException('Objetivo no encontrado o no tienes permisos.');
         }
         await this.objetivoRepository.remove(objetivo);
-        return { message: 'Objetivo eliminado.' };
+        return { message: 'Objetivo eliminado correctamente.' };
     }
     async createEvaluacion(empresaId, cicloId, dto) {
         const ciclo = await this.cicloRepository.findOneBy({ id: cicloId, empresaId });

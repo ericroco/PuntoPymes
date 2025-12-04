@@ -31,6 +31,20 @@
             </mat-form-field>
           </div>
 
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Salario Mínimo (USD)</mat-label>
+              <input matInput type="number" formControlName="salarioMin">
+              <mat-icon matPrefix>attach_money</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Salario Máximo (USD)</mat-label>
+              <input matInput type="number" formControlName="salarioMax">
+              <mat-icon matPrefix>attach_money</mat-icon>
+            </mat-form-field>
+          </div>
+
           <mat-form-field appearance="outline">
             <mat-label>Plantilla de Pipeline</mat-label>
             <mat-select formControlName="pipelineTemplateId" required>

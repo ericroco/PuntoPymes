@@ -1,38 +1,61 @@
 <div class="page-container">
   <header class="page-header">
     <h2>Vacantes Activas</h2>
-    <button class="btn btn-primary" routerLink="/dashboard/recruitment/new">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path
-          d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-      </svg>
+
+    <button class="btn btn-primary" routerLink="/dashboard/recruitment/create">
+      <mat-icon>add_circle_outline</mat-icon>
       <span>Crear Nueva Vacante</span>
     </button>
   </header>
 
-  <div class="job-grid" @listAnimation>
-    <div *ngFor="let job of jobOpenings" class="job-card" [ngClass]="'status-' + job.status">
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <div *ngIf="!isLoading && vacancies.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">work_off</mat-icon>
+    <h3>No hay vacantes publicadas</h3>
+    <p>Crea tu primera oferta de empleo para empezar a recibir candidatos.</p>
+  </div>
+
+  <div class="job-grid" @listAnimation *ngIf="!isLoading && vacancies.length > 0">
+
+    <div *ngFor="let vacancy of vacancies" class="job-card" [ngClass]="'status-' + vacancy.estado.toLowerCase()">
+
       <div class="job-header">
-        <h3 class="job-title">{{ job.title }}</h3>
-        <span class="job-status">{{ job.status }}</span>
+        <h3 class="job-title">{{ vacancy.titulo }}</h3>
+
+        <span class="job-status">
+          {{ vacancy.estado }}
+        </span>
       </div>
+
       <div class="job-details">
-        <span>{{ job.department }}</span>
-        <span class="separator">|</span>
-        <span>{{ job.location }}</span>
+        <div class="detail-item">
+          <mat-icon>place</mat-icon>
+          <span>{{ vacancy.ubicacion || 'Remoto' }}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ vacancy.createdAt | date:'dd MMM' }}</span>
+        </div>
       </div>
+
+      <p class="job-description-preview">
+        {{ vacancy.descripcion | slice:0:100 }}...
+      </p>
+
       <div class="job-footer">
         <div class="candidates-info">
-          <strong>{{ job.candidates }}</strong>
+          <strong>{{ vacancy.candidatosCount || 0 }}</strong>
           <span>Candidatos</span>
         </div>
-        <button class="btn-icon" [routerLink]="['/dashboard/recruitment/edit', job.id]" matTooltip="Editar Vacante">
-          ✏️
-        </button>
-        <button class="btn btn-secondary" [routerLink]="['/dashboard/recruitment', job.id]">
-          Ver Vacante
-        </button>
+
+        <div class="actions">
+          <button class="btn btn-secondary" [routerLink]="['/dashboard/recruitment', vacancy.id]">
+            Ver Vacante
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 </div>

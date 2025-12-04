@@ -204,6 +204,9 @@ let PersonalController = class PersonalController {
     deleteSucursal(data) {
         return this.personalService.deleteSucursal(data.empresaId, data.sucursalId);
     }
+    getPublicVacancy(data) {
+        return this.personalService.getPublicVacancy(data.vacanteId);
+    }
 };
 exports.PersonalController = PersonalController;
 __decorate([
@@ -490,6 +493,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PersonalController.prototype, "deleteSucursal", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_public_vacancy' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "getPublicVacancy", null);
 exports.PersonalController = PersonalController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [personal_service_1.PersonalService])
@@ -1326,6 +1337,19 @@ let PersonalService = class PersonalService {
             throw new common_1.ConflictException('No se puede borrar, tiene empleados asignados.');
         await this.sucursalRepository.remove(sucursal);
         return { message: 'Sucursal eliminada correctamente.' };
+    }
+    async getPublicVacancy(vacanteId) {
+        const vacante = await this.vacanteRepository.findOne({
+            where: {
+                id: vacanteId,
+                estado: database_1.EstadoVacante.PUBLICA
+            },
+            relations: ['departamento']
+        });
+        if (!vacante) {
+            throw new common_1.NotFoundException('Esta vacante no está disponible o no existe.');
+        }
+        return vacante;
     }
 };
 exports.PersonalService = PersonalService;

@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDivider } from '@angular/material/divider';
 
 import { RecruitmentService, Vacancy } from '../../../modules/dashboard/services/recruitment';
 
@@ -18,7 +19,7 @@ import { RecruitmentService, Vacancy } from '../../../modules/dashboard/services
   imports: [
     CommonModule, ReactiveFormsModule, RouterModule,
     MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule,
-    MatSnackBarModule, MatCardModule, MatProgressSpinnerModule
+    MatSnackBarModule, MatCardModule, MatProgressSpinnerModule, MatDivider
   ],
   templateUrl: './vacancy-public-page.html',
   styleUrls: ['./vacancy-public-page.scss']
@@ -53,19 +54,6 @@ export class VacancyPublicPage implements OnInit {
     }
   }
 
-  loadVacancy(id: string) {
-    this.recruitmentService.getVacancyById(id).subscribe({
-      next: (data) => {
-        this.vacancy = data;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.isLoading = false;
-        this.snackBar.open('No se pudo cargar la vacante.', 'Cerrar');
-      }
-    });
-  }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -98,6 +86,22 @@ export class VacancyPublicPage implements OnInit {
         console.error('Error al postular:', err);
         this.isSubmitting = false;
         this.snackBar.open('Error al enviar tu solicitud. Intenta de nuevo.', 'Cerrar');
+      }
+    });
+  }
+  loadVacancy(id: string) {
+    this.isLoading = true;
+
+    // CAMBIO: Usamos el método público
+    this.recruitmentService.getPublicVacancyById(id).subscribe({
+      next: (data) => {
+        this.vacancy = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+        this.snackBar.open('Esta oferta no está disponible.', 'Cerrar');
       }
     });
   }

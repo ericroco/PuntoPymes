@@ -128,3 +128,52 @@ mat-form-field {
         }
     }
 }
+
+.page-container {
+    padding: 2rem;
+    max-width: 900px; // Ancho de lectura cómodo
+    margin: 0 auto;
+}
+
+.form-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.form-section {
+    padding: 1rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+
+    .form-field {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+.full-width {
+    width: 100%;
+}
+
+.chip-list-field {
+    width: 100%;
+
+    // Ajuste para que los chips no rompan el diseño
+    mat-chip-grid {
+        margin-bottom: 8px;
+    }
+}
+
+.page-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
