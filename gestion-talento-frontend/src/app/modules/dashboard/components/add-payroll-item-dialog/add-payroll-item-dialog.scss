@@ -1,0 +1,94 @@
+// Variables locales para mantener consistencia
+$primary-color: #3f51b5; // O tu color principal
+$text-color: #333;
+$text-light: #666;
+$success-color: #4caf50;
+$error-color: #f44336;
+
+h2[mat-dialog-title] {
+    margin: 0;
+    padding-bottom: 10px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: $primary-color;
+    border-bottom: 1px solid #eee;
+}
+
+.dialog-subtitle-container {
+    margin: 15px 0 20px 0;
+
+    .subtitle {
+        margin: 0;
+        font-size: 0.95rem;
+        color: $text-light;
+
+        .highlight {
+            color: $text-color;
+            font-weight: 600;
+        }
+    }
+}
+
+.form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; // Espaciado vertical entre campos
+    padding-top: 10px !important; // Ajuste para material dialog
+    min-width: 400px; // Ancho mínimo para que no se vea apretado
+}
+
+.full-width {
+    width: 100%;
+}
+
+// Layout de fila para Monto y Fecha
+.form-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+
+    .half-width {
+        flex: 1; // Ocupan 50% cada uno
+    }
+}
+
+// Estilos para los iconos dentro del select
+.icon-ingreso {
+    color: $success-color;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.icon-egreso {
+    color: $error-color;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.dialog-actions {
+    padding: 16px 0 0 0;
+    margin-bottom: 0;
+
+    button {
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+}
+
+// Ajuste responsive para móviles
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-content {
+        min-width: unset;
+    }
+}

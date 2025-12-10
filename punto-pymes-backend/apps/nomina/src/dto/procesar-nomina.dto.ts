@@ -1,8 +1,8 @@
-// apps/nomina/src/dto/procesar-nomina.dto.ts
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class ProcesarNominaDto {
+    @IsString()
+    @IsNotEmpty()
     @IsUUID()
-    @IsNotEmpty({ message: 'El ID del período es requerido.' })
-    periodoId: string;
+    periodoId: string; // El ID del período que vamos a calcular (Enero, Febrero, etc.)
 }

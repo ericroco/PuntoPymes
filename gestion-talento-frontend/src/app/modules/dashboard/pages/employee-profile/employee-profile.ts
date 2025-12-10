@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { forkJoin } from 'rxjs';
 
 // Componentes de diálogo
 import { AddDocumentDialog } from '../../components/add-document-dialog/add-document-dialog';
@@ -307,18 +308,40 @@ export class EmployeeProfile implements OnInit {
   }
 
   // --- NÓMINA (Historial Salarial) ---
+  // --- NÓMINA (Historial Completo: Contratos + Novedades) ---
   loadSalaryHistory(employeeId: string): void {
-    this.payrollService.getEmployeeContracts(employeeId).subscribe({
-      next: (contratos) => {
-        console.log('Contratos cargados:', contratos);
-        this.salaryHistory = contratos.map(c => ({
+
+    // Usamos forkJoin para pedir Contratos y Novedades en paralelo
+    forkJoin({
+      contratos: this.payrollService.getEmployeeContracts(employeeId),
+      novedades: this.payrollService.getEmployeeNovedades(employeeId)
+    }).subscribe({
+      next: ({ contratos, novedades }) => {
+
+        // 1. Mapear Contratos
+        const historialContratos: SalaryHistoryItem[] = contratos.map(c => ({
           date: c.fechaInicio,
           type: `Contrato ${c.tipo}`, // Ej: "Contrato Indefinido"
           amount: c.salario,
-          comments: c.estado // Ej: "Vigente"
+          comments: `Estado: ${c.estado}`
         }));
+
+        // 2. Mapear Novedades (Bonos/Descuentos)
+        const historialNovedades: SalaryHistoryItem[] = novedades.map(n => ({
+          date: n.fecha,
+          type: n.concepto?.nombre || 'Novedad', // Ej: "Bono Productividad"
+          // Si es egreso, lo mostramos negativo visualmente o lo manejas en el HTML
+          amount: n.concepto?.tipo === 'Egreso' ? -Math.abs(n.valor) : Number(n.valor),
+          comments: n.observacion || (n.estado === 'Pendiente' ? 'Pendiente de Pago' : 'Procesado')
+        }));
+
+        // 3. Unificar y Ordenar por fecha (Más reciente primero)
+        this.salaryHistory = [...historialContratos, ...historialNovedades]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        console.log('Historial Salarial Combinado:', this.salaryHistory);
       },
-      error: (err) => console.error('Error cargando historial salarial:', err)
+      error: (err) => console.error('Error cargando historial financiero:', err)
     });
   }
   loadAttendanceSummary(employeeId: string) {

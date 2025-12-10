@@ -238,4 +238,27 @@ export class NominaController {
   getSolicitudes(@Payload() data: { empresaId: string }) {
     return this.nominaService.getSolicitudes(data.empresaId);
   }
+
+  @MessagePattern({ cmd: 'crear_novedad' })
+  crearNovedad(@Payload() data: any) {
+    return this.nominaService.registrarNovedad(data);
+  }
+  @MessagePattern({ cmd: 'obtener_novedades_empleado' })
+  obtenerNovedadesPorEmpleado(@Payload() data: { empleadoId: string }) {
+    return this.nominaService.obtenerNovedadesPorEmpleado(data.empleadoId);
+  }
+
+  @MessagePattern({ cmd: 'get_configuracion_nomina' })
+  getConfig(@Payload() data: { empresaId: string }) {
+    return this.nominaService.obtenerConfiguracion(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'update_configuracion_nomina' })
+  updateConfig(@Payload() data: { empresaId: string; config: any }) {
+    return this.nominaService.actualizarConfiguracion(data.empresaId, data.config);
+  }
+  @MessagePattern({ cmd: 'obtener_reporte_nomina' })
+  obtenerReporte(@Payload() data: { empresaId: string, periodoId: string }) {
+    return this.nominaService.obtenerReporteNomina(data.empresaId, data.periodoId);
+  }
 }

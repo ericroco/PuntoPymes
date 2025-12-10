@@ -1,252 +1,547 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { AddPayrollItemDialog } from '../../components/add-payroll-item-dialog/add-payroll-item-dialog';
 import { FormsModule } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+// Material Modules
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { ConfirmationDialog } from '../../../../shared/components/confirmation-dialog/confirmation-dialog'; // Ajusta la ruta si es necesario
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 
-// --- NUEVAS IMPORTACIONES ---
-import { SelectionModel } from '@angular/cdk/collections'; // Para gestionar selecciones
-import { MatCheckboxModule } from '@angular/material/checkbox'; // Para los checkboxes
-// --- Fin Importaciones ---
+// Componentes y Servicios
+import { AddPayrollItemDialog } from '../../components/add-payroll-item-dialog/add-payroll-item-dialog';
+import { ConfirmationDialog } from '../../../../shared/components/confirmation-dialog/confirmation-dialog';
+import { EmployeesService } from '../../services/employees';
+import { CatalogService } from '../../services/catalog';
+import { ProcessPayrollDialog } from '../../components/process-payroll-dialog/process-payroll-dialog'; // Importar el componente nuevo
+import {
+  PayrollService,
+  ConceptoNomina,
+  CreateNovedadDto
+} from '../../services/payroll'; // Importamos las interfaces correctas
 
-// Interfaces (Asegúrate de que coincidan)
+// Interfaz local para mostrar en la tabla
 interface EmployeePayroll {
-  id: number;
+  id: string;
   name: string;
   role: string;
-  department: string; // Necesario para el filtro
+  nroIdentificacion: string;
+  tipoIdentificacion: string;
+  department: string;
   salary: number;
   lastRevision: string;
 }
-interface PayrollItem { id: number; name: string; type: 'Ingreso' | 'Descuento'; isRecurring: boolean; }
 
 @Component({
   selector: 'app-payroll',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    MatDialogModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatIconModule,
-    MatCheckboxModule
+    CommonModule, RouterModule, MatDialogModule, FormsModule, MatFormFieldModule,
+    MatInputModule, MatSelectModule, MatIconModule, MatCheckboxModule, MatSnackBarModule, MatTooltipModule,
+    MatMenuModule
   ],
   templateUrl: './payroll.html',
-  styleUrls: ['./payroll.scss'],
-  // No necesitamos la animación de lista aquí si la tabla se actualiza dinámicamente
+  styleUrls: ['./payroll.scss']
 })
-export class Payroll implements OnInit { // Implementar OnInit
+export class Payroll implements OnInit {
+  // Inyecciones
+  private employeesService = inject(EmployeesService);
+  private payrollService = inject(PayrollService);
+  private catalogService = inject(CatalogService);
+  private snackBar = inject(MatSnackBar);
+  public dialog = inject(MatDialog);
 
-  // --- Propiedades para Filtros y Datos ---
+  // Filtros
   searchTerm: string = '';
-  selectedDepartment: string = 'todos'; // 'todos' es el valor para "Todos"
+  selectedDepartment: string = 'todos';
   departments: string[] = [];
 
-  allEmployees: EmployeePayroll[] = []; // Lista maestra original
-  filteredEmployees: EmployeePayroll[] = []; // Lista que se muestra en la tabla
+  // Datos
+  allEmployees: EmployeePayroll[] = [];
+  lastProcessedPeriodId: string | null = null;
+  filteredEmployees: EmployeePayroll[] = [];
 
-  // Propiedad para los totales calculados
-  totals = {
-    count: 0,
-    totalSalary: 0
-  };
-
-  // Datos de ejemplo para Novedades (debe venir de Configuración)
-  availablePayrollItems: PayrollItem[] = [
-    { id: 1, name: 'Bono Productividad', type: 'Ingreso', isRecurring: false },
-    { id: 2, name: 'Anticipo Salarial', type: 'Descuento', isRecurring: false },
-  ];
+  // Selección y Totales
+  totals = { count: 0, totalSalary: 0 };
   selection = new SelectionModel<EmployeePayroll>(true, []);
 
-  constructor(public dialog: MatDialog) { }
+  // Catálogo de Novedades (Ahora dinámico)
+  availablePayrollItems: ConceptoNomina[] = [];
 
   ngOnInit(): void {
-    // --- Simulación de Carga de Datos ---
-    // En una app real, cargarías 'allEmployees' desde una API
-    this.allEmployees = [
-      { id: 1, name: 'Jeimy Torres', role: 'Desarrolladora Frontend', department: 'Tecnología', salary: 1800, lastRevision: '2025-01-15' },
-      { id: 2, name: 'Valentina Samaniego', role: 'Diseñadora UX/UI', department: 'Diseño', salary: 1650, lastRevision: '2025-02-01' },
-      { id: 3, name: 'Gabriela Loyola', role: 'Contadora Principal', department: 'Contabilidad', salary: 2200, lastRevision: '2024-12-10' },
-      { id: 4, name: 'Erick Rodas', role: 'Líder de Proyecto', department: 'Tecnología', salary: 2500, lastRevision: '2025-01-15' },
-      // ... (añadir más empleados para probar filtros)
-    ];
-
-    // Poblar la lista de departamentos para el dropdown de filtro
-    this.departments = [...new Set(this.allEmployees.map(emp => emp.department))].sort();
-
-    // Aplicar filtros iniciales (mostrar todo)
-    this.applyFilters();
+    this.loadData();
+    this.loadConcepts(); // Cargar conceptos reales de la BD
+    this.checkLastProcessedPeriod();
   }
 
-  // --- Lógica Principal de Filtrado ---
+  // --- CARGA DE DATOS ---
+
+  loadConcepts() {
+    this.payrollService.getConceptos().subscribe({
+      next: (data) => {
+        this.availablePayrollItems = data;
+      },
+      error: (err) => console.error('Error cargando conceptos de nómina:', err)
+    });
+  }
+
+  loadData() {
+    // 1. Cargar Departamentos (para el filtro)
+    this.catalogService.getDepartments().subscribe(depts => {
+      this.departments = depts.map(d => d.nombre);
+    });
+
+    // 2. Cargar Empleados Reales
+    this.employeesService.getEmployees().subscribe({
+      next: (data) => {
+        // Mapeamos la data del backend a la estructura de la tabla
+        this.allEmployees = data.map(emp => {
+
+          // A. BUSCAR CONTRATO VIGENTE (Tu lógica)
+          const contratoVigente = emp.contratos?.find(c =>
+            c.estado === 'Vigente' || c.estado === 'Activo'
+          );
+
+          // B. EXTRAER DATOS DEL CONTRATO
+          const salarioReal = contratoVigente ? Number(contratoVigente.salario) : 0;
+
+          // Usamos la fecha del contrato, o la de contratación del empleado, o hoy.
+          const fechaRef = contratoVigente?.fechaInicio || emp.fechaInicio || (emp as any).createdAt || new Date().toISOString();
+
+          return {
+            id: emp.id,
+            name: `${emp.nombre} ${emp.apellido}`,
+            role: emp.cargo?.nombre || 'Sin Cargo',
+            nroIdentificacion: emp.nroIdentificacion || 'Sin Identificación',
+            tipoIdentificacion: emp.tipoIdentificacion || 'Sin Tipo',
+            department: emp.cargo?.departamento?.nombre || 'Sin Depto',
+            salary: salarioReal,
+            lastRevision: fechaRef
+          };
+        });
+
+        this.applyFilters();
+      },
+      error: (err) => console.error('Error cargando empleados:', err)
+    });
+  }
+
+  // --- FILTROS Y CÁLCULOS ---
+
   applyFilters(): void {
-    // 1. Empezar con la lista completa
-    let tempEmployees = [...this.allEmployees];
-    const lowerSearch = this.searchTerm.toLowerCase();
+    let temp = [...this.allEmployees];
+    const search = this.searchTerm.toLowerCase();
 
-    // 2. Filtrar por Término de Búsqueda (Nombre o Cargo)
     if (this.searchTerm) {
-      tempEmployees = tempEmployees.filter(emp =>
-        emp.name.toLowerCase().includes(lowerSearch) ||
-        emp.role.toLowerCase().includes(lowerSearch)
+      temp = temp.filter(e =>
+        e.name.toLowerCase().includes(search) ||
+        e.role.toLowerCase().includes(search)
       );
     }
 
-    // 3. Filtrar por Departamento
-    if (this.selectedDepartment && this.selectedDepartment !== 'todos') {
-      tempEmployees = tempEmployees.filter(emp =>
-        emp.department === this.selectedDepartment
-      );
+    if (this.selectedDepartment !== 'todos') {
+      temp = temp.filter(e => e.department === this.selectedDepartment);
     }
 
-    // 4. Actualizar la lista visible
-    this.filteredEmployees = tempEmployees;
-
-    // 5. Recalcular los totales basados en la lista filtrada
+    this.filteredEmployees = temp;
     this.calculateTotals();
   }
 
-  // --- Lógica para Calcular Totales ---
   calculateTotals(): void {
     this.totals.count = this.filteredEmployees.length;
-    // Suma los salarios de la lista filtrada
-    this.totals.totalSalary = this.filteredEmployees.reduce((sum, emp) => sum + emp.salary, 0);
+    this.totals.totalSalary = this.filteredEmployees.reduce((sum, e) => sum + e.salary, 0);
   }
 
-  // --- Lógica del Modal (sin cambios) ---
-  openAddItemDialog(employee: EmployeePayroll): void {
-    const dialogRef = this.dialog.open(AddPayrollItemDialog, {
-      width: '450px',
-      disableClose: true,
-      data: {
-        employeeName: employee.name,
-        employeeId: employee.id,
-        availableItems: this.availablePayrollItems.filter(item => !item.isRecurring)
-      }
-    });
+  // --- SELECCIÓN ---
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // 'result' ahora contiene: { employeeId, itemName, itemType, amount, comments, applicationDate }
-        console.log('Novedad individual registrada:', result);
-        // --- TODO: Llamar API y pasar el 'result' completo ---
-        alert(`Novedad registrada para ${employee.name} en la fecha ${result.applicationDate}`);
-      }
-    });
-  }
   isAllSelected() {
     const numSelected = this.selection.selected.length;
     const numRows = this.filteredEmployees.length;
     return numSelected === numRows;
   }
+
   toggleAllRows() {
     if (this.isAllSelected()) {
-      this.selection.clear(); // Limpia la selección
+      this.selection.clear();
       return;
     }
-    // Selecciona todas las filas que están *actualmente filtradas*
     this.selection.select(...this.filteredEmployees);
   }
 
-  /** Etiqueta para la accesibilidad del checkbox de fila */
-  checkboxLabel(row?: EmployeePayroll): string {
-    if (!row) {
-      return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
-    }
-    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.id + 1}`;
-  }
+  // --- ACCIÓN: REGISTRAR NOVEDAD (Individual) ---
 
-  /** Abre el modal para aplicar una novedad a todos los empleados seleccionados */
-  openBulkAddItemDialog(): void {
-    const selectedCount = this.selection.selected.length;
-    if (selectedCount === 0) {
-      alert('Por favor, selecciona al menos un empleado.');
-      return;
-    }
-
-    // Reutilizamos el mismo modal 'AddPayrollItemDialog'
-    // pero le pasamos datos diferentes (el conteo en lugar de un nombre)
+  openAddItemDialog(employee: EmployeePayroll): void {
     const dialogRef = this.dialog.open(AddPayrollItemDialog, {
       width: '450px',
-      disableClose: true,
       data: {
-        // No pasamos 'employeeName' ni 'employeeId'
-        selectedCount: selectedCount, // Pasamos el número de empleados
-        availableItems: this.availablePayrollItems.filter(item => !item.isRecurring)
+        employeeName: employee.name,
+        // Pasamos la lista real cargada del backend
+        availableItems: this.availablePayrollItems
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // 'result' = { item, amount, comments, applicationDate }
-
-      // Si el usuario guardó en el primer modal...
       if (result) {
+        // Construimos el DTO correcto para el backend
+        const dto: CreateNovedadDto = {
+          empleadoId: employee.id,
+          conceptoId: result.item.id, // Usamos el ID del concepto seleccionado
+          monto: result.amount,
+          fecha: result.applicationDate, // Debe ser string YYYY-MM-DD (asegurado en el modal)
+          observacion: result.comments
+        };
 
-        // --- 2. ¡NO EJECUTAR TODAVÍA! Abrir el SEGUNDO modal (Confirmación) ---
+        this.payrollService.createNovedad(dto).subscribe({
+          next: () => this.snackBar.open('Novedad registrada correctamente', 'Cerrar', { duration: 3000 }),
+          error: () => this.snackBar.open('Error al guardar novedad', 'Cerrar')
+        });
+      }
+    });
+  }
 
-        // Formateamos los datos para el mensaje de confirmación
-        const itemType = result.item.type;
-        const itemName = result.item.name;
-        const amountDisplay = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(result.amount);
-        const dateDisplay = new Date(result.applicationDate + 'T00:00:00').toLocaleDateString('es-EC'); // Formato local
+  // --- ACCIÓN: REGISTRAR NOVEDAD (Masiva) ---
 
-        const confirmTitle = `Confirmar Acción Masiva (${itemType})`;
-        const confirmMessage = `Estás a punto de registrar la novedad "${itemName}" por un monto de ${amountDisplay} (USD) a ${selectedCount} empleados, con fecha de aplicación ${dateDisplay}. ¿Estás seguro de que deseas continuar?`;
+  openBulkAddItemDialog(): void {
+    if (this.selection.isEmpty()) return;
 
-        const confirmDialogRef = this.dialog.open(ConfirmationDialog, {
-          width: '450px',
+    const dialogRef = this.dialog.open(AddPayrollItemDialog, {
+      width: '450px',
+      data: {
+        selectedCount: this.selection.selected.length,
+        availableItems: this.availablePayrollItems
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const confirmRef = this.dialog.open(ConfirmationDialog, {
+          width: '400px',
           data: {
-            title: confirmTitle,
-            message: confirmMessage,
-            confirmButtonText: 'Sí, aplicar a todos',
-            cancelButtonText: 'Cancelar'
+            title: 'Confirmar Acción Masiva',
+            message: `Se aplicará el concepto "${result.item.nombre}" a ${this.selection.selected.length} empleados. ¿Continuar?`,
+            confirmButtonText: 'Sí, aplicar'
           }
         });
 
-        // --- 3. Escuchar el resultado del SEGUNDO modal ---
-        confirmDialogRef.afterClosed().subscribe(confirmed => {
-
-          // Si el usuario confirma en el segundo modal...
+        confirmRef.afterClosed().subscribe(confirmed => {
           if (confirmed) {
-            console.log('Confirmado. Aplicando novedad masiva:', result);
-
-            // --- 4. EJECUTAR LA LÓGICA (AHORA SÍ) ---
-            this.selection.selected.forEach(employee => {
-              const finalAmount = itemType === 'Descuento' ? -Math.abs(result.amount) : result.amount;
-              const noveltyData = {
-                employeeId: employee.id,
-                itemName: itemName,
-                itemType: itemType,
-                amount: finalAmount,
-                comments: result.comments,
-                applicationDate: result.applicationDate
-              };
-              console.log(`Aplicando a ${employee.name}:`, noveltyData);
-              // --- TODO: Llamar API (en bucle o API masiva) para guardar esta novedad ---
-            });
-
-            this.selection.clear();
-            alert(`Novedad registrada exitosamente para ${selectedCount} empleados (simulación).`);
-
-          } else {
-            // Si el usuario cancela el segundo modal
-            console.log('Acción masiva cancelada por el usuario.');
+            this.processBulkItems(result);
           }
-        }); // Fin .afterClosed() del modal de confirmación
-
-      } else {
-        // Si el usuario cancela el primer modal (AddPayrollItemDialog)
-        console.log('Registro de novedad cancelado.');
+        });
       }
+    });
+  }
+
+  // Procesa la lista y envía al backend
+  processBulkItems(resultData: any) {
+    let completed = 0;
+    const total = this.selection.selected.length;
+    let errors = 0;
+
+    this.selection.selected.forEach(emp => {
+      const dto: CreateNovedadDto = {
+        empleadoId: emp.id,
+        conceptoId: resultData.item.id,
+        monto: resultData.amount,
+        fecha: resultData.applicationDate,
+        observacion: `Masivo: ${resultData.comments || ''}`
+      };
+
+      this.payrollService.createNovedad(dto).subscribe({
+        next: () => {
+          completed++;
+          this.checkBulkCompletion(completed, total, errors);
+        },
+        error: () => {
+          completed++;
+          errors++;
+          this.checkBulkCompletion(completed, total, errors);
+        }
+      });
+    });
+  }
+
+  checkBulkCompletion(completed: number, total: number, errors: number) {
+    if (completed === total) {
+      this.selection.clear();
+      if (errors === 0) {
+        this.snackBar.open(`¡Éxito! ${total} novedades registradas.`, 'Cerrar', { duration: 4000 });
+      } else {
+        this.snackBar.open(`Proceso terminado con ${errors} errores.`, 'Cerrar', { duration: 5000 });
+      }
+    }
+  }
+  // ==========================================
+  // LÓGICA DE EXPORTACIÓN (NUEVO)
+  // ==========================================
+  exportToCsv(): void {
+    const dataToExport = this.filteredEmployees.map(emp => ({
+      'ID Sistema': emp.id,
+      'Cédula/ID': emp.nroIdentificacion !== 'S/N' ? `\t${emp.nroIdentificacion}` : '',
+      'Tipo Identificación': emp.tipoIdentificacion,
+      'Nombre Completo': emp.name,
+      'Cargo': emp.role,
+      'Departamento': emp.department,
+      'Salario Base': emp.salary,
+      'Fecha Referencia': this.formatDate(emp.lastRevision),
+      'Fecha de Reporte': new Date().toLocaleDateString()
+    }));
+
+    if (dataToExport.length === 0) {
+      this.snackBar.open('No hay datos para exportar', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    // 2. Definir encabezados (Keys del objeto)
+    const headers = Object.keys(dataToExport[0]);
+
+    // 3. Convertir a formato CSV
+    const csvContent = this.convertToCSV(dataToExport, headers);
+
+    // 4. Descargar el archivo
+    this.downloadFile(csvContent, `Nomina_Empleados_${new Date().toISOString().split('T')[0]}.csv`);
+  }
+
+  // Helper: Convierte Array de Objetos a String CSV
+  private convertToCSV(objArray: any[], headerList: string[]): string {
+    const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray;
+    let str = '';
+
+    // Agregar fila de encabezados
+    str += headerList.join(',') + '\r\n';
+
+    // Agregar filas de datos
+    for (let i = 0; i < array.length; i++) {
+      let line = '';
+      for (const index in headerList) {
+        const head = headerList[index];
+        let value = array[i][head];
+
+        // Manejar strings que puedan tener comas (encerrar en comillas)
+        if (typeof value === 'string' && value.includes(',')) {
+          value = `"${value}"`;
+        }
+
+        if (line !== '') line += ',';
+        line += value;
+      }
+      str += line + '\r\n';
+    }
+    return str;
+  }
+
+  // Helper: Genera y descarga el Blob
+  private downloadFile(csvData: string, filename: string) {
+    const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' }); // \ufeff es BOM para que Excel lea tildes correctamente
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+  }
+
+  // Helper simple de fecha
+  private formatDate(isoDate: string): string {
+    if (!isoDate) return '';
+    return new Date(isoDate).toLocaleDateString();
+  }
+
+  openProcessDialog() {
+    const dialogRef = this.dialog.open(ProcessPayrollDialog, {
+      width: '450px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(periodoId => {
+      if (periodoId) {
+        this.runPayrollProcess(periodoId);
+      }
+    });
+  }
+
+  runPayrollProcess(periodoId: string) {
+    // Mostramos un loading global o un snackbar
+    const snackRef = this.snackBar.open('Procesando nómina, por favor espera...', '', { duration: 0 }); // Indefinido
+
+    this.payrollService.procesarNomina(periodoId).subscribe({
+      next: (res) => {
+        snackRef.dismiss();
+        this.snackBar.open(`¡Éxito! ${res.message}`, 'Cerrar', { duration: 5000, panelClass: ['success-snackbar'] });
+
+        // Aquí podrías recargar la tabla para mostrar los valores calculados si tu tabla soporta ver historial
+        this.loadData();
+      },
+      error: (err) => {
+        snackRef.dismiss();
+        console.error(err);
+        this.snackBar.open(err.error?.message || 'Error al procesar nómina', 'Cerrar', { duration: 5000 });
+      }
+    });
+  }
+
+  // ==========================================
+  // 1. EXPORTAR REPORTE GENERAL (CSV / EXCEL)
+  // ==========================================
+  exportGeneralReport(periodoId: string) {
+    this.payrollService.getReporteNomina(periodoId).subscribe({
+      next: (data) => {
+        // Aplanamos la data para el CSV (1 fila por empleado)
+        const csvData = data.map(item => ({
+          'Cédula': item.empleado.cedula,
+          'Empleado': `${item.empleado.nombre} ${item.empleado.apellido}`,
+          'Cargo': item.empleado.cargo,
+          'Total Ingresos': item.totales.ingresos,
+          'Total Egresos': item.totales.egresos,
+          'NETO A PAGAR': item.totales.neto
+        }));
+
+        const headers = Object.keys(csvData[0]);
+        const csvContent = this.convertToCSV(csvData, headers);
+        this.downloadFile(csvContent, `Reporte_General_${periodoId}.csv`);
+
+        this.snackBar.open('Reporte General descargado', 'Cerrar', { duration: 3000 });
+      },
+      error: () => this.snackBar.open('Error al generar reporte', 'Cerrar')
+    });
+  }
+
+  // ==========================================
+  // 2. EXPORTAR ROLES INDIVIDUALES (PDF)
+  // ==========================================
+  exportIndividualPayslips(periodoId: string) {
+    this.payrollService.getReporteNomina(periodoId).subscribe({
+      next: (nominas) => {
+        const doc = new jsPDF();
+        let yPos = 0;
+
+        nominas.forEach((nomina, index) => {
+          // Si no es el primero, agregamos nueva página
+          if (index > 0) doc.addPage();
+
+          // --- CABECERA ---
+          doc.setFontSize(16);
+          doc.text('ROL DE PAGOS INDIVIDUAL', 105, 20, { align: 'center' });
+
+          doc.setFontSize(10);
+          doc.text(`Empleado: ${nomina.empleado.nombre} ${nomina.empleado.apellido}`, 14, 40);
+          doc.text(`Cédula: ${nomina.empleado.cedula}`, 14, 46);
+          doc.text(`Cargo: ${nomina.empleado.cargo}`, 14, 52);
+
+          // Fecha reporte (derecha)
+          doc.text(`Fecha Emisión: ${new Date().toLocaleDateString()}`, 150, 40);
+
+          // --- TABLA DE DETALLES ---
+          // Preparamos datos para la tabla: Ingresos a la izquierda, Egresos a la derecha
+          const maxRows = Math.max(nomina.detalles.ingresos.length, nomina.detalles.egresos.length);
+          const bodyData = [];
+
+          for (let i = 0; i < maxRows; i++) {
+            const ing = nomina.detalles.ingresos[i] || { concepto: '', valor: '' };
+            const egr = nomina.detalles.egresos[i] || { concepto: '', valor: '' };
+
+            bodyData.push([
+              ing.concepto,
+              ing.valor ? `$${Number(ing.valor).toFixed(2)}` : '',
+              egr.concepto,
+              egr.valor ? `$${Number(egr.valor).toFixed(2)}` : ''
+            ]);
+          }
+
+          // Dibujar Tabla
+          autoTable(doc, {
+            startY: 60,
+            head: [['INGRESOS', 'Monto', 'EGRESOS', 'Monto']],
+            body: bodyData,
+            theme: 'grid',
+            headStyles: { fillColor: [63, 81, 181] }, // Tu color primario (Indigo)
+            styles: { fontSize: 9 },
+            columnStyles: {
+              0: { cellWidth: 60 }, // Concepto Ingreso
+              1: { cellWidth: 30, halign: 'right' }, // Valor Ingreso
+              2: { cellWidth: 60 }, // Concepto Egreso
+              3: { cellWidth: 30, halign: 'right' }  // Valor Egreso
+            }
+          });
+
+          // Obtener posición final de la tabla
+          // @ts-ignore
+          yPos = doc.lastAutoTable.finalY + 10;
+
+          // --- TOTALES ---
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+
+          doc.text(`Total Ingresos: $${Number(nomina.totales.ingresos).toFixed(2)}`, 14, yPos);
+          doc.text(`Total Egresos: $${Number(nomina.totales.egresos).toFixed(2)}`, 110, yPos);
+
+          yPos += 15;
+          doc.setFontSize(12);
+          doc.setFillColor(230, 230, 230); // Fondo gris claro
+          doc.rect(14, yPos - 6, 180, 10, 'F'); // Caja de fondo
+          doc.text(`LÍQUIDO A RECIBIR: $${Number(nomina.totales.neto).toFixed(2)}`, 105, yPos, { align: 'center' });
+
+          // --- FIRMAS ---
+          yPos += 40;
+          doc.setLineWidth(0.5);
+          doc.line(30, yPos, 80, yPos); // Línea Firma 1
+          doc.line(130, yPos, 180, yPos); // Línea Firma 2
+
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Firma Empleador / RRHH', 55, yPos + 5, { align: 'center' });
+          doc.text('Firma Empleado', 155, yPos + 5, { align: 'center' });
+
+        });
+
+        // Descargar PDF único con todas las páginas
+        doc.save(`Roles_Pago_${periodoId}.pdf`);
+        this.snackBar.open('Roles de pago generados', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => console.error(err)
+    });
+  }
+  checkLastProcessedPeriod() {
+    this.payrollService.getPeriodos().subscribe({
+      next: (periodos) => {
+        console.log('📦 1. Todos los periodos recibidos:', periodos);
+
+        // Filtro robusto: Ignora mayúsculas y espacios
+        const procesados = periodos.filter(p => {
+          // Protección contra nulos
+          if (!p.estado) return false;
+
+          const estadoLimpio = p.estado.trim().toLowerCase();
+          return estadoLimpio === 'procesado' || estadoLimpio === 'cerrado';
+        });
+
+        console.log('✅ 2. Periodos filtrados (Procesados):', procesados);
+
+        if (procesados.length > 0) {
+          // Ordenar: El más reciente primero
+          procesados.sort((a, b) => new Date(b.fechaFin).getTime() - new Date(a.fechaFin).getTime());
+
+          this.lastProcessedPeriodId = procesados[0].id;
+          console.log('🎯 3. ID ASIGNADO al botón:', this.lastProcessedPeriodId);
+        } else {
+          console.warn('⚠️ 3. No se encontró ningún periodo procesado. El botón seguirá gris.');
+          this.lastProcessedPeriodId = null;
+        }
+      },
+      error: (err) => console.error('❌ Error trayendo periodos:', err)
     });
   }
 }

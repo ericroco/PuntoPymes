@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>Crear Nuevo Proyecto</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSave()">
+    <mat-dialog-content class="dialog-content">
+
+        <p class="hint-text">
+            Define el proyecto y asigna un líder técnico o manager.
+        </p>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre del Proyecto</mat-label>
+            <input matInput formControlName="nombre" placeholder="Ej: App Móvil v2" required>
+            <mat-error>Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descripción</mat-label>
+            <textarea matInput formControlName="descripcion" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Líder del Proyecto</mat-label>
+            <mat-select formControlName="liderId" required>
+                <mat-option *ngFor="let emp of data.employees" [value]="emp.id">
+                    {{ emp.nombre }} {{ emp.apellido }}
+                </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error>Debes asignar un líder</mat-error>
+        </mat-form-field>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button type="button" mat-button mat-dialog-close>Cancelar</button>
+        <button type="submit" mat-flat-button color="primary" [disabled]="form.invalid">
+            Crear Proyecto
+        </button>
+    </mat-dialog-actions>
+</form>

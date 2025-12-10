@@ -80,4 +80,12 @@ export class CreateEmpleadoDto {
   @IsOptional()
   @IsDateString()
   fechaFin?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  tipoIdentificacion: string; // 'Cedula' | 'Pasaporte'
+
+  @IsString()
+  @IsNotEmpty()
+  nroIdentificacion: string;
 }

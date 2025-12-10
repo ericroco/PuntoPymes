@@ -456,8 +456,9 @@ class ProcesarNominaDto {
 }
 exports.ProcesarNominaDto = ProcesarNominaDto;
 __decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)({ message: 'El ID del período es requerido.' }),
     __metadata("design:type", String)
 ], ProcesarNominaDto.prototype, "periodoId", void 0);
 
@@ -681,8 +682,10 @@ class CreateEmpleadoDto {
     tipoContrato;
     fechaInicio;
     fechaFin;
+    tipoIdentificacion;
+    nroIdentificacion;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, emailPersonal: { required: false, type: () => String, format: "email" }, telefono: { required: false, type: () => String }, fechaNacimiento: { required: false, type: () => String }, cargoId: { required: true, type: () => String, format: "uuid" }, rolId: { required: true, type: () => String, description: "El ID del Rol (permisos) que tendr\u00E1.", format: "uuid" }, jefeId: { required: false, type: () => String, description: "(Opcional) ID del Empleado que ser\u00E1 su jefe.", format: "uuid" }, sucursalId: { required: false, type: () => String, format: "uuid" }, salario: { required: false, type: () => Number, minimum: 0 }, tipoContrato: { required: false, type: () => String }, fechaInicio: { required: false, type: () => String }, fechaFin: { required: false, type: () => String } };
+        return { nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, emailPersonal: { required: false, type: () => String, format: "email" }, telefono: { required: false, type: () => String }, fechaNacimiento: { required: false, type: () => String }, cargoId: { required: true, type: () => String, format: "uuid" }, rolId: { required: true, type: () => String, description: "El ID del Rol (permisos) que tendr\u00E1.", format: "uuid" }, jefeId: { required: false, type: () => String, description: "(Opcional) ID del Empleado que ser\u00E1 su jefe.", format: "uuid" }, sucursalId: { required: false, type: () => String, format: "uuid" }, salario: { required: false, type: () => Number, minimum: 0 }, tipoContrato: { required: false, type: () => String }, fechaInicio: { required: false, type: () => String }, fechaFin: { required: false, type: () => String }, tipoIdentificacion: { required: true, type: () => String }, nroIdentificacion: { required: true, type: () => String } };
     }
 }
 exports.CreateEmpleadoDto = CreateEmpleadoDto;
@@ -752,6 +755,16 @@ __decorate([
     (0, class_validator_1.IsDateString)(),
     __metadata("design:type", String)
 ], CreateEmpleadoDto.prototype, "fechaFin", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateEmpleadoDto.prototype, "tipoIdentificacion", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateEmpleadoDto.prototype, "nroIdentificacion", void 0);
 
 
 /***/ }),
@@ -2930,6 +2943,22 @@ let AppController = class AppController {
         console.log(`Gateway: Petición pública vacante ${id}`);
         return this.personalService.send({ cmd: 'get_public_vacancy' }, { vacanteId: id });
     }
+    async crearNovedad(req, body) {
+        const { empresaId } = req.user;
+        return this.nominaService.send({ cmd: 'crear_novedad' }, { ...body, empresaId });
+    }
+    async getNovedadesEmpleado(id) {
+        return this.nominaService.send({ cmd: 'obtener_novedades_empleado' }, { empleadoId: id });
+    }
+    async getNominaConfig(req) {
+        return this.nominaService.send({ cmd: 'get_configuracion_nomina' }, { empresaId: req.user.empresaId });
+    }
+    async updateNominaConfig(req, config) {
+        return this.nominaService.send({ cmd: 'update_configuracion_nomina' }, { empresaId: req.user.empresaId, config });
+    }
+    async getReporteNomina(req, periodoId) {
+        return this.nominaService.send({ cmd: 'obtener_reporte_nomina' }, { empresaId: req.user.empresaId, periodoId });
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -4256,6 +4285,55 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getPublicVacancy", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('nomina/novedades'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "crearNovedad", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('nomina/novedades/empleado/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getNovedadesEmpleado", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('nomina/configuracion'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getNominaConfig", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('nomina/configuracion'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "updateNominaConfig", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('nomina.reportes'),
+    (0, common_1.Get)('nomina/reportes/:periodoId'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('periodoId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getReporteNomina", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -6215,6 +6293,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     nombre;
     planSuscripcion;
     branding;
+    configuracion;
     empleados;
     roles;
     departamentos;
@@ -6227,7 +6306,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     vacantes;
     sucursales;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
+        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, configuracion: { required: true, type: () => Object }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
     }
 };
 exports.Empresa = Empresa;
@@ -6255,6 +6334,14 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], Empresa.prototype, "branding", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'jsonb',
+        nullable: true,
+        comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+    }),
+    __metadata("design:type", Object)
+], Empresa.prototype, "configuracion", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.empresa, { cascade: true }),
     __metadata("design:type", Array)

@@ -8,6 +8,8 @@ export interface CreateEmployeeDto {
     nombre: string;
     apellido: string;
     emailPersonal: string;
+    nroIdentificacion: string;
+    tipoIdentificacion: string;
     telefono: string;
     fechaNacimiento?: string; // YYYY-MM-DD
     rolId: string;   // UUID
@@ -25,6 +27,8 @@ export interface Employee {
     nombre: string;
     apellido: string;
     emailPersonal: string;
+    nroIdentificacion: string;
+    tipoIdentificacion: string;
     telefono?: string;
     estado: string;
     salario?: number;
@@ -40,6 +44,12 @@ export interface Employee {
         departamento?: { nombre: string }
     };
     rol?: { id: string; nombre: string };
+    contratos?: {
+        id: string;
+        salario: number;
+        estado: string; // 'Vigente', 'Finalizado'
+        fechaInicio: string;
+    }[];
 }
 export interface EmployeeDocument {
     id?: string;

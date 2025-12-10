@@ -689,14 +689,14 @@ let PersonalService = class PersonalService {
         this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
     }
     async getEmpleados(empresaId, filtroSucursalId) {
-        console.log(`Microservicio PERSONAL: Buscando empleados para empresaId: ${empresaId}`);
+        console.log(`Microservicio PERSONAL: Buscando empleados...`);
         const where = { empresaId };
         if (filtroSucursalId) {
             where.sucursalId = filtroSucursalId;
         }
         return this.empleadoRepository.find({
             where: { empresaId: empresaId, estado: 'Activo' },
-            relations: ['cargo', 'rol', 'sucursal'],
+            relations: ['cargo', 'cargo.departamento', 'rol', 'sucursal', 'contratos'],
         });
     }
     async getEmpleado(empresaId, empleadoId) {
@@ -710,7 +710,7 @@ let PersonalService = class PersonalService {
         return empleado;
     }
     async createEmpleado(empresaId, dto, usuarioCreador) {
-        console.log(`Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`);
+        console.log(`Microservicio PERSONAL: Procesando empleado... ID: ${dto.nroIdentificacion} - Email: ${dto.emailPersonal}`);
         let sucursalDestino = dto.sucursalId;
         if (usuarioCreador && usuarioCreador.sucursalId) {
             sucursalDestino = usuarioCreador.sucursalId;
@@ -718,26 +718,57 @@ let PersonalService = class PersonalService {
         if (sucursalDestino) {
             const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalDestino, empresaId });
             if (!sucursal)
-                throw new common_1.BadRequestException('Sucursal no válida.');
+                throw new common_1.BadRequestException('La sucursal seleccionada no es válida o no pertenece a la empresa.');
         }
         const rol = await this.rolRepository.findOneBy({ id: dto.rolId, empresaId });
         if (!rol)
-            throw new common_1.BadRequestException('Rol no válido.');
+            throw new common_1.BadRequestException('El rol seleccionado no es válido.');
         const cargo = await this.cargoRepository.findOne({
             where: { id: dto.cargoId, departamento: { empresaId } },
         });
         if (!cargo)
-            throw new common_1.BadRequestException('Cargo no válido.');
-        const nuevoEmpleado = this.empleadoRepository.create({
-            ...dto,
-            empresaId,
-            sucursalId: sucursalDestino,
-            estado: 'Activo'
+            throw new common_1.BadRequestException('El cargo seleccionado no es válido.');
+        const existentePorId = await this.empleadoRepository.findOne({
+            where: { nroIdentificacion: dto.nroIdentificacion, empresaId },
         });
-        const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
+        if (existentePorId && existentePorId.estado === 'Activo') {
+            throw new common_1.ConflictException(`Ya existe un empleado activo con la identificación ${dto.nroIdentificacion} (${existentePorId.nombre} ${existentePorId.apellido}).`);
+        }
+        const existentePorEmail = await this.empleadoRepository.findOne({
+            where: { emailPersonal: dto.emailPersonal, empresaId },
+        });
+        if (existentePorEmail && existentePorEmail.estado === 'Activo') {
+            throw new common_1.ConflictException(`Ya existe un empleado activo con el correo ${dto.emailPersonal}.`);
+        }
+        const empleadoAReactivar = existentePorId || existentePorEmail;
+        let empleadoGuardado;
+        if (empleadoAReactivar) {
+            console.log(`♻️ Reactivando ex-empleado inactivo: ${empleadoAReactivar.nombre} ${empleadoAReactivar.apellido}`);
+            this.empleadoRepository.merge(empleadoAReactivar, {
+                ...dto,
+                sucursalId: sucursalDestino,
+                estado: 'Activo',
+                nroIdentificacion: dto.nroIdentificacion,
+                tipoIdentificacion: dto.tipoIdentificacion
+            });
+            empleadoGuardado = await this.empleadoRepository.save(empleadoAReactivar);
+        }
+        else {
+            console.log(`✨ Creando nuevo empleado totalmente nuevo...`);
+            const nuevoEmpleado = this.empleadoRepository.create({
+                ...dto,
+                empresaId,
+                sucursalId: sucursalDestino,
+                estado: 'Activo'
+            });
+            empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
+        }
         if (dto.salario !== undefined) {
+            if (empleadoAReactivar) {
+                await this.contratoRepository.update({ empleado: { id: empleadoGuardado.id }, estado: 'Vigente' }, { estado: 'Inactivo' });
+            }
             const nuevoContrato = this.contratoRepository.create({
-                empleadoId: empleadoGuardado.id,
+                empleado: empleadoGuardado,
                 tipo: dto.tipoContrato || 'Indefinido',
                 salario: dto.salario,
                 moneda: 'USD',
@@ -746,11 +777,10 @@ let PersonalService = class PersonalService {
                 estado: 'Vigente'
             });
             await this.contratoRepository.save(nuevoContrato);
-            console.log(`✅ Contrato inicial creado: $${dto.salario}`);
+            console.log(`✅ Contrato generado: $${dto.salario}`);
         }
         if (dto.emailPersonal) {
             try {
-                console.log('🔄 Solicitando acceso de usuario...');
                 const resultadoAuth = await (0, rxjs_1.firstValueFrom)(this.authClient.send({ cmd: 'create_user_auto' }, {
                     empleadoId: empleadoGuardado.id,
                     email: dto.emailPersonal,
@@ -764,12 +794,14 @@ let PersonalService = class PersonalService {
                         html: `
               <div style="font-family: Arial; color: #333;">
                 <h1 style="color: #3f51b5;">¡Bienvenido ${dto.nombre}!</h1>
-                <p>Se ha creado tu cuenta.</p>
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+                <p>Se ha creado tu cuenta profesional en PuntoPyMES.</p>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #3f51b5;">
                     <p><b>Usuario:</b> ${resultadoAuth.email}</p>
-                    <p><b>Contraseña:</b> ${resultadoAuth.password}</p>
+                    <p><b>Contraseña Temporal:</b> ${resultadoAuth.password}</p>
                 </div>
-                <a href="http://localhost:4200/auth/login">Ingresar</a>
+                <p>Por favor ingresa y cambia tu contraseña.</p>
+                <br>
+                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ingresar al Sistema</a>
               </div>
             `
                     });
@@ -777,20 +809,21 @@ let PersonalService = class PersonalService {
                 else {
                     await this.mailerService.sendMail({
                         to: dto.emailPersonal,
-                        subject: 'PuntoPyMES - Nuevo Acceso Asignado',
+                        subject: 'PuntoPyMES - Cuenta Reactivada',
                         html: `
               <div style="font-family: Arial; color: #333;">
                 <h1 style="color: #3f51b5;">¡Hola de nuevo ${dto.nombre}!</h1>
-                <p>Has sido vinculado a un nuevo espacio de trabajo.</p>
-                <a href="http://localhost:4200/auth/login">Ir al Dashboard</a>
+                <p>Tu perfil de empleado ha sido reactivado exitosamente.</p>
+                <p>Puedes seguir usando tus credenciales anteriores para acceder.</p>
+                <br>
+                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ir al Dashboard</a>
               </div>
             `
                     });
                 }
-                console.log(`📧 Correo enviado.`);
             }
             catch (error) {
-                console.error('❌ Error en flujo automático:', error);
+                console.error('⚠️ Error al crear usuario Auth o enviar correo:', error.message);
             }
         }
         return empleadoGuardado;
@@ -1066,6 +1099,25 @@ let PersonalService = class PersonalService {
             const dep = await this.deptoRepository.findOneBy({ id: dto.departamentoId, empresaId });
             if (!dep)
                 throw new common_1.BadRequestException('Departamento no válido.');
+            const cargoExistente = await this.cargoRepository.findOne({
+                where: {
+                    nombre: dto.titulo,
+                    departamentoId: dto.departamentoId
+                }
+            });
+            if (!cargoExistente) {
+                console.log(`ℹ️ Creando cargo automático: ${dto.titulo}`);
+                const nuevoCargo = this.cargoRepository.create({
+                    nombre: dto.titulo,
+                    departamentoId: dto.departamentoId,
+                    salarioMin: dto.salarioMin || 0,
+                    salarioMax: dto.salarioMax || 0
+                });
+                await this.cargoRepository.save(nuevoCargo);
+            }
+            else {
+                console.log(`ℹ️ El cargo '${dto.titulo}' ya existía. Se usará el existente.`);
+            }
         }
         const vacante = this.vacanteRepository.create({
             ...dto,
@@ -3124,6 +3176,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     nombre;
     planSuscripcion;
     branding;
+    configuracion;
     empleados;
     roles;
     departamentos;
@@ -3136,7 +3189,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     vacantes;
     sucursales;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
+        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, configuracion: { required: true, type: () => Object }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
     }
 };
 exports.Empresa = Empresa;
@@ -3164,6 +3217,14 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], Empresa.prototype, "branding", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'jsonb',
+        nullable: true,
+        comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+    }),
+    __metadata("design:type", Object)
+], Empresa.prototype, "configuracion", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.empresa, { cascade: true }),
     __metadata("design:type", Array)
@@ -3384,6 +3445,7 @@ __exportStar(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/en
 __exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts"), exports);
 
 
 /***/ }),
@@ -3682,6 +3744,107 @@ exports.NominaEmpleado = NominaEmpleado = __decorate([
     (0, typeorm_1.Index)(['empleadoId']),
     (0, typeorm_1.Unique)(['periodoId', 'empleadoId'])
 ], NominaEmpleado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/novedadNomina.entity.ts":
+/*!************************************************************!*\
+  !*** ./libs/database/src/entities/novedadNomina.entity.ts ***!
+  \************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NovedadNomina = exports.EstadoNovedad = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const conceptoNomina_entity_1 = __webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+var EstadoNovedad;
+(function (EstadoNovedad) {
+    EstadoNovedad["PENDIENTE"] = "Pendiente";
+    EstadoNovedad["PROCESADA"] = "Procesada";
+    EstadoNovedad["CANCELADA"] = "Cancelada";
+})(EstadoNovedad || (exports.EstadoNovedad = EstadoNovedad = {}));
+let NovedadNomina = class NovedadNomina extends base_entity_1.BaseEntity {
+    valor;
+    fecha;
+    observacion;
+    estado;
+    empleado;
+    empleadoId;
+    concepto;
+    conceptoId;
+    empresa;
+    empresaId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { valor: { required: true, type: () => Number }, fecha: { required: true, type: () => Date }, observacion: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts").EstadoNovedad) }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, concepto: { required: true, type: () => (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").ConceptoNomina) }, conceptoId: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
+    }
+};
+exports.NovedadNomina = NovedadNomina;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, comment: 'Monetary value' }),
+    __metadata("design:type", Number)
+], NovedadNomina.prototype, "valor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Date of occurrence' }),
+    __metadata("design:type", Date)
+], NovedadNomina.prototype, "fecha", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "observacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: EstadoNovedad,
+        default: EstadoNovedad.PENDIENTE
+    }),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], NovedadNomina.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => conceptoNomina_entity_1.ConceptoNomina, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'conceptoId' }),
+    __metadata("design:type", conceptoNomina_entity_1.ConceptoNomina)
+], NovedadNomina.prototype, "concepto", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "conceptoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", empresa_entity_1.Empresa)
+], NovedadNomina.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "empresaId", void 0);
+exports.NovedadNomina = NovedadNomina = __decorate([
+    (0, typeorm_1.Entity)({ name: 'novedades_nomina' }),
+    (0, typeorm_1.Index)(['empresaId', 'estado'])
+], NovedadNomina);
 
 
 /***/ }),

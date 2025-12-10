@@ -1915,4 +1915,51 @@ export class AppController {
       { vacanteId: id }
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('nomina/novedades')
+  async crearNovedad(@Request() req, @Body() body: any) {
+    const { empresaId } = req.user;
+
+    // Pass the payload to the microservice
+    return this.nominaService.send(
+      { cmd: 'crear_novedad' },
+      { ...body, empresaId }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('nomina/novedades/empleado/:id') // Nueva ruta
+  async getNovedadesEmpleado(@Param('id') id: string) {
+    return this.nominaService.send(
+      { cmd: 'obtener_novedades_empleado' },
+      { empleadoId: id }
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('nomina/configuracion')
+  async getNominaConfig(@Request() req) {
+    return this.nominaService.send(
+      { cmd: 'get_configuracion_nomina' },
+      { empresaId: req.user.empresaId }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('nomina/configuracion')
+  async updateNominaConfig(@Request() req, @Body() config: any) {
+    return this.nominaService.send(
+      { cmd: 'update_configuracion_nomina' },
+      { empresaId: req.user.empresaId, config }
+    );
+  }
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('nomina.reportes') // O el permiso que desees
+  @Get('nomina/reportes/:periodoId')
+  async getReporteNomina(@Request() req, @Param('periodoId') periodoId: string) {
+    return this.nominaService.send(
+      { cmd: 'obtener_reporte_nomina' },
+      { empresaId: req.user.empresaId, periodoId }
+    );
+  }
 }

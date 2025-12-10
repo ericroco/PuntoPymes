@@ -46,15 +46,24 @@ export class AddSprintDialog {
   onSave(): void {
     if (this.sprintForm.valid) {
       const formData = this.sprintForm.value;
-      // Format dates before sending
-      const formatDt = (date: Date | null) => date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : null;
 
-      this.dialogRef.close({
-        name: formData.name,
-        description: formData.description,
-        startDate: formatDt(formData.startDate),
-        endDate: formatDt(formData.endDate)
-      });
+      // Helper para formatear fecha (YYYY-MM-DD)
+      const formatDt = (date: Date | null) => {
+        if (!date) return null;
+        const d = new Date(date);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().split('T')[0];
+      };
+
+      // 👇 AQUÍ ESTÁ LA CORRECCIÓN: Mapear a los nombres del DTO del Backend
+      const sprintDto = {
+        nombre: formData.name,           // name -> nombre
+        objetivo: formData.description,  // description -> objetivo
+        fechaInicio: formatDt(formData.startDate), // startDate -> fechaInicio
+        fechaFin: formatDt(formData.endDate)       // endDate -> fechaFin
+      };
+
+      this.dialogRef.close(sprintDto);
     }
   }
 }

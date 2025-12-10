@@ -8,7 +8,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Contrato, Empleado, Beneficio, BeneficioAsignado, PeriodoNomina, NominaEmpleado,
-  RubroNomina, ConceptoNomina, SolicitudVacaciones, EstadoSolicitud
+  RubroNomina, ConceptoNomina, SolicitudVacaciones, EstadoSolicitud, NovedadNomina,
+  EstadoNovedad, Empresa
 } from 'default/database';
 import { Repository, Not, LessThanOrEqual, MoreThanOrEqual, EntityManager } from 'typeorm';
 import {
@@ -28,6 +29,7 @@ import { UpdateConceptoNominaDto } from './dto/update-concepto-nomina.dto';
 import { ProcesarNominaDto } from './dto/procesar-nomina.dto';
 import { TipoRubro } from '../../../libs/database/src/entities/conceptoNomina.entity';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+
 
 
 @Injectable()
@@ -51,7 +53,10 @@ export class NominaService {
     private readonly conceptoNominaRepository: Repository<ConceptoNomina>,
     private readonly entityManager: EntityManager,
     @InjectRepository(SolicitudVacaciones)
-    private solicitudRepo: Repository<SolicitudVacaciones>
+    private solicitudRepo: Repository<SolicitudVacaciones>,
+    @InjectRepository(NovedadNomina)
+    private novedadNominaRepo: Repository<NovedadNomina>,
+    @InjectRepository(Empresa) private readonly empresaRepository: Repository<Empresa>,
   ) { }
 
   /**
@@ -88,7 +93,7 @@ export class NominaService {
 
   /**
    * Lógica para CREAR un nuevo contrato (RF-20)
-   * Validado por Multi-Tenant (RNF20).
+   * Validado por Multi-Tenant (RNF20).|
    */
   async createContrato(
     empresaId: string,
@@ -589,125 +594,124 @@ export class NominaService {
   }
   // --- INICIO DE LÓGICA DE PROCESAMIENTO (Semana 9) ---
 
+  async obtenerNovedadesPorEmpleado(empleadoId: string) {
+    return this.novedadNominaRepo.find({
+      where: { empleadoId },
+      relations: ['concepto'], // Para ver el nombre "Bono Productividad"
+      order: { fecha: 'DESC' }
+    });
+  }
+
   /**
    * Lógica de negocio para "Procesar Nómina" (POST /nomina/procesar)
    *
    * Esta es la lógica "ultra completa" que usa transacciones.
    */
-  async procesarNomina(
-    empresaId: string,
-    periodoId: string,
-  ): Promise<{ message: string; empleadosProcesados: number }> {
+  async procesarNomina(empresaId: string, periodoId: string): Promise<any> {
+    return this.entityManager.transaction('SERIALIZABLE', async (manager) => {
 
-    // 2. ¡Iniciamos la transacción! O todo funciona, o nada se guarda.
-    return this.entityManager.transaction(
-      'SERIALIZABLE', // Nivel de aislamiento alto para nóminas
-      async (manager) => {
-        // 3. Validar el Período
-        const periodo = await manager.findOneBy(PeriodoNomina, {
-          id: periodoId,
-          empresaId: empresaId,
+      console.log('🔄 INICIANDO PROCESO DE NÓMINA - PERIODO:', periodoId);
+
+      // 1. Validar Período
+      const periodo = await manager.findOneBy(PeriodoNomina, { id: periodoId, empresaId });
+      if (!periodo || periodo.estado !== EstadoPeriodo.ABIERTO) {
+        throw new ConflictException('Período cerrado o no válido.');
+      }
+
+      // 2. Obtener Conceptos Fijos
+      const conceptosFijos = await manager.findBy(ConceptoNomina, { empresaId, esFijo: true });
+      console.log(`📋 Conceptos Fijos encontrados: ${conceptosFijos.length}`);
+
+      // 3. Obtener Contratos
+      const contratos = await manager.find(Contrato, {
+        where: { estado: 'Vigente', empleado: { empresaId } },
+        relations: ['empleado']
+      });
+      console.log(`👥 Empleados a procesar: ${contratos.length}`);
+
+      // --- MOTOR ---
+      for (const contrato of contratos) {
+        const emp = contrato.empleado;
+        console.log(`\n👤 Procesando: ${emp.nombre} ${emp.apellido}`);
+
+        // VALIDACIÓN DE SALARIO
+        const salarioBase = Number(contrato.salario);
+        console.log(`   💰 Salario Contrato: $${salarioBase}`); // <--- MIRA ESTE LOG EN CONSOLA
+
+        if (!salarioBase || salarioBase === 0) {
+          console.warn(`   ⚠️ ALERTA: El empleado tiene salario 0 o inválido.`);
+        }
+
+        let totalIngresos = 0;
+        let totalEgresos = 0;
+
+        // A. Crear Cabecera
+        const rolPago = manager.create(NominaEmpleado, {
+          empleadoId: emp.id,
+          periodoId: periodo.id,
+          fechaGeneracion: new Date()
         });
-        if (!periodo) {
-          throw new NotFoundException('Período de nómina no encontrado.');
-        }
-        if (periodo.estado !== EstadoPeriodo.ABIERTO) {
-          throw new ConflictException(
-            'El período de nómina no está "Abierto". No se puede procesar.',
-          );
-        }
+        await manager.save(rolPago);
 
-        // 4. Obtener las plantillas de rubros (Conceptos)
-        const conceptos = await manager.findBy(ConceptoNomina, {
-          empresaId: empresaId,
+        // B. SALARIO BASE AUTOMÁTICO
+        const rubroSalario = manager.create(RubroNomina, {
+          nominaEmpleadoId: rolPago.id,
+          tipo: 'Ingreso', // Hardcoded para evitar errores de Enum
+          concepto: 'Salario Base',
+          valor: salarioBase
         });
-        if (conceptos.length === 0) {
-          throw new BadRequestException(
-            'No hay "Conceptos de Nómina" configurados para esta empresa.',
-          );
-        }
+        await manager.save(rubroSalario);
+        totalIngresos += salarioBase;
+        console.log(`   ➕ Sumado Salario Base: $${totalIngresos}`);
 
-        // 5. Obtener todos los Contratos Vigentes de la empresa
-        const contratosVigentes = await manager.find(Contrato, {
-          where: {
-            estado: 'Vigente',
-            empleado: { empresaId: empresaId },
-          },
-          relations: ['empleado'], // Incluimos al empleado
-        });
+        // C. CONCEPTOS FIJOS
+        for (const c of conceptosFijos) {
+          const nombre = c.nombre.toLowerCase();
 
-        if (contratosVigentes.length === 0) {
-          throw new NotFoundException(
-            'No se encontraron empleados con contratos vigentes para procesar.',
-          );
-        }
+          // FILTRO DE SEGURIDAD
+          if (nombre.includes('salario') || nombre.includes('sueldo')) {
+            console.log(`   🚫 Ignorando concepto manual duplicado: "${c.nombre}"`);
+            continue;
+          }
 
-        // --- 6. El Motor: Loop por cada empleado ---
-        for (const contrato of contratosVigentes) {
-          const empleado = contrato.empleado;
-          let totalIngresos = 0;
-          let totalEgresos = 0;
-
-          // 7. Crear la "Cabecera" (NominaEmpleado)
-          const nuevaNominaEmpleado = manager.create(NominaEmpleado, {
-            empleadoId: empleado.id,
-            periodoId: periodo.id,
-            // Los totales se actualizarán al final
-          });
-          await manager.save(nuevaNominaEmpleado); // Guardamos para obtener el ID
-
-          // --- 8. Loop anidado: por cada concepto (plantilla) ---
-          for (const concepto of conceptos) {
-            let valorCalculado = 0;
-
-            // --- 9. Lógica de Cálculo (Simplificada por ahora) ---
-            // (Aquí iría tu motor de fórmulas)
-            if (concepto.nombre === 'Salario Base') {
-              valorCalculado = contrato.salario; // Asumimos salario completo
-            } else if (concepto.nombre === 'Aporte IESS (9.45%)') {
-              // Los egresos DEBEN ser números positivos en el cálculo
-              valorCalculado = contrato.salario * 0.0945;
+          let valor = 0;
+          if (c.formula) {
+            const pct = parseFloat(c.formula);
+            if (!isNaN(pct)) {
+              valor = salarioBase * (pct / 100);
+              console.log(`   ⚙️ Calculando ${c.nombre} (${pct}%): $${valor}`);
             }
-            // ... (Aquí añadirías "Bonos", "Anticipos", etc.)
+          }
 
-            // 10. Crear el "Detalle" (RubroNomina)
-            const nuevoRubro = manager.create(RubroNomina, {
-              nominaEmpleadoId: nuevaNominaEmpleado.id,
-              tipo: concepto.tipo,
-              concepto: concepto.nombre,
-              valor: valorCalculado,
+          if (valor > 0) {
+            const rubro = manager.create(RubroNomina, {
+              nominaEmpleadoId: rolPago.id,
+              tipo: c.tipo,
+              concepto: c.nombre,
+              valor: Number(valor.toFixed(2))
             });
-            await manager.save(nuevoRubro);
+            await manager.save(rubro);
 
-            // 11. Actualizar totales
-            if (concepto.tipo === TipoRubro.INGRESO) {
-              totalIngresos += valorCalculado;
-            } else if (concepto.tipo === TipoRubro.EGRESO) {
-              totalEgresos += valorCalculado;
-            }
-          } // --- Fin loop de conceptos
+            if (c.tipo === 'Ingreso') totalIngresos += rubro.valor;
+            else totalEgresos += rubro.valor;
+          }
+        }
 
-          // 12. Actualizar la cabecera (NominaEmpleado) con los totales
-          nuevaNominaEmpleado.totalIngresos = totalIngresos;
-          nuevaNominaEmpleado.totalEgresos = totalEgresos;
-          nuevaNominaEmpleado.netoAPagar = totalIngresos - totalEgresos;
-          await manager.save(nuevaNominaEmpleado);
-        } // --- Fin loop de empleados
+        // D. Guardar Totales
+        rolPago.totalIngresos = Number(totalIngresos.toFixed(2));
+        rolPago.totalEgresos = Number(totalEgresos.toFixed(2));
+        rolPago.netoAPagar = Number((totalIngresos - totalEgresos).toFixed(2));
+        await manager.save(rolPago);
 
-        // 13. Cerrar el período
-        periodo.estado = EstadoPeriodo.PROCESADO;
-        await manager.save(periodo);
+        console.log(`   ✅ FIN EMPLEADO: Ing: ${rolPago.totalIngresos} | Egr: ${rolPago.totalEgresos} | Neto: ${rolPago.netoAPagar}`);
+      }
 
-        console.log(
-          `Microservicio NOMINA: Nómina procesada para ${contratosVigentes.length} empleados.`,
-        );
+      // 4. Cerrar
+      periodo.estado = EstadoPeriodo.PROCESADO;
+      await manager.save(periodo);
 
-        return {
-          message: 'Nómina procesada exitosamente.',
-          empleadosProcesados: contratosVigentes.length,
-        };
-      }, // --- Fin de la transacción
-    );
+      return { message: 'Proceso completado', count: contratos.length };
+    });
   }
   async solicitarVacaciones(empresaId: string, dto: CreateSolicitudDto): Promise<SolicitudVacaciones> {
     // 1. Validar Empleado
@@ -742,6 +746,97 @@ export class NominaService {
       where: { empleado: { empresaId } },
       relations: ['empleado'],
       order: { createdAt: 'DESC' }
+    });
+  }
+  async registrarNovedad(data: any) {
+    console.log('💰 Registering novelty:', data);
+
+    // 1. (Optional) Find Concept ID by name if the frontend sends a string
+    let conceptoId = data.conceptoId;
+
+    // If you receive "Bonus" string instead of UUID, find it (or create it dynamically if allowed)
+    if (!conceptoId && data.concepto) {
+      const concepto = await this.conceptoNominaRepository.findOne({
+        where: { nombre: data.concepto, empresaId: data.empresaId }
+      });
+      if (concepto) conceptoId = concepto.id;
+    }
+
+    // 2. Create the record
+    const nuevaNovedad = this.novedadNominaRepo.create({
+      empleadoId: data.empleadoId,
+      conceptoId: conceptoId,
+      valor: data.monto,
+      fecha: new Date(data.fecha),
+      observacion: data.observacion,
+      estado: EstadoNovedad.PENDIENTE,
+      empresaId: data.empresaId
+    });
+
+    return this.novedadNominaRepo.save(nuevaNovedad);
+  }
+  // 1. OBTENER CONFIGURACIÓN
+  async obtenerConfiguracion(empresaId: string) {
+    const empresa = await this.empresaRepository.findOne({
+      where: { id: empresaId },
+      select: ['configuracion'] // Solo traemos lo necesario
+    });
+    // Retornamos solo la parte de nómina o un objeto vacío
+    return empresa?.configuracion?.nomina || { frecuenciaPago: 'mensual', multiplicadorHorasExtra: 1.5 };
+  }
+
+  // 2. ACTUALIZAR CONFIGURACIÓN
+  async actualizarConfiguracion(empresaId: string, datosNomina: any) {
+    const empresa = await this.empresaRepository.findOneBy({ id: empresaId });
+    if (!empresa) throw new NotFoundException('Empresa no encontrada');
+
+    // Inicializamos si está vacío
+    if (!empresa.configuracion) empresa.configuracion = {};
+
+    // Actualizamos solo la parte de nómina, conservando lo demás
+    empresa.configuracion.nomina = {
+      ...empresa.configuracion.nomina,
+      ...datosNomina
+    };
+
+    await this.empresaRepository.save(empresa);
+    return empresa.configuracion.nomina;
+  }
+  async obtenerReporteNomina(empresaId: string, periodoId: string) {
+    // 1. Buscamos las cabeceras (NominaEmpleado)
+    const nominas = await this.entityManager.find(NominaEmpleado, {
+      where: {
+        periodoId: periodoId,
+        empleado: { empresaId: empresaId } // Seguridad: solo empleados de la empresa
+      },
+      relations: ['empleado', 'empleado.cargo', 'rubros'], // ¡Importante: traer rubros!
+      order: { empleado: { apellido: 'ASC' } }
+    });
+
+    // 2. Transformamos la data para que sea fácil de usar en el frontend
+    return nominas.map(n => {
+      // Separamos rubros para facilitar el PDF
+      const ingresos = n.rubros.filter(r => r.tipo === 'Ingreso');
+      const egresos = n.rubros.filter(r => r.tipo === 'Egreso');
+
+      return {
+        id: n.id,
+        empleado: {
+          nombre: n.empleado.nombre,
+          apellido: n.empleado.apellido,
+          cedula: n.empleado.nroIdentificacion || 'S/N',
+          cargo: n.empleado.cargo?.nombre || 'General'
+        },
+        totales: {
+          ingresos: n.totalIngresos,
+          egresos: n.totalEgresos,
+          neto: n.netoAPagar
+        },
+        detalles: {
+          ingresos: ingresos.map(i => ({ concepto: i.concepto, valor: i.valor })),
+          egresos: egresos.map(e => ({ concepto: e.concepto, valor: e.valor }))
+        }
+      };
     });
   }
 }

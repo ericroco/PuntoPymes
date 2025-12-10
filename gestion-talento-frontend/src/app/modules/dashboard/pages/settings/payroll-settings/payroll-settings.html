@@ -1,83 +1,200 @@
 <div class="settings-subpage-container">
-  <app-subpage-header title="Configuración de Nómina y Compensación"
-    backRoute="/dashboard/settings"></app-subpage-header>
+
+  <app-subpage-header title="Configuración de Nómina y Compensación" backRoute="/dashboard/settings">
+  </app-subpage-header>
 
   <p class="description">
-    Define las reglas básicas para el cálculo de nómina y los tipos de pagos o descuentos personalizados.
-    La exportación final se realizará a tu sistema contable.
+    Define las reglas globales, gestiona los períodos de pago y configura el catálogo de conceptos (Bonos, Multas,
+    Descuentos) para tu empresa.
   </p>
 
   <div class="setting-section">
-    <h4>Frecuencia de Pago</h4>
-    <mat-form-field appearance="outline" class="frequency-field">
-      <mat-label>Período de Nómina</mat-label>
-      <mat-select [(ngModel)]="settings.payFrequency">
-        <mat-option *ngFor="let freq of payFrequencies" [value]="freq.value">
-          {{ freq.label }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <h4>Reglas Generales</h4>
+    <div class="form-row-2-col">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Frecuencia de Pago</mat-label>
+        <mat-select [(ngModel)]="settings.payFrequency" (selectionChange)="calculateNextPeriodDates()">
+          <mat-option *ngFor="let freq of payFrequencies" [value]="freq.value">
+            {{ freq.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Multiplicador Horas Extra</mat-label>
+        <input matInput type="number" [(ngModel)]="settings.overtimeMultiplier" min="1" step="0.25">
+        <span matPrefix>x &nbsp;</span>
+        <mat-hint>Ej: 1.5 para pagar al 150%</mat-hint>
+      </mat-form-field>
+
+    </div>
   </div>
 
   <mat-divider></mat-divider>
 
   <div class="setting-section">
-    <h4>Reglas de Horas Extras</h4>
-    <mat-form-field appearance="outline" class="overtime-field">
-      <mat-label>Multiplicador Hora Extra</mat-label>
-      <input matInput type="number" [(ngModel)]="settings.overtimeMultiplier" min="1" step="0.1">
-      <mat-hint>Factor por el cual se multiplica el valor de la hora normal (ej: 1.5 para 150%).</mat-hint>
-    </mat-form-field>
-  </div>
+    <div class="section-header">
+      <h4>Gestión de Períodos</h4>
+      <p class="section-hint">Abre un período para comenzar a procesar la nómina. El sistema valida que las fechas no se
+        crucen.</p>
+    </div>
 
-  <mat-divider></mat-divider>
+    <div class="add-item-form period-form">
+      <div class="add-controls-row">
 
-  <div class="setting-section">
-    <h4>Tipos de Ingresos/Descuentos Personalizados</h4>
-    <p class="description">Define conceptos comunes (bonos, comisiones, anticipos) para registrar novedades.</p>
-    <div class="payroll-items-container">
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Fecha Inicio</mat-label>
+          <input matInput [matDatepicker]="startPicker" [(ngModel)]="newPeriodStart">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Fecha Fin</mat-label>
+          <input matInput [matDatepicker]="endPicker" [(ngModel)]="newPeriodEnd">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" (click)="createPeriodo()" class="btn-add">
+          <mat-icon>calendar_today</mat-icon> Abrir Período
+        </button>
+      </div>
+
+      <p class="hint-text" style="margin-top: 5px; font-size: 0.85rem; color: #666;">
+        <mat-icon
+          style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">info</mat-icon>
+        Fechas sugeridas según frecuencia: <strong>{{ settings.payFrequency | titlecase }}</strong>. Puedes editarlas
+        manualmente.
+      </p>
+    </div>
+
+    <div class="payroll-items-container mat-elevation-z1" *ngIf="periodos.length > 0" style="margin-top: 15px;">
       <mat-list role="list">
-        <div mat-subheader>Items Definidos</div>
+        <div mat-subheader>Historial de Períodos</div>
 
-        <mat-list-item *ngFor="let item of payrollItems" role="listitem">
-          <mat-icon matListItemIcon>{{ item.type === 'Ingreso' ? 'add_card' : 'credit_card_off' }}</mat-icon>
-          <div matListItemTitle>{{ item.name }}</div>
+        <mat-list-item *ngFor="let p of periodos" role="listitem">
+          <mat-icon matListItemIcon [class.text-success]="p.estado === 'Abierto'"
+            [class.text-secondary]="p.estado !== 'Abierto'">
+            {{ p.estado === 'Abierto' ? 'lock_open' : 'lock' }}
+          </mat-icon>
+
+          <div matListItemTitle>{{ p.nombre }}</div>
           <div matListItemLine>
-            {{ item.type }} | {{ item.isRecurring ? 'Recurrente (Mensual/Quincenal)' : 'Pago Único' }}
+            {{ p.fechaInicio | date:'mediumDate' }} - {{ p.fechaFin | date:'mediumDate' }}
+            <span class="badge" [class.badge-ingreso]="p.estado === 'Abierto'"
+              [class.badge-egreso]="p.estado !== 'Abierto'" style="margin-left: 10px;">
+              {{ p.estado }}
+            </span>
           </div>
-          <button mat-icon-button color="warn" (click)="removePayrollItem(item.id)" matListItemMeta
-            matTooltip="Eliminar Item">
-            <mat-icon>delete_outline</mat-icon>
+
+          <button mat-icon-button color="warn" (click)="deletePeriodo(p)" [disabled]="p.estado !== 'Abierto'"
+            matTooltip="Eliminar Período">
+            <mat-icon>delete</mat-icon>
           </button>
         </mat-list-item>
       </mat-list>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="setting-section">
+    <div class="section-header">
+      <h4>Catálogo de Conceptos</h4>
+      <p class="section-hint">Estos conceptos aparecerán disponibles al registrar novedades a los empleados.</p>
+    </div>
+
+    <div class="payroll-items-container mat-elevation-z1">
+
+      <mat-list role="list">
+        <div mat-subheader>Conceptos Activos</div>
+
+        <mat-list-item *ngFor="let item of payrollItems" role="listitem" class="concept-item">
+
+          <mat-icon matListItemIcon [class.text-success]="item.tipo === 'Ingreso'"
+            [class.text-danger]="item.tipo === 'Egreso'">
+            {{ item.tipo === 'Ingreso' ? 'trending_up' : 'trending_down' }}
+          </mat-icon>
+
+          <div matListItemTitle class="item-title">{{ item.nombre }}</div>
+
+          <div matListItemLine class="item-meta">
+            <span class="badge" [class.badge-ingreso]="item.tipo === 'Ingreso'"
+              [class.badge-egreso]="item.tipo === 'Egreso'">
+              {{ item.tipo }}
+            </span>
+            <span class="separator">•</span>
+            <span class="recurrence-info">
+              {{ item.esFijo ? 'Recurrente' : 'Novedad' }}
+              <span *ngIf="item.formula">({{ item.formula }}%)</span>
+            </span>
+          </div>
+
+          <button mat-icon-button color="warn" (click)="removePayrollItem(item)" matListItemMeta
+            matTooltip="Eliminar Concepto">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+
+        <div *ngIf="payrollItems.length === 0" class="empty-state">
+          <mat-icon>playlist_add</mat-icon>
+          <p>No hay conceptos definidos. Agrega el primero abajo.</p>
+        </div>
+      </mat-list>
+
+      <mat-divider></mat-divider>
 
       <div class="add-item-form">
-        <mat-form-field appearance="outline" class="condensed-field item-name-field">
-          <mat-label>Nuevo Item</mat-label>
-          <input matInput [(ngModel)]="newItemName" placeholder="Ej: Bono Trimestral">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="condensed-field item-type-field">
-          <mat-label>Tipo</mat-label>
-          <mat-select [(ngModel)]="newItemType">
-            <mat-option value="Ingreso">Ingreso</mat-option>
-            <mat-option value="Descuento">Descuento</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <h4>Agregar Nuevo Concepto</h4>
 
-        <mat-checkbox [(ngModel)]="newItemIsRecurring" color="primary" class="recurring-checkbox">
-          Es Recurrente
-        </mat-checkbox>
+        <div class="add-controls-row">
 
-        <button mat-stroked-button color="primary" (click)="addPayrollItem()" [disabled]="!newItemName"
-          class="add-button">
-          <mat-icon>add</mat-icon> Añadir
-        </button>
+          <mat-form-field appearance="outline" class="item-name-field">
+            <mat-label>Nombre del Concepto</mat-label>
+            <input matInput [(ngModel)]="newItemName" placeholder="Ej: Bono de Navidad"
+              (keyup.enter)="addPayrollItem()">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="item-type-field">
+            <mat-label>Tipo</mat-label>
+            <mat-select [(ngModel)]="newItemType">
+              <mat-option value="Ingreso">Ingreso (Suma)</mat-option>
+              <mat-option value="Egreso">Egreso (Resta)</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="checkbox-wrapper">
+            <mat-checkbox [(ngModel)]="newItemIsRecurring" color="primary">
+              Es Fijo
+            </mat-checkbox>
+            <mat-icon class="info-icon"
+              matTooltip="Marca esto si se aplica automáticamente todos los meses (Ej: IESS).">help_outline</mat-icon>
+          </div>
+
+          <mat-form-field appearance="outline" class="item-percent-field" *ngIf="newItemIsRecurring">
+            <mat-label>Porcentaje (%)</mat-label>
+            <input matInput type="number" [(ngModel)]="newItemFormula" placeholder="Ej: 9.45" min="0" max="100">
+            <span matSuffix>%</span>
+            <mat-hint>Del Salario Base</mat-hint>
+          </mat-form-field>
+
+          <button mat-flat-button color="primary" (click)="addPayrollItem()" [disabled]="!newItemName" class="btn-add">
+            <mat-icon>add</mat-icon> Crear
+          </button>
+
+        </div>
       </div>
+
     </div>
   </div>
 
   <div class="actions-footer">
-    <button mat-flat-button color="primary" (click)="savePayrollSettings()">Guardar Configuración de Nómina</button>
+    <button mat-stroked-button routerLink="/dashboard/settings">Volver</button>
+    <button mat-flat-button color="primary" (click)="savePayrollSettings()">
+      <mat-icon>save</mat-icon> Guardar Configuración Global
+    </button>
   </div>
+
 </div>

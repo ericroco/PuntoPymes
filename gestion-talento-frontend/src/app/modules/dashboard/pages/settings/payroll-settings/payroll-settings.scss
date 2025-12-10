@@ -1,84 +1,276 @@
-// Basic container styles & reusable elements
-.settings-subpage-container {
-    padding: 2rem;
-}
-.description { color: var(--color-text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; max-width: 700px; }
-.actions-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end; }
-button[mat-icon-button] { /* Standard icon button size */ width: 36px; height: 36px; line-height: 36px; mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; } }
+// ==========================================
+// VARIABLES & MIXINS
+// ==========================================
+$spacing-unit: 1.5rem;
+$border-radius: 12px; // Coincide con tu identidad visual moderna
+$text-secondary: #666;
+$bg-subtle: #f8f9fa;
+$border-color: #e0e0e0;
 
-// Section styling
+// Colores Semánticos (Material Palette 500/50/700)
+$success-bg: #e8f5e9;
+$success-text: #2e7d32;
+$danger-bg: #ffebee;
+$danger-text: #c62828;
+
+// ==========================================
+// LAYOUT GENERAL
+// ==========================================
+.settings-subpage-container {
+  padding: 2rem;
+  max-width: 1000px; // Evita que se estire demasiado en monitores grandes
+  margin: 0 auto;
+}
+
+.description {
+  color: $text-secondary;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 700px;
+}
+
+mat-divider {
+  margin: 2.5rem 0;
+}
+
+// ==========================================
+// SECCIONES DE CONFIGURACIÓN
+// ==========================================
 .setting-section {
-  padding: 1.5rem 0;
+  margin-bottom: 2rem;
 
   h4 {
-    margin: 0 0 1.5rem 0; // Space below heading
+    margin: 0 0 0.5rem 0;
     font-weight: 600;
     font-size: 1.1rem;
-    color: var(--color-text-primary);
+    color: var(--color-text-primary, #333);
+  }
+
+  .section-hint {
+    font-size: 0.85rem;
+    color: $text-secondary;
+    margin-bottom: 1.5rem;
   }
 }
 
-// Row for side-by-side fields
-.form-row {
-  display: flex;
+// Grid de 2 columnas para configuración general
+.form-row-2-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
-  align-items: flex-start;
-  mat-form-field { flex: 1; }
+  align-items: start;
+
+  mat-form-field {
+    width: 100%;
+  }
 }
 
-// Specific field widths
-.frequency-field, .overtime-field {
-   max-width: 300px;
-}
-
-// Custom Payroll Items Section
+// ==========================================
+// CONTENEDOR DE ITEMS (LISTA + FORMULARIO)
+// ==========================================
 .payroll-items-container {
-  margin-top: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  overflow: hidden; // Keep list inside rounded border
-  max-width: 600px; // Limit width
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden; // Para que el borde redondeado corte el contenido
+  background: white;
+}
 
-  mat-list { padding-top: 0; } // Remove default padding
+// --- LISTA DE ITEMS ---
+mat-list {
+  padding-top: 0;
+}
 
-  .mat-mdc-list-item { // Adjust list item height/padding
-    height: 60px !important;
+.concept-item {
+  height: auto !important; // Permitir altura variable si es necesario
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid lighten($border-color, 8%);
+
+  &:last-child {
+    border-bottom: none;
   }
-  .mat-mdc-list-base .mat-mdc-list-item .mat-mdc-list-item-unscoped-content {
-      padding-left: 1rem; // Add padding if needed
-      padding-right: 1rem;
+
+  // Icono principal (Flecha arriba/abajo)
+  mat-icon {
+    background-color: $bg-subtle;
+    padding: 8px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+
+    &.text-success {
+      color: $success-text;
+      background-color: $success-bg;
+    }
+
+    &.text-danger {
+      color: $danger-text;
+      background-color: $danger-bg;
+    }
   }
 
-  mat-icon[matListItemIcon] { // Style leading icon
-     color: var(--color-text-secondary);
+  .item-title {
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--color-text-primary, #333);
   }
 
-  .empty-list {
-     font-style: italic;
-     color: var(--color-text-secondary);
+  .item-meta {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: $text-secondary;
+
+    .separator {
+      margin: 0 8px;
+      color: #ccc;
+    }
   }
 }
 
-// Form to add new item
-.add-item-form {
+// Badges (Etiquetas de color)
+.badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.badge-ingreso {
+    background-color: $success-bg;
+    color: $success-text;
+  }
+
+  &.badge-egreso {
+    background-color: $danger-bg;
+    color: $danger-text;
+  }
+}
+
+// Estado Vacío
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: $text-secondary;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
-  background-color: var(--color-background); // Slightly different background
-  border-top: 1px solid var(--color-border);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+  }
 }
 
-.item-name-field { flex-grow: 1; } // Name field takes more space
-.item-type-field { min-width: 150px; } // Fixed width for type select
+// ==========================================
+// FORMULARIO DE AGREGAR ITEM (ÁREA GRIS)
+// ==========================================
+.add-item-form {
+  background-color: $bg-subtle;
+  padding: 1.5rem;
+  border-top: 1px solid $border-color;
 
-// Reduce padding/margin for form fields inside add form
-.condensed-field {
-  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
-  ::ng-deep .mat-mdc-form-field-flex { padding-top: 8px !important; padding-bottom: 8px !important; }
+  h4 {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $text-secondary;
+  }
 }
 
-// Divider styling
-mat-divider {
-  margin: 1.5rem 0;
+.add-controls-row {
+  display: flex;
+  align-items: center; // Alinea verticalmente inputs y botón
+  gap: 1rem;
+  flex-wrap: wrap; // Responsive
+
+  // Input Nombre
+  .item-name-field {
+    flex: 2; // Ocupa más espacio
+    min-width: 250px;
+  }
+
+  // Select Tipo
+  .item-type-field {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  // Checkbox y Botón
+  .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 18px; // Ajuste fino para alinear con la línea base de los inputs Material
+
+    .info-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #999;
+      cursor: help;
+      transition: color 0.2s;
+
+      &:hover {
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  .btn-add {
+    height: 50px; // Altura para igualar inputs Material Appearance Outline
+    margin-bottom: 22px; // Ajuste para alinear con inputs (compensa el espacio de error/hint)
+    padding: 0 24px;
+  }
+}
+
+// ==========================================
+// FOOTER
+// ==========================================
+.actions-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $border-color;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+@media (max-width: 768px) {
+  .settings-subpage-container {
+    padding: 1rem;
+  }
+
+  .form-row-2-col {
+    grid-template-columns: 1fr;
+  }
+
+  .add-controls-row {
+    flex-direction: column;
+    align-items: stretch;
+
+    .checkbox-wrapper,
+    .btn-add {
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .btn-add {
+      margin-top: 10px;
+    }
+  }
 }

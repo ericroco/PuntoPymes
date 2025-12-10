@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
+import { Router } from '@angular/router';
 
 // 1. Interfaz del TOKEN (Lo que viene DENTRO del string encriptado)
 interface JwtPayload {
@@ -42,6 +43,7 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
   private tempRegistrationData: Partial<RegisterRequest> = {};
   private memberships: any[] = [];
+  private router = inject(Router);
 
 
   login(credentials: { email: string; password: string }): Observable<LoginResponse> {
@@ -120,9 +122,20 @@ export class AuthService {
   }
 
   logout() {
+    // 1. Limpiar TODO el LocalStorage (Token, Usuario, Branding, Empresa)
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // this.router.navigate(['/auth/login']);
+    localStorage.removeItem('companyBranding');
+    localStorage.removeItem('companyName');
+
+    // Limpiar variables en memoria
+    this.memberships = [];
+
+    // 2. Limpiar estilos (volver al color por defecto)
+    document.documentElement.style.removeProperty('--color-primary');
+
+    // 3. Redirigir al Login
+    this.router.navigate(['/auth/login']);
   }
 
   getToken(): string | null {

@@ -7,26 +7,60 @@
       <form [formGroup]="step1Form">
         <ng-template matStepLabel>Información Personal</ng-template>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Nombre Completo</mat-label>
-          <input matInput formControlName="name" required>
+          <input matInput formControlName="name" required placeholder="Ej: Juan Pérez">
+          <mat-icon matSuffix>person</mat-icon>
           <mat-error>El nombre es obligatorio.</mat-error>
         </mat-form-field>
+
+        <div class="form-row" style="display: flex; gap: 16px;">
+
+          <mat-form-field appearance="outline" style="flex: 0 0 35%;">
+            <mat-label>Tipo Doc.</mat-label>
+            <mat-select formControlName="tipoIdentificacion">
+              <mat-option value="Cedula">Cédula</mat-option>
+              <mat-option value="Pasaporte">Pasaporte</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="flex: 1;">
+            <mat-label>Número de Identificación</mat-label>
+            <input matInput formControlName="nroIdentificacion" required placeholder="Ej: 1712345678">
+            <mat-icon matSuffix>badge</mat-icon>
+
+            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('required')">
+              Requerido.
+            </mat-error>
+            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('pattern')">
+              Solo números.
+            </mat-error>
+            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('minlength')">
+              Faltan dígitos.
+            </mat-error>
+            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('maxlength')">
+              Máximo 10 dígitos.
+            </mat-error>
+          </mat-form-field>
+        </div>
 
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Correo Electrónico</mat-label>
-            <input matInput type="email" formControlName="email" required>
+            <input matInput type="email" formControlName="email" required placeholder="juan@empresa.com">
+            <mat-icon matSuffix>email</mat-icon>
             <mat-error>Correo inválido u obligatorio.</mat-error>
           </mat-form-field>
+
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Teléfono / Celular</mat-label>
-            <input matInput type="tel" formControlName="phone" required>
+            <input matInput type="tel" formControlName="phone" required placeholder="0991234567">
+            <mat-icon matSuffix>phone</mat-icon>
             <mat-error>El teléfono es obligatorio.</mat-error>
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Fecha de Nacimiento (Opcional)</mat-label>
           <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
           <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
@@ -61,7 +95,7 @@
           </mat-form-field>
         </div>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Reporta a (Jefe)</mat-label>
           <mat-select formControlName="reportsTo" required>
             <mat-option *ngFor="let manager of availableManagers" [value]="manager.name">{{ manager.name }}</mat-option>
@@ -70,6 +104,7 @@
             Debes seleccionar un supervisor.
           </mat-error>
         </mat-form-field>
+
         <div class="form-row">
           <mat-form-field appearance="outline" style="flex: 1;">
             <mat-label>Tipo de Contrato</mat-label>
@@ -107,17 +142,21 @@
     <mat-step [stepControl]="step3Form">
       <form [formGroup]="step3Form">
         <ng-template matStepLabel>Compensación Inicial</ng-template>
-        <mat-form-field appearance="outline">
+
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Salario Inicial (USD)</mat-label>
           <input matInput type="number" formControlName="initialSalary" placeholder="Ej: 1500" required>
-          <mat-icon matSuffix>$</mat-icon>
-          <mat-hint *ngIf="selectedJobSalaryRange">{{ selectedJobSalaryRange }}</mat-hint>
+          <mat-icon matSuffix>attach_money</mat-icon>
+          <mat-hint *ngIf="selectedJobSalaryRange" style="color: #666;">
+            <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle;">info</mat-icon>
+            {{ selectedJobSalaryRange }}
+          </mat-hint>
+
           <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('required')">Salario requerido.</mat-error>
-          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('min')">El salario es muy bajo para este
-            cargo.</mat-error>
-          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('max')">El salario excede el máximo para este
-            cargo.</mat-error>
+          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('min')">El salario es muy bajo.</mat-error>
+          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('max')">Excede el máximo del cargo.</mat-error>
         </mat-form-field>
+
         <div class="step-actions">
           <button mat-stroked-button matStepperPrevious>Atrás</button>
           <button mat-flat-button color="primary" matStepperNext>Siguiente</button>
@@ -128,16 +167,23 @@
     <mat-step>
       <ng-template matStepLabel>Revisar y Crear</ng-template>
       <div class="review-section">
-        <h4>Revisa los datos antes de crear:</h4>
-
+        <h4>Resumen del Empleado</h4>
         <mat-divider></mat-divider>
-        <p><strong>Nombre:</strong> {{ step1Form.value.name }}</p>
-        <p><strong>Email:</strong> {{ step1Form.value.email }}</p>
-        <p><strong>Cargo:</strong> {{ step2Form.value.role }}</p>
-        <p><strong>Salario:</strong> {{ step3Form.value.initialSalary | currency:'USD' }}</p>
 
-        <p class="review-note">Podrás editar otros detalles (horario, campos personalizados) desde el perfil del
-          empleado después de crearlo.</p>
+        <div class="review-grid">
+          <p><strong>Nombre:</strong> {{ step1Form.value.name }}</p>
+          <p><strong>Identificación:</strong> {{ step1Form.value.tipoIdentificacion }} - {{
+            step1Form.value.nroIdentificacion }}</p>
+          <p><strong>Email:</strong> {{ step1Form.value.email }}</p>
+          <p><strong>Cargo:</strong> {{ step2Form.value.job?.name }}</p>
+          <p><strong>Contrato:</strong> {{ step2Form.value.contractType }}</p>
+          <p><strong>Salario:</strong> {{ step3Form.value.initialSalary | currency:'USD' }}</p>
+        </div>
+
+        <p class="review-note">
+          <mat-icon>info</mat-icon>
+          Al crear, se enviarán las credenciales de acceso al correo proporcionado.
+        </p>
       </div>
 
       <div class="step-actions">
@@ -151,7 +197,12 @@
 <div mat-dialog-actions align="end" class="modal-actions">
   <button mat-stroked-button (click)="onCancel()">Cancelar Creación</button>
   <button mat-flat-button color="primary" (click)="onSave()"
-    [disabled]="!step1Form.valid || !step2Form.valid || !step3Form.valid">
-    Crear Empleado
+    [disabled]="!step1Form.valid || !step2Form.valid || !step3Form.valid || isLoading">
+
+    <span *ngIf="!isLoading">Crear Empleado</span>
+    <span *ngIf="isLoading" style="display: flex; align-items: center; gap: 8px;">
+      <mat-icon class="spin">sync</mat-icon> Creando...
+    </span>
+
   </button>
 </div>

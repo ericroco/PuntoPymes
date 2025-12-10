@@ -75,21 +75,19 @@ export class PersonalService {
    * Lógica de negocio para obtener todos los empleados
    * (Tu método existente - sin cambios)
    */
-  async getEmpleados(empresaId: string,
-    filtroSucursalId?: string
-  ): Promise<Empleado[]> {
-    console.log(
-      `Microservicio PERSONAL: Buscando empleados para empresaId: ${empresaId}`,
-    );
+  async getEmpleados(empresaId: string, filtroSucursalId?: string): Promise<Empleado[]> {
+    console.log(`Microservicio PERSONAL: Buscando empleados...`);
+
     const where: any = { empresaId };
 
-    // Si el usuario tiene sucursal fija, SOLO ve empleados de ahí
     if (filtroSucursalId) {
       where.sucursalId = filtroSucursalId;
     }
+
     return this.empleadoRepository.find({
       where: { empresaId: empresaId, estado: 'Activo' },
-      relations: ['cargo', 'rol', 'sucursal'],
+      // 👇 AGREGAMOS 'cargo.departamento' AQUÍ
+      relations: ['cargo', 'cargo.departamento', 'rol', 'sucursal', 'contratos'],
     });
   }
   async getEmpleado(empresaId: string, empleadoId: string): Promise<Empleado> {
@@ -113,61 +111,119 @@ export class PersonalService {
     dto: CreateEmpleadoDto,
     usuarioCreador?: { sucursalId?: string }
   ): Promise<Empleado> {
-    console.log(`Microservicio PERSONAL: Creando empleado para empresaId: ${empresaId}`);
+    console.log(`Microservicio PERSONAL: Procesando empleado... ID: ${dto.nroIdentificacion} - Email: ${dto.emailPersonal}`);
 
-    // --- 1. Lógica de Sucursal (Data Scope) ---
+    // =================================================================
+    // PASO 0: Validaciones de Relaciones (Sucursal, Rol, Cargo)
+    // =================================================================
     let sucursalDestino = dto.sucursalId;
-
     if (usuarioCreador && usuarioCreador.sucursalId) {
       sucursalDestino = usuarioCreador.sucursalId;
     }
 
+    // Validar Sucursal
     if (sucursalDestino) {
       const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalDestino, empresaId });
-      if (!sucursal) throw new BadRequestException('Sucursal no válida.');
+      if (!sucursal) throw new BadRequestException('La sucursal seleccionada no es válida o no pertenece a la empresa.');
     }
 
-    // --- 2. Validaciones de Seguridad ---
+    // Validar Rol
     const rol = await this.rolRepository.findOneBy({ id: dto.rolId, empresaId });
-    if (!rol) throw new BadRequestException('Rol no válido.');
+    if (!rol) throw new BadRequestException('El rol seleccionado no es válido.');
 
+    // Validar Cargo
     const cargo = await this.cargoRepository.findOne({
       where: { id: dto.cargoId, departamento: { empresaId } },
     });
-    if (!cargo) throw new BadRequestException('Cargo no válido.');
+    if (!cargo) throw new BadRequestException('El cargo seleccionado no es válido.');
 
-    // --- 3. Creación del Empleado ---
-    const nuevoEmpleado = this.empleadoRepository.create({
-      ...dto,
-      empresaId,
-      sucursalId: sucursalDestino,
-      estado: 'Activo'
+
+    // =================================================================
+    // PASO 1: Verificación de Existencia y Unicidad (Cédula y Email)
+    // =================================================================
+
+    // A. Buscar por Identificación (Cédula/Pasaporte)
+    const existentePorId = await this.empleadoRepository.findOne({
+      where: { nroIdentificacion: dto.nroIdentificacion, empresaId },
     });
 
-    const empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
+    if (existentePorId && existentePorId.estado === 'Activo') {
+      throw new ConflictException(`Ya existe un empleado activo con la identificación ${dto.nroIdentificacion} (${existentePorId.nombre} ${existentePorId.apellido}).`);
+    }
 
-    // --- 4. Creación del Contrato Inicial (Nómina) ---
+    // B. Buscar por Email
+    const existentePorEmail = await this.empleadoRepository.findOne({
+      where: { emailPersonal: dto.emailPersonal, empresaId },
+    });
+
+    if (existentePorEmail && existentePorEmail.estado === 'Activo') {
+      throw new ConflictException(`Ya existe un empleado activo con el correo ${dto.emailPersonal}.`);
+    }
+
+    // C. Determinar si es Reactivación o Creación
+    // Si encontramos un registro inactivo (ya sea por ID o Email), lo reactivamos.
+    // Damos prioridad al match por ID.
+    const empleadoAReactivar = existentePorId || existentePorEmail;
+    let empleadoGuardado: Empleado;
+
+    if (empleadoAReactivar) {
+      console.log(`♻️ Reactivando ex-empleado inactivo: ${empleadoAReactivar.nombre} ${empleadoAReactivar.apellido}`);
+
+      // Merge: Actualizamos los datos viejos con los nuevos del DTO
+      this.empleadoRepository.merge(empleadoAReactivar, {
+        ...dto, // Sobrescribe nombre, telefono, dirección, etc.
+        sucursalId: sucursalDestino,
+        estado: 'Activo', // ¡Lo revivimos!
+        // Aseguramos que la identificación se actualice si el match fue por email
+        nroIdentificacion: dto.nroIdentificacion,
+        tipoIdentificacion: dto.tipoIdentificacion
+      });
+
+      empleadoGuardado = await this.empleadoRepository.save(empleadoAReactivar);
+
+    } else {
+      console.log(`✨ Creando nuevo empleado totalmente nuevo...`);
+
+      const nuevoEmpleado = this.empleadoRepository.create({
+        ...dto,
+        empresaId,
+        sucursalId: sucursalDestino,
+        estado: 'Activo'
+      });
+
+      empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
+    }
+
+
+    // =================================================================
+    // PASO 2: Creación del Contrato
+    // =================================================================
     if (dto.salario !== undefined) {
-      // CORRECCIÓN AQUÍ: Usamos 'undefined' en lugar de 'null' para fechaFin
+      // Opcional: Podrías invalidar contratos anteriores si es reactivación
+      if (empleadoAReactivar) {
+        await this.contratoRepository.update({ empleado: { id: empleadoGuardado.id }, estado: 'Vigente' }, { estado: 'Inactivo' });
+      }
+
       const nuevoContrato = this.contratoRepository.create({
-        empleadoId: empleadoGuardado.id,
+        empleado: empleadoGuardado, // Relación directa
         tipo: dto.tipoContrato || 'Indefinido',
         salario: dto.salario,
         moneda: 'USD',
         fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : new Date(),
-        // 👇 CAMBIO CLAVE: Si no hay fechaFin, enviamos undefined (no null)
         fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
         estado: 'Vigente'
       });
+
       await this.contratoRepository.save(nuevoContrato);
-      console.log(`✅ Contrato inicial creado: $${dto.salario}`);
+      console.log(`✅ Contrato generado: $${dto.salario}`);
     }
 
-    // --- 5. Lógica Automática: Usuario y Correo ---
+
+    // =================================================================
+    // PASO 3: Lógica Automática (Auth/Mail)
+    // =================================================================
     if (dto.emailPersonal) {
       try {
-        console.log('🔄 Solicitando acceso de usuario...');
-
         const resultadoAuth = await firstValueFrom(
           this.authClient.send(
             { cmd: 'create_user_auto' },
@@ -180,7 +236,7 @@ export class PersonalService {
           )
         );
 
-        // Enviar Correo
+        // Enviamos correo dependiendo si es usuario nuevo o existente
         if (resultadoAuth.isNew) {
           await this.mailerService.sendMail({
             to: dto.emailPersonal,
@@ -188,31 +244,36 @@ export class PersonalService {
             html: `
               <div style="font-family: Arial; color: #333;">
                 <h1 style="color: #3f51b5;">¡Bienvenido ${dto.nombre}!</h1>
-                <p>Se ha creado tu cuenta.</p>
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+                <p>Se ha creado tu cuenta profesional en PuntoPyMES.</p>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #3f51b5;">
                     <p><b>Usuario:</b> ${resultadoAuth.email}</p>
-                    <p><b>Contraseña:</b> ${resultadoAuth.password}</p>
+                    <p><b>Contraseña Temporal:</b> ${resultadoAuth.password}</p>
                 </div>
-                <a href="http://localhost:4200/auth/login">Ingresar</a>
+                <p>Por favor ingresa y cambia tu contraseña.</p>
+                <br>
+                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ingresar al Sistema</a>
               </div>
             `
           });
         } else {
+          // Caso Reactivación: Ya tenía usuario, solo le avisamos
           await this.mailerService.sendMail({
             to: dto.emailPersonal,
-            subject: 'PuntoPyMES - Nuevo Acceso Asignado',
+            subject: 'PuntoPyMES - Cuenta Reactivada',
             html: `
               <div style="font-family: Arial; color: #333;">
                 <h1 style="color: #3f51b5;">¡Hola de nuevo ${dto.nombre}!</h1>
-                <p>Has sido vinculado a un nuevo espacio de trabajo.</p>
-                <a href="http://localhost:4200/auth/login">Ir al Dashboard</a>
+                <p>Tu perfil de empleado ha sido reactivado exitosamente.</p>
+                <p>Puedes seguir usando tus credenciales anteriores para acceder.</p>
+                <br>
+                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ir al Dashboard</a>
               </div>
             `
           });
         }
-        console.log(`📧 Correo enviado.`);
       } catch (error) {
-        console.error('❌ Error en flujo automático:', error);
+        // No bloqueamos la creación del empleado si falla el correo, solo logueamos
+        console.error('⚠️ Error al crear usuario Auth o enviar correo:', error.message);
       }
     }
 
@@ -740,17 +801,45 @@ export class PersonalService {
   // ==========================================
 
   async createVacante(empresaId: string, dto: CreateVacanteDto): Promise<Vacante> {
-    // Validar departamento si se envía
+    // 1. Validar Departamento (Requerido para crear el Cargo)
     if (dto.departamentoId) {
       const dep = await this.deptoRepository.findOneBy({ id: dto.departamentoId, empresaId });
       if (!dep) throw new BadRequestException('Departamento no válido.');
+
+      // --- AUTOMATIZACIÓN: CREAR CARGO SI NO EXISTE ---
+      // Verificamos si ya existe un cargo con este nombre en el departamento
+      const cargoExistente = await this.cargoRepository.findOne({
+        where: {
+          nombre: dto.titulo, // Usamos el título de la vacante como nombre del cargo
+          departamentoId: dto.departamentoId
+        }
+      });
+
+      if (!cargoExistente) {
+        console.log(`ℹ️ Creando cargo automático: ${dto.titulo}`);
+
+        const nuevoCargo = this.cargoRepository.create({
+          nombre: dto.titulo,
+          departamentoId: dto.departamentoId,
+          // Aprovechamos los rangos salariales de la vacante
+          salarioMin: dto.salarioMin || 0,
+          salarioMax: dto.salarioMax || 0
+        });
+
+        await this.cargoRepository.save(nuevoCargo);
+      } else {
+        console.log(`ℹ️ El cargo '${dto.titulo}' ya existía. Se usará el existente.`);
+      }
+      // ------------------------------------------------
     }
 
+    // 2. Crear la Vacante (Lógica estándar)
     const vacante = this.vacanteRepository.create({
       ...dto,
       empresaId,
       estado: dto.estado || EstadoVacante.BORRADOR,
     });
+
     return this.vacanteRepository.save(vacante);
   }
 

@@ -17,6 +17,8 @@ import { EditSprintDialog } from '../../components/edit-sprint-dialog/edit-sprin
 
 // Servicios e Interfaces Reales
 import { ProductivityService, Sprint, Project } from '../../services/productivity';
+import { AddProjectDialog } from '../../components/add-project-dialog/add-project-dialog';
+import { EmployeesService } from '../../services/employees';
 
 @Component({
   selector: 'app-tasks-productivity',
@@ -50,6 +52,7 @@ export class TasksProductivity implements OnInit {
   private productivityService = inject(ProductivityService);
   private route = inject(ActivatedRoute);
   private snackBar = inject(MatSnackBar);
+  private employeesService = inject(EmployeesService);
 
   // Datos Reales
   projects: Project[] = [];
@@ -184,6 +187,8 @@ export class TasksProductivity implements OnInit {
     });
   }
 
+
+
   // --- Helpers Visuales ---
 
   // Calcular progreso real si el backend no lo manda
@@ -208,5 +213,33 @@ export class TasksProductivity implements OnInit {
   getProjectName(id: string): string {
     const project = this.projects.find(p => p.id === id);
     return project ? project.nombre : 'Seleccionar Proyecto';
+  }
+  openCreateProjectDialog() {
+    // 1. Cargar empleados para el selector de líder
+    this.employeesService.getEmployees().subscribe(employees => {
+
+      const dialogRef = this.dialog.open(AddProjectDialog, {
+        width: '500px',
+        data: { employees }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          // 2. Crear Proyecto
+          this.productivityService.createProject(result).subscribe({
+            next: (newProject) => {
+              this.snackBar.open('Proyecto creado exitosamente', 'Cerrar', { duration: 3000 });
+              // Recargar lista y seleccionar el nuevo
+              this.loadProjects();
+              // Opcional: this.selectedProjectId = newProject.id;
+            },
+            error: (err) => {
+              console.error(err);
+              this.snackBar.open('Error al crear proyecto', 'Cerrar');
+            }
+          });
+        }
+      });
+    });
   }
 }

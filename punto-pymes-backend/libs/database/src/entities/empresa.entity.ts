@@ -12,6 +12,15 @@ import { CicloEvaluacion } from './cicloEvaluacion.entity';
 import { Vacante } from './vacante.entity';
 import { Sucursal } from './sucursal.entity';
 
+
+export interface ConfiguracionEmpresa {
+  nomina?: {
+    frecuenciaPago?: string;      // 'quincenal', 'mensual'
+    multiplicadorHorasExtra?: number; // 1.5, 2.0
+  };
+  // A futuro puedes agregar: asistencia?: { ... }, etc.
+}
+
 @Entity({ name: 'empresas' })
 export class Empresa extends BaseEntity {
   /**
@@ -47,6 +56,12 @@ export class Empresa extends BaseEntity {
   })
   branding: { logoUrl?: string | null; color?: string | null; primaryColor?: string | null };
 
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+  })
+  configuracion: ConfiguracionEmpresa;
   // ---
   // RELACIONES (Una Empresa TIENE MUCHOS...)
   // ---

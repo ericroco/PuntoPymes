@@ -230,6 +230,21 @@ let NominaController = class NominaController {
     getSolicitudes(data) {
         return this.nominaService.getSolicitudes(data.empresaId);
     }
+    crearNovedad(data) {
+        return this.nominaService.registrarNovedad(data);
+    }
+    obtenerNovedadesPorEmpleado(data) {
+        return this.nominaService.obtenerNovedadesPorEmpleado(data.empleadoId);
+    }
+    getConfig(data) {
+        return this.nominaService.obtenerConfiguracion(data.empresaId);
+    }
+    updateConfig(data) {
+        return this.nominaService.actualizarConfiguracion(data.empresaId, data.config);
+    }
+    obtenerReporte(data) {
+        return this.nominaService.obtenerReporteNomina(data.empresaId, data.periodoId);
+    }
 };
 exports.NominaController = NominaController;
 __decorate([
@@ -375,7 +390,7 @@ __decorate([
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'procesar_nomina' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200 }),
+    openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -397,6 +412,46 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], NominaController.prototype, "getSolicitudes", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'crear_novedad' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts").NovedadNomina) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "crearNovedad", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'obtener_novedades_empleado' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts").NovedadNomina)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "obtenerNovedadesPorEmpleado", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_configuracion_nomina' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "getConfig", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_configuracion_nomina' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "updateConfig", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'obtener_reporte_nomina' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "obtenerReporte", null);
 exports.NominaController = NominaController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [nomina_service_1.NominaService])
@@ -448,6 +503,8 @@ exports.NominaModule = NominaModule = __decorate([
                 database_1.RubroNomina,
                 database_1.ConceptoNomina,
                 database_1.SolicitudVacaciones,
+                database_1.NovedadNomina,
+                database_1.Empresa
             ]),
         ],
         controllers: [nomina_controller_1.NominaController],
@@ -485,7 +542,6 @@ const database_1 = __webpack_require__(/*! default/database */ "./libs/database/
 const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 const create_contrato_dto_1 = __webpack_require__(/*! ./dto/create-contrato.dto */ "./apps/nomina/src/dto/create-contrato.dto.ts");
 const create_periodo_nomina_dto_1 = __webpack_require__(/*! ./dto/create-periodo-nomina.dto */ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts");
-const conceptoNomina_entity_1 = __webpack_require__(/*! ../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
 let NominaService = class NominaService {
     contratoRepository;
     empleadoRepository;
@@ -497,7 +553,9 @@ let NominaService = class NominaService {
     conceptoNominaRepository;
     entityManager;
     solicitudRepo;
-    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager, solicitudRepo) {
+    novedadNominaRepo;
+    empresaRepository;
+    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager, solicitudRepo, novedadNominaRepo, empresaRepository) {
         this.contratoRepository = contratoRepository;
         this.empleadoRepository = empleadoRepository;
         this.beneficioRepository = beneficioRepository;
@@ -508,6 +566,8 @@ let NominaService = class NominaService {
         this.conceptoNominaRepository = conceptoNominaRepository;
         this.entityManager = entityManager;
         this.solicitudRepo = solicitudRepo;
+        this.novedadNominaRepo = novedadNominaRepo;
+        this.empresaRepository = empresaRepository;
     }
     async getContratosByEmpleado(empresaId, empleadoId) {
         console.log(`Microservicio NOMINA: Buscando contratos para empleado ${empleadoId}`);
@@ -777,77 +837,89 @@ let NominaService = class NominaService {
         await this.conceptoNominaRepository.softRemove(concepto);
         return { message: 'Concepto de nómina eliminado correctamente.' };
     }
+    async obtenerNovedadesPorEmpleado(empleadoId) {
+        return this.novedadNominaRepo.find({
+            where: { empleadoId },
+            relations: ['concepto'],
+            order: { fecha: 'DESC' }
+        });
+    }
     async procesarNomina(empresaId, periodoId) {
         return this.entityManager.transaction('SERIALIZABLE', async (manager) => {
-            const periodo = await manager.findOneBy(database_1.PeriodoNomina, {
-                id: periodoId,
-                empresaId: empresaId,
+            console.log('🔄 INICIANDO PROCESO DE NÓMINA - PERIODO:', periodoId);
+            const periodo = await manager.findOneBy(database_1.PeriodoNomina, { id: periodoId, empresaId });
+            if (!periodo || periodo.estado !== create_periodo_nomina_dto_1.EstadoPeriodo.ABIERTO) {
+                throw new common_1.ConflictException('Período cerrado o no válido.');
+            }
+            const conceptosFijos = await manager.findBy(database_1.ConceptoNomina, { empresaId, esFijo: true });
+            console.log(`📋 Conceptos Fijos encontrados: ${conceptosFijos.length}`);
+            const contratos = await manager.find(database_1.Contrato, {
+                where: { estado: 'Vigente', empleado: { empresaId } },
+                relations: ['empleado']
             });
-            if (!periodo) {
-                throw new common_1.NotFoundException('Período de nómina no encontrado.');
-            }
-            if (periodo.estado !== create_periodo_nomina_dto_1.EstadoPeriodo.ABIERTO) {
-                throw new common_1.ConflictException('El período de nómina no está "Abierto". No se puede procesar.');
-            }
-            const conceptos = await manager.findBy(database_1.ConceptoNomina, {
-                empresaId: empresaId,
-            });
-            if (conceptos.length === 0) {
-                throw new common_1.BadRequestException('No hay "Conceptos de Nómina" configurados para esta empresa.');
-            }
-            const contratosVigentes = await manager.find(database_1.Contrato, {
-                where: {
-                    estado: 'Vigente',
-                    empleado: { empresaId: empresaId },
-                },
-                relations: ['empleado'],
-            });
-            if (contratosVigentes.length === 0) {
-                throw new common_1.NotFoundException('No se encontraron empleados con contratos vigentes para procesar.');
-            }
-            for (const contrato of contratosVigentes) {
-                const empleado = contrato.empleado;
+            console.log(`👥 Empleados a procesar: ${contratos.length}`);
+            for (const contrato of contratos) {
+                const emp = contrato.empleado;
+                console.log(`\n👤 Procesando: ${emp.nombre} ${emp.apellido}`);
+                const salarioBase = Number(contrato.salario);
+                console.log(`   💰 Salario Contrato: $${salarioBase}`);
+                if (!salarioBase || salarioBase === 0) {
+                    console.warn(`   ⚠️ ALERTA: El empleado tiene salario 0 o inválido.`);
+                }
                 let totalIngresos = 0;
                 let totalEgresos = 0;
-                const nuevaNominaEmpleado = manager.create(database_1.NominaEmpleado, {
-                    empleadoId: empleado.id,
+                const rolPago = manager.create(database_1.NominaEmpleado, {
+                    empleadoId: emp.id,
                     periodoId: periodo.id,
+                    fechaGeneracion: new Date()
                 });
-                await manager.save(nuevaNominaEmpleado);
-                for (const concepto of conceptos) {
-                    let valorCalculado = 0;
-                    if (concepto.nombre === 'Salario Base') {
-                        valorCalculado = contrato.salario;
+                await manager.save(rolPago);
+                const rubroSalario = manager.create(database_1.RubroNomina, {
+                    nominaEmpleadoId: rolPago.id,
+                    tipo: 'Ingreso',
+                    concepto: 'Salario Base',
+                    valor: salarioBase
+                });
+                await manager.save(rubroSalario);
+                totalIngresos += salarioBase;
+                console.log(`   ➕ Sumado Salario Base: $${totalIngresos}`);
+                for (const c of conceptosFijos) {
+                    const nombre = c.nombre.toLowerCase();
+                    if (nombre.includes('salario') || nombre.includes('sueldo')) {
+                        console.log(`   🚫 Ignorando concepto manual duplicado: "${c.nombre}"`);
+                        continue;
                     }
-                    else if (concepto.nombre === 'Aporte IESS (9.45%)') {
-                        valorCalculado = contrato.salario * 0.0945;
+                    let valor = 0;
+                    if (c.formula) {
+                        const pct = parseFloat(c.formula);
+                        if (!isNaN(pct)) {
+                            valor = salarioBase * (pct / 100);
+                            console.log(`   ⚙️ Calculando ${c.nombre} (${pct}%): $${valor}`);
+                        }
                     }
-                    const nuevoRubro = manager.create(database_1.RubroNomina, {
-                        nominaEmpleadoId: nuevaNominaEmpleado.id,
-                        tipo: concepto.tipo,
-                        concepto: concepto.nombre,
-                        valor: valorCalculado,
-                    });
-                    await manager.save(nuevoRubro);
-                    if (concepto.tipo === conceptoNomina_entity_1.TipoRubro.INGRESO) {
-                        totalIngresos += valorCalculado;
-                    }
-                    else if (concepto.tipo === conceptoNomina_entity_1.TipoRubro.EGRESO) {
-                        totalEgresos += valorCalculado;
+                    if (valor > 0) {
+                        const rubro = manager.create(database_1.RubroNomina, {
+                            nominaEmpleadoId: rolPago.id,
+                            tipo: c.tipo,
+                            concepto: c.nombre,
+                            valor: Number(valor.toFixed(2))
+                        });
+                        await manager.save(rubro);
+                        if (c.tipo === 'Ingreso')
+                            totalIngresos += rubro.valor;
+                        else
+                            totalEgresos += rubro.valor;
                     }
                 }
-                nuevaNominaEmpleado.totalIngresos = totalIngresos;
-                nuevaNominaEmpleado.totalEgresos = totalEgresos;
-                nuevaNominaEmpleado.netoAPagar = totalIngresos - totalEgresos;
-                await manager.save(nuevaNominaEmpleado);
+                rolPago.totalIngresos = Number(totalIngresos.toFixed(2));
+                rolPago.totalEgresos = Number(totalEgresos.toFixed(2));
+                rolPago.netoAPagar = Number((totalIngresos - totalEgresos).toFixed(2));
+                await manager.save(rolPago);
+                console.log(`   ✅ FIN EMPLEADO: Ing: ${rolPago.totalIngresos} | Egr: ${rolPago.totalEgresos} | Neto: ${rolPago.netoAPagar}`);
             }
             periodo.estado = create_periodo_nomina_dto_1.EstadoPeriodo.PROCESADO;
             await manager.save(periodo);
-            console.log(`Microservicio NOMINA: Nómina procesada para ${contratosVigentes.length} empleados.`);
-            return {
-                message: 'Nómina procesada exitosamente.',
-                empleadosProcesados: contratosVigentes.length,
-            };
+            return { message: 'Proceso completado', count: contratos.length };
         });
     }
     async solicitarVacaciones(empresaId, dto) {
@@ -877,6 +949,79 @@ let NominaService = class NominaService {
             order: { createdAt: 'DESC' }
         });
     }
+    async registrarNovedad(data) {
+        console.log('💰 Registering novelty:', data);
+        let conceptoId = data.conceptoId;
+        if (!conceptoId && data.concepto) {
+            const concepto = await this.conceptoNominaRepository.findOne({
+                where: { nombre: data.concepto, empresaId: data.empresaId }
+            });
+            if (concepto)
+                conceptoId = concepto.id;
+        }
+        const nuevaNovedad = this.novedadNominaRepo.create({
+            empleadoId: data.empleadoId,
+            conceptoId: conceptoId,
+            valor: data.monto,
+            fecha: new Date(data.fecha),
+            observacion: data.observacion,
+            estado: database_1.EstadoNovedad.PENDIENTE,
+            empresaId: data.empresaId
+        });
+        return this.novedadNominaRepo.save(nuevaNovedad);
+    }
+    async obtenerConfiguracion(empresaId) {
+        const empresa = await this.empresaRepository.findOne({
+            where: { id: empresaId },
+            select: ['configuracion']
+        });
+        return empresa?.configuracion?.nomina || { frecuenciaPago: 'mensual', multiplicadorHorasExtra: 1.5 };
+    }
+    async actualizarConfiguracion(empresaId, datosNomina) {
+        const empresa = await this.empresaRepository.findOneBy({ id: empresaId });
+        if (!empresa)
+            throw new common_1.NotFoundException('Empresa no encontrada');
+        if (!empresa.configuracion)
+            empresa.configuracion = {};
+        empresa.configuracion.nomina = {
+            ...empresa.configuracion.nomina,
+            ...datosNomina
+        };
+        await this.empresaRepository.save(empresa);
+        return empresa.configuracion.nomina;
+    }
+    async obtenerReporteNomina(empresaId, periodoId) {
+        const nominas = await this.entityManager.find(database_1.NominaEmpleado, {
+            where: {
+                periodoId: periodoId,
+                empleado: { empresaId: empresaId }
+            },
+            relations: ['empleado', 'empleado.cargo', 'rubros'],
+            order: { empleado: { apellido: 'ASC' } }
+        });
+        return nominas.map(n => {
+            const ingresos = n.rubros.filter(r => r.tipo === 'Ingreso');
+            const egresos = n.rubros.filter(r => r.tipo === 'Egreso');
+            return {
+                id: n.id,
+                empleado: {
+                    nombre: n.empleado.nombre,
+                    apellido: n.empleado.apellido,
+                    cedula: n.empleado.nroIdentificacion || 'S/N',
+                    cargo: n.empleado.cargo?.nombre || 'General'
+                },
+                totales: {
+                    ingresos: n.totalIngresos,
+                    egresos: n.totalEgresos,
+                    neto: n.netoAPagar
+                },
+                detalles: {
+                    ingresos: ingresos.map(i => ({ concepto: i.concepto, valor: i.valor })),
+                    egresos: egresos.map(e => ({ concepto: e.concepto, valor: e.valor }))
+                }
+            };
+        });
+    }
 };
 exports.NominaService = NominaService;
 exports.NominaService = NominaService = __decorate([
@@ -890,6 +1035,8 @@ exports.NominaService = NominaService = __decorate([
     __param(6, (0, typeorm_1.InjectRepository)(database_1.RubroNomina)),
     __param(7, (0, typeorm_1.InjectRepository)(database_1.ConceptoNomina)),
     __param(9, (0, typeorm_1.InjectRepository)(database_1.SolicitudVacaciones)),
+    __param(10, (0, typeorm_1.InjectRepository)(database_1.NovedadNomina)),
+    __param(11, (0, typeorm_1.InjectRepository)(database_1.Empresa)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -899,6 +1046,8 @@ exports.NominaService = NominaService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.EntityManager,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], NominaService);
 
@@ -2647,6 +2796,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     nombre;
     planSuscripcion;
     branding;
+    configuracion;
     empleados;
     roles;
     departamentos;
@@ -2659,7 +2809,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     vacantes;
     sucursales;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
+        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, configuracion: { required: true, type: () => Object }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
     }
 };
 exports.Empresa = Empresa;
@@ -2687,6 +2837,14 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], Empresa.prototype, "branding", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'jsonb',
+        nullable: true,
+        comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+    }),
+    __metadata("design:type", Object)
+], Empresa.prototype, "configuracion", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.empresa, { cascade: true }),
     __metadata("design:type", Array)
@@ -2907,6 +3065,7 @@ __exportStar(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/en
 __exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts"), exports);
 
 
 /***/ }),
@@ -3205,6 +3364,107 @@ exports.NominaEmpleado = NominaEmpleado = __decorate([
     (0, typeorm_1.Index)(['empleadoId']),
     (0, typeorm_1.Unique)(['periodoId', 'empleadoId'])
 ], NominaEmpleado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/novedadNomina.entity.ts":
+/*!************************************************************!*\
+  !*** ./libs/database/src/entities/novedadNomina.entity.ts ***!
+  \************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NovedadNomina = exports.EstadoNovedad = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const conceptoNomina_entity_1 = __webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+var EstadoNovedad;
+(function (EstadoNovedad) {
+    EstadoNovedad["PENDIENTE"] = "Pendiente";
+    EstadoNovedad["PROCESADA"] = "Procesada";
+    EstadoNovedad["CANCELADA"] = "Cancelada";
+})(EstadoNovedad || (exports.EstadoNovedad = EstadoNovedad = {}));
+let NovedadNomina = class NovedadNomina extends base_entity_1.BaseEntity {
+    valor;
+    fecha;
+    observacion;
+    estado;
+    empleado;
+    empleadoId;
+    concepto;
+    conceptoId;
+    empresa;
+    empresaId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { valor: { required: true, type: () => Number }, fecha: { required: true, type: () => Date }, observacion: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts").EstadoNovedad) }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, concepto: { required: true, type: () => (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").ConceptoNomina) }, conceptoId: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
+    }
+};
+exports.NovedadNomina = NovedadNomina;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, comment: 'Monetary value' }),
+    __metadata("design:type", Number)
+], NovedadNomina.prototype, "valor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Date of occurrence' }),
+    __metadata("design:type", Date)
+], NovedadNomina.prototype, "fecha", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "observacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: EstadoNovedad,
+        default: EstadoNovedad.PENDIENTE
+    }),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], NovedadNomina.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => conceptoNomina_entity_1.ConceptoNomina, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'conceptoId' }),
+    __metadata("design:type", conceptoNomina_entity_1.ConceptoNomina)
+], NovedadNomina.prototype, "concepto", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "conceptoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", empresa_entity_1.Empresa)
+], NovedadNomina.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "empresaId", void 0);
+exports.NovedadNomina = NovedadNomina = __decorate([
+    (0, typeorm_1.Entity)({ name: 'novedades_nomina' }),
+    (0, typeorm_1.Index)(['empresaId', 'estado'])
+], NovedadNomina);
 
 
 /***/ }),
