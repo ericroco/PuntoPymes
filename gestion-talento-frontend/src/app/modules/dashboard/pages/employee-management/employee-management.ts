@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { EditEmployeeDialog } from '../../components/edit-employee-dialog/edit-employee-dialog';
 
 // Importamos la interfaz REAL del servicio
 import { EmployeesService, Employee } from '../../services/employees';
@@ -194,6 +195,50 @@ export class EmployeeManagement implements OnInit {
       error: (err) => {
         console.error(err);
         this.snackBar.open('Error al desvincular empleado', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+  openEditDialog(employee: Employee): void {
+    const dialogRef = this.dialog.open(EditEmployeeDialog, {
+      width: '500px',
+      data: { employee }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+
+        // 👇 1. LIMPIEZA DE DATOS (IMPORTANTE)
+        // Convertimos cadenas vacías ("") a undefined para que el backend las ignore
+        const dataToUpdate = { ...result };
+
+        // Recorremos el objeto para limpiar
+        Object.keys(dataToUpdate).forEach(key => {
+          if (dataToUpdate[key] === '' || dataToUpdate[key] === null) {
+            delete dataToUpdate[key]; // Lo eliminamos del objeto
+          }
+        });
+
+        console.log('📤 Enviando actualización limpia:', dataToUpdate);
+
+        // 2. LLAMADA AL SERVICIO
+        this.employeesService.updateEmployee(employee.id, dataToUpdate).subscribe({
+          next: (updatedEmp) => {
+            this.snackBar.open('Datos actualizados correctamente', 'Cerrar', { duration: 3000 });
+            this.loadEmployees();
+          },
+          error: (err) => {
+            console.error('Error detallado:', err); // Mira la consola para ver qué dice el array 'message'
+            this.isLoading = false;
+
+            // 👇 MEJORA: Mostrar al usuario qué falló
+            const errorMsg = err.error?.message ?
+              (Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message)
+              : 'Error al actualizar';
+
+            this.snackBar.open(errorMsg, 'Cerrar', { duration: 5000 });
+          }
+        });
       }
     });
   }

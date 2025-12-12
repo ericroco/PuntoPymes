@@ -6,43 +6,41 @@
 
   <nav class="sidebar-nav">
 
-    <!-- Dashboard principal -->
     <a routerLink="/dashboard/overview" routerLinkActive="active" class="nav-item">
       <mat-icon>dashboard</mat-icon>
       <span>Dashboard</span>
     </a>
 
-
-
-    <!-- SECCIÓN: PERSONAS (solo admin) -->
-    <div class="nav-section" *ngIf="isAdmin">
+    <div class="nav-section" *ngIf="can(P.EMPLOYEES_READ) || can(P.EMPLOYEES_CREATE)">
       <span class="nav-title">
         <mat-icon class="section-icon">people</mat-icon> Talento Humano
       </span>
       <div class="nav-submenu">
-        <a routerLink="/dashboard/employees" routerLinkActive="active" class="nav-item">
+
+        <a *ngIf="can(P.EMPLOYEES_READ)" routerLink="/dashboard/employees" routerLinkActive="active" class="nav-item">
           <mat-icon>badge</mat-icon>
           <span>Empleados</span>
         </a>
 
-        <a routerLink="/dashboard/recruitment" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.EMPLOYEES_CREATE)" routerLink="/dashboard/recruitment" routerLinkActive="active"
+          class="nav-item">
           <mat-icon>work_outline</mat-icon>
           <span>Reclutamiento</span>
         </a>
 
-        <a routerLink="/dashboard/onboarding" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.EMPLOYEES_CREATE)" routerLink="/dashboard/onboarding" routerLinkActive="active"
+          class="nav-item">
           <mat-icon>how_to_reg</mat-icon>
           <span>Onboarding</span>
         </a>
 
-        <a routerLink="/dashboard/performance" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.EMPLOYEES_READ)" routerLink="/dashboard/performance" routerLinkActive="active" class="nav-item">
           <mat-icon>stars</mat-icon>
           <span>Evaluaciones</span>
         </a>
       </div>
     </div>
 
-    <!-- SECCIÓN: OPERACIONES -->
     <div class="nav-section">
       <span class="nav-title">
         <mat-icon class="section-icon">business_center</mat-icon> Operaciones
@@ -70,30 +68,29 @@
       </div>
     </div>
 
-    <!-- SECCIÓN: COMPENSACIÓN (solo admin) -->
-    <div class="nav-section" *ngIf="isAdmin">
+    <div class="nav-section" *ngIf="can(P.PAYROLL_READ) || can(P.PAYROLL_PROCESS)">
       <span class="nav-title">
         <mat-icon class="section-icon">payments</mat-icon> Compensación
       </span>
       <div class="nav-submenu">
-        <a routerLink="/dashboard/payroll" routerLinkActive="active" class="nav-item">
+
+        <a *ngIf="can(P.PAYROLL_READ)" routerLink="/dashboard/payroll" routerLinkActive="active" class="nav-item">
           <mat-icon>receipt_long</mat-icon>
           <span>Nómina</span>
         </a>
 
-        <a routerLink="/dashboard/benefits" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.PAYROLL_READ)" routerLink="/dashboard/benefits" routerLinkActive="active" class="nav-item">
           <mat-icon>card_giftcard</mat-icon>
           <span>Beneficios</span>
         </a>
 
-        <a routerLink="/dashboard/expenses" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.PAYROLL_READ)" routerLink="/dashboard/expenses" routerLinkActive="active" class="nav-item">
           <mat-icon>receipt</mat-icon>
           <span>Gastos y Reembolsos</span>
         </a>
       </div>
     </div>
 
-    <!-- SECCIÓN: DESARROLLO -->
     <div class="nav-section">
       <span class="nav-title">
         <mat-icon class="section-icon">trending_up</mat-icon> Desarrollo
@@ -106,7 +103,6 @@
       </div>
     </div>
 
-    <!-- SECCIÓN: RECURSOS -->
     <div class="nav-section">
       <span class="nav-title">
         <mat-icon class="section-icon">inventory_2</mat-icon> Recursos
@@ -117,7 +113,7 @@
           <span>Documentos</span>
         </a>
 
-        <a routerLink="/dashboard/assets" routerLinkActive="active" class="nav-item" *ngIf="isAdmin">
+        <a routerLink="/dashboard/assets" routerLinkActive="active" class="nav-item" *ngIf="can(P.COMPANY_CONFIG)">
           <mat-icon>devices</mat-icon>
           <span>Activos y Equipos</span>
         </a>
@@ -129,8 +125,7 @@
       </div>
     </div>
 
-    <!-- SECCIÓN: ANÁLISIS (solo admin) -->
-    <div class="nav-section" *ngIf="isAdmin">
+    <div class="nav-section" *ngIf="can(P.PAYROLL_EXPORT) || can(P.COMPANY_CONFIG)">
       <span class="nav-title">
         <mat-icon class="section-icon">analytics</mat-icon> Análisis
       </span>
@@ -142,16 +137,13 @@
       </div>
     </div>
 
-    <!-- Separador visual -->
     <div class="nav-divider"></div>
 
-    <!-- MI PERFIL (siempre visible) -->
     <a routerLink="/dashboard/my-profile" routerLinkActive="active" class="nav-item">
       <mat-icon>person</mat-icon>
       <span>Mi Perfil</span>
     </a>
 
-    <!-- SECCIÓN: EMPRESA -->
     <div class="nav-section">
       <span class="nav-title">
         <mat-icon class="section-icon">domain</mat-icon> Empresa
@@ -189,8 +181,8 @@
       </div>
     </div>
 
-    <!-- CONFIGURACIÓN (solo admin) -->
-    <a *ngIf="isAdmin" routerLink="/dashboard/settings" routerLinkActive="active" class="nav-item">
+    <a *ngIf="can(P.ROLES_MANAGE) || can(P.USERS_MANAGE) || can(P.COMPANY_CONFIG)" routerLink="/dashboard/settings"
+      routerLinkActive="active" class="nav-item">
       <mat-icon>settings</mat-icon>
       <span>Configuración</span>
     </a>

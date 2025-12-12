@@ -14,6 +14,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatIconModule } from '@angular/material/icon';
 import { EmployeesService, CreateEmployeeDto } from '../../services/employees';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { RolesService, Rol } from '../../services/roles';
 
 // Interfaces para los datos recibidos
 interface DialogData {
@@ -48,6 +49,7 @@ export class AddEmployeeDialog implements OnInit {
 
   availableJobs: JobPosition[] = [];
   availableManagers: Manager[] = [];
+  availableRoles: Rol[] = [];
   selectedJobSalaryRange: string | null = null;
 
   constructor(
@@ -55,7 +57,8 @@ export class AddEmployeeDialog implements OnInit {
     private fb: FormBuilder,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private employeesService: EmployeesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private rolesService: RolesService
   ) {
     this.availableJobs = data.availableJobs || [];
     this.availableManagers = data.availableManagers || [];
@@ -78,6 +81,7 @@ export class AddEmployeeDialog implements OnInit {
     // Paso 2: Datos Laborales
     this.step2Form = this.fb.group({
       job: [null, Validators.required],
+      systemRole: [null, Validators.required],
       reportsTo: [null, Validators.required],
       contractType: [null, Validators.required],
       hireDate: [new Date(), Validators.required],
@@ -139,6 +143,7 @@ export class AddEmployeeDialog implements OnInit {
 
     // Disparar la validación inicial (para aplicar las reglas de Cédula al cargar)
     tipoControl?.updateValueAndValidity();
+    this.loadRoles();
   }
 
   onCancel(): void {
@@ -150,6 +155,18 @@ export class AddEmployeeDialog implements OnInit {
     const d = new Date(date);
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().split('T')[0];
+  }
+
+  loadRoles() {
+    this.rolesService.getRoles().subscribe(roles => {
+      this.availableRoles = roles;
+
+      // 4. AUTO-SELECCIONAR EL ROL POR DEFECTO
+      const defaultRole = roles.find(r => r.esDefecto);
+      if (defaultRole) {
+        this.step2Form.patchValue({ systemRole: defaultRole });
+      }
+    });
   }
 
   onSave(): void {
@@ -169,7 +186,7 @@ export class AddEmployeeDialog implements OnInit {
     const apellido = fullName.length > 1 ? fullName.slice(1).join(' ') : '.';
 
     // 2. IDs
-    const HARDCODED_ROL_ID = '63b5fcb2-2fd6-4454-bf05-0f75a13a1227';
+    const selectedRole = this.step2Form.value.systemRole;
     const cargoSeleccionado = this.step2Form.value.job;
     if (!cargoSeleccionado || !cargoSeleccionado.id) {
       this.snackBar.open('Error: Cargo no válido seleccionado', 'Cerrar');
@@ -191,7 +208,7 @@ export class AddEmployeeDialog implements OnInit {
       fechaNacimiento: this.formatDate(this.step1Form.value.dateOfBirth),
 
       cargoId: cargoSeleccionado.id,
-      rolId: HARDCODED_ROL_ID,
+      rolId: selectedRole ? selectedRole.id : '',
 
       salario: this.step3Form.value.initialSalary,
       tipoContrato: this.step2Form.value.contractType,

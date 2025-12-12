@@ -1,62 +1,41 @@
-<h1 mat-dialog-title>Editar Perfil de Empleado (Admin)</h1>
+<h2 mat-dialog-title>Editar Datos Personales</h2>
 
-<form [formGroup]="profileForm" (ngSubmit)="onSave()">
-  <div mat-dialog-content class="profile-form-content">
+<form [formGroup]="editForm" (ngSubmit)="onSave()">
+  <mat-dialog-content>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Nombre Completo</mat-label>
-      <input matInput formControlName="name" required>
-      <mat-error *ngIf="profileForm.get('name')?.hasError('required')">Requerido</mat-error>
-    </mat-form-field>
-
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Cargo / Rol</mat-label>
-        <mat-select formControlName="role" required>
-          <mat-option *ngFor="let roleOpt of availableRoles" [value]="roleOpt">{{ roleOpt }}</mat-option>
-        </mat-select>
-         <mat-error *ngIf="profileForm.get('role')?.hasError('required')">Requerido</mat-error>
+    <div class="form-row" style="display: flex; gap: 1rem;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" required>
+        <mat-error>Requerido</mat-error>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Departamento</mat-label>
-        <mat-select formControlName="department" required>
-           <mat-option *ngFor="let deptOpt of availableDepartments" [value]="deptOpt">{{ deptOpt }}</mat-option>
-        </mat-select>
-         <mat-error *ngIf="profileForm.get('department')?.hasError('required')">Requerido</mat-error>
+
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Apellido</mat-label>
+        <input matInput formControlName="apellido" required>
+        <mat-error>Requerido</mat-error>
       </mat-form-field>
     </div>
 
-     <div class="form-row">
-       <mat-form-field appearance="outline" class="form-field">
-         <mat-label>Fecha de Contratación</mat-label>
-         <input matInput [matDatepicker]="hirePicker" formControlName="hireDate">
-         <mat-datepicker-toggle matSuffix [for]="hirePicker"></mat-datepicker-toggle>
-         <mat-datepicker #hirePicker></mat-datepicker>
-       </mat-form-field>
-       <mat-form-field appearance="outline" class="form-field">
-         <mat-label>Reporta a (Jefe)</mat-label>
-          <mat-select formControlName="reportsTo">
-            <mat-option [value]="null">-- Ninguno --</mat-option>
-            <mat-option *ngFor="let manager of availableManagers" [value]="manager.name">{{ manager.name }}</mat-option>
-         </mat-select>
-       </mat-form-field>
-     </div>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Correo Electrónico</mat-label>
-      <input matInput type="email" formControlName="email" required>
-      <mat-error *ngIf="profileForm.get('email')?.hasError('required') || profileForm.get('email')?.hasError('email')">Correo inválido</mat-error>
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>Correo Personal</mat-label>
+      <input matInput type="email" formControlName="emailPersonal" required>
+      <mat-icon matSuffix>email</mat-icon>
+      <mat-error>Correo inválido</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" style="width: 100%;">
       <mat-label>Teléfono / Celular</mat-label>
-      <input matInput type="tel" formControlName="phone">
+      <input matInput type="tel" formControlName="telefono">
+      <mat-icon matSuffix>phone</mat-icon>
     </mat-form-field>
 
-  </div>
+  </mat-dialog-content>
 
-  <div mat-dialog-actions align="end">
+  <mat-dialog-actions align="end">
     <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="profileForm.invalid">Guardar Cambios</button>
-  </div>
+    <button type="submit" mat-flat-button color="primary" [disabled]="editForm.invalid || !editForm.dirty">
+      Guardar Cambios
+    </button>
+  </mat-dialog-actions>
 </form>

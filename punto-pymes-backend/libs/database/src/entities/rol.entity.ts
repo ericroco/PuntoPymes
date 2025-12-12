@@ -42,8 +42,16 @@ export class Rol extends BaseEntity {
   @Column({
     type: 'jsonb',
     comment: 'Mapa de permisos RBAC (RNF7)',
+    default: {}
   })
   permisos: Record<string, boolean>;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+    comment: 'Si es true, este rol se asigna automáticamente a nuevos empleados'
+  })
+  esDefecto: boolean;
 
   // ---
   // RELACIONES "MUCHOS A UNO" (Un Rol PERTENECE A...)

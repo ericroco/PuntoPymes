@@ -793,8 +793,9 @@ class CreateRolDto {
     nombre;
     descripcion;
     permisos;
+    esDefecto;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, maxLength: 100 }, descripcion: { required: false, type: () => String, maxLength: 500 }, permisos: { required: false, type: () => Object, description: "Objeto JSON para almacenar permisos.\n(RF-29: Asignar Permisos)\nEjemplo: { \"empleados\": { \"read\": true, \"create\": false } }" } };
+        return { nombre: { required: true, type: () => String, maxLength: 100 }, descripcion: { required: false, type: () => String, maxLength: 500 }, permisos: { required: false, type: () => Object }, esDefecto: { required: false, type: () => Boolean } };
     }
 }
 exports.CreateRolDto = CreateRolDto;
@@ -815,6 +816,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], CreateRolDto.prototype, "permisos", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateRolDto.prototype, "esDefecto", void 0);
 
 
 /***/ }),
@@ -7353,11 +7359,12 @@ const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/d
 let Rol = class Rol extends base_entity_1.BaseEntity {
     nombre;
     permisos;
+    esDefecto;
     empresa;
     empresaId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del rol\nMapea: string nombre \"Nombre rol sistema\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria rol\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String, description: "Nombre del rol\nMapea: string nombre \"Nombre rol sistema\"" }, esDefecto: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria rol\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Rol = Rol;
@@ -7373,9 +7380,18 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'jsonb',
         comment: 'Mapa de permisos RBAC (RNF7)',
+        default: {}
     }),
     __metadata("design:type", Object)
 ], Rol.prototype, "permisos", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, este rol se asigna automáticamente a nuevos empleados'
+    }),
+    __metadata("design:type", Boolean)
+], Rol.prototype, "esDefecto", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.roles, {
         nullable: false,

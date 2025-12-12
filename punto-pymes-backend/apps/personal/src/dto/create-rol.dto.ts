@@ -5,6 +5,7 @@ import {
     IsOptional,
     IsObject,
     MaxLength,
+    IsBoolean,
 } from 'class-validator';
 
 export class CreateRolDto {
@@ -18,12 +19,11 @@ export class CreateRolDto {
     @MaxLength(500)
     descripcion?: string;
 
-    /**
-     * Objeto JSON para almacenar permisos.
-     * (RF-29: Asignar Permisos)
-     * Ejemplo: { "empleados": { "read": true, "create": false } }
-     */
     @IsObject()
     @IsOptional()
     permisos?: any;
+
+    @IsBoolean()
+    @IsOptional()
+    esDefecto?: boolean;
 }

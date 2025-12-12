@@ -1,47 +1,68 @@
 <div class="settings-subpage-container">
+
   <app-subpage-header title="Configurar Roles y Permisos" backRoute="/dashboard/settings">
-     <button mat-flat-button color="primary" (click)="createNewRole()">
-       <mat-icon>add_circle_outline</mat-icon>
-       Nuevo Rol Personalizado
-     </button>
+    <button mat-flat-button color="primary" (click)="createNewRole()">
+      <mat-icon>add_circle_outline</mat-icon>
+      Nuevo Rol
+    </button>
   </app-subpage-header>
 
   <p class="description">
-    Define los roles administrativos y de usuario dentro de la plataforma. Puedes clonar roles existentes
-    y ajustar sus permisos específicos.
+    Define los perfiles de seguridad. El <strong>Rol Automático</strong> se asignará por defecto a los nuevos empleados.
   </p>
 
   <div class="roles-list">
+
     <div class="role-item header">
-      <span>Nombre del Rol</span>
-      <span>Descripción</span>
-      <span>Usuarios Asignados</span>
-      <span>Tipo</span>
-      <span>Acciones</span>
+      <span style="flex: 2;">Nombre del Rol</span>
+      <span style="flex: 1;">Tipo</span>
+      <span style="flex: 2;">Permisos</span>
+      <span style="flex: 1; text-align: right;">Acciones</span>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+      Cargando roles...
     </div>
 
     <div *ngFor="let role of roles" class="role-item">
-      <span class="role-name">{{ role.name }}</span>
-      <span class="role-description">{{ role.description }}</span>
-      <span class="user-count">
-        {{ role.userCount }}
-        <button mat-icon-button color="primary" class="view-users-btn" matTooltip="Ver Usuarios" (click)="viewAssignedUsers(role)">
-          <mat-icon>visibility</mat-icon>
-        </button>
+
+      <span class="role-name" style="flex: 2;">
+        <strong>{{ role.nombre }}</strong>
+        <mat-icon *ngIf="role.esDefecto" class="default-badge-icon" matTooltip="Rol Automático para nuevos empleados">
+          verified
+        </mat-icon>
       </span>
-      <span class="role-type">{{ role.isCustom ? 'Personalizado' : 'Sistema' }}</span>
-      <td class="actions">
-         <button mat-icon-button matTooltip="Editar Permisos" (click)="editRolePermissions(role)">
-          <mat-icon>checklist</mat-icon>
-        </button>
-        <button *ngIf="role.isCustom" mat-icon-button color="warn" matTooltip="Eliminar Rol">
+
+      <span class="role-type" style="flex: 1;">
+        <span [class.badge-auto]="role.esDefecto" [class.badge-manual]="!role.esDefecto">
+          {{ role.esDefecto ? 'Automático' : 'Manual' }}
+        </span>
+      </span>
+
+      <span class="permissions-summary" style="flex: 2;">
+        <mat-chip-set>
+          <mat-chip class="small-chip">
+            {{ countActivePermissions(role.permisos) }} accesos activos
+          </mat-chip>
+        </mat-chip-set>
+      </span>
+
+      <div class="actions" style="flex: 1; text-align: right;">
+        <button mat-icon-button color="primary" matTooltip="Editar Permisos" (click)="editRole(role)">
+          <mat-icon>edit</mat-icon> </button>
+
+        <button mat-icon-button color="warn" matTooltip="Eliminar Rol" (click)="deleteRole(role)"
+          [disabled]="role.esDefecto">
           <mat-icon>delete_outline</mat-icon>
         </button>
-         <div *ngIf="!role.isCustom" class="action-placeholder"></div>
-      </td>
+      </div>
+
     </div>
-     <div *ngIf="roles.length === 0" class="empty-list-placeholder">
-       No hay roles definidos.
-     </div>
+
+    <div *ngIf="!isLoading && roles.length === 0" class="empty-list-placeholder">
+      <mat-icon>security</mat-icon>
+      <p>No hay roles definidos. Crea el primero arriba.</p>
+    </div>
+
   </div>
 </div>

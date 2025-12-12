@@ -3,13 +3,14 @@
 
 // Basic container styles
 .settings-subpage-container {
-    width: 100%;
+  width: 100%;
 }
+
 .description {
-    color: var(--color-text-secondary);
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-    max-width: 700px;
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  max-width: 700px;
 }
 
 // Role List Styles
@@ -62,9 +63,18 @@
   gap: 0.25rem; // Space between count and view button
   font-weight: 500;
 
-  .view-users-btn { // Make the view button small
-    width: 28px; height: 28px; line-height: 28px;
-    mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
+  .view-users-btn {
+    // Make the view button small
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+    }
   }
 }
 
@@ -79,25 +89,74 @@
   gap: 0.25rem;
   justify-content: flex-end;
 
-  button[mat-icon-button] { // Ensure consistent button size
-    width: 36px; height: 36px; line-height: 36px;
-    mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; }
+  button[mat-icon-button] {
+    // Ensure consistent button size
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
   }
 
   // Placeholder to align actions when delete is hidden
   .action-placeholder {
-     width: 36px; height: 36px;
+    width: 36px;
+    height: 36px;
   }
 }
 
 .empty-list-placeholder {
-   text-align: center;
-   padding: 3rem;
-   color: var(--color-text-secondary);
-   font-style: italic;
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 // Ensure subpage header actions align
 ::ng-deep app-subpage-header .subpage-actions button {
-   // Adjust if needed
+  // Adjust if needed
+}
+
+.default-badge-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  color: #1976d2;
+  /* Azul */
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+.badge-auto {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-manual {
+  background-color: #f5f5f5;
+  color: #616161;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.small-chip {
+  font-size: 0.75rem !important;
+  min-height: 24px !important;
+}
+
+.loading-state {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
 }

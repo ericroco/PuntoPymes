@@ -1,22 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatChipsModule } from '@angular/material/chips';
+
+// Componentes y Servicios Propios
+import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header';
 import { AddRoleDialog } from '../../../components/add-role-dialog/add-role-dialog';
-import { EditPermissionsDialog } from '../../../components/edit-permissions-dialog/edit-permissions-dialog';
-import { ViewRoleUsersDialog } from '../../../components/view-role-users-dialog/view-role-users-dialog';
-// Interface for Role
-interface Role {
-  id: string; // e.g., 'admin', 'hr', 'manager', 'employee'
-  name: string; // Display name
-  description: string;
-  userCount: number; // How many users have this role
-  isCustom: boolean; // Is it a default role or custom-created?
-}
+import { RolesService, Rol } from '../../../services/roles';
 
 @Component({
   selector: 'app-role-settings',
@@ -27,120 +22,124 @@ interface Role {
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    SubpageHeader,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule,
+    MatChipsModule,
+    SubpageHeader
   ],
   templateUrl: './role-settings.html',
   styleUrls: ['./role-settings.scss']
 })
-export class RoleSettings {
-  roles: Role[] = [ // Sample Data
-    { id: 'superadmin', name: 'Superadministrador', description: 'Acceso completo a toda la configuración.', userCount: 1, isCustom: false },
-    { id: 'hr_admin', name: 'Admin de RRHH', description: 'Gestiona empleados, reclutamiento, onboarding.', userCount: 1, isCustom: false },
-    { id: 'payroll_admin', name: 'Admin de Nómina', description: 'Gestiona salarios, beneficios y novedades.', userCount: 1, isCustom: false },
-    { id: 'manager', name: 'Jefe de Equipo/Área', description: 'Aprueba solicitudes, asigna tareas, evalúa.', userCount: 5, isCustom: false },
-    { id: 'employee', name: 'Empleado Estándar', description: 'Acceso a autoservicio (perfil, solicitudes, etc.).', userCount: 85, isCustom: false },
-    // Example custom role
-    { id: 'recruiter_jr', name: 'Reclutador Junior', description: 'Acceso limitado al módulo ATS.', userCount: 2, isCustom: true }
-  ];
+export class RoleSettings implements OnInit {
+  private rolesService = inject(RolesService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
-  constructor(public dialog: MatDialog) { }
+  roles: Rol[] = [];
+  isLoading = true;
 
+  ngOnInit(): void {
+    this.loadRoles();
+  }
+
+  loadRoles() {
+    this.isLoading = true;
+    this.rolesService.getRoles().subscribe({
+      next: (data) => {
+        // Ordenamos: primero el por defecto, luego alfabético
+        this.roles = data.sort((a, b) => (a.esDefecto === b.esDefecto) ? 0 : a.esDefecto ? -1 : 1);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando roles:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Helper para contar permisos activos (Solo visual)
+  countActivePermissions(permisos: Record<string, boolean>): number {
+    if (!permisos) return 0;
+    return Object.values(permisos).filter(val => val === true).length;
+  }
+
+  // --- CREAR NUEVO ROL ---
   createNewRole(): void {
-    console.log('Opening add new role dialog...');
     const dialogRef = this.dialog.open(AddRoleDialog, {
-      width: '450px',
+      width: '600px', // Un poco más ancho para los permisos
       disableClose: true,
-      // No necesitamos pasar datos para crear uno nuevo
+      // No pasamos data porque es nuevo
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // result tendrá { name: '...', description: '...' } si se guardó
       if (result) {
-        console.log('Nuevo rol a crear:', result);
-        // --- Simulación de añadir rol ---
-        const newRole: Role = {
-          id: `custom-${result.name.toLowerCase().replace(/\s+/g, '-')}`, // ID generado
-          name: result.name,
-          description: result.description,
-          userCount: 0, // Nuevo rol empieza sin usuarios
-          isCustom: true // Es personalizado
-        };
-        this.roles = [...this.roles, newRole];
-        // --- TODO: Llamar API para guardar el nuevo rol ---
-        // Después de guardar, probablemente querrías abrir el modal de edición de permisos para este nuevo rol
-        // this.editRolePermissions(newRole);
-      } else {
-        console.log('Add Role dialog closed without saving.');
+        this.isLoading = true;
+        this.rolesService.createRol(result).subscribe({
+          next: () => {
+            this.snackBar.open('Rol creado exitosamente', 'Cerrar', { duration: 3000 });
+            this.loadRoles();
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            const msg = err.error?.message || 'Error al crear el rol';
+            this.snackBar.open(msg, 'Cerrar', { duration: 5000 });
+          }
+        });
       }
     });
   }
 
-  editRolePermissions(role: Role): void {
-    // Idealmente, aquí obtendrías los permisos ACTUALES de este rol desde el backend
-    console.log('Opening permissions dialog for:', role.name);
-
-    // Lista de TODOS los permisos posibles en el sistema (esto vendría del backend o una constante)
-    const allPermissions = [
-      { id: 'view_employee_list', label: 'Ver Lista de Empleados', group: 'Personal' },
-      { id: 'edit_employee_profile', label: 'Editar Perfil Empleado', group: 'Personal' },
-      { id: 'view_employee_salary', label: 'Ver Salario Empleado', group: 'Nómina' },
-      { id: 'approve_leave_request', label: 'Aprobar Solicitud Vacaciones', group: 'Asistencia' },
-      { id: 'manage_sprints', label: 'Crear/Editar Sprints', group: 'Productividad' },
-      { id: 'assign_tasks', label: 'Asignar Tareas', group: 'Productividad' },
-      { id: 'manage_settings', label: 'Gestionar Configuración Empresa', group: 'Admin' },
-      // ... ¡MUCHOS MÁS PERMISOS! ...
-    ];
-
-    // Simula los permisos que este rol ya tiene (debería venir del backend)
-    const currentPermissions = (role.id === 'superadmin') ? allPermissions.map(p => p.id) :
-      (role.id === 'hr_admin') ? ['view_employee_list', 'edit_employee_profile', 'approve_leave_request'] :
-        []; // Ejemplo
-
-    const dialogRef = this.dialog.open(EditPermissionsDialog, {
-      width: '700px', // Más ancho para mostrar permisos
+  // --- EDITAR ROL (Nombre y Permisos) ---
+  editRole(role: Rol): void {
+    const dialogRef = this.dialog.open(AddRoleDialog, {
+      width: '600px',
       disableClose: true,
-      data: {
-        role: role, // Pasamos el rol que estamos editando
-        allPermissions: allPermissions, // Pasamos la lista completa de permisos
-        currentPermissionIds: currentPermissions // Pasamos los IDs de los permisos actuales
-      }
+      data: { role } // Pasamos el rol existente para editar
     });
 
-    dialogRef.afterClosed().subscribe(updatedPermissionIds => {
-      // updatedPermissionIds será un array con los IDs de los permisos seleccionados si se guardó
-      if (updatedPermissionIds) {
-        console.log(`Permisos actualizados para ${role.name}:`, updatedPermissionIds);
-        // --- TODO: Llamar API para guardar la nueva lista de permisos para este rol ---
-      } else {
-        console.log('Edit Permissions dialog closed without saving.');
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.rolesService.updateRol(role.id, result).subscribe({
+          next: () => {
+            this.snackBar.open('Rol actualizado correctamente', 'Cerrar', { duration: 3000 });
+            this.loadRoles();
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            this.snackBar.open('Error al actualizar rol', 'Cerrar');
+          }
+        });
       }
     });
   }
-  // -
 
-  viewAssignedUsers(role: Role): void {
-    console.log('Viewing users assigned to role:', role.name);
-    // --- TODO: En una app real, aquí podrías pasar el role.id para que el modal
-    //           haga una llamada API y obtenga solo los usuarios de ESE rol. ---
+  // --- ELIMINAR ROL ---
+  deleteRole(role: Rol): void {
+    if (role.esDefecto) {
+      this.snackBar.open('No puedes eliminar el Rol por Defecto. Asigna otro primero.', 'Cerrar', { duration: 4000 });
+      return;
+    }
 
-    // --- Simulación: Pasamos el nombre del rol para mostrarlo y datos de ejemplo ---
-    const dialogRef = this.dialog.open(ViewRoleUsersDialog, {
-      width: '500px', // Ancho ajustable
-      data: {
-        roleName: role.name
-        // En el futuro: roleId: role.id
+    if (!confirm(`¿Estás seguro de eliminar el rol "${role.nombre}"? \nEsta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.rolesService.deleteRol(role.id).subscribe({
+      next: () => {
+        this.snackBar.open('Rol eliminado', 'Cerrar', { duration: 3000 });
+        this.loadRoles();
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+        // Mostramos si el backend dice que hay usuarios asignados
+        const msg = err.error?.message || 'Error al eliminar rol';
+        this.snackBar.open(msg, 'Cerrar', { duration: 5000 });
       }
     });
-
-    // No necesitamos hacer nada cuando se cierre este modal (es solo informativo)
-    dialogRef.afterClosed().subscribe(() => { });
-  }
-  deleteRole(role: Role): void {
-    if (!role.isCustom) return; // No borrar roles del sistema
-    console.log('Confirmar eliminación del rol:', role.name);
-    // TODO: Implementar diálogo de confirmación + API Call
-    // Simulación:
-    // this.roles = this.roles.filter(r => r.id !== role.id);
   }
 }

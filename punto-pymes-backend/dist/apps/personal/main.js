@@ -671,8 +671,9 @@ let PersonalService = class PersonalService {
     authClient;
     mailerService;
     sucursalRepository;
+    dataSource;
     genAI;
-    constructor(empleadoRepository, rolRepository, cargoRepository, configService, contratoRepository, deptoRepository, vacanteRepository, candidatoRepository, documentoRepository, authClient, mailerService, sucursalRepository) {
+    constructor(empleadoRepository, rolRepository, cargoRepository, configService, contratoRepository, deptoRepository, vacanteRepository, candidatoRepository, documentoRepository, authClient, mailerService, sucursalRepository, dataSource) {
         this.empleadoRepository = empleadoRepository;
         this.rolRepository = rolRepository;
         this.cargoRepository = cargoRepository;
@@ -685,6 +686,7 @@ let PersonalService = class PersonalService {
         this.authClient = authClient;
         this.mailerService = mailerService;
         this.sucursalRepository = sucursalRepository;
+        this.dataSource = dataSource;
         const apiKey = this.configService.getOrThrow('GEMINI_API_KEY');
         this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
     }
@@ -1028,19 +1030,23 @@ let PersonalService = class PersonalService {
     }
     async createRol(empresaId, dto) {
         console.log(`Microservicio PERSONAL: Creando Rol para empresaId: ${empresaId}`);
-        const rolExistente = await this.rolRepository.findOneBy({
-            nombre: dto.nombre,
-            empresaId: empresaId,
+        return this.dataSource.transaction(async (manager) => {
+            const rolExistente = await manager.findOne(database_1.Rol, {
+                where: { nombre: dto.nombre, empresaId: empresaId },
+            });
+            if (rolExistente) {
+                throw new common_1.ConflictException('Ya existe un rol con ese nombre en esta empresa.');
+            }
+            if (dto.esDefecto) {
+                await manager.update(database_1.Rol, { empresaId }, { esDefecto: false });
+            }
+            const nuevoRol = manager.create(database_1.Rol, {
+                ...dto,
+                empresaId: empresaId,
+                permisos: dto.permisos || {},
+            });
+            return manager.save(nuevoRol);
         });
-        if (rolExistente) {
-            throw new common_1.ConflictException('Ya existe un rol con ese nombre en esta empresa.');
-        }
-        const nuevoRol = this.rolRepository.create({
-            ...dto,
-            empresaId: empresaId,
-            permisos: dto.permisos || {},
-        });
-        return this.rolRepository.save(nuevoRol);
     }
     async getRoles(empresaId) {
         console.log(`Microservicio PERSONAL: Buscando Roles para empresaId: ${empresaId}`);
@@ -1052,26 +1058,26 @@ let PersonalService = class PersonalService {
         });
     }
     async updateRol(empresaId, rolId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando Rol ${rolId} para empresaId: ${empresaId}`);
-        const rol = await this.rolRepository.findOneBy({
-            id: rolId,
-            empresaId: empresaId,
-        });
-        if (!rol) {
-            throw new common_1.NotFoundException('Rol no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.nombre && dto.nombre !== rol.nombre) {
-            const rolExistente = await this.rolRepository.findOneBy({
-                nombre: dto.nombre,
-                empresaId: empresaId,
-                id: (0, typeorm_2.Not)(rolId),
+        console.log(`Microservicio PERSONAL: Actualizando Rol ${rolId}`);
+        return this.dataSource.transaction(async (manager) => {
+            const rol = await manager.findOne(database_1.Rol, {
+                where: { id: rolId, empresaId },
             });
-            if (rolExistente) {
-                throw new common_1.ConflictException('Ya existe un rol con ese nombre en esta empresa.');
+            if (!rol)
+                throw new common_1.NotFoundException('Rol no encontrado.');
+            if (dto.nombre && dto.nombre !== rol.nombre) {
+                const duplicado = await manager.findOne(database_1.Rol, {
+                    where: { nombre: dto.nombre, empresaId, id: (0, typeorm_2.Not)(rolId) },
+                });
+                if (duplicado)
+                    throw new common_1.ConflictException('Ya existe un rol con ese nombre.');
             }
-        }
-        const rolActualizado = this.rolRepository.merge(rol, dto);
-        return this.rolRepository.save(rolActualizado);
+            if (dto.esDefecto === true) {
+                await manager.update(database_1.Rol, { empresaId }, { esDefecto: false });
+            }
+            const rolActualizado = manager.merge(database_1.Rol, rol, dto);
+            return manager.save(rolActualizado);
+        });
     }
     async deleteRol(empresaId, rolId) {
         console.log(`Microservicio PERSONAL: Borrando (Soft Delete) Rol ${rolId} para empresaId: ${empresaId}`);
@@ -1428,7 +1434,8 @@ exports.PersonalService = PersonalService = __decorate([
         typeorm_2.Repository,
         microservices_1.ClientProxy,
         mailer_1.MailerService,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        typeorm_2.DataSource])
 ], PersonalService);
 
 
@@ -4398,11 +4405,12 @@ const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/d
 let Rol = class Rol extends base_entity_1.BaseEntity {
     nombre;
     permisos;
+    esDefecto;
     empresa;
     empresaId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del rol\nMapea: string nombre \"Nombre rol sistema\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria rol\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String, description: "Nombre del rol\nMapea: string nombre \"Nombre rol sistema\"" }, esDefecto: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria rol\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Rol = Rol;
@@ -4418,9 +4426,18 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'jsonb',
         comment: 'Mapa de permisos RBAC (RNF7)',
+        default: {}
     }),
     __metadata("design:type", Object)
 ], Rol.prototype, "permisos", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, este rol se asigna automáticamente a nuevos empleados'
+    }),
+    __metadata("design:type", Boolean)
+], Rol.prototype, "esDefecto", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.roles, {
         nullable: false,

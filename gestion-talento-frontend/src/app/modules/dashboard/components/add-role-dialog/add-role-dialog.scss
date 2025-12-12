@@ -1,0 +1,67 @@
+.full-width {
+    width: 100%;
+}
+
+.default-role-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+    padding: 8px 12px;
+    background-color: #f5f7fa;
+    /* Fondo suave */
+    border-radius: 8px;
+
+    .info-icon {
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+        color: #666;
+        cursor: help;
+    }
+}
+
+.permissions-title {
+    margin-top: 1rem;
+    margin-bottom: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.permissions-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.permissions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    /* Espacio entre grupos */
+}
+
+.perm-group {
+    .group-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #3f51b5;
+        /* Color primario */
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 4px;
+    }
+
+    .perm-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        /* Columnas responsivas */
+        gap: 8px;
+    }
+
+    .perm-item {
+        font-size: 0.9rem;
+    }
+}

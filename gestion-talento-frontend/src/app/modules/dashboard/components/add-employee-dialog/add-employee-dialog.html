@@ -95,6 +95,32 @@
           </mat-form-field>
         </div>
 
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Rol de Sistema (Permisos de Acceso)</mat-label>
+            <mat-select formControlName="systemRole" required>
+              <mat-select-trigger>
+                {{ step2Form.get('systemRole')?.value?.nombre }}
+                <span *ngIf="step2Form.get('systemRole')?.value?.esDefecto"
+                  style="font-size: 0.8em; color: #666; margin-left: 8px;">
+                  (Automático)
+                </span>
+              </mat-select-trigger>
+
+              <mat-option *ngFor="let rol of availableRoles" [value]="rol">
+                {{ rol.nombre }}
+                <span *ngIf="rol.esDefecto" style="font-style: italic; color: gray; font-size: 0.8em;">
+                  - Por Defecto
+                </span>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix matTooltip="Define qué puede ver y hacer este usuario en la plataforma.">
+              security
+            </mat-icon>
+            <mat-error>Requerido.</mat-error>
+          </mat-form-field>
+        </div>
+
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Reporta a (Jefe)</mat-label>
           <mat-select formControlName="reportsTo" required>

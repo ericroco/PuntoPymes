@@ -12,7 +12,7 @@ import {
   Empleado, Rol, Cargo, Departamento, Contrato, Candidato,
   Vacante, EstadoCandidato, EstadoVacante, DocumentoEmpleado
 } from 'default/database';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, DataSource } from 'typeorm';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { CreateDepartamentoDto } from './dto/create-departamento.dto';
@@ -64,6 +64,8 @@ export class PersonalService {
     private readonly mailerService: MailerService,
     @InjectRepository(Sucursal)
     private readonly sucursalRepository: Repository<Sucursal>,
+
+    private dataSource: DataSource,
   ) {
     // 3. Usar getOrThrow (Lanza error si no existe, y TypeScript sabe que es string)
     const apiKey = this.configService.getOrThrow<string>('GEMINI_API_KEY');
@@ -658,35 +660,40 @@ export class PersonalService {
    * Lógica de negocio para CREAR un Rol (RF-29)
    * de forma segura (Multi-Tenant RNF20).
    */
-  async createRol(
-    empresaId: string,
-    dto: CreateRolDto,
-  ): Promise<Rol> {
-    console.log(
-      `Microservicio PERSONAL: Creando Rol para empresaId: ${empresaId}`,
-    );
+  /**
+     * CREAR ROL (Actualizado con lógica de Default)
+     */
+  async createRol(empresaId: string, dto: CreateRolDto): Promise<Rol> {
+    console.log(`Microservicio PERSONAL: Creando Rol para empresaId: ${empresaId}`);
 
-    // 1. Validación de Duplicados (Multi-Tenant)
-    // El nombre del rol debe ser único POR EMPRESA.
-    const rolExistente = await this.rolRepository.findOneBy({
-      nombre: dto.nombre,
-      empresaId: empresaId,
+    // Usamos transacción para asegurar que si algo falla, no se desconfiguren los defaults
+    return this.dataSource.transaction(async (manager) => {
+
+      // A. Validación de Duplicados (Tu lógica original)
+      const rolExistente = await manager.findOne(Rol, {
+        where: { nombre: dto.nombre, empresaId: empresaId },
+      });
+
+      if (rolExistente) {
+        throw new ConflictException('Ya existe un rol con ese nombre en esta empresa.');
+      }
+
+      // B. 👇 LÓGICA NUEVA: El Único Default
+      // Si el usuario dijo que este rol es el "Por Defecto"...
+      if (dto.esDefecto) {
+        // ...buscamos todos los roles de esta empresa y les quitamos el "esDefecto"
+        await manager.update(Rol, { empresaId }, { esDefecto: false });
+      }
+
+      // C. Creación (Tu lógica original + transacción)
+      const nuevoRol = manager.create(Rol, {
+        ...dto,
+        empresaId: empresaId,
+        permisos: dto.permisos || {},
+      });
+
+      return manager.save(nuevoRol);
     });
-
-    if (rolExistente) {
-      throw new ConflictException(
-        'Ya existe un rol con ese nombre en esta empresa.',
-      );
-    }
-
-    // 2. Creación del Rol
-    const nuevoRol = this.rolRepository.create({
-      ...dto,
-      empresaId: empresaId,
-      permisos: dto.permisos || {}, // ¡Forzamos el Multi-tenancy!
-    });
-
-    return this.rolRepository.save(nuevoRol);
   }
 
   /**
@@ -706,47 +713,38 @@ export class PersonalService {
   }
 
   /**
-   * Lógica de negocio para ACTUALIZAR un Rol (RF-29)
-   * de forma segura (Multi-Tenant RNF20).
-   */
-  async updateRol(
-    empresaId: string,
-    rolId: string,
-    dto: UpdateRolDto,
-  ): Promise<Rol> {
-    console.log(
-      `Microservicio PERSONAL: Actualizando Rol ${rolId} para empresaId: ${empresaId}`,
-    );
+     * ACTUALIZAR ROL (Actualizado con lógica de Default)
+     */
+  async updateRol(empresaId: string, rolId: string, dto: UpdateRolDto): Promise<Rol> {
+    console.log(`Microservicio PERSONAL: Actualizando Rol ${rolId}`);
 
-    // 1. Validar que el rol pertenezca a la empresa
-    const rol = await this.rolRepository.findOneBy({
-      id: rolId,
-      empresaId: empresaId,
-    });
-
-    if (!rol) {
-      throw new NotFoundException(
-        'Rol no encontrado o no pertenece a esta empresa.',
-      );
-    }
-
-    // 2. Si se cambia el nombre, validar duplicados
-    if (dto.nombre && dto.nombre !== rol.nombre) {
-      const rolExistente = await this.rolRepository.findOneBy({
-        nombre: dto.nombre,
-        empresaId: empresaId,
-        id: Not(rolId), // Excluir el rol actual de la búsqueda
+    return this.dataSource.transaction(async (manager) => {
+      // 1. Validar existencia
+      const rol = await manager.findOne(Rol, {
+        where: { id: rolId, empresaId },
       });
-      if (rolExistente) {
-        throw new ConflictException(
-          'Ya existe un rol con ese nombre en esta empresa.',
-        );
-      }
-    }
 
-    // 3. Aplicar cambios y guardar
-    const rolActualizado = this.rolRepository.merge(rol, dto);
-    return this.rolRepository.save(rolActualizado);
+      if (!rol) throw new NotFoundException('Rol no encontrado.');
+
+      // 2. Validar duplicados de nombre (Tu lógica original)
+      if (dto.nombre && dto.nombre !== rol.nombre) {
+        const duplicado = await manager.findOne(Rol, {
+          where: { nombre: dto.nombre, empresaId, id: Not(rolId) },
+        });
+        if (duplicado) throw new ConflictException('Ya existe un rol con ese nombre.');
+      }
+
+      // 3. 👇 LÓGICA NUEVA: El Único Default
+      // Si estamos actualizando y ahora decimos que ESTE es el defecto...
+      if (dto.esDefecto === true) {
+        // ...apagamos el defecto a todos los demás primero
+        await manager.update(Rol, { empresaId }, { esDefecto: false });
+      }
+
+      // 4. Guardar cambios
+      const rolActualizado = manager.merge(Rol, rol, dto);
+      return manager.save(rolActualizado);
+    });
   }
 
   /**
