@@ -127,3 +127,117 @@ Aunque los archivos de servicios (`.service.ts`) no están directamente provisto
 | **`SettingsService`** | Todas las páginas de `/settings` | `getBranding()`, `updateBranding()`, `getAttendanceRules()`, `updatePayrollSettings()` |
 
 La utilización de *RxJS* (visible en las dependencias de `package.json`) y del patrón de inyección de dependencias de Angular garantizan que la gestión de estado y la comunicación asíncrona con la API sean robustas y reactivas.
+
+---
+
+# Documentación Backend - Gestión de Talento Humano
+
+## 1. Arquitectura General y Estructura del Repositorio
+El proyecto se organiza en un monorepo, gestionado por Nest CLI, que contiene una aplicación principal (API Gateway) y múltiples microservicios (aplicaciones) y una librería compartida.
+### Componentes de la arquitectura:
+
+| Componente | Tipo | Responsabilidad Principal | Servicio Docker (Host) |
+| ------------------------------- | -------- | ---------- | --- |
+| `punto-pymes-backend` | Aplicación (API Gateway) | Punto de entrada HTTP (REST), Autenticación JWT, Enrutamiento a Microservicios. | `punto-pymes-backend` (main app) |
+| `auth` | Microservicio | Gestión de Usuarios, Roles, y Autenticación. | `auth_service` |
+| `personal` | Microservicio | Gestión de Empleados, Estructura Organizacional (Dptos., Cargos), Reclutamiento. | `personal_service` |
+| `nomina` | Microservicio | Gestión de Nómina, Contratos y Beneficios. | `nomina_service` |
+| `productividad` | Microservicio | Gestión de Proyectos, Tareas, Asistencia, Desempeño y Activos/Gastos. | `productividad_service` |
+| `database` | Librería (`libs/database`) | Definición centralizada de todas las entidades de la aplicación. | N/A |
+
+### Comunicación Inter-Servicios: 
+La comunicación entre el API Gateway (`punto-pymes-backend`) y los microservicios es gestionada por el módulo `ClientsModule` de NestJS, utilizando el protocolo **TCP**.
+
+Los servicios cliente están configurados para inyectarse en el API Gateway y dirigir los comandos a los hosts definidos (presumiblemente nombres de servicios Docker) y puertos de entorno:
+
+* **AUTH_SERVICE**: Se conecta a `auth_service`.
+* **PERSONAL_SERVICE**: Se conecta a `personal_service`.
+* **NOMINA_SERVICE**: Se conecta a `nomina_service`.
+* **PRODUCTIVIDAD_SERVICE**: Se conecta a `productividad_service`.
+
+---
+
+## 2. API Gateway (`punto-pymes-backend`)
+Es la aplicación principal que expone la interfaz REST al frontend y encapsula la lógica de comunicación con los microservicios internos.
+
+### Autenticación y Seguridad
+* **JWT:** El módulo central implementa la autenticación JWT a través de `JwtModule` y `PassportModule`, con una estrategia `JwtStrategy` para validar el token y proveer el contexto de usuario/empresa.
+* **Autorización:** Utiliza `PermissionGuard` y un decorador `@Permissions()` para aplicar reglas de acceso basadas en roles y permisos, asegurando que solo usuarios autorizados puedan invocar ciertas rutas.
+
+### Archivos Estáticos
+El módulo sirve archivos estáticos (como imágenes de perfil o documentos) a través de la ruta pública `/uploads`, mapeada a la carpeta local `uploads`.
+
+---
+
+## 3. Microservicios y Funcionalidad del Dominio
+Cada microservicio se centra en una parte específica del dominio de la gestión de talento humano (HRMS/ERP). Utilizan decoradores `@MessagePattern` para exponer su funcionalidad a través de TCP.
+
+### A. Microservicio `auth` (Autenticación y Núcleo)
+Maneja el acceso, la creación inicial de empresas y usuarios, y la gestión de contexto entre empresas.
+
+| Comando (`cmd`) | Descripción | DTO Relacionado |
+| --- | --- | --- |
+| `ping` | Prueba de salud/conectividad. | N/A |
+| `register` | Flujo de registro inicial (crea Empresa, Usuario, Rol y Empleado inicial). | `RegisterDto` |
+| `login` | Autenticación de usuario por email/contraseña. | `LoginDto` |
+| `switch_company` | Cambia la empresa activa para el usuario, generando un nuevo token. | `SwitchCompanyDto` |
+| `create_user_auto` | Crea una cuenta de usuario a partir de un empleado existente (para integración). | N/A |
+
+### B. Microservicio `personal` (Gestión de Personal)
+Encargado de la gestión de la fuerza laboral y el ciclo de reclutamiento (Talento).
+
+* **Modelos Clave:** `Empleado`, `Departamento`, `Cargo`, `Rol`, `Vacante`, `Candidato`, `DocumentoEmpleado`, `Sucursal`.
+* **Funcionalidad Destacada:** Incluye lógica para actualizar candidatos con información extraída mediante IA (usando `@google/generative-ai` y `pdf-parse`).
+
+### C. Microservicio `nomina` (Nómina y Compensación)
+Gestiona la compensación de los empleados, contratos y periodos de pago.
+
+* **Modelos Clave:** `Contrato`, `PeriodoNomina`, `NominaEmpleado`, `RubroNomina`, `Beneficio`, `ConceptoNomina`, `SolicitudVacaciones`.
+* **Funcionalidad Destacada:** Define DTOs para el proceso de cálculo de nómina (`procesar-nomina.dto.ts`) y la gestión de conceptos de nómina (ingresos y egresos).
+
+### D. Microservicio `productividad` (Productividad, Desempeño y Control)
+Aglutina las funcionalidades de seguimiento de tiempo, gestión de proyectos, evaluación de desempeño y control de activos/gastos.
+
+* **Modelos Clave:** `Proyecto`, `Sprint`, `Tarea`, `Timesheet`, `RegistroAsistencia`, `Activo`, `Objetivo`, `Evaluacion`, `Curso`.
+* **Funcionalidad Destacada:**
+* **Asistencia:** Maneja el registro de entrada (`check-in.dto.ts`) y salida (`check-out.dto.ts`).
+* **Proyectos/Tareas:** Ofrece DTOs para la creación de proyectos, sprints, y tareas.
+* **Activos/Gastos:** Incluye lógica para asignar y retornar activos y gestionar reportes de gastos.
+
+
+
+---
+
+## 4. Capa de Datos Compartida (`libs/database`)
+La librería `database` define el modelo de datos unificado para todos los microservicios, promoviendo la consistencia.
+
+### Tecnologías de Persistencia
+* Utiliza **TypeORM** para bases de datos relacionales (con soporte para **PostgreSQL**, basado en las dependencias).
+* Incluye dependencias para **Mongoose** (MongoDB), lo que sugiere una posible arquitectura híbrida de bases de datos o migración pendiente.
+
+### Entidades Centrales
+Las entidades se organizan por módulos funcionales:
+
+| Dominio | Entidades Clave |
+| --- | --- |
+| **Núcleo/Auth** | `Empresa`, `Usuario`, `BaseEntity` |
+| **Personal** | `Empleado`, `Rol`, `Departamento`, `Cargo`, `Contrato`, `Sucursal` |
+| **Nómina** | `PeriodoNomina`, `NominaEmpleado`, `RubroNomina`, `Beneficio`, `ConceptoNomina`, `NovedadNomina`, `SolicitudVacaciones` |
+| **Productividad** | `Proyecto`, `Sprint`, `Tarea`, `Timesheet`, `RegistroAsistencia` |
+| **Desempeño/Capacitación** | `CicloEvaluacion`, `Objetivo`, `Evaluacion`, `Curso`, `InscripcionCurso` |
+| **Reclutamiento** | `Candidato`, `Vacante` |
+| **Control/Activos** | `Activo`, `ActivoAsignado`, `ReporteGasto`, `ItemGasto` |
+
+---
+
+## 5. Dependencias Tecnológicas Clave
+
+| Categoría | Dependencia | Versión | Propósito |
+| --- | --- | --- | --- |
+| **Core Framework** | `@nestjs/core`, `@nestjs/common`, `typescript` | `^11.0.1`, `^5.7.3` | Base del backend (NestJS, TypeScript) |
+| **Microservicios** | `@nestjs/microservices` | `^11.1.8` | Habilita la comunicación RPC (TCP) entre servicios. |
+| **Bases de Datos** | `typeorm`, `pg`, `@nestjs/mongoose`, `mongoose` | `^0.3.27`, `^8.16.3`, `^11.0.3`, `^8.19.2` | Soporte para bases de datos SQL (PostgreSQL) y NoSQL (MongoDB). |
+| **Autenticación** | `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `bcrypt` | `^11.0.1`, `^11.0.5`, `^4.0.1`, `^6.0.0` | Generación y validación de tokens JWT, hasheo de contraseñas. |
+| **Validación** | `class-validator`, `class-transformer` | `^0.14.2`, `^0.5.1` | Utilizado para la validación de DTOs en los controladores (`@UsePipes(new ValidationPipe())`). |
+| **Documentación** | `@nestjs/swagger`, `swagger-ui-express` | `^11.2.3`, `^5.0.1` | Generación de documentación de API (OpenAPI/Swagger). |
+| **IA/Documentos** | `@google/generative-ai`, `pdf-parse`, `pdf2json` | `^0.24.1` | Integración de IA de Google y herramientas para procesar archivos PDF. |
