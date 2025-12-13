@@ -261,4 +261,9 @@ export class NominaController {
   obtenerReporte(@Payload() data: { empresaId: string, periodoId: string }) {
     return this.nominaService.obtenerReporteNomina(data.empresaId, data.periodoId);
   }
+
+  @MessagePattern({ cmd: 'get_beneficios_stats' })
+  getBeneficiosStats(@Payload() data: { empresaId: string }) {
+    return this.nominaService.getBeneficiosStats(data.empresaId);
+  }
 }

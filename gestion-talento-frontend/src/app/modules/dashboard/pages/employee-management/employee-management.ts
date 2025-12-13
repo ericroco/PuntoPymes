@@ -17,6 +17,8 @@ import { EditEmployeeDialog } from '../../components/edit-employee-dialog/edit-e
 // Importamos la interfaz REAL del servicio
 import { EmployeesService, Employee } from '../../services/employees';
 import { CatalogService, JobPosition } from '../../services/catalog';
+import { AuthService } from '../../../auth/services/auth';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
 
 @Component({
   selector: 'app-employee-management',
@@ -53,6 +55,8 @@ export class EmployeeManagement implements OnInit {
   public dialog = inject(MatDialog);
   private catalogService = inject(CatalogService);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  P = PERMISSIONS; // Para usar P.EMPLOYEES_CREATE en el template
 
   // --- DATOS REALES ---
   employees: Employee[] = [];
@@ -103,6 +107,9 @@ export class EmployeeManagement implements OnInit {
     });
   }
 
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   // --- Lógica de Filtrado y Ordenamiento (ADAPTADA A DATOS REALES) ---
   applyFiltersAndSort(): void {
     let tempEmployees = [...this.employees];

@@ -9,9 +9,11 @@
     </div>
 
     <div class="header-actions">
-      <button mat-stroked-button color="primary" (click)="openCreateProjectDialog()" style="margin-right: 10px;">
+      <button *ngIf="can(P.TASKS_MANAGE)" mat-stroked-button color="primary" (click)="openCreateProjectDialog()"
+        style="margin-right: 10px;">
         <mat-icon>create_new_folder</mat-icon> Nuevo Proyecto
       </button>
+
       <mat-form-field appearance="outline" class="custom-project-select" *ngIf="projects.length > 0">
         <mat-icon matPrefix class="select-icon">folder_open</mat-icon>
         <mat-label>Proyecto Actual</mat-label>
@@ -23,7 +25,8 @@
         </mat-select>
       </mat-form-field>
 
-      <button mat-flat-button color="primary" (click)="openAddSprintDialog()" [disabled]="!selectedProjectId">
+      <button *ngIf="can(P.TASKS_MANAGE)" mat-flat-button color="primary" (click)="openAddSprintDialog()"
+        [disabled]="!selectedProjectId">
         <mat-icon>add</mat-icon>
         <span>Crear Nuevo Sprint</span>
       </button>
@@ -35,7 +38,10 @@
   <div *ngIf="!isLoading && projects.length === 0" class="empty-state">
     <mat-icon>folder_off</mat-icon>
     <h3>No tienes proyectos activos</h3>
-    <p>Crea un proyecto primero (desde el Backend Seeder o módulo de Proyectos) para comenzar.</p>
+    <p>
+      <span *ngIf="can(P.TASKS_MANAGE)">Crea un proyecto primero para comenzar.</span>
+      <span *ngIf="!can(P.TASKS_MANAGE)">Contacta a tu Project Manager para que te asigne a un proyecto.</span>
+    </p>
   </div>
 
   <div class="sprints-grid" @listAnimation *ngIf="!isLoading && projects.length > 0">
@@ -67,7 +73,8 @@
       </div>
 
       <div class="card-footer">
-        <button class="btn-icon" title="Editar Sprint" (click)="openEditSprintDialog(sprint)">
+        <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon" title="Editar Sprint"
+          (click)="openEditSprintDialog(sprint)">
           <mat-icon>edit</mat-icon>
         </button>
 
@@ -80,7 +87,9 @@
     <div *ngIf="sprints.length === 0" class="empty-list-placeholder">
       <mat-icon>view_week</mat-icon>
       <p>Este proyecto no tiene sprints creados todavía.</p>
-      <button mat-stroked-button color="primary" (click)="openAddSprintDialog()">Crear el Primero</button>
+      <button *ngIf="can(P.TASKS_MANAGE)" mat-stroked-button color="primary" (click)="openAddSprintDialog()">
+        Crear el Primero
+      </button>
     </div>
 
   </div>

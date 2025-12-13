@@ -1,4 +1,3 @@
-// libs/database/src/entities/beneficioAsignado.entity.ts
 import {
   Entity,
   Column,
@@ -13,63 +12,73 @@ import { Beneficio } from './beneficio.entity';
 
 /**
  * Entidad que representa la asignación de un Beneficio a un Empleado.
- * Es la tabla que vincula el "qué" (Beneficio) con el "quién" (Empleado).
- * Mapea la tabla 'beneficios_asignados'
+ * Vincula el "qué" (Beneficio) con el "quién" (Empleado).
  */
 @Entity({ name: 'beneficios_asignados' })
-// Indexamos ambas FKs para búsquedas rápidas
 @Index(['empleadoId'])
 @Index(['beneficioId'])
 // Un empleado solo puede tener un beneficio específico asignado una vez.
-@Unique(['empleadoId', 'beneficioId']) 
+@Unique(['empleadoId', 'beneficioId'])
 export class BeneficioAsignado extends BaseEntity {
+
   /**
    * Fecha de asignación del beneficio al empleado
-   * Mapea: date fechaAsignacion "Fecha asignacion beneficio"
    */
   @Column({
     type: 'date',
+    default: () => 'CURRENT_DATE', // Opcional: pone la fecha de hoy por defecto
     comment: 'Fecha de asignación del beneficio al empleado',
   })
   fechaAsignacion: Date;
 
+  // 👇 COLUMNA NUEVA 1: PRECIO ESPECÍFICO
+  /**
+   * Permite sobreescribir el valor base del beneficio.
+   * Ej: El seguro cuesta $20 base, pero este empleado paga $50 por plan familiar.
+   * Si es NULL, se usa el valor del Beneficio padre.
+   */
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    comment: 'Valor específico para este empleado (sobrescribe al general)'
+  })
+  montoPersonalizado: number;
+
+  // 👇 COLUMNA NUEVA 2: SWITCH ON/OFF
+  /**
+   * Define si el beneficio se debe descontar/pagar este mes.
+   * Útil para pausar beneficios (ej: suspensión de gimnasio) sin borrarlos.
+   */
+  @Column({
+    type: 'boolean',
+    default: true,
+    comment: 'Si es false, el motor de nómina ignora esta asignación'
+  })
+  activo: boolean;
+
   // ---
-  // RELACIONES "MUCHOS A UNO" (Una Asignación PERTENECE A...)
+  // RELACIONES
   // ---
 
-  /**
-   * Relación: La asignación pertenece a UN Empleado.
-   * onDelete: 'CASCADE' = Si el Empleado es borrado, sus asignaciones
-   * de beneficios también se borran.
-   */
   @ManyToOne(() => Empleado, (empleado) => empleado.beneficiosAsignados, {
-    nullable: false, // No puede existir una asignación sin empleado
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empleadoId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
-  /**
-   * Mapea: string empleadoId FK "Empleado recibe beneficio"
-   */
   @Column({ comment: 'ID del Empleado que recibe el beneficio' })
   empleadoId: string;
 
-  /**
-   * Relación: La asignación se refiere a UN Beneficio del catálogo.
-   * onDelete: 'CASCADE' = Si el Beneficio es borrado del catálogo
-   * de la empresa, también se borran las asignaciones existentes.
-   */
   @ManyToOne(() => Beneficio, (beneficio) => beneficio.asignaciones, {
-    nullable: false, // No puede existir una asignación sin beneficio
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'beneficioId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'beneficioId' })
   beneficio: Beneficio;
 
-  /**
-   * Mapea: string beneficioId FK "Beneficio otorgado"
-   */
   @Column({ comment: 'ID del Beneficio otorgado' })
   beneficioId: string;
 }

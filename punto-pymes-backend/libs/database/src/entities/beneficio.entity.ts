@@ -1,79 +1,76 @@
-// libs/database/src/entities/beneficio.entity.ts
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
 import { BeneficioAsignado } from './beneficioAsignado.entity';
 
-/**
- * Entidad que representa un Beneficio (Ej: Seguro Médico, Vales de comida).
- * Es un "catálogo" de beneficios que una Empresa (Tenant) ofrece.
- * Mapea la tabla 'beneficios'
- */
+// Mantenemos tu Enum original si lo usas para reportes de RRHH
+export enum TipoBeneficio {
+  MONETARIO = 'Monetario',
+  NO_MONETARIO = 'No Monetario',
+}
+
+// NUEVO: Necesario para cálculos de nómina
+export enum IndicadorNomina {
+  INGRESO = 'Ingreso',       // Suma (Bonos)
+  DESCUENTO = 'Descuento',   // Resta (Seguros, Préstamos)
+  INFORMATIVO = 'Informativo' // No afecta el neto (Ej: Gym pagado por empresa)
+}
+
 @Entity({ name: 'beneficios' })
-// Indexamos para buscar beneficios rápidamente por empresa
 @Index(['empresaId'])
 export class Beneficio extends BaseEntity {
-  /**
-   * Nombre del beneficio
-   * Mapea: string nombre "Nombre beneficio"
-   */
-  @Column({
-    type: 'varchar',
-    length: 255,
-    comment: 'Nombre del beneficio (Ej: Seguro Médico)',
-  })
+
+  @Column({ type: 'varchar', length: 255 })
   nombre: string;
 
-  /**
-   * Descripción detallada del beneficio
-   * Mapea: string descripcion "Descripcion detallada"
-   */
-  @Column({
-    type: 'text',
-    comment: 'Descripción detallada del beneficio',
-  })
+  @Column({ type: 'text', nullable: true })
   descripcion: string;
 
-  // ---
-  // RELACIONES "MUCHOS A UNO" (Un Beneficio PERTENECE A...)
-  // ---
-
-  /**
-   * Relación: Un Beneficio es provisto por UNA Empresa (Tenant).
-   * onDelete: 'CASCADE' = Si la Empresa se borra, su catálogo
-   * de beneficios también se borra.
-   */
-  @ManyToOne(() => Empresa, (empresa) => empresa.beneficios, {
-    nullable: false, // Un beneficio debe pertenecer a una empresa
-    onDelete: 'CASCADE',
+  // Tu campo original (lo mantenemos)
+  @Column({
+    type: 'enum',
+    enum: TipoBeneficio,
+    default: TipoBeneficio.MONETARIO
   })
-  @JoinColumn({ name: 'empresaId' }) // Define el nombre de la columna FK
+  tipo: TipoBeneficio;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+    comment: 'Si es true, se aplica a TODOS automáticamente (Ej: IESS)'
+  })
+  esAutomatico: boolean; // 👈 NUEVO FLAG
+
+  @Column({
+    type: 'decimal',
+    nullable: true,
+    comment: 'Porcentaje a calcular sobre el sueldo (Ej: 0.0945 para 9.45%)'
+  })
+  porcentajeCalculo: number; // 👈 Para guardar el 11.15% o 9.45%
+
+  // 👇 NUEVO: Vital para saber si la barra es Verde o Naranja
+  @Column({
+    type: 'enum',
+    enum: IndicadorNomina,
+    default: IndicadorNomina.INGRESO
+  })
+  indicador: IndicadorNomina;
+
+  // 👇 NUEVO: Vital para el Dashboard de recurrentes
+  @Column({ type: 'boolean', default: false })
+  esRecurrente: boolean;
+
+  // Tu campo de monto (lo mapeamos a la entidad)
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  montoEstimado: number;
+
+  @ManyToOne(() => Empresa, (empresa) => empresa.beneficios, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'empresaId' })
   empresa: Empresa;
 
-  /**
-   * Mapea: string empresaId FK "Empresa ofrece beneficio"
-   */
-  @Column({ comment: 'ID de la Empresa (Tenant) que ofrece este beneficio' })
+  @Column()
   empresaId: string;
 
-  // ---
-  // RELACIONES "UNO A MUCHOS" (Un Beneficio TIENE MUCHOS...)
-  // ---
-
-  /**
-   * Relación: Un Beneficio puede tener muchas Asignaciones.
-   * (Múltiples empleados pueden tener este beneficio).
-   */
-  @OneToMany(
-    () => BeneficioAsignado,
-    (beneficioAsignado) => beneficioAsignado.beneficio,
-  )
+  @OneToMany(() => BeneficioAsignado, (ba) => ba.beneficio)
   asignaciones: BeneficioAsignado[];
 }

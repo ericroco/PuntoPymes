@@ -1,7 +1,7 @@
 <div class="settings-subpage-container">
 
   <app-subpage-header title="Configurar Roles y Permisos" backRoute="/dashboard/settings">
-    <button mat-flat-button color="primary" (click)="createNewRole()">
+    <button *ngIf="can(P.ROLES_MANAGE)" mat-flat-button color="primary" (click)="createNewRole()">
       <mat-icon>add_circle_outline</mat-icon>
       Nuevo Rol
     </button>
@@ -48,11 +48,19 @@
       </span>
 
       <div class="actions" style="flex: 1; text-align: right;">
-        <button mat-icon-button color="primary" matTooltip="Editar Permisos" (click)="editRole(role)">
-          <mat-icon>edit</mat-icon> </button>
 
-        <button mat-icon-button color="warn" matTooltip="Eliminar Rol" (click)="deleteRole(role)"
-          [disabled]="role.esDefecto">
+        <button *ngIf="can(P.ROLES_MANAGE)" mat-icon-button color="primary" matTooltip="Editar Permisos"
+          (click)="editRole(role)">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <button *ngIf="!can(P.ROLES_MANAGE)" mat-icon-button matTooltip="Ver Detalles (Solo Lectura)"
+          (click)="editRole(role)">
+          <mat-icon>visibility</mat-icon>
+        </button>
+
+        <button *ngIf="can(P.ROLES_MANAGE)" mat-icon-button color="warn" matTooltip="Eliminar Rol"
+          (click)="deleteRole(role)" [disabled]="role.esDefecto">
           <mat-icon>delete_outline</mat-icon>
         </button>
       </div>

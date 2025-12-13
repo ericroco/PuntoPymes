@@ -29,6 +29,10 @@ import {
   CreateNovedadDto
 } from '../../services/payroll'; // Importamos las interfaces correctas
 
+
+import { AuthService } from '../../../auth/services/auth';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
+
 // Interfaz local para mostrar en la tabla
 interface EmployeePayroll {
   id: string;
@@ -59,6 +63,8 @@ export class Payroll implements OnInit {
   private catalogService = inject(CatalogService);
   private snackBar = inject(MatSnackBar);
   public dialog = inject(MatDialog);
+  private authService = inject(AuthService);
+  P = PERMISSIONS;
 
   // Filtros
   searchTerm: string = '';
@@ -85,6 +91,9 @@ export class Payroll implements OnInit {
 
   // --- CARGA DE DATOS ---
 
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   loadConcepts() {
     this.payrollService.getConceptos().subscribe({
       next: (data) => {

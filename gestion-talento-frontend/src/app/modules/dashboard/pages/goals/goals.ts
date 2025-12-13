@@ -23,7 +23,8 @@ import { AddGoalDialog } from '../../components/add-goal-dialog/add-goal-dialog'
 import { AuthService } from '../../../auth/services/auth';
 import { PerformanceService, Objetivo } from '../../services/performance';
 import { EmployeesService, Employee } from '../../services/employees';
-import { CatalogService, Department } from '../../services/catalog'; // <--- IMPORTAR
+import { CatalogService, Department } from '../../services/catalog';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
 
 // Interfaces Locales
 interface AdminGoal {
@@ -66,6 +67,7 @@ export class Goals implements OnInit {
   public dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private catalogService = inject(CatalogService);
+  P = PERMISSIONS;
 
   viewingAsAdmin: boolean = false;
   activeCycleId: string | null = null;
@@ -95,7 +97,7 @@ export class Goals implements OnInit {
   };
 
   ngOnInit(): void {
-    this.viewingAsAdmin = this.authService.isAdmin();
+    this.viewingAsAdmin = this.can(this.P.PERFORMANCE_MANAGE);
     this.loadData();
     if (this.viewingAsAdmin) {
       this.loadEmployeesForAdmin();
@@ -130,6 +132,9 @@ export class Goals implements OnInit {
     });
   }
 
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   // --- MÉTODO NUEVO: Cargar Vista Empleado ---
   loadEmployeeView(cycleId: string, employeeId: string) {
     // Mis Metas

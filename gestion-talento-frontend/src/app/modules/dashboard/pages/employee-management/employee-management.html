@@ -17,7 +17,7 @@
       </button>
     </div>
 
-    <button mat-flat-button color="primary" (click)="openAddEmployeeDialog()">
+    <button *ngIf="can(P.EMPLOYEES_CREATE)" mat-flat-button color="primary" (click)="openAddEmployeeDialog()">
       <mat-icon>add</mat-icon>
       Añadir Empleado
     </button>
@@ -69,11 +69,13 @@
           <mat-icon>visibility</mat-icon>
         </button>
 
-        <button mat-icon-button (click)="openEditDialog(employee)" matTooltip="Editar Datos Personales">
+        <button *ngIf="can(P.EMPLOYEES_EDIT)" mat-icon-button (click)="openEditDialog(employee)"
+          matTooltip="Editar Datos Personales">
           <mat-icon>edit</mat-icon>
         </button>
 
-        <button class="btn-icon btn-danger" title="Desactivar" (click)="deleteEmployee(employee)">
+        <button *ngIf="can(P.EMPLOYEES_DELETE)" class="btn-icon btn-danger" title="Desactivar"
+          (click)="deleteEmployee(employee)">
           <mat-icon>delete</mat-icon>
         </button>
       </div>

@@ -18,7 +18,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 
 // Components & Services
 import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header';
-import { PayrollService, ConceptoNomina, PeriodoNomina } from '../../../services/payroll';
+import { PayrollService, ConceptoNomina, PeriodoNomina } from '../../../services/payroll'; // Asegúrate de la ruta
 
 @Component({
   selector: 'app-payroll-settings',
@@ -37,11 +37,10 @@ export class PayrollSettings implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   periodos: PeriodoNomina[] = [];
-  newPeriodStart: Date = new Date(); // Para los inputs de fecha
+  newPeriodStart: Date = new Date();
   newPeriodEnd: Date = new Date();
 
-  // Configuración General (Frecuencia, Horas Extra)
-  // TODO: Esto debería venir de otro endpoint si decides guardarlo (ej: PeriodoNomina o ConfigEmpresa)
+  // Configuración General
   settings = {
     payFrequency: 'mensual',
     overtimeMultiplier: 1.5,
@@ -53,14 +52,20 @@ export class PayrollSettings implements OnInit {
     { value: 'mensual', label: 'Mensual' }
   ];
 
-  // Lista de Conceptos (Cargada del Backend)
+  // Lista de Conceptos
   payrollItems: ConceptoNomina[] = [];
 
   // Formulario Nuevo Item
   newItemName: string = '';
   newItemType: 'Ingreso' | 'Egreso' = 'Ingreso';
   newItemIsRecurring: boolean = false;
-  newItemFormula: string = '';
+  newItemPercent: number | null = null; // Cambiamos a number para manejar %
+
+  // 👇 NUEVO: Para distinguir $ vs %
+  calculationType: 'fijo' | 'porcentaje' = 'fijo';
+
+  // 👇 NUEVO: Aquí guardaremos el número (ya sea 20 o 9.45)
+  newItemValue: number | null = null;
 
   constructor() { }
 
@@ -68,15 +73,12 @@ export class PayrollSettings implements OnInit {
     this.loadConcepts();
     this.loadPeriodos();
 
-    // 👇 1. CARGAR CONFIGURACIÓN REAL AL INICIAR
+    // 1. CARGAR CONFIGURACIÓN REAL AL INICIAR
     this.payrollService.getGlobalSettings().subscribe({
       next: (config) => {
         if (config) {
-          // Mapeamos lo que viene del backend a tu objeto local 'settings'
           this.settings.payFrequency = config.frecuenciaPago || 'mensual';
           this.settings.overtimeMultiplier = config.multiplicadorHorasExtra || 1.5;
-
-          // Recalculamos las fechas del período sugerido con la nueva frecuencia
           this.calculateNextPeriodDates();
         }
       },
@@ -100,8 +102,11 @@ export class PayrollSettings implements OnInit {
       }
     });
   }
+
   // --- 1. CARGAR CONCEPTOS ---
   loadConcepts() {
+    // Usamos el servicio nuevo que trae los Beneficios
+    // Si tu servicio aún se llama getConceptos(), asegúrate que apunte al endpoint correcto
     this.payrollService.getConceptos().subscribe({
       next: (data) => {
         this.payrollItems = data;
@@ -110,32 +115,60 @@ export class PayrollSettings implements OnInit {
     });
   }
 
-  // --- 2. AGREGAR CONCEPTO ---
+  // --- 2. AGREGAR CONCEPTO (LÓGICA CORREGIDA) ---
   addPayrollItem(): void {
     if (!this.newItemName.trim()) return;
 
-    const newConcept: Partial<ConceptoNomina> = {
+    // 1. Calcular lógica de negocio
+    const isAutomatic = this.newItemIsRecurring && this.newItemPercent != null && this.newItemPercent > 0;
+
+    let montoFinal = undefined;
+    if (this.newItemIsRecurring && this.newItemValue != null && this.newItemValue > 0) {
+      if (this.calculationType === 'porcentaje') {
+        montoFinal = this.newItemValue / 100; // 9.45 -> 0.0945
+      } else {
+        montoFinal = this.newItemValue; // 20 -> 20
+      }
+    }
+
+    // 2. Payload COMPLETO (Necesario para que salga en la lista)
+    const payload = {
       nombre: this.newItemName,
-      tipo: this.newItemType,
-      esFijo: this.newItemIsRecurring,
-      // Si es fijo, enviamos el porcentaje como string en 'formula'. Si no, null.
-      formula: this.newItemIsRecurring ? this.newItemFormula.toString() : undefined
+      descripcion: 'Creado desde configuración',
+
+      // Mapeamos para el backend nuevo
+      indicador: this.newItemType === 'Ingreso' ? 'Ingreso' : 'Descuento',
+
+      // Mantenemos el tipo viejo para compatibilidad del DTO, pero usamos 'Monetario'
+      // (O usa this.newItemType si tu backend ya acepta 'Ingreso' en el campo tipo)
+      tipo: 'Monetario',
+
+      // 👇 ESTO ES LO QUE HACE QUE APAREZCA EN LA LISTA
+      esRecurrente: this.newItemIsRecurring,
+
+      esAutomatico: isAutomatic,
+      montoEstimado: montoFinal
     };
 
-    this.payrollService.createConcepto(newConcept).subscribe({
+    console.log('✅ Enviando Payload Completo:', payload);
+
+    // Usamos 'as any' para evitar conflictos de tipado con la interfaz vieja del frontend
+    this.payrollService.createConcepto(payload as any).subscribe({
       next: (createdItem) => {
         this.payrollItems.push(createdItem);
-        this.snackBar.open('Concepto creado', 'Cerrar', { duration: 3000 });
+        this.snackBar.open('Beneficio recurrente creado', 'Cerrar', { duration: 3000 });
 
-        // Resetear todo
+        // Resetear formulario
         this.newItemName = '';
         this.newItemType = 'Ingreso';
         this.newItemIsRecurring = false;
-        this.newItemFormula = ''; // Resetear fórmula
+        this.newItemValue = null;
+        this.newItemPercent = null;
       },
       error: (err) => {
-        console.error(err);
-        this.snackBar.open('Error al crear el concepto', 'Cerrar');
+        console.error('❌ ERRORES:', err.error);
+        const errorMsg = Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message;
+        this.snackBar.open(`Error: ${errorMsg}`, 'Cerrar', { duration: 5000 });
       }
     });
   }
@@ -163,37 +196,29 @@ export class PayrollSettings implements OnInit {
     });
   }
 
-  // --- 2. CÁLCULO AUTOMÁTICO DE FECHAS ---
-  // Se ejecuta cuando cambia el select de frecuencia o al iniciar
+  // --- 4. CÁLCULO DE FECHAS ---
   calculateNextPeriodDates() {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth(); // 0 = Enero
+    const month = today.getMonth();
 
-    // Reiniciamos fechas base
     this.newPeriodStart = new Date(year, month, 1);
     this.newPeriodEnd = new Date(year, month + 1, 0);
 
     if (this.settings.payFrequency === 'quincenal') {
-      // Si hoy es <= 15, sugerir 1ra quincena. Si no, 2da quincena.
       if (today.getDate() <= 15) {
         this.newPeriodEnd = new Date(year, month, 15);
       } else {
         this.newPeriodStart = new Date(year, month, 16);
       }
     }
-    // Si es 'semanal', podrías agregar lógica para buscar el próximo lunes/domingo
   }
 
-  // --- 3. CREAR PERÍODO ---
+  // --- 5. CREAR PERÍODO ---
   createPeriodo() {
     if (!this.newPeriodStart || !this.newPeriodEnd) return;
 
-    // ELIMINAMOS LA CREACIÓN DEL NOMBRE AQUÍ
-    // const nombrePeriodo = ... (borrar esto)
-
     const dto = {
-      // nombre: nombrePeriodo, <--- BORRAR ESTA LÍNEA
       fechaInicio: this.formatDate(this.newPeriodStart),
       fechaFin: this.formatDate(this.newPeriodEnd)
     };
@@ -210,7 +235,7 @@ export class PayrollSettings implements OnInit {
     });
   }
 
-  // --- 4. ELIMINAR PERÍODO ---
+  // --- 6. ELIMINAR PERÍODO ---
   deletePeriodo(periodo: PeriodoNomina) {
     if (periodo.estado !== 'Abierto') {
       this.snackBar.open('Solo se pueden eliminar períodos abiertos.', 'Cerrar');
@@ -234,6 +259,4 @@ export class PayrollSettings implements OnInit {
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().split('T')[0];
   }
-
-  private capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
 }

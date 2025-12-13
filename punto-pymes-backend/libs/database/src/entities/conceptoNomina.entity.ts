@@ -1,4 +1,3 @@
-// libs/database/src/entities/conceptoNomina.entity.ts
 import {
     Entity,
     Column,
@@ -14,17 +13,8 @@ export enum TipoRubro {
     EGRESO = 'Egreso',
 }
 
-/**
- * Entidad que representa una PLANTILLA o TIPO de rubro de nómina.
- * (Ej: 'Salario Base', 'Horas Extra', 'Aporte IESS', 'Préstamo')
- * Esta es la plantilla que el admin configura (Multi-Tenant).
- *
- * NO confundir con RubroNomina, 
- * que es la línea de detalle (el valor calculado) en un pago.
- * Mapea la tabla 'conceptos_nomina'
- */
 @Entity({ name: 'conceptos_nomina' })
-@Index(['empresaId', 'tipo']) // Para buscar rápido los conceptos de una empresa
+@Index(['empresaId', 'tipo'])
 export class ConceptoNomina extends BaseEntity {
     @Column({
         type: 'varchar',
@@ -43,7 +33,7 @@ export class ConceptoNomina extends BaseEntity {
     @Column({
         type: 'boolean',
         default: false,
-        comment: 'Indica si es un monto fijo o calculado por fórmula',
+        comment: 'Indica si es un monto fijo o recurrente (Legacy/Compatibilidad)',
     })
     esFijo: boolean;
 
@@ -54,6 +44,33 @@ export class ConceptoNomina extends BaseEntity {
         comment: 'Fórmula para el cálculo (ej. "(salario / 30) * dias_trabajados")',
     })
     formula: string;
+
+    // 👇 CAMPOS NUEVOS AGREGADOS (CRÍTICOS PARA LA NUEVA LÓGICA) 👇
+
+    /**
+     * Define si este concepto se aplica a TODOS automáticamente.
+     * Ejemplo: Aporte IESS, Impuesto a la Renta.
+     */
+    @Column({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, el motor de nómina lo calcula para todos sin asignación manual'
+    })
+    esAutomatico: boolean;
+
+    /**
+     * Guarda el valor numérico base.
+     * Si es automático, aquí va el porcentaje (ej: 0.0945).
+     * Si es una novedad fija, aquí va el monto (ej: 50.00).
+     */
+    @Column({
+        type: 'decimal',
+        precision: 10,
+        scale: 4, // Scale 4 para permitir porcentajes precisos (ej: 0.1115)
+        nullable: true,
+        comment: 'Valor numérico base o porcentaje'
+    })
+    montoEstimado: number;
 
     // ---
     // RELACIONES (Multi-Tenant RNF20)

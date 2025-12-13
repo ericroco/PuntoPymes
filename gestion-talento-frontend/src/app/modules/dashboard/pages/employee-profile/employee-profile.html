@@ -1,12 +1,14 @@
 <div class="page-container" *ngIf="employee; else loading">
+
   <header class="profile-header">
     <div class="avatar-wrapper">
-      <img *ngIf="employee.fotoUrl" [src]="employee.fotoUrl" alt="Avatar" class="avatar-img">
+      <img *ngIf="employee.fotoUrl" [src]="employee.fotoUrl" alt="Avatar" class="avatar-img"
+        onerror="this.style.display='none'">
       <div *ngIf="!employee.fotoUrl" class="avatar-placeholder">
         {{ getInitials(employee.nombre, employee.apellido) }}
       </div>
 
-      <div class="avatar-overlay" *ngIf="viewingAsAdmin || !viewingAsAdmin" (click)="openEditAvatarDialog()">
+      <div class="avatar-overlay" *ngIf="canEditContact" (click)="openEditAvatarDialog()">
         <mat-icon>camera_alt</mat-icon>
         <span>Editar</span>
       </div>
@@ -24,15 +26,17 @@
       </span>
     </div>
 
-    <button *ngIf="!viewingAsAdmin" mat-stroked-button color="primary" class="edit-contact-btn"
+    <button *ngIf="canEditContact" mat-stroked-button color="primary" class="edit-contact-btn"
       (click)="openEditContactInfoDialog()">
       <mat-icon>edit</mat-icon> <span>Editar Contacto</span>
     </button>
-    <button *ngIf="viewingAsAdmin" mat-stroked-button color="primary" class="edit-profile-btn"
+
+    <button *ngIf="canEditSensitive" mat-stroked-button color="primary" class="edit-profile-btn"
       (click)="openEditProfileDialog()">
       <mat-icon>manage_accounts</mat-icon> Editar Perfil (Admin)
     </button>
-    <button *ngIf="viewingAsAdmin" class="btn btn-secondary">Exportar Perfil a PDF</button>
+
+    <button *ngIf="can(P.EMPLOYEES_EXPORT)" class="btn btn-secondary">Exportar Perfil a PDF</button>
   </header>
 
   <section class="details-section general-info-section">
@@ -46,10 +50,12 @@
         <span class="info-label">Teléfono / Celular:</span>
         <span class="info-value">{{ employee.telefono || '---' }}</span>
       </div>
-      <div class="info-item">
+
+      <div class="info-item" *ngIf="can(P.ROLES_MANAGE)">
         <span class="info-label">Rol de Sistema:</span>
         <span class="info-value">{{ employee.rol?.nombre || '---' }}</span>
       </div>
+
       <div class="info-item">
         <span class="info-label">Dirección:</span>
         <span class="info-value">{{ employee.direccion || '---' }}</span>
@@ -62,15 +68,15 @@
     </div>
   </section>
 
-  <section class="details-section schedule-section" *ngIf="viewingAsAdmin">
+  <section class="details-section schedule-section" *ngIf="can(P.ATTENDANCE_APPROVE) || can(P.EMPLOYEES_EDIT)">
     <div class="section-header">
       <h3>Horario Asignado</h3>
-      <button mat-stroked-button color="primary" (click)="openEditScheduleDialog()">
+      <button *ngIf="can(P.EMPLOYEES_EDIT)" mat-stroked-button color="primary" (click)="openEditScheduleDialog()">
         <mat-icon>edit_calendar</mat-icon>
         Editar Horario
       </button>
     </div>
-    <div class="schedule-summary">
+    <div class="schedule-summary" *ngIf="assignedSchedule">
       <p><strong>Tipo:</strong> {{ assignedSchedule.type }}</p>
       <p *ngIf="assignedSchedule.type !== 'Estándar'">
         <strong>Días:</strong> {{ assignedSchedule.days.join(', ') }}
@@ -79,7 +85,7 @@
     </div>
   </section>
 
-  <section class="kpi-grid" *ngIf="viewingAsAdmin">
+  <section class="kpi-grid" *ngIf="can(P.PERFORMANCE_MANAGE)">
     <div *ngFor="let kpi of kpis" class="kpi-card">
       <span class="kpi-label">{{ kpi.label }}</span>
       <span class="kpi-value">{{ kpi.value }}</span>
@@ -96,7 +102,7 @@
     </div>
   </section>
 
-  <section class="details-section salary-section" *ngIf="viewingAsAdmin">
+  <section class="details-section salary-section" *ngIf="can(P.PAYROLL_READ)">
     <h3>Historial Salarial y Compensación</h3>
     <div class="document-list" *ngIf="salaryHistory.length > 0; else noSalaryHistory">
       <div class="document-item header">
@@ -134,7 +140,7 @@
       </ng-template>
     </div>
 
-    <div class="details-section evaluation-section" *ngIf="viewingAsAdmin">
+    <div class="details-section evaluation-section" *ngIf="can(P.PERFORMANCE_MANAGE) && !isMyProfile">
       <h3>Evaluación del Administrador</h3>
       <div class="evaluation-form">
         <textarea placeholder="Añadir notas sobre el desempeño..." [(ngModel)]="evaluationNotes"></textarea>
@@ -164,11 +170,13 @@
           <option value="Reconocimiento Interno">Reconocimiento Interno</option>
         </select>
       </div>
-      <button *ngIf="!viewingAsAdmin" class="btn btn-secondary" (click)="openAddDocumentDialog()">
+      <button *ngIf="canEditContact || can(P.DOCUMENTS_MANAGE)" class="btn btn-secondary"
+        (click)="openAddDocumentDialog()">
         <mat-icon>upload_file</mat-icon>
         <span>Añadir Documento</span>
       </button>
     </div>
+
     <div class="document-list">
       <div class="document-item header">
         <span>Nombre del Archivo</span>
@@ -191,9 +199,10 @@
         <span>{{ doc.date | date:'dd MMM, yyyy' }}</span>
         <div class="actions">
           <button class="btn-icon" title="Descargar" (click)="downloadDocument(doc)">
-            📥
-          </button>
-          <button *ngIf="doc.canDelete" class="btn-icon btn-danger" (click)="deleteDocument(doc)" title="Eliminar">
+            📥 </button>
+
+          <button *ngIf="doc.canDelete && can(P.DOCUMENTS_MANAGE)" class="btn-icon btn-danger"
+            (click)="deleteDocument(doc)" title="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>
         </div>

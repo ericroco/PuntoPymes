@@ -651,6 +651,17 @@ export class AppController {
       { empresaId: empresaId, beneficioId: beneficioId },
     );
   }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.read')
+  @Get('concepts/recurring-stats') // Ruta exacta que usa tu Frontend
+  getBeneficiosStats(@Request() req) {
+    return this.nominaService.send(
+      { cmd: 'get_beneficios_stats' },
+      { empresaId: req.user.empresaId },
+    );
+  }
+
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('nomina.periodos.read') // <-- Protegido por RBAC
   @Get('periodos-nomina')

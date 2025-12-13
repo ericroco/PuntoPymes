@@ -11,7 +11,8 @@
       <span>Dashboard</span>
     </a>
 
-    <div class="nav-section" *ngIf="can(P.EMPLOYEES_READ) || can(P.EMPLOYEES_CREATE)">
+    <div class="nav-section"
+      *ngIf="can(P.EMPLOYEES_READ) || can(P.RECRUITMENT_MANAGE) || can(P.ONBOARDING_MANAGE) || can(P.PERFORMANCE_MANAGE)">
       <span class="nav-title">
         <mat-icon class="section-icon">people</mat-icon> Talento Humano
       </span>
@@ -22,19 +23,20 @@
           <span>Empleados</span>
         </a>
 
-        <a *ngIf="can(P.EMPLOYEES_CREATE)" routerLink="/dashboard/recruitment" routerLinkActive="active"
+        <a *ngIf="can(P.RECRUITMENT_MANAGE)" routerLink="/dashboard/recruitment" routerLinkActive="active"
           class="nav-item">
           <mat-icon>work_outline</mat-icon>
           <span>Reclutamiento</span>
         </a>
 
-        <a *ngIf="can(P.EMPLOYEES_CREATE)" routerLink="/dashboard/onboarding" routerLinkActive="active"
+        <a *ngIf="can(P.ONBOARDING_MANAGE)" routerLink="/dashboard/onboarding" routerLinkActive="active"
           class="nav-item">
           <mat-icon>how_to_reg</mat-icon>
           <span>Onboarding</span>
         </a>
 
-        <a *ngIf="can(P.EMPLOYEES_READ)" routerLink="/dashboard/performance" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.PERFORMANCE_MANAGE)" routerLink="/dashboard/performance" routerLinkActive="active"
+          class="nav-item">
           <mat-icon>stars</mat-icon>
           <span>Evaluaciones</span>
         </a>
@@ -68,7 +70,7 @@
       </div>
     </div>
 
-    <div class="nav-section" *ngIf="can(P.PAYROLL_READ) || can(P.PAYROLL_PROCESS)">
+    <div class="nav-section" *ngIf="can(P.PAYROLL_READ) || can(P.BENEFITS_MANAGE)">
       <span class="nav-title">
         <mat-icon class="section-icon">payments</mat-icon> Compensación
       </span>
@@ -79,7 +81,7 @@
           <span>Nómina</span>
         </a>
 
-        <a *ngIf="can(P.PAYROLL_READ)" routerLink="/dashboard/benefits" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.BENEFITS_MANAGE)" routerLink="/dashboard/benefits" routerLinkActive="active" class="nav-item">
           <mat-icon>card_giftcard</mat-icon>
           <span>Beneficios</span>
         </a>
@@ -113,7 +115,7 @@
           <span>Documentos</span>
         </a>
 
-        <a routerLink="/dashboard/assets" routerLinkActive="active" class="nav-item" *ngIf="can(P.COMPANY_CONFIG)">
+        <a routerLink="/dashboard/assets" routerLinkActive="active" class="nav-item" *ngIf="can(P.ASSETS_MANAGE)">
           <mat-icon>devices</mat-icon>
           <span>Activos y Equipos</span>
         </a>
@@ -125,7 +127,7 @@
       </div>
     </div>
 
-    <div class="nav-section" *ngIf="can(P.PAYROLL_EXPORT) || can(P.COMPANY_CONFIG)">
+    <div class="nav-section" *ngIf="can(P.REPORTS_VIEW)">
       <span class="nav-title">
         <mat-icon class="section-icon">analytics</mat-icon> Análisis
       </span>

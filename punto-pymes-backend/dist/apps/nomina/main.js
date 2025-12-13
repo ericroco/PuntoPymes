@@ -2,6 +2,105 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts":
+/*!***********************************************************!*\
+  !*** ./apps/nomina/src/dto/create-concepto-nomina.dto.ts ***!
+  \***********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateConceptoNominaDto = exports.IndicadorNomina = exports.TipoRubroExtendido = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var TipoRubroExtendido;
+(function (TipoRubroExtendido) {
+    TipoRubroExtendido["INGRESO"] = "Ingreso";
+    TipoRubroExtendido["EGRESO"] = "Egreso";
+    TipoRubroExtendido["MONETARIO"] = "Monetario";
+    TipoRubroExtendido["NO_MONETARIO"] = "No Monetario";
+})(TipoRubroExtendido || (exports.TipoRubroExtendido = TipoRubroExtendido = {}));
+var IndicadorNomina;
+(function (IndicadorNomina) {
+    IndicadorNomina["INGRESO"] = "Ingreso";
+    IndicadorNomina["DESCUENTO"] = "Descuento";
+})(IndicadorNomina || (exports.IndicadorNomina = IndicadorNomina = {}));
+class CreateConceptoNominaDto {
+    nombre;
+    tipo;
+    indicador;
+    esRecurrente;
+    esFijo;
+    esAutomatico;
+    descripcion;
+    montoEstimado;
+    formula;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String, maxLength: 255 }, tipo: { required: true, enum: (__webpack_require__(/*! ./create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts").TipoRubroExtendido) }, indicador: { required: false, enum: (__webpack_require__(/*! ./create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts").IndicadorNomina) }, esRecurrente: { required: false, type: () => Boolean }, esFijo: { required: false, type: () => Boolean }, esAutomatico: { required: false, type: () => Boolean }, descripcion: { required: false, type: () => String, maxLength: 1000 }, montoEstimado: { required: false, type: () => Number, minimum: 1 }, formula: { required: false, type: () => String } };
+    }
+}
+exports.CreateConceptoNominaDto = CreateConceptoNominaDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "nombre", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(TipoRubroExtendido),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "tipo", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(IndicadorNomina),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "indicador", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateConceptoNominaDto.prototype, "esRecurrente", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateConceptoNominaDto.prototype, "esFijo", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateConceptoNominaDto.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(1000),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "descripcion", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsPositive)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateConceptoNominaDto.prototype, "montoEstimado", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "formula", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/nomina/src/dto/create-contrato.dto.ts":
 /*!****************************************************!*\
   !*** ./apps/nomina/src/dto/create-contrato.dto.ts ***!
@@ -245,6 +344,9 @@ let NominaController = class NominaController {
     obtenerReporte(data) {
         return this.nominaService.obtenerReporteNomina(data.empresaId, data.periodoId);
     }
+    getBeneficiosStats(data) {
+        return this.nominaService.getBeneficiosStats(data.empresaId);
+    }
 };
 exports.NominaController = NominaController;
 __decorate([
@@ -364,7 +466,7 @@ __decorate([
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'create_concepto_nomina' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").ConceptoNomina) }),
+    openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -373,7 +475,7 @@ __decorate([
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'update_concepto_nomina' }),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").ConceptoNomina) }),
+    openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -452,6 +554,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], NominaController.prototype, "obtenerReporte", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_beneficios_stats' }),
+    openapi.ApiResponse({ status: 200, type: [Object] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NominaController.prototype, "getBeneficiosStats", null);
 exports.NominaController = NominaController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [nomina_service_1.NominaService])
@@ -542,6 +652,8 @@ const database_1 = __webpack_require__(/*! default/database */ "./libs/database/
 const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 const create_contrato_dto_1 = __webpack_require__(/*! ./dto/create-contrato.dto */ "./apps/nomina/src/dto/create-contrato.dto.ts");
 const create_periodo_nomina_dto_1 = __webpack_require__(/*! ./dto/create-periodo-nomina.dto */ "./apps/nomina/src/dto/create-periodo-nomina.dto.ts");
+const create_concepto_nomina_dto_1 = __webpack_require__(/*! ./dto/create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts");
+const conceptoNomina_entity_1 = __webpack_require__(/*! ../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
 let NominaService = class NominaService {
     contratoRepository;
     empleadoRepository;
@@ -702,6 +814,30 @@ let NominaService = class NominaService {
         await this.beneficioRepository.softRemove(beneficio);
         return { message: 'Beneficio eliminado correctamente.' };
     }
+    async getBeneficiosStats(empresaId) {
+        const beneficios = await this.beneficioRepository.find({
+            where: {
+                empresaId,
+                esRecurrente: true
+            }
+        });
+        const totalEmpleados = await this.empleadoRepository.count({
+            where: { empresaId, estado: 'Activo' }
+        });
+        const stats = await Promise.all(beneficios.map(async (beneficio) => {
+            const count = await this.beneficioAsignadoRepository.count({
+                where: { beneficioId: beneficio.id }
+            });
+            return {
+                id: beneficio.id,
+                nombre: beneficio.nombre,
+                tipo: beneficio.indicador,
+                assignedCount: count,
+                totalEmployees: totalEmpleados
+            };
+        }));
+        return stats;
+    }
     async getPeriodosNomina(empresaId) {
         return this.periodoNominaRepository.find({
             where: { empresaId: empresaId },
@@ -781,40 +917,95 @@ let NominaService = class NominaService {
         });
     }
     async createConceptoNomina(empresaId, dto) {
-        const existente = await this.conceptoNominaRepository.findOneBy({
-            nombre: dto.nombre,
-            empresaId: empresaId,
-        });
-        if (existente) {
-            throw new common_1.ConflictException('Ya existe un concepto de nómina con ese nombre en esta empresa.');
+        const esRecurrente = dto.esRecurrente || dto.esFijo;
+        const esBeneficioAsignable = esRecurrente && !dto.esAutomatico;
+        if (esBeneficioAsignable) {
+            console.log('🔀 Guardando como BENEFICIO ASIGNABLE...');
+            const nuevoBeneficio = this.beneficioRepository.create({
+                empresaId: empresaId,
+                nombre: dto.nombre,
+                descripcion: 'Creado desde configuración',
+                tipo: database_1.TipoBeneficio.MONETARIO,
+                indicador: dto.indicador || database_1.IndicadorNomina.INGRESO,
+                esRecurrente: true,
+                montoEstimado: dto.montoEstimado ?? 0
+            });
+            return this.beneficioRepository.save(nuevoBeneficio);
+        }
+        console.log('🔀 Guardando como CONCEPTO GLOBAL...');
+        let tipoRubro = conceptoNomina_entity_1.TipoRubro.INGRESO;
+        if (dto.indicador === database_1.IndicadorNomina.DESCUENTO ||
+            dto.tipo === create_concepto_nomina_dto_1.TipoRubroExtendido.EGRESO ||
+            dto.tipo?.toString() === 'Egreso') {
+            tipoRubro = conceptoNomina_entity_1.TipoRubro.EGRESO;
         }
         const nuevoConcepto = this.conceptoNominaRepository.create({
-            ...dto,
             empresaId: empresaId,
-            esFijo: dto.esFijo || false,
+            nombre: dto.nombre,
+            tipo: tipoRubro,
+            esFijo: dto.esRecurrente || dto.esFijo || false,
+            esAutomatico: dto.esAutomatico || false,
+            montoEstimado: dto.montoEstimado ?? undefined,
+            formula: dto.formula ?? undefined
         });
         return this.conceptoNominaRepository.save(nuevoConcepto);
     }
-    async updateConceptoNomina(empresaId, conceptoId, dto) {
-        const concepto = await this.conceptoNominaRepository.findOneBy({
-            id: conceptoId,
-            empresaId: empresaId,
-        });
-        if (!concepto) {
-            throw new common_1.NotFoundException('Concepto no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.nombre && dto.nombre !== concepto.nombre) {
-            const existente = await this.conceptoNominaRepository.findOneBy({
-                nombre: dto.nombre,
-                empresaId: empresaId,
-                id: (0, typeorm_2.Not)(conceptoId),
-            });
-            if (existente) {
-                throw new common_1.ConflictException('Ya existe un concepto de nómina con ese nombre en esta empresa.');
+    async updateConceptoNomina(empresaId, id, dto) {
+        const concepto = await this.conceptoNominaRepository.findOneBy({ id, empresaId });
+        if (concepto) {
+            console.log('🔄 Actualizando CONCEPTO NOMINA...');
+            if (dto.nombre && dto.nombre !== concepto.nombre) {
+                const existe = await this.conceptoNominaRepository.findOneBy({
+                    nombre: dto.nombre, empresaId, id: (0, typeorm_2.Not)(id)
+                });
+                if (existe)
+                    throw new common_1.ConflictException('Ya existe un concepto con ese nombre.');
+                concepto.nombre = dto.nombre;
             }
+            if (dto.indicador || dto.tipo) {
+                const esEgreso = dto.indicador === database_1.IndicadorNomina.DESCUENTO ||
+                    dto.tipo === 'Egreso' ||
+                    dto.tipo === conceptoNomina_entity_1.TipoRubro.EGRESO;
+                concepto.tipo = esEgreso ? conceptoNomina_entity_1.TipoRubro.EGRESO : conceptoNomina_entity_1.TipoRubro.INGRESO;
+            }
+            if (dto.esRecurrente !== undefined)
+                concepto.esFijo = dto.esRecurrente;
+            if (dto.esAutomatico !== undefined)
+                concepto.esAutomatico = dto.esAutomatico;
+            if (dto.montoEstimado !== undefined)
+                concepto.montoEstimado = dto.montoEstimado;
+            if (dto.formula !== undefined)
+                concepto.formula = dto.formula;
+            return this.conceptoNominaRepository.save(concepto);
         }
-        const conceptoActualizado = this.conceptoNominaRepository.merge(concepto, dto);
-        return this.conceptoNominaRepository.save(conceptoActualizado);
+        const beneficio = await this.beneficioRepository.findOneBy({ id, empresaId });
+        if (beneficio) {
+            console.log('🔄 Actualizando BENEFICIO...');
+            if (dto.nombre && dto.nombre !== beneficio.nombre) {
+                const existe = await this.beneficioRepository.findOneBy({
+                    nombre: dto.nombre, empresaId, id: (0, typeorm_2.Not)(id)
+                });
+                if (existe)
+                    throw new common_1.ConflictException('Ya existe un beneficio con ese nombre.');
+                beneficio.nombre = dto.nombre;
+            }
+            if (dto.indicador) {
+                beneficio.indicador = dto.indicador;
+            }
+            else if (dto.tipo) {
+                beneficio.indicador = (dto.tipo === 'Egreso' || dto.tipo === conceptoNomina_entity_1.TipoRubro.EGRESO)
+                    ? database_1.IndicadorNomina.DESCUENTO
+                    : database_1.IndicadorNomina.INGRESO;
+            }
+            if (dto.descripcion !== undefined)
+                beneficio.descripcion = dto.descripcion;
+            if (dto.esRecurrente !== undefined)
+                beneficio.esRecurrente = dto.esRecurrente;
+            if (dto.montoEstimado !== undefined)
+                beneficio.montoEstimado = dto.montoEstimado;
+            return this.beneficioRepository.save(beneficio);
+        }
+        throw new common_1.NotFoundException('El concepto o beneficio no fue encontrado.');
     }
     async deleteConceptoNomina(empresaId, conceptoId) {
         const concepto = await this.conceptoNominaRepository.findOneBy({
@@ -851,21 +1042,17 @@ let NominaService = class NominaService {
             if (!periodo || periodo.estado !== create_periodo_nomina_dto_1.EstadoPeriodo.ABIERTO) {
                 throw new common_1.ConflictException('Período cerrado o no válido.');
             }
-            const conceptosFijos = await manager.findBy(database_1.ConceptoNomina, { empresaId, esFijo: true });
-            console.log(`📋 Conceptos Fijos encontrados: ${conceptosFijos.length}`);
+            const rubrosAutomaticos = await manager.find(database_1.Beneficio, {
+                where: { empresaId, esAutomatico: true }
+            });
             const contratos = await manager.find(database_1.Contrato, {
                 where: { estado: 'Vigente', empleado: { empresaId } },
                 relations: ['empleado']
             });
-            console.log(`👥 Empleados a procesar: ${contratos.length}`);
             for (const contrato of contratos) {
                 const emp = contrato.empleado;
-                console.log(`\n👤 Procesando: ${emp.nombre} ${emp.apellido}`);
-                const salarioBase = Number(contrato.salario);
-                console.log(`   💰 Salario Contrato: $${salarioBase}`);
-                if (!salarioBase || salarioBase === 0) {
-                    console.warn(`   ⚠️ ALERTA: El empleado tiene salario 0 o inválido.`);
-                }
+                const salarioBase = Number(contrato.salario) || 0;
+                console.log(`\n👤 Procesando: ${emp.nombre} ${emp.apellido} | Base: $${salarioBase}`);
                 let totalIngresos = 0;
                 let totalEgresos = 0;
                 const rolPago = manager.create(database_1.NominaEmpleado, {
@@ -882,44 +1069,51 @@ let NominaService = class NominaService {
                 });
                 await manager.save(rubroSalario);
                 totalIngresos += salarioBase;
-                console.log(`   ➕ Sumado Salario Base: $${totalIngresos}`);
-                for (const c of conceptosFijos) {
-                    const nombre = c.nombre.toLowerCase();
-                    if (nombre.includes('salario') || nombre.includes('sueldo')) {
-                        console.log(`   🚫 Ignorando concepto manual duplicado: "${c.nombre}"`);
-                        continue;
-                    }
-                    let valor = 0;
-                    if (c.formula) {
-                        const pct = parseFloat(c.formula);
-                        if (!isNaN(pct)) {
-                            valor = salarioBase * (pct / 100);
-                            console.log(`   ⚙️ Calculando ${c.nombre} (${pct}%): $${valor}`);
-                        }
-                    }
-                    if (valor > 0) {
-                        const rubro = manager.create(database_1.RubroNomina, {
+                for (const auto of rubrosAutomaticos) {
+                    if (auto.montoEstimado && auto.montoEstimado > 0) {
+                        const valorCalculado = salarioBase * Number(auto.montoEstimado);
+                        const rubroAuto = manager.create(database_1.RubroNomina, {
                             nominaEmpleadoId: rolPago.id,
-                            tipo: c.tipo,
-                            concepto: c.nombre,
+                            tipo: auto.indicador === 'Ingreso' ? 'Ingreso' : 'Egreso',
+                            concepto: auto.nombre,
+                            valor: Number(valorCalculado.toFixed(2))
+                        });
+                        await manager.save(rubroAuto);
+                        if (rubroAuto.tipo === 'Ingreso')
+                            totalIngresos += rubroAuto.valor;
+                        else
+                            totalEgresos += rubroAuto.valor;
+                    }
+                }
+                const asignaciones = await manager.find(database_1.BeneficioAsignado, {
+                    where: { empleadoId: emp.id, activo: true },
+                    relations: ['beneficio']
+                });
+                for (const asignacion of asignaciones) {
+                    const ben = asignacion.beneficio;
+                    const valor = Number(asignacion.montoPersonalizado || ben.montoEstimado || 0);
+                    if (valor > 0) {
+                        const rubroRecurrente = manager.create(database_1.RubroNomina, {
+                            nominaEmpleadoId: rolPago.id,
+                            tipo: ben.indicador === 'Ingreso' ? 'Ingreso' : 'Egreso',
+                            concepto: ben.nombre,
                             valor: Number(valor.toFixed(2))
                         });
-                        await manager.save(rubro);
-                        if (c.tipo === 'Ingreso')
-                            totalIngresos += rubro.valor;
+                        await manager.save(rubroRecurrente);
+                        if (rubroRecurrente.tipo === 'Ingreso')
+                            totalIngresos += rubroRecurrente.valor;
                         else
-                            totalEgresos += rubro.valor;
+                            totalEgresos += rubroRecurrente.valor;
                     }
                 }
                 rolPago.totalIngresos = Number(totalIngresos.toFixed(2));
                 rolPago.totalEgresos = Number(totalEgresos.toFixed(2));
                 rolPago.netoAPagar = Number((totalIngresos - totalEgresos).toFixed(2));
                 await manager.save(rolPago);
-                console.log(`   ✅ FIN EMPLEADO: Ing: ${rolPago.totalIngresos} | Egr: ${rolPago.totalEgresos} | Neto: ${rolPago.netoAPagar}`);
             }
             periodo.estado = create_periodo_nomina_dto_1.EstadoPeriodo.PROCESADO;
             await manager.save(periodo);
-            return { message: 'Proceso completado', count: contratos.length };
+            return { message: 'Nómina procesada correctamente', count: contratos.length };
         });
     }
     async solicitarVacaciones(empresaId, dto) {
@@ -1021,6 +1215,29 @@ let NominaService = class NominaService {
                 }
             };
         });
+    }
+    async getUnifiedCatalog(empresaId) {
+        const conceptos = await this.conceptoNominaRepository.find({ where: { empresaId } });
+        const beneficios = await this.beneficioRepository.find({ where: { empresaId } });
+        const unificados = [
+            ...conceptos.map(c => ({
+                id: c.id,
+                nombre: c.nombre,
+                tipo: c.tipo,
+                esFijo: c.esAutomatico,
+                origen: 'concepto',
+                formula: c.montoEstimado ? `${c.montoEstimado * 100}%` : null
+            })),
+            ...beneficios.map(b => ({
+                id: b.id,
+                nombre: b.nombre,
+                tipo: b.indicador === 'Descuento' ? 'Egreso' : 'Ingreso',
+                esFijo: true,
+                origen: 'beneficio',
+                formula: b.montoEstimado ? `$${b.montoEstimado}` : null
+            }))
+        ];
+        return unificados;
     }
 };
 exports.NominaService = NominaService;
@@ -1613,52 +1830,99 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Beneficio = void 0;
+exports.Beneficio = exports.IndicadorNomina = exports.TipoBeneficio = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const beneficioAsignado_entity_1 = __webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts");
+var TipoBeneficio;
+(function (TipoBeneficio) {
+    TipoBeneficio["MONETARIO"] = "Monetario";
+    TipoBeneficio["NO_MONETARIO"] = "No Monetario";
+})(TipoBeneficio || (exports.TipoBeneficio = TipoBeneficio = {}));
+var IndicadorNomina;
+(function (IndicadorNomina) {
+    IndicadorNomina["INGRESO"] = "Ingreso";
+    IndicadorNomina["DESCUENTO"] = "Descuento";
+    IndicadorNomina["INFORMATIVO"] = "Informativo";
+})(IndicadorNomina || (exports.IndicadorNomina = IndicadorNomina = {}));
 let Beneficio = class Beneficio extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
+    tipo;
+    esAutomatico;
+    porcentajeCalculo;
+    indicador;
+    esRecurrente;
+    montoEstimado;
     empresa;
     empresaId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del beneficio\nMapea: string nombre \"Nombre beneficio\"" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del beneficio\nMapea: string descripcion \"Descripcion detallada\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa ofrece beneficio\"" }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").TipoBeneficio) }, esAutomatico: { required: true, type: () => Boolean }, porcentajeCalculo: { required: true, type: () => Number }, indicador: { required: true, enum: (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").IndicadorNomina) }, esRecurrente: { required: true, type: () => Boolean }, montoEstimado: { required: true, type: () => Number }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] } };
     }
 };
 exports.Beneficio = Beneficio;
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'varchar',
-        length: 255,
-        comment: 'Nombre del beneficio (Ej: Seguro Médico)',
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
     __metadata("design:type", String)
 ], Beneficio.prototype, "nombre", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'text',
-        comment: 'Descripción detallada del beneficio',
-    }),
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Beneficio.prototype, "descripcion", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.beneficios, {
-        nullable: false,
-        onDelete: 'CASCADE',
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: TipoBeneficio,
+        default: TipoBeneficio.MONETARIO
     }),
+    __metadata("design:type", String)
+], Beneficio.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, se aplica a TODOS automáticamente (Ej: IESS)'
+    }),
+    __metadata("design:type", Boolean)
+], Beneficio.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        nullable: true,
+        comment: 'Porcentaje a calcular sobre el sueldo (Ej: 0.0945 para 9.45%)'
+    }),
+    __metadata("design:type", Number)
+], Beneficio.prototype, "porcentajeCalculo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: IndicadorNomina,
+        default: IndicadorNomina.INGRESO
+    }),
+    __metadata("design:type", String)
+], Beneficio.prototype, "indicador", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], Beneficio.prototype, "esRecurrente", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Beneficio.prototype, "montoEstimado", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.beneficios, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
     __metadata("design:type", empresa_entity_1.Empresa)
 ], Beneficio.prototype, "empresa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) que ofrece este beneficio' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Beneficio.prototype, "empresaId", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => beneficioAsignado_entity_1.BeneficioAsignado, (beneficioAsignado) => beneficioAsignado.beneficio),
+    (0, typeorm_1.OneToMany)(() => beneficioAsignado_entity_1.BeneficioAsignado, (ba) => ba.beneficio),
     __metadata("design:type", Array)
 ], Beneficio.prototype, "asignaciones", void 0);
 exports.Beneficio = Beneficio = __decorate([
@@ -1694,22 +1958,43 @@ const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/d
 const beneficio_entity_1 = __webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts");
 let BeneficioAsignado = class BeneficioAsignado extends base_entity_1.BaseEntity {
     fechaAsignacion;
+    montoPersonalizado;
+    activo;
     empleado;
     empleadoId;
     beneficio;
     beneficioId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { fechaAsignacion: { required: true, type: () => Date, description: "Fecha de asignaci\u00F3n del beneficio al empleado\nMapea: date fechaAsignacion \"Fecha asignacion beneficio\"" }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String, description: "Mapea: string empleadoId FK \"Empleado recibe beneficio\"" }, beneficio: { required: true, type: () => (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio), description: "Relaci\u00F3n: La asignaci\u00F3n se refiere a UN Beneficio del cat\u00E1logo.\nonDelete: 'CASCADE' = Si el Beneficio es borrado del cat\u00E1logo\nde la empresa, tambi\u00E9n se borran las asignaciones existentes." }, beneficioId: { required: true, type: () => String, description: "Mapea: string beneficioId FK \"Beneficio otorgado\"" } };
+        return { fechaAsignacion: { required: true, type: () => Date, description: "Fecha de asignaci\u00F3n del beneficio al empleado" }, montoPersonalizado: { required: true, type: () => Number }, activo: { required: true, type: () => Boolean }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, beneficio: { required: true, type: () => (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio) }, beneficioId: { required: true, type: () => String } };
     }
 };
 exports.BeneficioAsignado = BeneficioAsignado;
 __decorate([
     (0, typeorm_1.Column)({
         type: 'date',
+        default: () => 'CURRENT_DATE',
         comment: 'Fecha de asignación del beneficio al empleado',
     }),
     __metadata("design:type", Date)
 ], BeneficioAsignado.prototype, "fechaAsignacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        nullable: true,
+        comment: 'Valor específico para este empleado (sobrescribe al general)'
+    }),
+    __metadata("design:type", Number)
+], BeneficioAsignado.prototype, "montoPersonalizado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: true,
+        comment: 'Si es false, el motor de nómina ignora esta asignación'
+    }),
+    __metadata("design:type", Boolean)
+], BeneficioAsignado.prototype, "activo", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.beneficiosAsignados, {
         nullable: false,
@@ -2079,10 +2364,12 @@ let ConceptoNomina = class ConceptoNomina extends base_entity_1.BaseEntity {
     tipo;
     esFijo;
     formula;
+    esAutomatico;
+    montoEstimado;
     empresa;
     empresaId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: true, type: () => Boolean }, formula: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
+        return { nombre: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: true, type: () => Boolean }, formula: { required: true, type: () => String }, esAutomatico: { required: true, type: () => Boolean }, montoEstimado: { required: true, type: () => Number, description: "Guarda el valor num\u00E9rico base.\nSi es autom\u00E1tico, aqu\u00ED va el porcentaje (ej: 0.0945).\nSi es una novedad fija, aqu\u00ED va el monto (ej: 50.00)." }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
     }
 };
 exports.ConceptoNomina = ConceptoNomina;
@@ -2106,7 +2393,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'boolean',
         default: false,
-        comment: 'Indica si es un monto fijo o calculado por fórmula',
+        comment: 'Indica si es un monto fijo o recurrente (Legacy/Compatibilidad)',
     }),
     __metadata("design:type", Boolean)
 ], ConceptoNomina.prototype, "esFijo", void 0);
@@ -2119,6 +2406,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], ConceptoNomina.prototype, "formula", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, el motor de nómina lo calcula para todos sin asignación manual'
+    }),
+    __metadata("design:type", Boolean)
+], ConceptoNomina.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        precision: 10,
+        scale: 4,
+        nullable: true,
+        comment: 'Valor numérico base o porcentaje'
+    }),
+    __metadata("design:type", Number)
+], ConceptoNomina.prototype, "montoEstimado", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, {
         nullable: false,

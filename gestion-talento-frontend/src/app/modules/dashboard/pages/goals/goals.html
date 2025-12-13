@@ -1,6 +1,6 @@
 <div class="page-container goals-page">
 
-  <div *ngIf="!viewingAsAdmin" @listAnimation>
+  <div *ngIf="!can(P.PERFORMANCE_MANAGE)" @listAnimation>
 
     <app-subpage-header title="Metas y Objetivos">
       <span *ngIf="!activeCycleId" class="cycle-warning">
@@ -100,7 +100,7 @@
   </div>
 
 
-  <div *ngIf="viewingAsAdmin" class="admin-goals-view">
+  <div *ngIf="can(P.PERFORMANCE_MANAGE)" class="admin-goals-view">
 
     <app-subpage-header title="Gestión de Metas">
       <button mat-flat-button color="primary" (click)="openCreateGoalDialog()">
@@ -145,6 +145,7 @@
           </div>
         </div>
       </mat-tab>
+
       <mat-tab label="Metas por Departamento">
         <div class="tab-content-wrapper" style="padding-top: 20px;">
           <div class="goals-grid" *ngIf="adminDeptGoals.length > 0; else emptyAdminDept">

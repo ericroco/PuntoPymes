@@ -1,37 +1,50 @@
-// apps/nomina/src/dto/create-beneficio.dto.ts
 import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  MaxLength,
-  IsNumber,
-  IsPositive,
-  IsEnum,
+    IsString,
+    IsNotEmpty,
+    IsOptional,
+    MaxLength,
+    IsNumber,
+    IsPositive,
+    IsEnum,
+    IsBoolean,
 } from 'class-validator';
 
-// Basado en beneficio.entity.ts
-export enum TipoBeneficio {
-  MONETARIO = 'Monetario',
-  NO_MONETARIO = 'No Monetario',
-}
+import { TipoBeneficio, IndicadorNomina } from 'default/database';
 
 export class CreateBeneficioDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  nombre: string;
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(255)
+    nombre: string;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(1000)
-  descripcion?: string;
+    @IsString()
+    @IsOptional()
+    @MaxLength(1000)
+    descripcion?: string;
 
-  @IsEnum(TipoBeneficio)
-  @IsOptional()
-  tipo: TipoBeneficio;
+    // Tipo original (Monetario/No Monetario)
+    @IsEnum(TipoBeneficio)
+    @IsOptional()
+    tipo: TipoBeneficio;
 
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  montoEstimado?: number;
+    // Indicador (Ingreso/Descuento)
+    @IsEnum(IndicadorNomina)
+    @IsOptional()
+    indicador?: IndicadorNomina;
+
+    // Flag de Recurrencia (Para el Dashboard de Beneficios)
+    @IsBoolean()
+    @IsOptional()
+    esRecurrente?: boolean;
+
+    // 👇 ESTE ES EL QUE FALTABA:
+    // Flag de Automatización (Para rubros de ley con porcentaje)
+    @IsBoolean()
+    @IsOptional()
+    esAutomatico?: boolean;
+
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    montoEstimado?: number;
 }

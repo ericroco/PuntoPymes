@@ -20,6 +20,9 @@ import { ProductivityService, Sprint, Project } from '../../services/productivit
 import { AddProjectDialog } from '../../components/add-project-dialog/add-project-dialog';
 import { EmployeesService } from '../../services/employees';
 
+import { AuthService } from '../../../auth/services/auth';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
+
 @Component({
   selector: 'app-tasks-productivity',
   standalone: true,
@@ -53,6 +56,8 @@ export class TasksProductivity implements OnInit {
   private route = inject(ActivatedRoute);
   private snackBar = inject(MatSnackBar);
   private employeesService = inject(EmployeesService);
+  private authService = inject(AuthService);
+  P = PERMISSIONS;
 
   // Datos Reales
   projects: Project[] = [];
@@ -105,6 +110,9 @@ export class TasksProductivity implements OnInit {
     });
   }
 
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   // --- 2. Cargar Sprints del Proyecto Activo ---
   loadSprints(projectId: string) {
     this.isLoading = true;

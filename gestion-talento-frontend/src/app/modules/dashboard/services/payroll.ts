@@ -17,6 +17,14 @@ export interface PeriodoNomina {
   estado: string; // 👈 TIENE QUE LLAMARSE 'estado', no 'status'
 }
 
+export interface BenefitStat {
+  id: string;           // UUID del concepto
+  nombre: string;       // Ej: "Seguro Médico"
+  tipo: 'Ingreso' | 'Egreso';
+  assignedCount: number; // Cuántos empleados lo tienen
+  totalEmployees: number; // Total empleados activos en la empresa
+}
+
 export interface CreatePeriodoDto {
   fechaInicio: string; // YYYY-MM-DD
   fechaFin: string;    // YYYY-MM-DD
@@ -102,6 +110,11 @@ export class PayrollService {
   }
   getEmployeeNovedades(employeeId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/nomina/novedades/empleado/${employeeId}`);
+  }
+
+  getBenefitsStats(): Observable<BenefitStat[]> {
+    // Asumimos que tienes un endpoint específico para esto o filtros en 'concepts'
+    return this.http.get<BenefitStat[]>(`${this.apiUrl}/concepts/recurring-stats`);
   }
 
   // ==========================================

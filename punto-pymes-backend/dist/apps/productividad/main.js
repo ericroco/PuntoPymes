@@ -2599,52 +2599,99 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Beneficio = void 0;
+exports.Beneficio = exports.IndicadorNomina = exports.TipoBeneficio = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const beneficioAsignado_entity_1 = __webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts");
+var TipoBeneficio;
+(function (TipoBeneficio) {
+    TipoBeneficio["MONETARIO"] = "Monetario";
+    TipoBeneficio["NO_MONETARIO"] = "No Monetario";
+})(TipoBeneficio || (exports.TipoBeneficio = TipoBeneficio = {}));
+var IndicadorNomina;
+(function (IndicadorNomina) {
+    IndicadorNomina["INGRESO"] = "Ingreso";
+    IndicadorNomina["DESCUENTO"] = "Descuento";
+    IndicadorNomina["INFORMATIVO"] = "Informativo";
+})(IndicadorNomina || (exports.IndicadorNomina = IndicadorNomina = {}));
 let Beneficio = class Beneficio extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
+    tipo;
+    esAutomatico;
+    porcentajeCalculo;
+    indicador;
+    esRecurrente;
+    montoEstimado;
     empresa;
     empresaId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del beneficio\nMapea: string nombre \"Nombre beneficio\"" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del beneficio\nMapea: string descripcion \"Descripcion detallada\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa ofrece beneficio\"" }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").TipoBeneficio) }, esAutomatico: { required: true, type: () => Boolean }, porcentajeCalculo: { required: true, type: () => Number }, indicador: { required: true, enum: (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").IndicadorNomina) }, esRecurrente: { required: true, type: () => Boolean }, montoEstimado: { required: true, type: () => Number }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] } };
     }
 };
 exports.Beneficio = Beneficio;
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'varchar',
-        length: 255,
-        comment: 'Nombre del beneficio (Ej: Seguro Médico)',
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
     __metadata("design:type", String)
 ], Beneficio.prototype, "nombre", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'text',
-        comment: 'Descripción detallada del beneficio',
-    }),
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Beneficio.prototype, "descripcion", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.beneficios, {
-        nullable: false,
-        onDelete: 'CASCADE',
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: TipoBeneficio,
+        default: TipoBeneficio.MONETARIO
     }),
+    __metadata("design:type", String)
+], Beneficio.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, se aplica a TODOS automáticamente (Ej: IESS)'
+    }),
+    __metadata("design:type", Boolean)
+], Beneficio.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        nullable: true,
+        comment: 'Porcentaje a calcular sobre el sueldo (Ej: 0.0945 para 9.45%)'
+    }),
+    __metadata("design:type", Number)
+], Beneficio.prototype, "porcentajeCalculo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: IndicadorNomina,
+        default: IndicadorNomina.INGRESO
+    }),
+    __metadata("design:type", String)
+], Beneficio.prototype, "indicador", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], Beneficio.prototype, "esRecurrente", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Beneficio.prototype, "montoEstimado", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.beneficios, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
     __metadata("design:type", empresa_entity_1.Empresa)
 ], Beneficio.prototype, "empresa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) que ofrece este beneficio' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Beneficio.prototype, "empresaId", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => beneficioAsignado_entity_1.BeneficioAsignado, (beneficioAsignado) => beneficioAsignado.beneficio),
+    (0, typeorm_1.OneToMany)(() => beneficioAsignado_entity_1.BeneficioAsignado, (ba) => ba.beneficio),
     __metadata("design:type", Array)
 ], Beneficio.prototype, "asignaciones", void 0);
 exports.Beneficio = Beneficio = __decorate([
@@ -2680,22 +2727,43 @@ const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/d
 const beneficio_entity_1 = __webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts");
 let BeneficioAsignado = class BeneficioAsignado extends base_entity_1.BaseEntity {
     fechaAsignacion;
+    montoPersonalizado;
+    activo;
     empleado;
     empleadoId;
     beneficio;
     beneficioId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { fechaAsignacion: { required: true, type: () => Date, description: "Fecha de asignaci\u00F3n del beneficio al empleado\nMapea: date fechaAsignacion \"Fecha asignacion beneficio\"" }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String, description: "Mapea: string empleadoId FK \"Empleado recibe beneficio\"" }, beneficio: { required: true, type: () => (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio), description: "Relaci\u00F3n: La asignaci\u00F3n se refiere a UN Beneficio del cat\u00E1logo.\nonDelete: 'CASCADE' = Si el Beneficio es borrado del cat\u00E1logo\nde la empresa, tambi\u00E9n se borran las asignaciones existentes." }, beneficioId: { required: true, type: () => String, description: "Mapea: string beneficioId FK \"Beneficio otorgado\"" } };
+        return { fechaAsignacion: { required: true, type: () => Date, description: "Fecha de asignaci\u00F3n del beneficio al empleado" }, montoPersonalizado: { required: true, type: () => Number }, activo: { required: true, type: () => Boolean }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, beneficio: { required: true, type: () => (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio) }, beneficioId: { required: true, type: () => String } };
     }
 };
 exports.BeneficioAsignado = BeneficioAsignado;
 __decorate([
     (0, typeorm_1.Column)({
         type: 'date',
+        default: () => 'CURRENT_DATE',
         comment: 'Fecha de asignación del beneficio al empleado',
     }),
     __metadata("design:type", Date)
 ], BeneficioAsignado.prototype, "fechaAsignacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        nullable: true,
+        comment: 'Valor específico para este empleado (sobrescribe al general)'
+    }),
+    __metadata("design:type", Number)
+], BeneficioAsignado.prototype, "montoPersonalizado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: true,
+        comment: 'Si es false, el motor de nómina ignora esta asignación'
+    }),
+    __metadata("design:type", Boolean)
+], BeneficioAsignado.prototype, "activo", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.beneficiosAsignados, {
         nullable: false,
@@ -3065,10 +3133,12 @@ let ConceptoNomina = class ConceptoNomina extends base_entity_1.BaseEntity {
     tipo;
     esFijo;
     formula;
+    esAutomatico;
+    montoEstimado;
     empresa;
     empresaId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: true, type: () => Boolean }, formula: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
+        return { nombre: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: true, type: () => Boolean }, formula: { required: true, type: () => String }, esAutomatico: { required: true, type: () => Boolean }, montoEstimado: { required: true, type: () => Number, description: "Guarda el valor num\u00E9rico base.\nSi es autom\u00E1tico, aqu\u00ED va el porcentaje (ej: 0.0945).\nSi es una novedad fija, aqu\u00ED va el monto (ej: 50.00)." }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
     }
 };
 exports.ConceptoNomina = ConceptoNomina;
@@ -3092,7 +3162,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'boolean',
         default: false,
-        comment: 'Indica si es un monto fijo o calculado por fórmula',
+        comment: 'Indica si es un monto fijo o recurrente (Legacy/Compatibilidad)',
     }),
     __metadata("design:type", Boolean)
 ], ConceptoNomina.prototype, "esFijo", void 0);
@@ -3105,6 +3175,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], ConceptoNomina.prototype, "formula", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, el motor de nómina lo calcula para todos sin asignación manual'
+    }),
+    __metadata("design:type", Boolean)
+], ConceptoNomina.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        precision: 10,
+        scale: 4,
+        nullable: true,
+        comment: 'Valor numérico base o porcentaje'
+    }),
+    __metadata("design:type", Number)
+], ConceptoNomina.prototype, "montoEstimado", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, {
         nullable: false,

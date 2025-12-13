@@ -140,21 +140,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateBeneficioDto = exports.TipoBeneficio = void 0;
+exports.CreateBeneficioDto = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-var TipoBeneficio;
-(function (TipoBeneficio) {
-    TipoBeneficio["MONETARIO"] = "Monetario";
-    TipoBeneficio["NO_MONETARIO"] = "No Monetario";
-})(TipoBeneficio || (exports.TipoBeneficio = TipoBeneficio = {}));
+const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 class CreateBeneficioDto {
     nombre;
     descripcion;
     tipo;
+    indicador;
+    esRecurrente;
+    esAutomatico;
     montoEstimado;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, maxLength: 255 }, descripcion: { required: false, type: () => String, maxLength: 1000 }, tipo: { required: true, enum: (__webpack_require__(/*! ./create-beneficio.dto */ "./apps/nomina/src/dto/create-beneficio.dto.ts").TipoBeneficio) }, montoEstimado: { required: false, type: () => Number, minimum: 1 } };
+        return { nombre: { required: true, type: () => String, maxLength: 255 }, descripcion: { required: false, type: () => String, maxLength: 1000 }, tipo: { required: true, enum: (__webpack_require__(/*! ../../../../libs/database/src/entities/beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").TipoBeneficio) }, indicador: { required: false, enum: (__webpack_require__(/*! ../../../../libs/database/src/entities/beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").IndicadorNomina) }, esRecurrente: { required: false, type: () => Boolean }, esAutomatico: { required: false, type: () => Boolean }, montoEstimado: { required: false, type: () => Number, minimum: 1 } };
     }
 }
 exports.CreateBeneficioDto = CreateBeneficioDto;
@@ -171,10 +170,25 @@ __decorate([
     __metadata("design:type", String)
 ], CreateBeneficioDto.prototype, "descripcion", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(TipoBeneficio),
+    (0, class_validator_1.IsEnum)(database_1.TipoBeneficio),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateBeneficioDto.prototype, "tipo", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(database_1.IndicadorNomina),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateBeneficioDto.prototype, "indicador", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateBeneficioDto.prototype, "esRecurrente", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateBeneficioDto.prototype, "esAutomatico", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsPositive)(),
@@ -202,17 +216,33 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateConceptoNominaDto = void 0;
+exports.CreateConceptoNominaDto = exports.IndicadorNomina = exports.TipoRubroExtendido = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-const conceptoNomina_entity_1 = __webpack_require__(/*! ../../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
+var TipoRubroExtendido;
+(function (TipoRubroExtendido) {
+    TipoRubroExtendido["INGRESO"] = "Ingreso";
+    TipoRubroExtendido["EGRESO"] = "Egreso";
+    TipoRubroExtendido["MONETARIO"] = "Monetario";
+    TipoRubroExtendido["NO_MONETARIO"] = "No Monetario";
+})(TipoRubroExtendido || (exports.TipoRubroExtendido = TipoRubroExtendido = {}));
+var IndicadorNomina;
+(function (IndicadorNomina) {
+    IndicadorNomina["INGRESO"] = "Ingreso";
+    IndicadorNomina["DESCUENTO"] = "Descuento";
+})(IndicadorNomina || (exports.IndicadorNomina = IndicadorNomina = {}));
 class CreateConceptoNominaDto {
     nombre;
     tipo;
+    indicador;
+    esRecurrente;
     esFijo;
+    esAutomatico;
+    descripcion;
+    montoEstimado;
     formula;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, maxLength: 255 }, tipo: { required: true, enum: (__webpack_require__(/*! ../../../../libs/database/src/entities/conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: false, type: () => Boolean }, formula: { required: false, type: () => String } };
+        return { nombre: { required: true, type: () => String, maxLength: 255 }, tipo: { required: true, enum: (__webpack_require__(/*! ./create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts").TipoRubroExtendido) }, indicador: { required: false, enum: (__webpack_require__(/*! ./create-concepto-nomina.dto */ "./apps/nomina/src/dto/create-concepto-nomina.dto.ts").IndicadorNomina) }, esRecurrente: { required: false, type: () => Boolean }, esFijo: { required: false, type: () => Boolean }, esAutomatico: { required: false, type: () => Boolean }, descripcion: { required: false, type: () => String, maxLength: 1000 }, montoEstimado: { required: false, type: () => Number, minimum: 1 }, formula: { required: false, type: () => String } };
     }
 }
 exports.CreateConceptoNominaDto = CreateConceptoNominaDto;
@@ -223,15 +253,42 @@ __decorate([
     __metadata("design:type", String)
 ], CreateConceptoNominaDto.prototype, "nombre", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(conceptoNomina_entity_1.TipoRubro),
-    (0, class_validator_1.IsNotEmpty)({ message: 'El tipo (Ingreso/Egreso) es requerido.' }),
+    (0, class_validator_1.IsEnum)(TipoRubroExtendido),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateConceptoNominaDto.prototype, "tipo", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(IndicadorNomina),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "indicador", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateConceptoNominaDto.prototype, "esRecurrente", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateConceptoNominaDto.prototype, "esFijo", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateConceptoNominaDto.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(1000),
+    __metadata("design:type", String)
+], CreateConceptoNominaDto.prototype, "descripcion", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsPositive)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateConceptoNominaDto.prototype, "montoEstimado", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
@@ -2576,6 +2633,9 @@ let AppController = class AppController {
         const { empresaId } = req.user;
         return this.nominaService.send({ cmd: 'delete_beneficio' }, { empresaId: empresaId, beneficioId: beneficioId });
     }
+    getBeneficiosStats(req) {
+        return this.nominaService.send({ cmd: 'get_beneficios_stats' }, { empresaId: req.user.empresaId });
+    }
     getPeriodosNomina(req) {
         const { empresaId } = req.user;
         return this.nominaService.send({ cmd: 'get_periodos_nomina' }, { empresaId: empresaId });
@@ -3319,6 +3379,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "deleteBeneficio", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('beneficios.read'),
+    (0, common_1.Get)('concepts/recurring-stats'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getBeneficiosStats", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('nomina.periodos.read'),
@@ -4722,6 +4792,92 @@ exports.createMulterOptions = createMulterOptions;
 
 /***/ }),
 
+/***/ "./libs/database/src/database.module.ts":
+/*!**********************************************!*\
+  !*** ./libs/database/src/database.module.ts ***!
+  \**********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DatabaseModule = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const entities = __importStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"));
+const entityList = Object.values(entities).filter((entity) => typeof entity === 'function');
+let DatabaseModule = class DatabaseModule {
+};
+exports.DatabaseModule = DatabaseModule;
+exports.DatabaseModule = DatabaseModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [
+                    config_1.ConfigModule.forRoot({
+                        isGlobal: true,
+                        envFilePath: './.env',
+                    }),
+                ],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => ({
+                    type: 'postgres',
+                    host: configService.get('DB_POSTGRES_HOST'),
+                    port: configService.get('DB_POSTGRES_PORT'),
+                    username: configService.get('DB_POSTGRES_USER'),
+                    password: configService.get('DB_POSTGRES_PASSWORD'),
+                    database: configService.get('DB_POSTGRES_DATABASE'),
+                    entities: entityList,
+                    synchronize: true,
+                }),
+            }),
+        ],
+        exports: [typeorm_1.TypeOrmModule],
+    })
+], DatabaseModule);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/activo.entity.ts":
 /*!*****************************************************!*\
   !*** ./libs/database/src/entities/activo.entity.ts ***!
@@ -5116,52 +5272,99 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Beneficio = void 0;
+exports.Beneficio = exports.IndicadorNomina = exports.TipoBeneficio = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const beneficioAsignado_entity_1 = __webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts");
+var TipoBeneficio;
+(function (TipoBeneficio) {
+    TipoBeneficio["MONETARIO"] = "Monetario";
+    TipoBeneficio["NO_MONETARIO"] = "No Monetario";
+})(TipoBeneficio || (exports.TipoBeneficio = TipoBeneficio = {}));
+var IndicadorNomina;
+(function (IndicadorNomina) {
+    IndicadorNomina["INGRESO"] = "Ingreso";
+    IndicadorNomina["DESCUENTO"] = "Descuento";
+    IndicadorNomina["INFORMATIVO"] = "Informativo";
+})(IndicadorNomina || (exports.IndicadorNomina = IndicadorNomina = {}));
 let Beneficio = class Beneficio extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
+    tipo;
+    esAutomatico;
+    porcentajeCalculo;
+    indicador;
+    esRecurrente;
+    montoEstimado;
     empresa;
     empresaId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del beneficio\nMapea: string nombre \"Nombre beneficio\"" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del beneficio\nMapea: string descripcion \"Descripcion detallada\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa ofrece beneficio\"" }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").TipoBeneficio) }, esAutomatico: { required: true, type: () => Boolean }, porcentajeCalculo: { required: true, type: () => Number }, indicador: { required: true, enum: (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").IndicadorNomina) }, esRecurrente: { required: true, type: () => Boolean }, montoEstimado: { required: true, type: () => Number }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts").BeneficioAsignado)] } };
     }
 };
 exports.Beneficio = Beneficio;
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'varchar',
-        length: 255,
-        comment: 'Nombre del beneficio (Ej: Seguro Médico)',
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
     __metadata("design:type", String)
 ], Beneficio.prototype, "nombre", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'text',
-        comment: 'Descripción detallada del beneficio',
-    }),
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Beneficio.prototype, "descripcion", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.beneficios, {
-        nullable: false,
-        onDelete: 'CASCADE',
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: TipoBeneficio,
+        default: TipoBeneficio.MONETARIO
     }),
+    __metadata("design:type", String)
+], Beneficio.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, se aplica a TODOS automáticamente (Ej: IESS)'
+    }),
+    __metadata("design:type", Boolean)
+], Beneficio.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        nullable: true,
+        comment: 'Porcentaje a calcular sobre el sueldo (Ej: 0.0945 para 9.45%)'
+    }),
+    __metadata("design:type", Number)
+], Beneficio.prototype, "porcentajeCalculo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: IndicadorNomina,
+        default: IndicadorNomina.INGRESO
+    }),
+    __metadata("design:type", String)
+], Beneficio.prototype, "indicador", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], Beneficio.prototype, "esRecurrente", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Beneficio.prototype, "montoEstimado", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.beneficios, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
     __metadata("design:type", empresa_entity_1.Empresa)
 ], Beneficio.prototype, "empresa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) que ofrece este beneficio' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Beneficio.prototype, "empresaId", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => beneficioAsignado_entity_1.BeneficioAsignado, (beneficioAsignado) => beneficioAsignado.beneficio),
+    (0, typeorm_1.OneToMany)(() => beneficioAsignado_entity_1.BeneficioAsignado, (ba) => ba.beneficio),
     __metadata("design:type", Array)
 ], Beneficio.prototype, "asignaciones", void 0);
 exports.Beneficio = Beneficio = __decorate([
@@ -5197,22 +5400,43 @@ const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/d
 const beneficio_entity_1 = __webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts");
 let BeneficioAsignado = class BeneficioAsignado extends base_entity_1.BaseEntity {
     fechaAsignacion;
+    montoPersonalizado;
+    activo;
     empleado;
     empleadoId;
     beneficio;
     beneficioId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { fechaAsignacion: { required: true, type: () => Date, description: "Fecha de asignaci\u00F3n del beneficio al empleado\nMapea: date fechaAsignacion \"Fecha asignacion beneficio\"" }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String, description: "Mapea: string empleadoId FK \"Empleado recibe beneficio\"" }, beneficio: { required: true, type: () => (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio), description: "Relaci\u00F3n: La asignaci\u00F3n se refiere a UN Beneficio del cat\u00E1logo.\nonDelete: 'CASCADE' = Si el Beneficio es borrado del cat\u00E1logo\nde la empresa, tambi\u00E9n se borran las asignaciones existentes." }, beneficioId: { required: true, type: () => String, description: "Mapea: string beneficioId FK \"Beneficio otorgado\"" } };
+        return { fechaAsignacion: { required: true, type: () => Date, description: "Fecha de asignaci\u00F3n del beneficio al empleado" }, montoPersonalizado: { required: true, type: () => Number }, activo: { required: true, type: () => Boolean }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, beneficio: { required: true, type: () => (__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio) }, beneficioId: { required: true, type: () => String } };
     }
 };
 exports.BeneficioAsignado = BeneficioAsignado;
 __decorate([
     (0, typeorm_1.Column)({
         type: 'date',
+        default: () => 'CURRENT_DATE',
         comment: 'Fecha de asignación del beneficio al empleado',
     }),
     __metadata("design:type", Date)
 ], BeneficioAsignado.prototype, "fechaAsignacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        nullable: true,
+        comment: 'Valor específico para este empleado (sobrescribe al general)'
+    }),
+    __metadata("design:type", Number)
+], BeneficioAsignado.prototype, "montoPersonalizado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: true,
+        comment: 'Si es false, el motor de nómina ignora esta asignación'
+    }),
+    __metadata("design:type", Boolean)
+], BeneficioAsignado.prototype, "activo", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.beneficiosAsignados, {
         nullable: false,
@@ -5582,10 +5806,12 @@ let ConceptoNomina = class ConceptoNomina extends base_entity_1.BaseEntity {
     tipo;
     esFijo;
     formula;
+    esAutomatico;
+    montoEstimado;
     empresa;
     empresaId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: true, type: () => Boolean }, formula: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
+        return { nombre: { required: true, type: () => String }, tipo: { required: true, enum: (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").TipoRubro) }, esFijo: { required: true, type: () => Boolean }, formula: { required: true, type: () => String }, esAutomatico: { required: true, type: () => Boolean }, montoEstimado: { required: true, type: () => Number, description: "Guarda el valor num\u00E9rico base.\nSi es autom\u00E1tico, aqu\u00ED va el porcentaje (ej: 0.0945).\nSi es una novedad fija, aqu\u00ED va el monto (ej: 50.00)." }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
     }
 };
 exports.ConceptoNomina = ConceptoNomina;
@@ -5609,7 +5835,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'boolean',
         default: false,
-        comment: 'Indica si es un monto fijo o calculado por fórmula',
+        comment: 'Indica si es un monto fijo o recurrente (Legacy/Compatibilidad)',
     }),
     __metadata("design:type", Boolean)
 ], ConceptoNomina.prototype, "esFijo", void 0);
@@ -5622,6 +5848,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], ConceptoNomina.prototype, "formula", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+        comment: 'Si es true, el motor de nómina lo calcula para todos sin asignación manual'
+    }),
+    __metadata("design:type", Boolean)
+], ConceptoNomina.prototype, "esAutomatico", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'decimal',
+        precision: 10,
+        scale: 4,
+        nullable: true,
+        comment: 'Valor numérico base o porcentaje'
+    }),
+    __metadata("design:type", Number)
+], ConceptoNomina.prototype, "montoEstimado", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, {
         nullable: false,
@@ -6512,6 +6756,67 @@ exports.Evaluacion = Evaluacion = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/index.ts":
+/*!*********************************************!*\
+  !*** ./libs/database/src/entities/index.ts ***!
+  \*********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./usuario.entity */ "./libs/database/src/entities/usuario.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./contrato.entity */ "./libs/database/src/entities/contrato.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./nominaEmpleado.entity */ "./libs/database/src/entities/nominaEmpleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./rubroNomina.entity */ "./libs/database/src/entities/rubroNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./beneficioAsignado.entity */ "./libs/database/src/entities/beneficioAsignado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./asignacionTarea.entity */ "./libs/database/src/entities/asignacionTarea.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./timesheet.entity */ "./libs/database/src/entities/timesheet.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./objetivo.entity */ "./libs/database/src/entities/objetivo.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./evaluacion.entity */ "./libs/database/src/entities/evaluacion.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./registroAsistencia.entity */ "./libs/database/src/entities/registroAsistencia.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/entities/itemGasto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts"), exports);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/inscripcionCurso.entity.ts":
 /*!***************************************************************!*\
   !*** ./libs/database/src/entities/inscripcionCurso.entity.ts ***!
@@ -6806,6 +7111,107 @@ exports.NominaEmpleado = NominaEmpleado = __decorate([
     (0, typeorm_1.Index)(['empleadoId']),
     (0, typeorm_1.Unique)(['periodoId', 'empleadoId'])
 ], NominaEmpleado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/novedadNomina.entity.ts":
+/*!************************************************************!*\
+  !*** ./libs/database/src/entities/novedadNomina.entity.ts ***!
+  \************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NovedadNomina = exports.EstadoNovedad = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const conceptoNomina_entity_1 = __webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+var EstadoNovedad;
+(function (EstadoNovedad) {
+    EstadoNovedad["PENDIENTE"] = "Pendiente";
+    EstadoNovedad["PROCESADA"] = "Procesada";
+    EstadoNovedad["CANCELADA"] = "Cancelada";
+})(EstadoNovedad || (exports.EstadoNovedad = EstadoNovedad = {}));
+let NovedadNomina = class NovedadNomina extends base_entity_1.BaseEntity {
+    valor;
+    fecha;
+    observacion;
+    estado;
+    empleado;
+    empleadoId;
+    concepto;
+    conceptoId;
+    empresa;
+    empresaId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { valor: { required: true, type: () => Number }, fecha: { required: true, type: () => Date }, observacion: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts").EstadoNovedad) }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, concepto: { required: true, type: () => (__webpack_require__(/*! ./conceptoNomina.entity */ "./libs/database/src/entities/conceptoNomina.entity.ts").ConceptoNomina) }, conceptoId: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String } };
+    }
+};
+exports.NovedadNomina = NovedadNomina;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, comment: 'Monetary value' }),
+    __metadata("design:type", Number)
+], NovedadNomina.prototype, "valor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Date of occurrence' }),
+    __metadata("design:type", Date)
+], NovedadNomina.prototype, "fecha", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "observacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: EstadoNovedad,
+        default: EstadoNovedad.PENDIENTE
+    }),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], NovedadNomina.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => conceptoNomina_entity_1.ConceptoNomina, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'conceptoId' }),
+    __metadata("design:type", conceptoNomina_entity_1.ConceptoNomina)
+], NovedadNomina.prototype, "concepto", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "conceptoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", empresa_entity_1.Empresa)
+], NovedadNomina.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], NovedadNomina.prototype, "empresaId", void 0);
+exports.NovedadNomina = NovedadNomina = __decorate([
+    (0, typeorm_1.Entity)({ name: 'novedades_nomina' }),
+    (0, typeorm_1.Index)(['empresaId', 'estado'])
+], NovedadNomina);
 
 
 /***/ }),
@@ -7492,6 +7898,93 @@ exports.RubroNomina = RubroNomina = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/solicitudVacaciones.entity.ts":
+/*!******************************************************************!*\
+  !*** ./libs/database/src/entities/solicitudVacaciones.entity.ts ***!
+  \******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SolicitudVacaciones = exports.EstadoSolicitud = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+var EstadoSolicitud;
+(function (EstadoSolicitud) {
+    EstadoSolicitud["PENDIENTE"] = "PENDIENTE";
+    EstadoSolicitud["APROBADA"] = "APROBADA";
+    EstadoSolicitud["RECHAZADA"] = "RECHAZADA";
+})(EstadoSolicitud || (exports.EstadoSolicitud = EstadoSolicitud = {}));
+let SolicitudVacaciones = class SolicitudVacaciones extends base_entity_1.BaseEntity {
+    fechaInicio;
+    fechaFin;
+    diasSolicitados;
+    estado;
+    comentario;
+    respuestaAdmin;
+    empleado;
+    empleadoId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+    }
+};
+exports.SolicitudVacaciones = SolicitudVacaciones;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de inicio de las vacaciones' }),
+    __metadata("design:type", Date)
+], SolicitudVacaciones.prototype, "fechaInicio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de fin de las vacaciones' }),
+    __metadata("design:type", Date)
+], SolicitudVacaciones.prototype, "fechaFin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', comment: 'Cantidad de días solicitados' }),
+    __metadata("design:type", Number)
+], SolicitudVacaciones.prototype, "diasSolicitados", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        default: EstadoSolicitud.PENDIENTE
+    }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Motivo o comentario del empleado' }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "comentario", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Respuesta del aprobador' }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "respuestaAdmin", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], SolicitudVacaciones.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "empleadoId", void 0);
+exports.SolicitudVacaciones = SolicitudVacaciones = __decorate([
+    (0, typeorm_1.Entity)({ name: 'solicitudes_vacaciones' }),
+    (0, typeorm_1.Index)(['empleadoId'])
+], SolicitudVacaciones);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/sprint.entity.ts":
 /*!*****************************************************!*\
   !*** ./libs/database/src/entities/sprint.entity.ts ***!
@@ -8103,6 +8596,34 @@ exports.Vacante = Vacante = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/index.ts":
+/*!************************************!*\
+  !*** ./libs/database/src/index.ts ***!
+  \************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database.module */ "./libs/database/src/database.module.ts"), exports);
+__exportStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"), exports);
+
+
+/***/ }),
+
 /***/ "@nestjs/common":
 /*!*********************************!*\
   !*** external "@nestjs/common" ***!
@@ -8200,6 +8721,16 @@ module.exports = require("@nestjs/serve-static");
 /***/ ((module) => {
 
 module.exports = require("@nestjs/swagger");
+
+/***/ }),
+
+/***/ "@nestjs/typeorm":
+/*!**********************************!*\
+  !*** external "@nestjs/typeorm" ***!
+  \**********************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs/typeorm");
 
 /***/ }),
 

@@ -23,6 +23,7 @@ import { EmployeesService, Employee, EmployeeDocument } from '../../services/emp
 import { PerformanceService } from '../../services/performance';
 import { PayrollService } from '../../services/payroll';
 import { AttendanceService } from '../../services/attendance';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
 
 
 // Interfaces Locales para datos aún no conectados al backend
@@ -51,6 +52,9 @@ export class EmployeeProfile implements OnInit {
   private attendanceService = inject(AttendanceService);
   private cdr = inject(ChangeDetectorRef);
 
+  P = PERMISSIONS; // Exponer permisos al HTML
+  currentUserId: string = ''; // ID del usuario logueado (NO del empleado que estamos viendo)
+
   viewingAsAdmin: boolean = true;
   evaluationNotes: string = '';
   recommendation: string = 'Mantener Posición';
@@ -75,6 +79,7 @@ export class EmployeeProfile implements OnInit {
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       const currentUser = this.authService.getUser();
+      this.currentUserId = currentUser?.empleadoId || '';
 
       if (idParam) {
         // CASO 1: Viendo un empleado específico (Ruta /employee/:id)
@@ -98,6 +103,27 @@ export class EmployeeProfile implements OnInit {
     });
   }
 
+  // 1. Helper de Permisos
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
+
+  // 2. Helper de Propiedad: ¿Es mi propio perfil?
+  get isMyProfile(): boolean {
+    return this.employee?.id === this.currentUserId;
+  }
+
+  // 3. Helper Híbrido: ¿Puedo editar datos personales?
+  // Puedo si: Soy yo mismo O tengo permiso de editar empleados
+  get canEditContact(): boolean {
+    return this.isMyProfile || this.can(this.P.EMPLOYEES_EDIT);
+  }
+
+  // 4. Helper Admin Puro: ¿Puedo editar datos sensibles (Cargo, Sueldo)?
+  // Solo si tengo el permiso explícito. (Ser yo mismo NO me da derecho a subirme el sueldo)
+  get canEditSensitive(): boolean {
+    return this.can(this.P.EMPLOYEES_EDIT);
+  }
   // Cargar datos reales del Backend
   loadEmployeeData(id: string): void {
     this.isLoading = true;
@@ -256,7 +282,7 @@ export class EmployeeProfile implements OnInit {
 
     const dialogRef = this.dialog.open(EditEmployeeDialog, {
       width: '600px',
-      data: { employeeData: { ...this.employee } }
+      data: { employee: { ...this.employee } }
     });
 
     dialogRef.afterClosed().subscribe(updatedData => {

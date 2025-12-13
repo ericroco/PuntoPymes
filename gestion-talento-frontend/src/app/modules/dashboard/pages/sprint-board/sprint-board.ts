@@ -21,6 +21,7 @@ import { AuthService } from '../../../auth/services/auth';
 import { ProductivityService, Task, Sprint } from '../../services/productivity';
 import { EmployeesService, Employee } from '../../services/employees';
 import { PerformanceService } from '../../services/performance';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
 
 // Interfaces Locales
 interface Goal { id: string; title: string; description: string; progress: number; status: string; dueDate: string; }
@@ -66,6 +67,7 @@ export class SprintBoard implements OnInit {
   private performanceService = inject(PerformanceService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  P = PERMISSIONS; // 👇 EXPONER CONSTANTES
 
   // Datos Reales
   myGoals: Goal[] = []; // Objetivos del usuario (para vincular)
@@ -168,6 +170,9 @@ export class SprintBoard implements OnInit {
     }
   }
 
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   // --- Flujo de Completar Tarea ---
   handleTaskCompletion(task: Task, event: CdkDragDrop<Task[]>) {
     const dialogRef = this.dialog.open(UploadEvidenceDialog, {

@@ -12,6 +12,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header';
 import { AddRoleDialog } from '../../../components/add-role-dialog/add-role-dialog';
 import { RolesService, Rol } from '../../../services/roles';
+import { AuthService } from '../../../../auth/services/auth';
+import { PERMISSIONS } from '../../../../../shared/constants/permissions';
 
 @Component({
   selector: 'app-role-settings',
@@ -34,12 +36,18 @@ export class RoleSettings implements OnInit {
   private rolesService = inject(RolesService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  P = PERMISSIONS;
 
   roles: Rol[] = [];
   isLoading = true;
 
   ngOnInit(): void {
     this.loadRoles();
+  }
+
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
   }
 
   loadRoles() {

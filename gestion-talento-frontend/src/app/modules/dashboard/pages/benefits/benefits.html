@@ -11,12 +11,22 @@
     Los tipos de beneficios se crean en la Configuración de Nómina.
   </p>
 
-  <div class="benefits-grid" @listAnimation>
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Cargando estadísticas de beneficios...</p>
+  </div>
+
+  <div class="benefits-grid" @listAnimation *ngIf="!isLoading">
+
     <mat-card *ngFor="let benefit of availableBenefits" class="benefit-card report-container">
 
       <mat-card-header>
-        <mat-card-title>{{ benefit.name }}</mat-card-title>
-        <mat-card-subtitle>{{ benefit.type }} Recurrente</mat-card-subtitle>
+        <div mat-card-avatar class="benefit-icon"
+          [ngClass]="benefit.tipo === 'Ingreso' ? 'icon-income' : 'icon-expense'">
+          <mat-icon>{{ benefit.tipo === 'Ingreso' ? 'savings' : 'health_and_safety' }}</mat-icon>
+        </div>
+        <mat-card-title>{{ benefit.nombre }}</mat-card-title>
+        <mat-card-subtitle>{{ benefit.tipo }} Recurrente</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
@@ -27,22 +37,25 @@
 
         <div class="progress-area">
           <span class="progress-text">{{ getAdoptionRate(benefit) | number:'1.0-0' }}% de Adopción</span>
-          <mat-progress-bar mode="determinate" [value]="getAdoptionRate(benefit)"></mat-progress-bar>
+          <mat-progress-bar mode="determinate" [color]="benefit.tipo === 'Ingreso' ? 'primary' : 'warn'"
+            [value]="getAdoptionRate(benefit)">
+          </mat-progress-bar>
         </div>
       </mat-card-content>
 
       <mat-card-actions align="end" class="card-actions">
-        <button mat-button (click)="goToViewAssigned(benefit)">Ver Asignados</button>
-        <button mat-flat-button color="primary" [routerLink]="['/dashboard/benefits/assign', benefit.id]">
-          Asignar / Gestionar
+        <button mat-button color="primary" [routerLink]="['/dashboard/benefits/assign', benefit.id]">
+          Gestionar Asignaciones
         </button>
       </mat-card-actions>
 
     </mat-card>
   </div>
 
-  <div *ngIf="availableBenefits.length === 0" class="no-data-placeholder">
-    No hay beneficios recurrentes definidos. Ve a Configuración > Nómina para crearlos.
+  <div *ngIf="!isLoading && availableBenefits.length === 0" class="no-data-placeholder">
+    <mat-icon>money_off</mat-icon>
+    <h3>No hay beneficios recurrentes activos.</h3>
+    <p>Ve a Configuración > Nómina y crea conceptos marcados como "Recurrente".</p>
   </div>
 
 </div>

@@ -7,17 +7,19 @@
 
     <div class="header-actions">
 
-      <button class="btn btn-secondary" [disabled]="selection.isEmpty()" (click)="openBulkAddItemDialog()">
+      <button *ngIf="can(P.PAYROLL_PROCESS)" class="btn btn-secondary" [disabled]="selection.isEmpty()"
+        (click)="openBulkAddItemDialog()">
         <mat-icon>library_add</mat-icon>
         <span>Registrar Novedad ({{ selection.selected.length }})</span>
       </button>
 
-      <button class="btn btn-primary" (click)="openProcessDialog()">
+      <button *ngIf="can(P.PAYROLL_PROCESS)" class="btn btn-primary" (click)="openProcessDialog()">
         <mat-icon>settings_suggest</mat-icon>
         Generar Rol
       </button>
 
-      <button class="btn btn-secondary" [matMenuTriggerFor]="menuExport" [disabled]="!lastProcessedPeriodId">
+      <button *ngIf="can(P.PAYROLL_EXPORT)" class="btn btn-secondary" [matMenuTriggerFor]="menuExport"
+        [disabled]="!lastProcessedPeriodId">
         <mat-icon>file_download</mat-icon> Exportar Reportes
       </button>
 
@@ -66,7 +68,9 @@
           <th>Identificación</th>
           <th>Cargo</th>
           <th>Departamento</th>
+
           <th>Salario Base</th>
+
           <th>Fecha Ingreso</th>
           <th class="actions">Acciones</th>
         </tr>
@@ -85,14 +89,18 @@
           <td>{{ employee.nroIdentificacion }}</td>
           <td>{{ employee.role }}</td>
           <td>{{ employee.department }}</td>
+
           <td class="salary">{{ employee.salary | currency:'USD':'symbol':'1.2-2' }}</td>
+
           <td>{{ employee.lastRevision | date:'dd MMM, yyyy' }}</td>
 
           <td class="actions">
             <button class="btn-icon" [routerLink]="['/dashboard/employee', employee.id]" matTooltip="Ver Perfil">
               <mat-icon>visibility</mat-icon>
             </button>
-            <button class="btn-icon btn-primary" (click)="openAddItemDialog(employee)" matTooltip="Agregar Novedad">
+
+            <button *ngIf="can(P.PAYROLL_PROCESS)" class="btn-icon btn-primary" (click)="openAddItemDialog(employee)"
+              matTooltip="Agregar Novedad">
               <mat-icon>add_circle</mat-icon>
             </button>
           </td>
@@ -102,7 +110,9 @@
       <tfoot *ngIf="filteredEmployees.length > 0">
         <tr>
           <td [colSpan]="5" class="total-label">Total Nómina Mensual (Proyección):</td>
-          <td class="total-value">{{ totals.totalSalary | currency:'USD':'symbol':'1.2-2' }}</td>
+          <td class="total-value">
+            {{ totals.totalSalary | currency:'USD':'symbol':'1.2-2' }}
+          </td>
           <td [colSpan]="2">({{ totals.count }} empleados)</td>
         </tr>
       </tfoot>

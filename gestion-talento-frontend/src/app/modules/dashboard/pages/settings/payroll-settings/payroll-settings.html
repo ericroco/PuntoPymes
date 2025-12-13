@@ -153,8 +153,7 @@
 
           <mat-form-field appearance="outline" class="item-name-field">
             <mat-label>Nombre del Concepto</mat-label>
-            <input matInput [(ngModel)]="newItemName" placeholder="Ej: Bono de Navidad"
-              (keyup.enter)="addPayrollItem()">
+            <input matInput [(ngModel)]="newItemName" placeholder="Ej: Seguro Médico">
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="item-type-field">
@@ -167,17 +166,24 @@
 
           <div class="checkbox-wrapper">
             <mat-checkbox [(ngModel)]="newItemIsRecurring" color="primary">
-              Es Fijo
+              Es Recurrente / Fijo
             </mat-checkbox>
-            <mat-icon class="info-icon"
-              matTooltip="Marca esto si se aplica automáticamente todos los meses (Ej: IESS).">help_outline</mat-icon>
           </div>
 
-          <mat-form-field appearance="outline" class="item-percent-field" *ngIf="newItemIsRecurring">
-            <mat-label>Porcentaje (%)</mat-label>
-            <input matInput type="number" [(ngModel)]="newItemFormula" placeholder="Ej: 9.45" min="0" max="100">
-            <span matSuffix>%</span>
-            <mat-hint>Del Salario Base</mat-hint>
+          <mat-form-field appearance="outline" *ngIf="newItemIsRecurring" style="width: 140px;">
+            <mat-label>Cálculo</mat-label>
+            <mat-select [(ngModel)]="calculationType">
+              <mat-option value="fijo">Monto Fijo ($)</mat-option>
+              <mat-option value="porcentaje">Porcentaje (%)</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" *ngIf="newItemIsRecurring" style="width: 120px;">
+            <mat-label>{{ calculationType === 'fijo' ? 'Monto' : 'Porcentaje' }}</mat-label>
+            <input matInput type="number" [(ngModel)]="newItemValue" min="0">
+
+            <span matPrefix *ngIf="calculationType === 'fijo'">$ &nbsp;</span>
+            <span matSuffix *ngIf="calculationType === 'porcentaje'">%</span>
           </mat-form-field>
 
           <button mat-flat-button color="primary" (click)="addPayrollItem()" [disabled]="!newItemName" class="btn-add">
