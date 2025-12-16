@@ -1517,28 +1517,51 @@ const class_validator_1 = __webpack_require__(/*! class-validator */ "class-vali
 class CreateCursoDto {
     titulo;
     descripcion;
-    duracionHoras;
+    duration;
+    instructor;
+    category;
+    imageUrl;
+    isActive;
     static _OPENAPI_METADATA_FACTORY() {
-        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, duracionHoras: { required: false, type: () => Number, minimum: 1 } };
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, duration: { required: true, type: () => String }, instructor: { required: true, type: () => String }, category: { required: true, type: () => String }, imageUrl: { required: false, type: () => String }, isActive: { required: false, type: () => Boolean } };
     }
 }
 exports.CreateCursoDto = CreateCursoDto;
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'El título es obligatorio' }),
     __metadata("design:type", String)
 ], CreateCursoDto.prototype, "titulo", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'La descripción es obligatoria' }),
     __metadata("design:type", String)
 ], CreateCursoDto.prototype, "descripcion", void 0);
 __decorate([
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'La duración es obligatoria' }),
+    __metadata("design:type", String)
+], CreateCursoDto.prototype, "duration", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'El instructor es obligatorio' }),
+    __metadata("design:type", String)
+], CreateCursoDto.prototype, "instructor", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'La categoría es obligatoria' }),
+    __metadata("design:type", String)
+], CreateCursoDto.prototype, "category", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateCursoDto.prototype, "duracionHoras", void 0);
+    __metadata("design:type", String)
+], CreateCursoDto.prototype, "imageUrl", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateCursoDto.prototype, "isActive", void 0);
 
 
 /***/ }),
@@ -2625,7 +2648,7 @@ let AppController = class AppController {
         const { empresaId } = req.user;
         return this.nominaService.send({ cmd: 'create_beneficio' }, { empresaId: empresaId, dto: dto });
     }
-    updateBeneficio(req, beneficioId, dto, NT) {
+    updateBeneficio(req, beneficioId, dto) {
         const { empresaId } = req.user;
         return this.nominaService.send({ cmd: 'update_beneficio' }, { empresaId: empresaId, beneficioId: beneficioId, dto: dto });
     }
@@ -2635,6 +2658,19 @@ let AppController = class AppController {
     }
     getBeneficiosStats(req) {
         return this.nominaService.send({ cmd: 'get_beneficios_stats' }, { empresaId: req.user.empresaId });
+    }
+    getBeneficioById(req, id) {
+        return this.nominaService.send({ cmd: 'get_beneficio_by_id' }, { id, empresaId: req.user.empresaId });
+    }
+    getBeneficioAssignments(req, id) {
+        return this.nominaService.send({ cmd: 'get_beneficio_assignments' }, { beneficioId: id, empresaId: req.user.empresaId });
+    }
+    updateBeneficioAssignments(req, id, body) {
+        return this.nominaService.send({ cmd: 'update_beneficio_assignments' }, {
+            beneficioId: id,
+            empresaId: req.user.empresaId,
+            employeeIds: body.employeeIds
+        });
     }
     getPeriodosNomina(req) {
         const { empresaId } = req.user;
@@ -2811,6 +2847,10 @@ let AppController = class AppController {
     deleteInscripcion(req, inscripcionId) {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'delete_inscripcion' }, { empresaId, inscripcionId });
+    }
+    getMisCursos(req) {
+        const { empresaId, empleadoId } = req.user;
+        return this.productividadService.send({ cmd: 'get_mis_cursos' }, { empresaId, empleadoId });
     }
     checkIn(req, dto) {
         const { empresaId } = req.user;
@@ -3365,7 +3405,7 @@ __decorate([
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, update_beneficio_dto_1.UpdateBeneficioDto, Object]),
+    __metadata("design:paramtypes", [Object, String, update_beneficio_dto_1.UpdateBeneficioDto]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "updateBeneficio", null);
 __decorate([
@@ -3389,6 +3429,40 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getBeneficiosStats", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('beneficios.read'),
+    (0, common_1.Get)('beneficios/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getBeneficioById", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('beneficios.read'),
+    (0, common_1.Get)('beneficios/:id/asignaciones'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getBeneficioAssignments", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('beneficios.update'),
+    (0, common_1.Post)('beneficios/:id/asignaciones'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "updateBeneficioAssignments", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('nomina.periodos.read'),
@@ -3909,6 +3983,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "deleteInscripcion", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('capacitacion/mis-cursos'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getMisCursos", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('asistencia.registro'),
@@ -6015,48 +6098,54 @@ const inscripcionCurso_entity_1 = __webpack_require__(/*! ./inscripcionCurso.ent
 let Curso = class Curso extends base_entity_1.BaseEntity {
     titulo;
     descripcion;
-    duracionHoras;
+    duration;
+    instructor;
+    category;
+    imageUrl;
+    isActive;
     empresa;
     empresaId;
     inscripciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { titulo: { required: true, type: () => String, description: "T\u00EDtulo del curso de capacitaci\u00F3n\nMapea: string titulo \"Titulo curso capacitacion\"" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n del contenido del curso\nMapea: string descripcion \"Descripcion contenido curso\"" }, duracionHoras: { required: true, type: () => Number, description: "Duraci\u00F3n total estimada en horas\nMapea: int duracionHoras \"Duracion total horas\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa ofrece curso\"" }, inscripciones: { required: true, type: () => [(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").InscripcionCurso)] } };
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, duration: { required: true, type: () => String }, instructor: { required: true, type: () => String }, category: { required: true, type: () => String }, imageUrl: { required: true, type: () => String }, isActive: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, inscripciones: { required: true, type: () => [(__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").InscripcionCurso)] } };
     }
 };
 exports.Curso = Curso;
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'varchar',
-        length: 255,
-        comment: 'Título del curso de capacitación',
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, comment: 'Título del curso' }),
     __metadata("design:type", String)
 ], Curso.prototype, "titulo", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'text',
-        comment: 'Descripción del contenido del curso',
-    }),
+    (0, typeorm_1.Column)({ type: 'text', comment: 'Descripción del contenido' }),
     __metadata("design:type", String)
 ], Curso.prototype, "descripcion", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'int',
-        nullable: true,
-        comment: 'Duración total estimada en horas',
-    }),
-    __metadata("design:type", Number)
-], Curso.prototype, "duracionHoras", void 0);
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, comment: 'Ej: 10 horas, 30 min' }),
+    __metadata("design:type", String)
+], Curso.prototype, "duration", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.cursos, {
-        nullable: false,
-        onDelete: 'CASCADE',
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 150, comment: 'Nombre del instructor' }),
+    __metadata("design:type", String)
+], Curso.prototype, "instructor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, comment: 'Tecnología, Ventas, etc.' }),
+    __metadata("design:type", String)
+], Curso.prototype, "category", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'URL de la imagen' }),
+    __metadata("design:type", String)
+], Curso.prototype, "imageUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: true }),
+    __metadata("design:type", Boolean)
+], Curso.prototype, "isActive", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, (empresa) => empresa.cursos, { nullable: false, onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
     __metadata("design:type", empresa_entity_1.Empresa)
 ], Curso.prototype, "empresa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID de la Empresa (Tenant) que ofrece el curso' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Curso.prototype, "empresaId", void 0);
 __decorate([
@@ -6842,13 +6931,14 @@ const curso_entity_1 = __webpack_require__(/*! ./curso.entity */ "./libs/databas
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 var EstadoInscripcion;
 (function (EstadoInscripcion) {
-    EstadoInscripcion["INSCRITO"] = "INSCRITO";
-    EstadoInscripcion["EN_PROGRESO"] = "EN_PROGRESO";
-    EstadoInscripcion["COMPLETADO"] = "COMPLETADO";
-    EstadoInscripcion["CANCELADO"] = "CANCELADO";
+    EstadoInscripcion["INSCRITO"] = "Inscrito";
+    EstadoInscripcion["EN_PROGRESO"] = "En Progreso";
+    EstadoInscripcion["COMPLETADO"] = "Completado";
+    EstadoInscripcion["CANCELADO"] = "Cancelado";
 })(EstadoInscripcion || (exports.EstadoInscripcion = EstadoInscripcion = {}));
 let InscripcionCurso = class InscripcionCurso extends base_entity_1.BaseEntity {
     estado;
+    progreso;
     calificacion;
     fechaInscripcion;
     fechaCompletado;
@@ -6857,7 +6947,7 @@ let InscripcionCurso = class InscripcionCurso extends base_entity_1.BaseEntity {
     empleado;
     empleadoId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { estado: { required: true, description: "Estado del progreso. Usa el Enum para consistencia.", enum: (__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").EstadoInscripcion) }, calificacion: { required: true, type: () => Number }, fechaInscripcion: { required: true, type: () => Date, description: "Fecha de inscripci\u00F3n.\nDefault: Se llena sola con la fecha actual." }, fechaCompletado: { required: true, type: () => Date, description: "Fecha en que complet\u00F3 el curso.\nImportante para reportes y certificados." }, curso: { required: true, type: () => (__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso) }, cursoId: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+        return { estado: { required: true, description: "Estado del progreso.", enum: (__webpack_require__(/*! ./inscripcionCurso.entity */ "./libs/database/src/entities/inscripcionCurso.entity.ts").EstadoInscripcion) }, progreso: { required: true, type: () => Number, description: "\uD83D\uDC47 NUEVO CAMPO IMPORTANTE:\nPorcentaje de avance (0 a 100).\nNecesario para la barra de progreso del Frontend." }, calificacion: { required: true, type: () => Number }, fechaInscripcion: { required: true, type: () => Date, description: "Fecha de inscripci\u00F3n.\nUsamos CreateDateColumn para que guarde FECHA Y HORA autom\u00E1ticamente." }, fechaCompletado: { required: true, type: () => Date, description: "Fecha en que complet\u00F3 el curso." }, curso: { required: true, type: () => (__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso) }, cursoId: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
     }
 };
 exports.InscripcionCurso = InscripcionCurso;
@@ -6866,10 +6956,18 @@ __decorate([
         type: 'varchar',
         length: 50,
         default: EstadoInscripcion.INSCRITO,
-        comment: 'Estado del progreso (INSCRITO, COMPLETADO...)',
+        comment: 'Estado del progreso (Inscrito, Completado...)',
     }),
     __metadata("design:type", String)
 ], InscripcionCurso.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'int',
+        default: 0,
+        comment: 'Porcentaje de avance del curso (0-100)',
+    }),
+    __metadata("design:type", Number)
+], InscripcionCurso.prototype, "progreso", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
@@ -6879,18 +6977,17 @@ __decorate([
     __metadata("design:type", Number)
 ], InscripcionCurso.prototype, "calificacion", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'date',
-        default: () => 'CURRENT_DATE',
-        comment: 'Fecha de inscripción al curso',
+    (0, typeorm_1.CreateDateColumn)({
+        type: 'timestamp',
+        comment: 'Fecha y hora de inscripción al curso',
     }),
     __metadata("design:type", Date)
 ], InscripcionCurso.prototype, "fechaInscripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'date',
+        type: 'timestamp',
         nullable: true,
-        comment: 'Fecha de finalización del curso',
+        comment: 'Fecha y hora de finalización del curso',
     }),
     __metadata("design:type", Date)
 ], InscripcionCurso.prototype, "fechaCompletado", void 0);
@@ -6903,11 +7000,11 @@ __decorate([
     __metadata("design:type", curso_entity_1.Curso)
 ], InscripcionCurso.prototype, "curso", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID del Curso al que se inscribió' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], InscripcionCurso.prototype, "cursoId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, (empleado) => empleado.inscripcionesCursos, {
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado, {
         nullable: false,
         onDelete: 'CASCADE',
     }),
@@ -6915,7 +7012,7 @@ __decorate([
     __metadata("design:type", empleado_entity_1.Empleado)
 ], InscripcionCurso.prototype, "empleado", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID del Empleado (estudiante)' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], InscripcionCurso.prototype, "empleadoId", void 0);
 exports.InscripcionCurso = InscripcionCurso = __decorate([

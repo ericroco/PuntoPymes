@@ -271,4 +271,9 @@ export class AuthService {
       document.documentElement.style.setProperty('--color-primary', branding.primaryColor);
     }
   }
+
+  getCurrentUserId(): string {
+    const user = this.getUser();
+    return user?.empleadoId || '';
+  }
 }

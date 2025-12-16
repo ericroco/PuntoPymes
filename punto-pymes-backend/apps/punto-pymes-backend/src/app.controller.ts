@@ -629,8 +629,7 @@ export class AppController {
   updateBeneficio(
     @Request() req,
     @Param('id') beneficioId: string,
-    @Body() dto: UpdateBeneficioDto,
-    NT) {
+    @Body() dto: UpdateBeneficioDto,) {
     const { empresaId } = req.user;
     return this.nominaService.send(
       { cmd: 'update_beneficio' },
@@ -659,6 +658,47 @@ export class AppController {
     return this.nominaService.send(
       { cmd: 'get_beneficios_stats' },
       { empresaId: req.user.empresaId },
+    );
+  }
+
+  // 1. Ver detalle del beneficio
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.read')
+  @Get('beneficios/:id')
+  getBeneficioById(@Request() req, @Param('id') id: string) {
+    return this.nominaService.send(
+      { cmd: 'get_beneficio_by_id' },
+      { id, empresaId: req.user.empresaId }
+    );
+  }
+
+  // 2. Ver asignaciones
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.read')
+  @Get('beneficios/:id/asignaciones')
+  getBeneficioAssignments(@Request() req, @Param('id') id: string) {
+    return this.nominaService.send(
+      { cmd: 'get_beneficio_assignments' },
+      { beneficioId: id, empresaId: req.user.empresaId }
+    );
+  }
+
+  // 3. Guardar asignaciones
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('beneficios.update')
+  @Post('beneficios/:id/asignaciones')
+  updateBeneficioAssignments(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() body: { employeeIds: string[] }
+  ) {
+    return this.nominaService.send(
+      { cmd: 'update_beneficio_assignments' },
+      {
+        beneficioId: id,
+        empresaId: req.user.empresaId,
+        employeeIds: body.employeeIds
+      }
     );
   }
 
@@ -1324,6 +1364,19 @@ export class AppController {
     return this.productividadService.send(
       { cmd: 'delete_inscripcion' },
       { empresaId, inscripcionId },
+    );
+  }
+
+  @UseGuards(JwtAuthGuard) // No requiere permiso especial, solo estar logueado
+  @Get('capacitacion/mis-cursos')
+  getMisCursos(@Request() req) {
+    // Extraemos los datos del usuario logueado
+    const { empresaId, empleadoId } = req.user;
+
+    // Enviamos al microservicio
+    return this.productividadService.send(
+      { cmd: 'get_mis_cursos' },
+      { empresaId, empleadoId },
     );
   }
   // ==========================================

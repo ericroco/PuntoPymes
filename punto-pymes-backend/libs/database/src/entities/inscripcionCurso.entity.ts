@@ -1,4 +1,3 @@
-// libs/database/src/entities/inscripcionCurso.entity.ts
 import {
   Entity,
   Column,
@@ -6,35 +5,48 @@ import {
   JoinColumn,
   Index,
   Unique,
+  CreateDateColumn,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Curso } from './curso.entity';
 import { Empleado } from './empleado.entity';
 
-// 1. Definimos estados estrictos
+// 1. Definimos estados estrictos (Esto está perfecto)
 export enum EstadoInscripcion {
-  INSCRITO = 'INSCRITO',
-  EN_PROGRESO = 'EN_PROGRESO',
-  COMPLETADO = 'COMPLETADO',
-  CANCELADO = 'CANCELADO',
+  INSCRITO = 'Inscrito',       // Ajusté a Capital Case para que se vea bonito en el frontend directo
+  EN_PROGRESO = 'En Progreso',
+  COMPLETADO = 'Completado',
+  CANCELADO = 'Cancelado',
 }
 
 @Entity({ name: 'inscripciones_cursos' })
 @Index(['cursoId'])
 @Index(['empleadoId'])
-@Unique(['cursoId', 'empleadoId'])
+@Unique(['cursoId', 'empleadoId']) // Evita que un empleado se inscriba 2 veces al mismo curso
 export class InscripcionCurso extends BaseEntity {
 
   /**
-   * Estado del progreso. Usa el Enum para consistencia.
+   * Estado del progreso.
    */
   @Column({
     type: 'varchar',
     length: 50,
-    default: EstadoInscripcion.INSCRITO, // Valor por defecto
-    comment: 'Estado del progreso (INSCRITO, COMPLETADO...)',
+    default: EstadoInscripcion.INSCRITO,
+    comment: 'Estado del progreso (Inscrito, Completado...)',
   })
   estado: EstadoInscripcion;
+
+  /**
+   * 👇 NUEVO CAMPO IMPORTANTE:
+   * Porcentaje de avance (0 a 100).
+   * Necesario para la barra de progreso del Frontend.
+   */
+  @Column({
+    type: 'int',
+    default: 0,
+    comment: 'Porcentaje de avance del curso (0-100)',
+  })
+  progreso: number;
 
   @Column({
     type: 'float',
@@ -45,23 +57,21 @@ export class InscripcionCurso extends BaseEntity {
 
   /**
    * Fecha de inscripción.
-   * Default: Se llena sola con la fecha actual.
+   * Usamos CreateDateColumn para que guarde FECHA Y HORA automáticamente.
    */
-  @Column({
-    type: 'date',
-    default: () => 'CURRENT_DATE',
-    comment: 'Fecha de inscripción al curso',
+  @CreateDateColumn({
+    type: 'timestamp',
+    comment: 'Fecha y hora de inscripción al curso',
   })
   fechaInscripcion: Date;
 
   /**
    * Fecha en que completó el curso.
-   * Importante para reportes y certificados.
    */
   @Column({
-    type: 'date',
+    type: 'timestamp', // Cambiado a timestamp para saber la hora exacta
     nullable: true,
-    comment: 'Fecha de finalización del curso',
+    comment: 'Fecha y hora de finalización del curso',
   })
   fechaCompletado: Date;
 
@@ -69,21 +79,21 @@ export class InscripcionCurso extends BaseEntity {
 
   @ManyToOne(() => Curso, (curso) => curso.inscripciones, {
     nullable: false,
-    onDelete: 'CASCADE',
+    onDelete: 'CASCADE', // Si borran el curso, se borra la inscripción
   })
   @JoinColumn({ name: 'cursoId' })
   curso: Curso;
 
-  @Column({ comment: 'ID del Curso al que se inscribió' })
+  @Column()
   cursoId: string;
 
-  @ManyToOne(() => Empleado, (empleado) => empleado.inscripcionesCursos, {
+  @ManyToOne(() => Empleado, {
     nullable: false,
-    onDelete: 'CASCADE',
+    onDelete: 'CASCADE', // Si despiden al empleado, se borra su historial (o podrías usar SET NULL si quieres mantener historia)
   })
   @JoinColumn({ name: 'empleadoId' })
   empleado: Empleado;
 
-  @Column({ comment: 'ID del Empleado (estudiante)' })
+  @Column()
   empleadoId: string;
 }

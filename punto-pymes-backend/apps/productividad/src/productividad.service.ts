@@ -838,7 +838,7 @@ export class ProductividadService {
    * Crear un nuevo curso en el catálogo de la empresa
    */
   async createCurso(empresaId: string, dto: CreateCursoDto): Promise<Curso> {
-    // Validar si ya existe un curso con el mismo nombre en la empresa (Opcional pero recomendado)
+    // 1. Validar duplicados (Correcto, mantenemos tu lógica)
     const existente = await this.cursoRepository.findOneBy({
       titulo: dto.titulo,
       empresaId
@@ -848,9 +848,18 @@ export class ProductividadService {
       throw new ConflictException('Ya existe un curso con este título en tu catálogo.');
     }
 
+    // 2. Crear instancia con valores por defecto
+    // Usamos ...dto para los campos que coinciden (titulo, descripcion, instructor, category, duration)
     const curso = this.cursoRepository.create({
       ...dto,
       empresaId,
+
+      // 👇 LÓGICA DE NEGOCIO EXTRA:
+      // Si no mandan 'isActive', asumimos que el curso nace activo
+      isActive: dto.isActive ?? true,
+
+      // Si no mandan imagen, guardamos una URL por defecto para que no se rompa el frontend
+      imageUrl: dto.imageUrl || 'assets/images/default-course.jpg'
     });
 
     return this.cursoRepository.save(curso);
@@ -1814,5 +1823,23 @@ export class ProductividadService {
       console.error('❌ Error en seed de productividad:', error);
       throw error;
     }
+  }
+
+  async getMisCursos(empresaId: string, empleadoId: string) {
+    // Buscamos en la tabla de Inscripciones
+    const inscripciones = await this.inscripcionRepository.find({
+      where: {
+        empleadoId: empleadoId
+        // Si tu tabla inscripciones tiene empresaId, agrégalo también: empresaId
+      },
+      relations: ['curso'], // 👈 CRÍTICO: Esto trae los datos del curso (título, imagen)
+      order: {
+        fechaInscripcion: 'DESC' // Los más recientes primero
+      }
+    });
+
+    // Opcional: Si quieres limpiar la respuesta para que se vea más plana
+    // o puedes devolver la inscripción tal cual y mapearla en el frontend.
+    return inscripciones;
   }
 }

@@ -266,4 +266,21 @@ export class NominaController {
   getBeneficiosStats(@Payload() data: { empresaId: string }) {
     return this.nominaService.getBeneficiosStats(data.empresaId);
   }
+
+  @MessagePattern({ cmd: 'get_beneficio_by_id' })
+  async getBeneficioById(@Payload() data: { id: string, empresaId: string }) {
+    return this.nominaService.getBeneficioById(data.empresaId, data.id);
+  }
+
+  // 2. Obtener lista de asignados
+  @MessagePattern({ cmd: 'get_beneficio_assignments' })
+  async getBeneficioAssignments(@Payload() data: { beneficioId: string, empresaId: string }) {
+    return this.nominaService.getAssignments(data.empresaId, data.beneficioId);
+  }
+
+  // 3. Guardar asignaciones
+  @MessagePattern({ cmd: 'update_beneficio_assignments' })
+  async updateBeneficioAssignments(@Payload() data: { beneficioId: string, empresaId: string, employeeIds: string[] }) {
+    return this.nominaService.updateAssignments(data.empresaId, data.beneficioId, data.employeeIds);
+  }
 }

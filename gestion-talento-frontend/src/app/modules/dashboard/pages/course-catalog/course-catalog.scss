@@ -2,10 +2,105 @@
    ESTILOS PARA EL PORTAL DE DESARROLLO (course-catalog.scss)
    ========================================================================== */
 
-// --- Estilos Globales Reutilizables ---
+/* =========================================
+   HEADER Y TOGGLE DE VISTAS
+   ========================================= */
+.header-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+
+  app-subpage-header {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fff;
+  padding: 8px 14px;
+  border-radius: 50px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  white-space: nowrap;
+
+  .toggle-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #757575;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+::ng-deep .view-toggle mat-button-toggle-group {
+  border: none !important;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+  padding: 3px;
+  height: 40px;
+  box-shadow: none;
+
+  .mat-button-toggle-appearance-standard {
+    background-color: transparent;
+    color: #616161;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 17px !important;
+    border: none !important;
+    min-width: 130px;
+    transition: all 0.25s ease;
+
+    .mat-button-toggle-label-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 40px;
+      padding: 0 16px;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+      opacity: 0.7;
+    }
+
+    &.mat-button-toggle-checked {
+      background-color: var(--color-primary, #3f51b5);
+      color: white !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+
+      mat-icon {
+        color: white;
+        opacity: 1;
+      }
+    }
+
+    &:not(.mat-button-toggle-checked):hover {
+      background-color: #ececec;
+    }
+  }
+
+  .mat-button-toggle+.mat-button-toggle {
+    border-left: none;
+  }
+}
+
+/* =========================================
+   ESTILOS GLOBALES REUTILIZABLES
+   ========================================= */
 .no-data-placeholder {
   text-align: center;
-  padding: 3rem;
+  padding: 3rem 1rem;
   color: var(--color-text-secondary);
   font-style: italic;
   font-size: 1rem;
@@ -16,42 +111,48 @@
   color: var(--color-text-secondary);
   margin-bottom: 2rem;
   font-size: 0.95rem;
+  line-height: 1.6;
   max-width: 700px;
 }
 
 .tab-description {
-  margin-top: 1rem; // Espacio dentro de la pestaña
+  margin-top: 1rem;
 }
 
 ::ng-deep app-subpage-header {
   width: 100%;
 }
 
-// Color global de barras de progreso
 mat-progress-bar {
   --mat-progress-bar-active-indicator-color: var(--color-primary);
   border-radius: 4px;
   overflow: hidden;
 }
 
-// --- Contenedor de Pestañas ---
+/* =========================================
+   CONTENEDOR DE PESTAÑAS
+   ========================================= */
 .tab-content-container {
   padding: 1rem 0.5rem;
 }
 
-// --- Filtros ---
+/* =========================================
+   BARRA DE FILTROS
+   ========================================= */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1rem;
   margin-bottom: 1.5rem;
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
   .filter-field {
     min-width: 200px;
+    flex: 0 1 auto;
   }
 
   .search-field {
@@ -70,14 +171,16 @@ mat-progress-bar {
   }
 }
 
-// --- Cuadrícula de Cursos ---
+/* =========================================
+   CUADRÍCULA DE CURSOS
+   ========================================= */
 .course-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+  padding: 0.5rem 0;
 }
 
-// Tarjeta de Curso
 .course-card {
   display: flex;
   flex-direction: column;
@@ -85,25 +188,20 @@ mat-progress-bar {
   background-color: var(--color-surface);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-
-  // (Clase para la animación)
-  &.report-container {
-    // No necesita estilos extra si ya está en la tarjeta
-  }
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   }
 
   img[mat-card-image] {
-    height: 160px; // Altura fija para la imagen
-    object-fit: cover; // Asegura que la imagen cubra el espacio
+    height: 160px;
+    object-fit: cover;
   }
 
   mat-card-header {
-    padding: 1rem;
-    padding-bottom: 0.5rem;
+    padding: 1rem 1rem 0.5rem;
   }
 
   mat-card-title {
@@ -111,20 +209,21 @@ mat-progress-bar {
     font-weight: 600;
     line-height: 1.4;
     margin-bottom: 0.25rem;
+    color: var(--color-text-primary);
   }
 
   mat-card-subtitle {
     color: var(--color-text-secondary);
     font-size: 0.85rem;
+    line-height: 1.3;
   }
 
   mat-card-content {
-    flex-grow: 1; // Empuja las acciones hacia abajo
-    padding: 0 1rem;
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
 
     &.progress-content {
-      // Estilos específicos para la pestaña "Mi Aprendizaje"
-      flex-grow: 0; // No necesita crecer
+      flex-grow: 0;
       padding-bottom: 1rem;
     }
   }
@@ -133,256 +232,49 @@ mat-progress-bar {
     font-size: 0.8rem;
     font-weight: 500;
     color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
   }
 
   mat-card-actions {
-    padding: 0.5rem 1rem !important; // Ajusta padding de acciones
+    padding: 0.75rem 1rem !important;
+    border-top: 1px solid var(--color-border, #e0e0e0);
   }
 }
 
+/* =========================================
+   STEPPER DE PLAN DE CARRERA
+   ========================================= */
 .career-plan-stepper {
-  background-color: transparent; // Quita el fondo blanco por defecto del stepper
+  background-color: transparent;
 
-  // Sobrescribe el color del ícono del paso
-  ::ng-deep .mat-step-header .mat-step-icon {
-    background-color: var(--color-secondary-light); // Color por defecto (gris)
-    color: white;
-  }
+  ::ng-deep .mat-step-header {
+    padding: 1rem;
 
-  // Color para el paso actual (estado 'edit')
-  ::ng-deep .mat-step-header .mat-step-icon[aria-label="Step 2"] {
-    // Hack para el estado 'edit'
-    // O usa un selector más robusto si es posible
-  }
-
-  ::ng-deep .mat-step-header .mat-step-icon-state-edit {
-    background-color: var(--color-primary) !important; // Color primario (rojo)
-    color: white !important;
-  }
-
-  // Color para el paso completado (estado 'done')
-  ::ng-deep .mat-step-header .mat-step-icon-state-done {
-    background-color: var(--color-success) !important; // Color verde
-    color: white !important;
-  }
-}
-
-.step-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-
-  // Colores por estado
-  &.status-completado {
-    color: var(--color-success-dark);
-  }
-
-  &.status-actual {
-    color: var(--color-primary);
-  }
-
-  &.status-siguiente {
-    color: var(--color-text-secondary);
-  }
-}
-
-.current-step-badge {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
-  background-color: var(--color-primary);
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 0.5rem;
-  vertical-align: middle;
-}
-
-.step-content {
-  padding: 1rem 0 1rem 1.5rem; // Padding dentro del contenido del paso
-  // (ya no necesita borde izquierdo porque el stepper lo tiene)
-
-  strong {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    font-size: 1rem;
-  }
-
-  .competency-list {
-    margin-left: 1.5rem;
-    margin-bottom: 1.5rem;
-
-    li {
-      color: var(--color-text-secondary);
-      font-size: 0.95rem;
-      margin-bottom: 0.25rem;
-    }
-  }
-}
-
-// Grid para las tarjetas de cursos recomendados
-.recommended-courses-grid {
-  display: grid;
-  // Columnas más pequeñas para las mini-tarjetas
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-// Estilo de la mini-tarjeta de curso
-.mini-course-card {
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); // Sombra muy sutil
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none; // Quita subrayado del link
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--box-shadow); // Sombra normal al pasar el mouse
-  }
-
-  img[mat-card-image] {
-    height: 80px; // Imagen más pequeña
-    object-fit: cover;
-  }
-
-  mat-card-content {
-    padding: 0.75rem !important; // Padding reducido
-  }
-
-  .mini-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-text-primary); // Asegura color de texto
-    display: block;
-    line-height: 1.3;
-  }
-
-  .mini-instructor {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-  }
-}
-
-/* ==========================================================================
-   ESTILOS VISTA ADMINISTRADOR (NUEVO)
-   ========================================================================== */
-.admin-lms-view {
-  .report-tab-content {
-    padding: 1.5rem 0.5rem;
-  }
-
-  // Encabezado con botón "Crear Curso"
-  .tab-action-header {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1.5rem;
-  }
-
-  // Contenedor de la tabla
-  .list-container {
-    background-color: var(--color-surface);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    overflow: hidden;
-  }
-
-  // Estilos de Mat-Table
-  .admin-course-table {
-    width: 100%;
-
-    .mat-mdc-header-row {
-      background-color: var(--color-background);
+    .mat-step-icon {
+      background-color: var(--color-secondary-light, #bdbdbd);
+      color: white;
+      margin-right: 0.75rem;
     }
 
-    .mat-mdc-header-cell {
-      font-weight: 600;
-      color: var(--color-text-secondary);
-      font-size: 0.8rem;
-      text-transform: uppercase;
+    .mat-step-icon-state-edit {
+      background-color: var(--color-primary) !important;
+      color: white !important;
     }
 
-    .mat-mdc-cell {
-      border-bottom: 1px solid var(--color-border);
-      font-size: 0.9rem;
+    .mat-step-icon-state-done {
+      background-color: var(--color-success) !important;
+      color: white !important;
     }
 
-    .mat-mdc-row:hover {
-      background-color: #f8f8f8;
-    }
-
-    .mat-mdc-row:last-child .mat-mdc-cell {
-      border-bottom: none;
-    }
-
-    .course-title {
-      font-weight: 600;
-      color: var(--color-text-primary);
-    }
-
-    .actions {
-      text-align: right;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
     }
   }
-
-  // --- Estilos para Pestaña de Reportes (Admin) ---
-  .report-widget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .report-container {
-    // (Clase base para tarjetas)
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-surface);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    padding: 1.5rem;
-
-    mat-card-header {
-      padding-bottom: 0.5rem;
-    }
-
-    mat-card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      text-align: center;
-      width: 100%;
-    }
-
-    mat-card-content {
-      flex-grow: 1;
-      padding-top: 0;
-    }
-  }
-
-  .chart-widget.report-container {
-    mat-card-content.chart-container {
-      min-height: 300px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-top: 1rem !important;
-    }
-  }
-
-  // (Estilos ::ng-deep de ngx-charts si los necesitas)
-  ::ng-deep .ngx-charts-tooltip-content {
-    font-family: var(--font-family-base) !important;
-  }
-}
-
-.career-plan-stepper {
-  background-color: transparent; // Quita el fondo blanco del stepper
 
   .step-label {
     font-size: 1.1rem;
     font-weight: 600;
 
-    // Colores por estado
     &.status-completado {
       color: var(--color-success-dark);
     }
@@ -397,35 +289,45 @@ mat-progress-bar {
   }
 
   .current-step-badge {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: white;
     background-color: var(--color-primary);
-    padding: 2px 8px;
-    border-radius: 10px;
+    padding: 3px 10px;
+    border-radius: 12px;
     margin-left: 0.5rem;
+    vertical-align: middle;
   }
 
   .step-content {
-    padding: 1rem 0;
+    padding: 1.5rem 0 1.5rem 1.5rem;
 
     strong {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
       font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-text-primary);
     }
 
     .competency-list {
       margin-left: 1.5rem;
       margin-bottom: 1.5rem;
+      list-style: disc;
 
       li {
         color: var(--color-text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
       }
     }
   }
 }
 
+/* =========================================
+   CURSOS RECOMENDADOS (MINI CARDS)
+   ========================================= */
 .recommended-courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -439,6 +341,8 @@ mat-progress-bar {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: all 0.2s ease;
+  text-decoration: none;
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-3px);
@@ -446,23 +350,287 @@ mat-progress-bar {
   }
 
   img[mat-card-image] {
-    height: 80px; // Imagen más pequeña
+    height: 80px;
     object-fit: cover;
   }
 
   mat-card-content {
-    padding: 0.75rem !important; // Menos padding
+    padding: 0.75rem !important;
   }
 
   .mini-title {
     font-size: 0.85rem;
     font-weight: 600;
+    color: var(--color-text-primary);
     display: block;
     line-height: 1.3;
+    margin-bottom: 0.25rem;
   }
 
   .mini-instructor {
     font-size: 0.75rem;
     color: var(--color-text-secondary);
+    line-height: 1.3;
+  }
+}
+
+/* ==========================================================================
+   VISTA ADMINISTRADOR (LMS)
+   ========================================================================== */
+.admin-lms-view {
+  .report-tab-content {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .tab-action-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+  }
+
+  .list-container {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+  }
+
+  .admin-course-table {
+    width: 100%;
+
+    .mat-mdc-header-row {
+      background-color: var(--color-background, #fafafa);
+    }
+
+    .mat-mdc-header-cell {
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1rem 0.75rem;
+    }
+
+    .mat-mdc-cell {
+      border-bottom: 1px solid var(--color-border, #e0e0e0);
+      font-size: 0.9rem;
+      padding: 1rem 0.75rem;
+    }
+
+    .mat-mdc-row {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f8f8f8;
+      }
+
+      &:last-child .mat-mdc-cell {
+        border-bottom: none;
+      }
+    }
+
+    .course-title {
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .actions {
+      text-align: right;
+    }
+  }
+
+  .report-widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .report-container {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 1.5rem;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    mat-card-header {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border, #e0e0e0);
+    }
+
+    mat-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+      width: 100%;
+      color: var(--color-text-primary);
+    }
+
+    mat-card-content {
+      flex-grow: 1;
+      padding-top: 1rem;
+    }
+  }
+
+  .chart-widget.report-container {
+    mat-card-content.chart-container {
+      min-height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 1rem !important;
+    }
+  }
+
+  ::ng-deep .ngx-charts-tooltip-content {
+    font-family: var(--font-family-base) !important;
+    border-radius: 6px;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  // Header y Toggle
+  .header-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .view-toggle {
+    justify-content: center;
+    width: 100%;
+    padding: 8px 12px;
+
+    .toggle-label {
+      font-size: 0.8rem;
+    }
+  }
+
+  ::ng-deep .view-toggle mat-button-toggle-group {
+    width: 100%;
+
+    .mat-button-toggle-appearance-standard {
+      flex: 1;
+      min-width: auto;
+
+      .mat-button-toggle-label-content {
+        padding: 0 12px;
+      }
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+    }
+  }
+
+  // Filtros
+  .filter-bar {
+    padding: 0.75rem;
+    gap: 0.75rem;
+
+    .filter-field,
+    .search-field {
+      min-width: 100%;
+    }
+  }
+
+  // Grids
+  .course-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .recommended-courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .admin-lms-view .report-widget-grid {
+    grid-template-columns: 1fr;
+  }
+
+  // Stepper
+  .career-plan-stepper {
+    ::ng-deep .mat-step-header {
+      padding: 0.75rem;
+    }
+
+    .step-label {
+      font-size: 1rem;
+    }
+
+    .step-content {
+      padding: 1rem 0 1rem 0.75rem;
+
+      .competency-list {
+        margin-left: 1rem;
+      }
+    }
+  }
+
+  // Tabla admin
+  .admin-lms-view .admin-course-table {
+
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .view-toggle {
+    gap: 8px;
+    padding: 6px 10px;
+
+    .toggle-label {
+      display: none;
+    }
+  }
+
+  ::ng-deep .view-toggle mat-button-toggle-group {
+    height: 36px;
+
+    .mat-button-toggle-appearance-standard {
+      font-size: 0.8rem;
+
+      .mat-button-toggle-label-content {
+        line-height: 36px;
+        padding: 0 10px;
+      }
+    }
+  }
+
+  .course-card {
+    mat-card-title {
+      font-size: 1rem;
+    }
+
+    mat-card-subtitle {
+      font-size: 0.8rem;
+    }
+  }
+
+  .mini-course-card {
+    .mini-title {
+      font-size: 0.8rem;
+    }
+
+    .mini-instructor {
+      font-size: 0.7rem;
+    }
   }
 }

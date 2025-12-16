@@ -158,4 +158,36 @@ export class PayrollService {
     return this.http.get<any[]>(`${this.apiUrl}/nomina/reportes/${periodoId}`);
   }
 
+  getBenefitById(id: string): Observable<any> {
+    // Opción A (Ideal): Backend tiene endpoint específico (Recomendado)
+    return this.http.get<any>(`${this.apiUrl}/beneficios/${id}`);
+
+    // Opción B (Si te niegas a tocar backend): Traer todos y filtrar
+    /*
+    return this.http.get<any[]>(`${this.apiUrl}/beneficios`).pipe(
+      map(items => items.find(b => b.id === id))
+    );
+    */
+  }
+
+  // 2. OBTENER EMPLEADOS (Ruta corregida a español)
+  getAllEmployees(): Observable<any[]> {
+    // Seguramente tu endpoint se llama 'empleados' o 'personal'
+    return this.http.get<any[]>(`${this.apiUrl}/empleados`);
+  }
+
+  // 3. OBTENER ASIGNADOS (Esto REQUIERE backend nuevo)
+  getAssignedEmployeeIds(benefitId: string): Observable<string[]> {
+    // Esta ruta NO EXISTE en tu backend aún. Tienes que crearla sí o sí.
+    return this.http.get<string[]>(`${this.apiUrl}/beneficios/${benefitId}/asignaciones`);
+  }
+
+  // 4. GUARDAR ASIGNACIONES (Esto REQUIERE backend nuevo)
+  updateBenefitAssignments(benefitId: string, employeeIds: string[]): Observable<any> {
+    // Esta ruta NO EXISTE en tu backend aún. Tienes que crearla sí o sí.
+    return this.http.post(`${this.apiUrl}/beneficios/${benefitId}/asignaciones`, {
+      employeeIds: employeeIds
+    });
+  }
+
 }

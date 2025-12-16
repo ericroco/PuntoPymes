@@ -1,125 +1,164 @@
 <div class="page-container course-catalog-page">
 
-  <div *ngIf="!viewingAsAdmin">
+  <div class="header-actions-row">
     <app-subpage-header title="Portal de Desarrollo"></app-subpage-header>
 
-    <mat-tab-group animationDuration="0ms">
+    <div *ngIf="canManageTraining" class="view-toggle">
+      <span class="toggle-label">Modo:</span>
+      <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()" appearance="legacy">
+        <mat-button-toggle value="student" aria-label="Vista Estudiante">
+          <mat-icon>school</mat-icon> Estudiante
+        </mat-button-toggle>
+        <mat-button-toggle value="admin" aria-label="Vista Gestor">
+          <mat-icon>admin_panel_settings</mat-icon> Gestor LMS
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
 
+  <div *ngIf="viewMode === 'student'" class="student-view">
+
+    <mat-tab-group animationDuration="300ms" mat-stretch-tabs="false" mat-align-tabs="start">
+
+      <!-- ============ MI APRENDIZAJE ============ -->
       <mat-tab label="Mi Aprendizaje ({{myEnrolledCourses.length}})">
         <div class="tab-content-container" @cardAnimation>
-          <p class="tab-description">Cursos en los que estás inscrito actualmente. ¡Sigue así!</p>
+
+          <h2>Mis Cursos Activos</h2>
+          <p class="tab-description">Continúa donde lo dejaste. ¡El aprendizaje constante es la clave del éxito!</p>
+
           <div class="course-grid">
-            <mat-card *ngFor="let course of myEnrolledCourses" class="course-card report-container">
+            <mat-card *ngFor="let course of myEnrolledCourses" class="course-card">
               <img mat-card-image [src]="course.imageUrl" alt="{{course.title}}">
+
               <mat-card-header>
                 <mat-card-title>{{ course.title }}</mat-card-title>
                 <mat-card-subtitle>{{ course.instructor }} • {{ course.duration }}</mat-card-subtitle>
               </mat-card-header>
+
               <mat-card-content class="progress-content">
-                <span class="progress-text">{{ course.progress }}% Completado</span>
-                <mat-progress-bar mode="determinate" [value]="course.progress"></mat-progress-bar>
+                <div class="progress-text">
+                  Progreso: <strong>{{ course.progress }}%</strong>
+                </div>
+                <mat-progress-bar mode="determinate" [value]="course.progress"
+                  [color]="course.progress === 100 ? 'accent' : 'primary'">
+                </mat-progress-bar>
               </mat-card-content>
+
               <mat-card-actions align="end">
-                <button mat-flat-button color="primary" (click)="continueCourse(course)">
-                  {{ course.progress === 100 ? 'Revisar' : 'Continuar Curso' }}
+                <button mat-stroked-button color="primary" (click)="continueCourse(course)">
+                  {{ course.progress === 100 ? 'Repasar Curso' : 'Continuar' }}
                 </button>
               </mat-card-actions>
             </mat-card>
           </div>
+
           <div *ngIf="myEnrolledCourses.length === 0" class="no-data-placeholder">
-            No estás inscrito en ningún curso. ¡Explora el catálogo!
+            <mat-icon>school</mat-icon>
+            <h3>No tienes cursos activos</h3>
+            <p>Explora el catálogo y comienza a aprender hoy mismo.</p>
+            <button mat-flat-button color="primary" (click)="selectedCategory = 'todos'; applyFilters()">
+              Ir al Catálogo
+            </button>
           </div>
         </div>
       </mat-tab>
 
-      <mat-tab label="Catálogo de Cursos ({{filteredCatalogCourses.length}})">
+      <!-- ============ CATÁLOGO ============ -->
+      <mat-tab label="Catálogo de Cursos">
         <div class="tab-content-container">
 
           <div class="filter-bar">
             <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Buscar por Nombre o Instructor</mat-label>
-              <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+              <mat-label>Buscar curso o instructor...</mat-label>
+              <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Ej: Liderazgo">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
+
             <mat-form-field appearance="outline" class="filter-field">
               <mat-label>Categoría</mat-label>
               <mat-select [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()">
-                <mat-option value="todos">Todas las Categorías</mat-option>
+                <mat-option value="todos">Todas</mat-option>
                 <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
 
           <div class="course-grid" @cardAnimation>
-            <mat-card *ngFor="let course of filteredCatalogCourses" class="course-card report-container">
+            <mat-card *ngFor="let course of filteredCatalogCourses" class="course-card">
               <img mat-card-image [src]="course.imageUrl" alt="{{course.title}}">
+
               <mat-card-header>
                 <mat-card-title>{{ course.title }}</mat-card-title>
                 <mat-card-subtitle>{{ course.instructor }} • {{ course.duration }}</mat-card-subtitle>
               </mat-card-header>
+
               <mat-card-content>
+                <p>Domina las habilidades necesarias para destacar en {{ course.category | lowercase }}.</p>
               </mat-card-content>
+
               <mat-card-actions align="end">
+                <button mat-button color="accent">Ver Detalles</button>
                 <button mat-flat-button color="primary" (click)="enrollCourse(course)">
-                  <mat-icon>add</mat-icon> Inscribirme
+                  Inscribirme
                 </button>
               </mat-card-actions>
             </mat-card>
           </div>
 
           <div *ngIf="filteredCatalogCourses.length === 0" class="no-data-placeholder">
-            No se encontraron cursos con esos filtros.
+            <mat-icon>search_off</mat-icon>
+            <p>No encontramos cursos que coincidan con tu búsqueda.</p>
           </div>
         </div>
       </mat-tab>
 
+      <!-- ============ PLAN DE CARRERA ============ -->
       <mat-tab label="Mi Plan de Carrera">
         <div class="tab-content-container">
 
-          <p class="tab-description">
-            Esta es tu ruta de crecimiento profesional asignada. ¡Completa las competencias y cursos para avanzar al
-            siguiente nivel!
-          </p>
+          <h2>Tu Ruta de Crecimiento</h2>
+          <p class="tab-description">Sigue estos pasos para alcanzar tu próximo nivel profesional.</p>
 
           <mat-stepper orientation="vertical" class="career-plan-stepper" [linear]="false" #stepper>
-
-            <mat-step *ngFor="let step of myCareerPlan" [completed]="step.status === 'completado'"
+            <mat-step *ngFor="let step of myCareerPlan; let i = index" [completed]="step.status === 'completado'"
               [state]="step.status === 'actual' ? 'edit' : (step.status === 'completado' ? 'done' : 'number')">
 
               <ng-template matStepLabel>
-                <span class="step-label" [ngClass]="'status-' + step.status">{{ step.name }}</span>
-                <span *ngIf="step.status === 'actual'" class="current-step-badge">(Estás Aquí)</span>
+                <span class="step-label" [class.status-completado]="step.status === 'completado'"
+                  [class.status-actual]="step.status === 'actual'"
+                  [class.status-siguiente]="step.status === 'pendiente'"> {{ step.name }}
+                </span>
+                <span *ngIf="step.status === 'actual'" class="current-step-badge">Actual</span>
               </ng-template>
 
               <div class="step-content">
-                <strong>Competencias a desarrollar:</strong>
+                <strong>Competencias Clave</strong>
                 <ul class="competency-list">
                   <li *ngFor="let comp of step.competencies">{{ comp }}</li>
                 </ul>
 
                 <div *ngIf="step.recommendedCourses.length > 0">
-                  <strong>Cursos Recomendados para este paso:</strong>
+                  <strong>Cursos Recomendados</strong>
                   <div class="recommended-courses-grid">
-
-                    <mat-card *ngFor="let course of step.recommendedCourses" class="mini-course-card"
-                      routerLink="/dashboard/course-catalog" [queryParams]="{ tab: 1, search: course.title }"
-                      matTooltip="Ir al Catálogo y buscar este curso">
+                    <a *ngFor="let course of step.recommendedCourses" class="mini-course-card"
+                      (click)="searchTerm = course.title || ''; selectedCategory = 'todos'; applyFilters()">
                       <img mat-card-image [src]="course.imageUrl" alt="{{course.title}}">
                       <mat-card-content>
                         <span class="mini-title">{{ course.title }}</span>
                         <span class="mini-instructor">{{ course.instructor }}</span>
                       </mat-card-content>
-                    </mat-card>
-
+                    </a>
                   </div>
                 </div>
               </div>
-
             </mat-step>
           </mat-stepper>
 
           <div *ngIf="myCareerPlan.length === 0" class="no-data-placeholder">
-            Aún no tienes un Plan de Carrera asignado. Habla con tu supervisor.
+            <mat-icon>map</mat-icon>
+            <h3>No tienes un Plan de Carrera asignado</h3>
+            <p>Habla con tu supervisor para definir tu ruta de desarrollo.</p>
           </div>
         </div>
       </mat-tab>
@@ -127,17 +166,18 @@
     </mat-tab-group>
   </div>
 
-  <div *ngIf="viewingAsAdmin" class="admin-lms-view">
-    <app-subpage-header title="Gestión de Capacitación (LMS)"></app-subpage-header>
+  <!-- ============ VISTA ADMINISTRADOR ============ -->
+  <div *ngIf="viewMode === 'admin'" class="admin-lms-view">
 
-    <mat-tab-group animationDuration="0ms">
+    <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false">
 
-      <mat-tab label="Gestión de Cursos">
+      <!-- ============ INVENTARIO DE CURSOS ============ -->
+      <mat-tab label="Inventario de Cursos">
         <div class="report-tab-content">
+
           <div class="tab-action-header">
             <button mat-flat-button color="primary" (click)="openCourseDialog()">
-              <mat-icon>add</mat-icon>
-              Crear Nuevo Curso
+              <mat-icon>add</mat-icon> Crear Nuevo Curso
             </button>
           </div>
 
@@ -145,7 +185,7 @@
             <table mat-table [dataSource]="catalogCourses" class="admin-course-table">
 
               <ng-container matColumnDef="title">
-                <th mat-header-cell *matHeaderCellDef> Título del Curso </th>
+                <th mat-header-cell *matHeaderCellDef> Curso </th>
                 <td mat-cell *matCellDef="let course">
                   <span class="course-title">{{ course.title }}</span>
                 </td>
@@ -167,19 +207,17 @@
               </ng-container>
 
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> Acciones </th>
+                <th mat-header-cell *matHeaderCellDef class="actions"> Acciones </th>
                 <td mat-cell *matCellDef="let course" class="actions">
-                  <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Acciones">
+                  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Opciones">
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <mat-menu #menu="matMenu">
                     <button mat-menu-item (click)="openCourseDialog(course)">
-                      <mat-icon>edit</mat-icon>
-                      <span>Editar Curso</span>
+                      <mat-icon>edit</mat-icon> Editar
                     </button>
                     <button mat-menu-item (click)="deleteCourse(course)">
-                      <mat-icon color="warn">delete_outline</mat-icon>
-                      <span>Eliminar Curso</span>
+                      <mat-icon color="warn">delete</mat-icon> Eliminar
                     </button>
                   </mat-menu>
                 </td>
@@ -190,44 +228,52 @@
             </table>
 
             <div *ngIf="catalogCourses.length === 0" class="no-data-placeholder">
-              No hay cursos definidos.
+              <p>No hay cursos registrados en el sistema.</p>
             </div>
           </div>
-
         </div>
       </mat-tab>
 
+      <!-- ============ GESTIÓN DE PLANES ============ -->
       <mat-tab label="Gestión de Planes de Carrera">
         <div class="report-tab-content">
-          <app-career-paths></app-career-paths>
+          <div class="no-data-placeholder">
+            <mat-icon style="font-size: 64px; width: 64px; height: 64px;">engineering</mat-icon>
+            <h3>Módulo de Gestión de Planes</h3>
+            <p>La herramienta para diseñar rutas de aprendizaje estará disponible pronto.</p>
+          </div>
         </div>
       </mat-tab>
 
-      <mat-tab label="Reportes">
+      <!-- ============ REPORTES Y MÉTRICAS ============ -->
+      <mat-tab label="Reportes y Métricas">
         <div class="report-tab-content" @listAnimation>
+
           <div class="report-widget-grid">
-            <mat-card class="overview-widget chart-widget report-container">
+
+            <mat-card class="report-container chart-widget">
               <mat-card-header>
-                <mat-card-title>Cursos Más Completados</mat-card-title>
+                <mat-card-title>Top Cursos Completados</mat-card-title>
               </mat-card-header>
               <mat-card-content class="chart-container">
                 <ngx-charts-bar-vertical [results]="courseCompletionData" [xAxis]="true" [yAxis]="true"
-                  [showXAxisLabel]="false" [showYAxisLabel]="true" yAxisLabel="Nº Empleados"
-                  [scheme]="chartColorScheme">
+                  [showXAxisLabel]="true" [showYAxisLabel]="true" yAxisLabel="Empleados" [scheme]="chartColorScheme"
+                  [gradient]="false">
                 </ngx-charts-bar-vertical>
               </mat-card-content>
             </mat-card>
 
-            <mat-card class="overview-widget chart-widget report-container">
+            <mat-card class="report-container chart-widget">
               <mat-card-header>
-                <mat-card-title>Nuevas Inscripciones (Últ. Meses)</mat-card-title>
+                <mat-card-title>Tendencia de Aprendizaje</mat-card-title>
               </mat-card-header>
               <mat-card-content class="chart-container">
                 <ngx-charts-line-chart [results]="enrollmentTrendData" [xAxis]="true" [yAxis]="true" [autoScale]="true"
-                  [scheme]="chartColorScheme">
+                  [scheme]="chartColorScheme" [showGridLines]="true">
                 </ngx-charts-line-chart>
               </mat-card-content>
             </mat-card>
+
           </div>
         </div>
       </mat-tab>

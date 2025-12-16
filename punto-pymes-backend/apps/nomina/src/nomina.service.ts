@@ -1021,4 +1021,78 @@ export class NominaService {
 
     return unificados;
   }
+
+  // 1. Ver detalle del beneficio (Título de la página)
+  async getBeneficioById(empresaId: string, id: string) {
+    const beneficio = await this.beneficioRepository.findOneBy({ id, empresaId });
+    if (!beneficio) throw new NotFoundException('Beneficio no encontrado');
+    return beneficio;
+  }
+
+  // 2. Obtener IDs de empleados asignados
+  async getAssignments(empresaId: string, beneficioId: string) {
+    // Validamos que el beneficio sea de la empresa
+    const beneficio = await this.beneficioRepository.findOneBy({ id: beneficioId, empresaId });
+    if (!beneficio) throw new NotFoundException('Beneficio no encontrado');
+
+    const assignments = await this.beneficioAsignadoRepository.find({
+      where: { beneficioId, activo: true }, // Solo traemos los activos
+      select: ['empleadoId']
+    });
+
+    // Retornamos solo el array de IDs: ['uuid-1', 'uuid-2']
+    return assignments.map(a => a.empleadoId);
+  }
+
+  // 3. Guardar asignaciones (Lógica inteligente de actualización)
+  async updateAssignments(empresaId: string, beneficioId: string, employeeIds: string[]) {
+    // Usamos una transacción para que no quede nada a medias
+    return this.entityManager.transaction(async manager => {
+
+      // A. Validar propiedad
+      const beneficio = await manager.findOne(Beneficio, { where: { id: beneficioId, empresaId } });
+      if (!beneficio) throw new NotFoundException('Beneficio no válido');
+
+      // B. Obtener asignaciones actuales (activas e inactivas)
+      const currentAssignments = await manager.find(BeneficioAsignado, {
+        where: { beneficioId }
+      });
+
+      const newIdsSet = new Set(employeeIds); // IDs que QUEREMOS tener
+
+      // C. Recorrer lo que ya existe en DB
+      for (const assignment of currentAssignments) {
+        if (newIdsSet.has(assignment.empleadoId)) {
+          // CASO 1: El empleado sigue en la lista.
+          // Si estaba inactivo, lo reactivamos.
+          if (!assignment.activo) {
+            assignment.activo = true;
+            await manager.save(assignment);
+          }
+          // Lo sacamos del Set para no crearlo de nuevo
+          newIdsSet.delete(assignment.empleadoId);
+        } else {
+          // CASO 2: El empleado YA NO está en la lista nueva.
+          // Lo desactivamos (Soft Delete lógico).
+          if (assignment.activo) {
+            assignment.activo = false;
+            await manager.save(assignment);
+          }
+        }
+      }
+
+      // D. Crear los nuevos (los que quedaron en el Set)
+      for (const newId of newIdsSet) {
+        const newAssignment = manager.create(BeneficioAsignado, {
+          beneficioId,
+          empleadoId: newId,
+          activo: true,
+          // fechaAsignacion: new Date() // Si quieres actualizar la fecha
+        });
+        await manager.save(newAssignment);
+      }
+
+      return { success: true, count: employeeIds.length };
+    });
+  }
 }

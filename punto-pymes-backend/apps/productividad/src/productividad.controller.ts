@@ -474,4 +474,8 @@ export class ProductividadController {
   deleteObjetivo(@Payload() data: { empresaId: string; objetivoId: string }) {
     return this.productividadService.deleteObjetivo(data.empresaId, data.objetivoId);
   }
+  @MessagePattern({ cmd: 'get_mis_cursos' })
+  getMisCursos(@Payload() data: { empresaId: string, empleadoId: string }) {
+    return this.productividadService.getMisCursos(data.empresaId, data.empleadoId);
+  }
 }

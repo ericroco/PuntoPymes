@@ -1,272 +1,439 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-// Material
+import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http'; // Importar HttpClient
+
+// Material Modules
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
-// NGX Charts
-import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
-// --- CORRECCIÓN 1: Importar funciones de Animación ---
-import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
-// Componentes
-// --- CORRECCIÓN 2: Importar los nombres de CLASE correctos ---
-import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header';
-import { CareerPaths } from '../career-paths/career-paths'; // Asumiendo que la clase es CareerPathsComponent
-// Modales
-import { AddCourseDialog } from '../../components/add-course-dialog/add-course-dialog';
-import { ConfirmationDialog } from '../../../../shared/components/confirmation-dialog/confirmation-dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
-// Interface para Curso
-interface Course {
-  id: number;
-  title: string;
-  category: string;
-  instructor: string;
-  duration: string;
-  imageUrl: string;
-  description?: string;
-  progress?: number;
-}
-// Interface para Plan de Carrera
-interface CareerPlanStep {
+// Gráficos
+import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
+
+// Componentes y Servicios
+import { SubpageHeader } from '../../../../shared/components/subpage-header/subpage-header';
+import { PERMISSIONS } from '../../../../shared/constants/permissions';
+import { AuthService } from '../../../auth/services/auth';
+import { environment } from '../../../../../environments/environment'; // Asegúrate de tener esto
+import { CourseService } from '../../services/course';
+import { Course, CreateCourseDto, UpdateCourseDto } from '../../models/course.models';
+import { AddCourseDialogComponent } from '../../components/add-course-dialog/add-course-dialog';
+
+// Animaciones
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+
+
+
+export interface CareerStep {
   name: string;
-  status: 'completado' | 'actual' | 'siguiente';
+  status: 'completado' | 'actual' | 'pendiente';
   competencies: string[];
-  recommendedCourses: Course[];
+  recommendedCourses: Partial<Course>[];
 }
 
 @Component({
   selector: 'app-course-catalog',
   standalone: true,
   imports: [
-    CommonModule, RouterModule, FormsModule, ReactiveFormsModule,
-    MatCardModule, MatButtonModule, MatProgressBarModule, MatIconModule,
-    MatTabsModule, MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatTableModule, MatMenuModule, MatDialogModule, MatDividerModule,
+    CommonModule, FormsModule, RouterModule,
+    MatTabsModule, MatCardModule, MatButtonModule, MatIconModule,
+    MatProgressBarModule, MatFormFieldModule, MatInputModule,
+    MatSelectModule, MatStepperModule, MatTooltipModule,
+    MatTableModule, MatMenuModule, MatDialogModule, MatSnackBarModule,
+    MatButtonToggleModule,
     NgxChartsModule,
-    MatStepperModule,
-    // --- CORRECCIÓN 3: Usar los nombres de CLASE correctos en imports ---
-    SubpageHeader,
-    CareerPaths
+    SubpageHeader, AddCourseDialogComponent
   ],
-  templateUrl: './course-catalog.html',
+  templateUrl: './course-catalog.html', // Asegúrate de que el nombre coincida
   styleUrls: ['./course-catalog.scss'],
-  // --- CORRECCIÓN 4: Añadir AMBAS animaciones ---
   animations: [
-    trigger('cardAnimation', [ // Animación para las tarjetas de curso
+    trigger('cardAnimation', [
       transition('* => *', [
         query(':enter', [
-          style({ opacity: 0, transform: 'translateY(15px)' }),
-          stagger('100ms',
-            animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-          )
-        ], { optional: true })
-      ])
-    ]),
-    trigger('listAnimation', [ // Animación para listas o widgets (Admin)
-      transition('* => *', [
-        query(':enter', [
-          style({ opacity: 0, transform: 'scale(0.9)' }),
+          style({ opacity: 0, transform: 'translateY(20px)' }),
           stagger('100ms', [
-            animate('400ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+            animate('500ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
           ])
         ], { optional: true })
       ])
+    ]),
+    trigger('listAnimation', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('500ms ease-in', style({ opacity: 1 }))
+      ])
     ])
   ]
-  // --- FIN CORRECCIÓN 4 ---
 })
-export class CourseCatalog implements OnInit { // Nombre de clase corregido
+export class CourseCatalog implements OnInit {
+  // Inyecciones
+  private router = inject(Router);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  private http = inject(HttpClient);
+  private courseService = inject(CourseService);
 
-  // --- Simulación de Rol ---
-  viewingAsAdmin: boolean = false;
+  // --- ESTADO Y PERMISOS ---
+  canManageTraining: boolean = false; // Permiso maestro para ver Admin
+  viewMode: 'student' | 'admin' = 'student'; // Controla qué vista se muestra en el HTML
 
-  // --- Datos Pestaña Empleado ---
+  // --- DATOS ---
   myEnrolledCourses: Course[] = [];
-  catalogCourses: Course[] = [];
-  filteredCatalogCourses: Course[] = [];
+  catalogCourses: Course[] = []; // Todos los cursos (maestra)
+  filteredCatalogCourses: Course[] = []; // Cursos filtrados en vista
+  myCareerPlan: CareerStep[] = [];
+
+  // Filtros
   searchTerm: string = '';
   selectedCategory: string = 'todos';
-  categories: string[] = ['Tecnología', 'Diseño', 'Contabilidad', 'Marketing', 'Habilidades Blandas'];
-  myCareerPlan: CareerPlanStep[] = [];
+  categories: string[] = ['Tecnología', 'Liderazgo', 'Idiomas', 'Ventas', 'Recursos Humanos'];
 
-  // --- Datos Admin: Pestaña Reportes ---
+  // --- DATOS ADMIN (TABLA) ---
+  displayedColumns: string[] = ['title', 'category', 'instructor', 'duration', 'actions'];
+
+  // --- GRÁFICOS (MOCK - Estos suelen calcularse en backend) ---
+  chartColorScheme: Color = {
+    name: 'custom',
+    selectable: true,
+    group: ScaleType.Ordinal,
+    domain: ['#3f51b5', '#ff4081', '#4caf50', '#ff9800', '#9c27b0']
+  };
+
   courseCompletionData = [
-    { name: 'Angular Avanzado', value: 8 },
-    { name: 'Diseño UX/UI', value: 12 },
-    { name: 'Fundamentos de SEO', value: 5 }
+    { name: 'Seguridad Industrial', value: 120 },
+    { name: 'Excel Avanzado', value: 95 },
+    { name: 'Liderazgo Ágil', value: 80 }
   ];
+
   enrollmentTrendData = [
     {
       name: 'Inscripciones',
       series: [
-        { name: 'Julio', value: 15 },
-        { name: 'Agosto', value: 22 },
-        { name: 'Septiembre', value: 18 },
-        { name: 'Octubre', value: 35 }
+        { name: 'Ene', value: 10 },
+        { name: 'Feb', value: 25 },
+        { name: 'Mar', value: 45 }
       ]
     }
   ];
-  chartColorScheme: Color = {
-    name: 'puntopymesLMS',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: [
-      'var(--color-primary)',
-      'var(--color-accent)',
-      'var(--color-warning)',
-      'var(--color-success)'
-    ]
-  };
-
-  // --- Datos Admin: Pestaña Gestión de Cursos ---
-  displayedColumns: string[] = ['title', 'category', 'instructor', 'duration', 'actions'];
-
-  constructor(public dialog: MatDialog) { }
 
   ngOnInit(): void {
-    if (this.viewingAsAdmin) {
-      console.log("Cargando datos (Admin): Gestión de Cursos...");
-      this.loadAdminData();
-    } else {
-      console.log("Cargando datos (Empleado): Mi Aprendizaje y Catálogo...");
-      this.loadEmployeeData();
+    this.checkPermissions();
+    this.loadRealData();
+
+    // Si queremos cargar el Plan de Carrera Mock por ahora (hasta tener endpoint)
+    this.loadMockCareerPlan();
+  }
+
+  // --- LÓGICA DE PERMISOS ---
+  checkPermissions() {
+    // 1. Verificar si tiene permiso de Admin LMS
+    this.canManageTraining = this.authService.hasPermission(PERMISSIONS.TRAINING_MANAGE);
+
+    // 2. Lógica opcional: Si es Admin, ¿quieres que entre directo a la vista Admin?
+    // Si no, por defecto entra como 'student' y él cambia con el switch.
+    if (this.canManageTraining) {
+      // this.viewMode = 'admin'; // Descomenta si prefieres default admin
+    }
+
+    console.log('¿Es Gestor LMS?', this.canManageTraining);
+  }
+
+  onViewModeChange() {
+    console.log('Vista cambiada a:', this.viewMode);
+    // Podrías recargar datos específicos si cambias de vista
+    if (this.viewMode === 'admin') {
+      // Cargar datos extra de reportes si es necesario
     }
   }
 
-  loadEmployeeData(): void {
-    // --- Simulación de API Call ---
-    this.myEnrolledCourses = [
-      { id: 1, title: 'Angular Avanzado: NgRx y Patrones', category: 'Tecnología', instructor: 'Erick Rodas', duration: '8h', imageUrl: 'https://picsum.photos/id/1/300/200', progress: 60, description: '...' },
-      { id: 2, title: 'Introducción al Diseño UX/UI', category: 'Diseño', instructor: 'Valentina Samaniego', duration: '6h', imageUrl: 'https://picsum.photos/id/10/300/200', progress: 25, description: '...' }
-    ];
-    this.catalogCourses = [
-      { id: 1, title: 'Angular Avanzado: NgRx y Patrones', category: 'Tecnología', instructor: 'Erick Rodas', duration: '8h', imageUrl: 'https://picsum.photos/id/1/300/200', description: '...' },
-      { id: 2, title: 'Introducción al Diseño UX/UI', category: 'Diseño', instructor: 'Valentina Samaniego', duration: '6h', imageUrl: 'https://picsum.photos/id/10/300/200', description: '...' },
-      { id: 3, title: 'Contabilidad para No Contadores', category: 'Contabilidad', instructor: 'Gabriela Loyola', duration: '4h', imageUrl: 'https://picsum.photos/id/20/300/200', description: '...' },
-      { id: 4, title: 'Fundamentos de SEO y SEM', category: 'Marketing', instructor: 'Admin', duration: '5h', imageUrl: 'https://picsum.photos/id/30/300/200', description: '...' },
-      { id: 5, title: 'Comunicación Efectiva', category: 'Habilidades Blandas', instructor: 'RRHH', duration: '3h', imageUrl: 'https://picsum.photos/id/40/300/200', description: '...' }
-    ];
-    this.applyFilters();
+  // --- CARGA DE DATOS REALES ---
+  loadCoursesFromBackend() {
+    // Asumiendo que tienes un endpoint GET /courses
+    // Si no tienes el endpoint listo, usa loadMockData() temporalmente
+
+    this.http.get<Course[]>(`${environment.apiUrl}/courses`).subscribe({
+      next: (courses) => {
+        console.log('Cursos cargados:', courses);
+
+        // Separar en "Mis Cursos" y "Catálogo"
+        // Esto asume que el backend devuelve un flag 'isEnrolled' para el usuario actual
+        this.myEnrolledCourses = courses.filter(c => c.isEnrolled);
+        this.catalogCourses = courses.filter(c => !c.isEnrolled);
+
+        this.applyFilters(); // Actualizar vista
+      },
+      error: (err) => {
+        console.warn('No se pudieron cargar cursos reales, usando MOCK:', err);
+
+      }
+    });
+  }
+
+  // 1. Función para cargar el catálogo base
+  loadRealData() {
+    const empleadoId = this.authService.getCurrentUserId();
+
+    this.courseService.getCourses().subscribe({
+      next: (data) => {
+        this.catalogCourses = data;
+        this.filteredCatalogCourses = data;
+
+        // 👇 AQUÍ ESTÁ EL CAMBIO: No escribas la lógica de nuevo.
+        // Simplemente llama a la función que ya arreglaste abajo.
+        this.loadMyEnrollments(empleadoId);
+      },
+      error: (err) => console.error('Error cargando catálogo', err)
+    });
+  }
+
+  // 2. Función arreglada para cargar inscripciones (Con isActive)
+  loadMyEnrollments(empleadoId: string) {
+    this.courseService.getMyEnrollments(empleadoId).subscribe({
+      next: (inscripciones) => {
+        console.log('Mis Cursos recibidos:', inscripciones);
+
+        this.myEnrolledCourses = inscripciones.map((inscripcion: any) => ({
+          // Datos del curso
+          id: inscripcion.curso.id,
+          title: inscripcion.curso.title,
+          description: inscripcion.curso.description,
+          instructor: inscripcion.curso.instructor,
+          duration: inscripcion.curso.duration,
+          category: inscripcion.curso.category,
+          imageUrl: inscripcion.curso.imageUrl || 'assets/images/default-course.jpg',
+
+          // ✅ CORRECCIÓN CRÍTICA: Aquí sí incluimos isActive
+          isActive: inscripcion.curso.isActive ?? true,
+
+          // Datos calculados
+          createdAt: inscripcion.curso.createdAt ? new Date(inscripcion.curso.createdAt) : undefined,
+          progress: inscripcion.progreso || 0,
+          isEnrolled: true,
+
+          // ⚠️ OJO: Si 'enrollmentId' te da error, bórralo o agrégalo a tu interface Course como opcional
+          enrollmentId: inscripcion.id
+        }));
+
+        // Filtramos el catálogo para quitar los que ya tengo
+        const misIds = this.myEnrolledCourses.map(c => c.id);
+
+        // Aseguramos que comparamos strings con strings
+        this.catalogCourses = this.catalogCourses.filter(c => !misIds.includes(c.id));
+
+        this.applyFilters();
+      },
+      error: (err) => console.error('Error cargando mis cursos', err)
+    });
+  }
+
+  enrollCourse(course: Course) {
+    const empleadoId = this.authService.getCurrentUserId();
+
+    this.courseService.enrollEmployee(course.id as string, empleadoId).subscribe({
+      next: (newEnrollment) => {
+        // Actualizar UI Localmente
+        course.isEnrolled = true;
+        course.progress = 0;
+        this.myEnrolledCourses.push(course);
+        this.catalogCourses = this.catalogCourses.filter(c => c.id !== course.id);
+        this.applyFilters();
+
+        this.snackBar.open('Inscripción exitosa', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => this.snackBar.open('Error al inscribir', 'Cerrar')
+    });
+  }
+
+
+  loadMockCareerPlan() {
     this.myCareerPlan = [
-      { name: 'Desarrollador Junior', status: 'completado', competencies: ['HTML/CSS Básico', 'JavaScript Básico'], recommendedCourses: [] },
-      { name: 'Desarrollador Semi-Senior', status: 'actual', competencies: ['Angular Intermedio', 'Pruebas Unitarias', 'Git Flow'], recommendedCourses: [this.catalogCourses[0], this.catalogCourses[4]] },
-      { name: 'Desarrollador Senior', status: 'siguiente', competencies: ['Arquitectura de Software', 'NgRx Avanzado', 'Liderazgo Técnico'], recommendedCourses: [] }
+      {
+        name: 'Nivel 1: Integración',
+        status: 'completado',
+        competencies: ['Conocimiento de la empresa', 'Seguridad básica'],
+        recommendedCourses: []
+      },
+      {
+        name: 'Nivel 2: Desarrollo Técnico',
+        status: 'actual',
+        competencies: ['Dominio de herramientas', 'Gestión de proyectos básica'],
+        recommendedCourses: [
+          { title: 'Excel para Finanzas', instructor: 'Ana Gómez', imageUrl: 'assets/images/course6.jpg' }
+        ]
+      }
     ];
   }
 
-  loadAdminData(): void {
-    // Carga los cursos para la Pestaña 1 (Gestión)
-    this.catalogCourses = [
-      { id: 1, title: 'Angular Avanzado: NgRx y Patrones', category: 'Tecnología', instructor: 'Erick Rodas', duration: '8h', imageUrl: '...', description: '...' },
-      { id: 2, title: 'Introducción al Diseño UX/UI', category: 'Diseño', instructor: 'Valentina Samaniego', duration: '6h', imageUrl: '...', description: '...' },
-      { id: 3, title: 'Contabilidad para No Contadores', category: 'Contabilidad', instructor: 'Gabriela Loyola', duration: '4h', imageUrl: '...', description: '...' }
-    ];
-    // Datos para Pestaña 3 (Reportes)
-    this.courseCompletionData = [
-      { name: 'Angular Avanzado', value: 8 },
-      { name: 'Diseño UX/UI', value: 12 },
-    ];
-    this.enrollmentTrendData = [
-      { name: 'Inscripciones', series: [{ name: 'Ago', value: 22 }, { name: 'Sep', value: 18 }] }
-    ];
-  }
+  // --- LÓGICA DE EMPLEADO ---
 
-  applyFilters(): void {
-    let tempCourses = [...this.catalogCourses];
-    const lowerSearch = this.searchTerm.toLowerCase();
+  applyFilters() {
+    let tempCourses = this.catalogCourses;
+
     if (this.searchTerm) {
-      tempCourses = tempCourses.filter(course =>
-        course.title.toLowerCase().includes(lowerSearch) ||
-        course.instructor.toLowerCase().includes(lowerSearch)
+      const term = this.searchTerm.toLowerCase();
+      tempCourses = tempCourses.filter(c =>
+        c.title.toLowerCase().includes(term) ||
+        c.instructor.toLowerCase().includes(term)
       );
     }
+
     if (this.selectedCategory !== 'todos') {
-      tempCourses = tempCourses.filter(course => course.category === this.selectedCategory);
+      tempCourses = tempCourses.filter(c => c.category === this.selectedCategory);
     }
+
     this.filteredCatalogCourses = tempCourses;
   }
 
-  // --- Funciones de Empleado (Placeholders) ---
-  enrollCourse(course: Course): void {
-    console.log(`Inscribiendo en curso: ${course.title}`);
-    // --- TODO: Llamar API para inscribir ---
-    // Simulación:
-    alert(`Te has inscrito en "${course.title}". Aparecerá en "Mi Aprendizaje".`);
+
+  continueCourse(course: Course) {
+    console.log('Navegando al reproductor del curso:', course.id);
+    this.snackBar.open('Abriendo reproductor de curso...', 'Ok', { duration: 2000 });
   }
 
-  continueCourse(course: Course): void {
-    console.log(`Continuando curso: ${course.title}`);
-    // --- TODO: Navegar al visor del curso ---
-  } openCourseDialog(course?: Course): void {
-    const isEditMode = !!course;
+  // ==========================================
+  //        LÓGICA DE ADMIN (MODALES)
+  // ==========================================
 
-    const dialogRef = this.dialog.open(AddCourseDialog, {
-      width: '700px',
-      disableClose: true,
+  openCourseDialog(course?: Course) {
+    const isEditing = !!course;
+
+    // 1. Abrir el Diálogo
+    const dialogRef = this.dialog.open(AddCourseDialogComponent, {
+      width: '600px',
+      disableClose: true, // El usuario debe dar clic en Cancelar o Guardar
       data: {
-        course: course ? { ...course } : null // Pasa una copia (editar) o null (crear)
+        course: course || null
       }
     });
 
+    // 2. Esperar respuesta cuando se cierra
     dialogRef.afterClosed().subscribe(result => {
-      // result = { title: '...', ... }
       if (result) {
-        if (isEditMode && course) {
-          // --- Lógica de Edición ---
-          console.log('Actualizando curso:', result);
-          // --- TODO: Llamar API para ACTUALIZAR curso ---
-          // Simulación local:
-          const index = this.catalogCourses.findIndex(c => c.id === course.id);
-          if (index > -1) {
-            this.catalogCourses[index] = { ...course, ...result }; // Actualiza
-            this.catalogCourses = [...this.catalogCourses]; // Forzar actualización de tabla
-          }
+        // 'result' son los datos del formulario (title, description, etc.)
+        if (isEditing && course) {
+          this.handleUpdateCourse(course.id as string, result);
         } else {
-          // --- Lógica de Creación ---
-          console.log('Creando curso:', result);
-          // --- TODO: Llamar API para CREAR curso ---
-          // Simulación local:
-          const newCourse: Course = {
-            id: Date.now(), // ID Temporal
-            ...result
-          };
-          this.catalogCourses = [newCourse, ...this.catalogCourses]; // Añade al inicio
+          this.handleCreateCourse(result);
         }
       }
     });
   }
 
-  deleteCourse(course: Course): void {
-    // 1. Abrir modal de confirmación
-    const dialogRef = this.dialog.open(ConfirmationDialog, {
-      width: '400px',
-      data: {
-        title: 'Confirmar Eliminación',
-        message: `¿Estás seguro de que deseas eliminar el curso "${course.title}"? Esta acción no se puede deshacer.`
-      }
-    });
+  // --- Lógica Privada para CREAR ---
+  // En course-catalog.ts
 
-    // 2. Esperar resultado
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        console.log('Eliminando curso:', course.title);
-        // --- TODO: Llamar API para ELIMINAR curso ---
-        // Simulación local:
-        this.catalogCourses = this.catalogCourses.filter(c => c.id !== course.id);
+  private handleCreateCourse(formData: any) {
+    console.log('📦 Datos del Formulario (Angular):', formData);
+
+    // 1. MAPEO MANUAL (Traducción Crítica)
+    // Izquierda: Lo que pide el Backend (DTO)
+    // Derecha: Lo que viene del Formulario
+    const dto = {
+      titulo: formData.title,             // 👈 Backend 'titulo' = Form 'title'
+      descripcion: formData.description,  // 👈 Backend 'descripcion' = Form 'description'
+
+      // Estos deben coincidir exactamente
+      duration: formData.duration,
+      instructor: formData.instructor,
+      category: formData.category,
+      imageUrl: formData.imageUrl,
+
+      // Opcional: forzar activo si no viene
+      isActive: true
+    };
+
+    console.log('🚀 Enviando al Backend:', dto); // ¡MIRA ESTO EN LA CONSOLA!
+
+    // 2. Enviar
+    this.courseService.createCourse(dto as any).subscribe({
+      next: (newCourse) => {
+        // ... (Tu lógica de éxito) ...
+        this.snackBar.open('Curso creado exitosamente', 'Cerrar', { duration: 3000 });
+
+        // Recargar datos reales para ver el nuevo curso en la tabla
+        this.loadCoursesFromBackend();
+      },
+      error: (err) => {
+        console.error('❌ Error Backend:', err);
+        // Esto te dirá EXACTAMENTE qué campo falta
+        if (err.error && Array.isArray(err.error.message)) {
+          alert('Faltan datos: ' + err.error.message.join(', '));
+        } else {
+          this.snackBar.open('Error al crear el curso (400). Revisa consola.', 'Cerrar');
+        }
       }
     });
+  }
+
+  // --- Lógica Privada para EDITAR ---
+  private handleUpdateCourse(courseId: string, formData: any) {
+    const dto: UpdateCourseDto = {
+      titulo: formData.title,
+      descripcion: formData.description,
+      instructor: formData.instructor,
+      category: formData.category,
+      duration: formData.duration,
+      imageUrl: formData.imageUrl
+    };
+
+    this.courseService.updateCourse(courseId, dto).subscribe({
+      next: (updatedCourse) => {
+        // Actualizar el item específico en el array local
+        const index = this.catalogCourses.findIndex(c => c.id === courseId);
+        if (index !== -1) {
+          // Fusionamos los datos nuevos sobre los viejos
+          this.catalogCourses[index] = {
+            ...this.catalogCourses[index],
+            title: updatedCourse.title,
+            description: updatedCourse.description,
+            instructor: updatedCourse.instructor,
+            category: updatedCourse.category,
+            duration: updatedCourse.duration,
+            imageUrl: updatedCourse.imageUrl || this.catalogCourses[index].imageUrl
+          };
+
+          this.catalogCourses = [...this.catalogCourses]; // Refrescar tabla
+          this.applyFilters();
+        }
+        this.snackBar.open('Curso actualizado correctamente', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('Error al actualizar el curso.', 'Cerrar');
+      }
+    });
+  }
+
+  // --- Lógica para ELIMINAR ---
+  deleteCourse(course: Course) {
+    if (confirm(`¿Estás seguro de eliminar el curso "${course.title}"?`)) {
+      this.courseService.deleteCourse(course.id as string).subscribe({
+        next: () => {
+          // Quitar del array visualmente
+          this.catalogCourses = this.catalogCourses.filter(c => c.id !== course.id);
+          this.applyFilters();
+          this.snackBar.open('Curso eliminado', 'Cerrar', { duration: 3000 });
+        },
+        error: (err) => {
+          console.error(err);
+          this.snackBar.open('Error al eliminar. Puede tener alumnos inscritos.', 'Cerrar');
+        }
+      });
+    }
   }
 }
