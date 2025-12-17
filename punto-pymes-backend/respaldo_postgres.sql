@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict iO3t0MGs8Bd1z6hkyaEq4cK9bLmyYxDMdvGIdrSBgxBdipamfv0BhELDpEmOzjh
+\restrict SQ7hbfwTsPMfT1ACjQK4zhSml9mISmgqFqCGvta1m0pNRhXm7Ozq6oStfUc2l1q
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 15.15
@@ -47,6 +47,31 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
 
+
+--
+-- Name: beneficios_indicador_enum; Type: TYPE; Schema: public; Owner: puntopymes
+--
+
+CREATE TYPE public.beneficios_indicador_enum AS ENUM (
+    'Ingreso',
+    'Descuento',
+    'Informativo'
+);
+
+
+ALTER TYPE public.beneficios_indicador_enum OWNER TO puntopymes;
+
+--
+-- Name: beneficios_tipo_enum; Type: TYPE; Schema: public; Owner: puntopymes
+--
+
+CREATE TYPE public.beneficios_tipo_enum AS ENUM (
+    'Monetario',
+    'No Monetario'
+);
+
+
+ALTER TYPE public.beneficios_tipo_enum OWNER TO puntopymes;
 
 --
 -- Name: conceptos_nomina_tipo_enum; Type: TYPE; Schema: public; Owner: puntopymes
@@ -326,10 +351,16 @@ CREATE TABLE public.beneficios (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
     nombre character varying(255) NOT NULL,
-    descripcion text NOT NULL,
-    "empresaId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone
+    descripcion text,
+    tipo public.beneficios_tipo_enum DEFAULT 'Monetario'::public.beneficios_tipo_enum NOT NULL,
+    "esAutomatico" boolean DEFAULT false NOT NULL,
+    "porcentajeCalculo" numeric,
+    indicador public.beneficios_indicador_enum DEFAULT 'Ingreso'::public.beneficios_indicador_enum NOT NULL,
+    "esRecurrente" boolean DEFAULT false NOT NULL,
+    "montoEstimado" numeric(10,2),
+    "empresaId" uuid NOT NULL
 );
 
 
@@ -350,31 +381,24 @@ COMMENT ON COLUMN public.beneficios."updatedAt" IS 'Fecha de última actualizaci
 
 
 --
--- Name: COLUMN beneficios.nombre; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.beneficios.nombre IS 'Nombre del beneficio (Ej: Seguro Médico)';
-
-
---
--- Name: COLUMN beneficios.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.beneficios.descripcion IS 'Descripción detallada del beneficio';
-
-
---
--- Name: COLUMN beneficios."empresaId"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.beneficios."empresaId" IS 'ID de la Empresa (Tenant) que ofrece este beneficio';
-
-
---
 -- Name: COLUMN beneficios."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
 COMMENT ON COLUMN public.beneficios."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: COLUMN beneficios."esAutomatico"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.beneficios."esAutomatico" IS 'Si es true, se aplica a TODOS automáticamente (Ej: IESS)';
+
+
+--
+-- Name: COLUMN beneficios."porcentajeCalculo"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.beneficios."porcentajeCalculo" IS 'Porcentaje a calcular sobre el sueldo (Ej: 0.0945 para 9.45%)';
 
 
 --
@@ -385,10 +409,12 @@ CREATE TABLE public.beneficios_asignados (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
-    "fechaAsignacion" date NOT NULL,
+    "deletedAt" timestamp with time zone,
+    "fechaAsignacion" date DEFAULT ('now'::text)::date NOT NULL,
+    "montoPersonalizado" numeric(10,2),
+    activo boolean DEFAULT true NOT NULL,
     "empleadoId" uuid NOT NULL,
-    "beneficioId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone
+    "beneficioId" uuid NOT NULL
 );
 
 
@@ -409,10 +435,31 @@ COMMENT ON COLUMN public.beneficios_asignados."updatedAt" IS 'Fecha de última a
 
 
 --
+-- Name: COLUMN beneficios_asignados."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.beneficios_asignados."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: COLUMN beneficios_asignados."fechaAsignacion"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
 COMMENT ON COLUMN public.beneficios_asignados."fechaAsignacion" IS 'Fecha de asignación del beneficio al empleado';
+
+
+--
+-- Name: COLUMN beneficios_asignados."montoPersonalizado"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.beneficios_asignados."montoPersonalizado" IS 'Valor específico para este empleado (sobrescribe al general)';
+
+
+--
+-- Name: COLUMN beneficios_asignados.activo; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.beneficios_asignados.activo IS 'Si es false, el motor de nómina ignora esta asignación';
 
 
 --
@@ -427,13 +474,6 @@ COMMENT ON COLUMN public.beneficios_asignados."empleadoId" IS 'ID del Empleado q
 --
 
 COMMENT ON COLUMN public.beneficios_asignados."beneficioId" IS 'ID del Beneficio otorgado';
-
-
---
--- Name: COLUMN beneficios_asignados."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.beneficios_asignados."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
 
 
 --
@@ -670,6 +710,8 @@ CREATE TABLE public.conceptos_nomina (
     tipo public.conceptos_nomina_tipo_enum NOT NULL,
     "esFijo" boolean DEFAULT false NOT NULL,
     formula character varying(1000),
+    "esAutomatico" boolean DEFAULT false NOT NULL,
+    "montoEstimado" numeric(10,4),
     "empresaId" uuid NOT NULL
 );
 
@@ -715,7 +757,7 @@ COMMENT ON COLUMN public.conceptos_nomina.tipo IS 'Tipo de rubro (Ingreso, Egres
 -- Name: COLUMN conceptos_nomina."esFijo"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.conceptos_nomina."esFijo" IS 'Indica si es un monto fijo o calculado por fórmula';
+COMMENT ON COLUMN public.conceptos_nomina."esFijo" IS 'Indica si es un monto fijo o recurrente (Legacy/Compatibilidad)';
 
 
 --
@@ -723,6 +765,20 @@ COMMENT ON COLUMN public.conceptos_nomina."esFijo" IS 'Indica si es un monto fij
 --
 
 COMMENT ON COLUMN public.conceptos_nomina.formula IS 'Fórmula para el cálculo (ej. "(salario / 30) * dias_trabajados")';
+
+
+--
+-- Name: COLUMN conceptos_nomina."esAutomatico"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.conceptos_nomina."esAutomatico" IS 'Si es true, el motor de nómina lo calcula para todos sin asignación manual';
+
+
+--
+-- Name: COLUMN conceptos_nomina."montoEstimado"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.conceptos_nomina."montoEstimado" IS 'Valor numérico base o porcentaje';
 
 
 --
@@ -831,11 +887,15 @@ CREATE TABLE public.cursos (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
     titulo character varying(255) NOT NULL,
     descripcion text NOT NULL,
-    "duracionHoras" integer,
-    "empresaId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone
+    duration character varying(50) NOT NULL,
+    instructor character varying(150) NOT NULL,
+    category character varying(100) NOT NULL,
+    "imageUrl" text,
+    "isActive" boolean DEFAULT true NOT NULL,
+    "empresaId" uuid NOT NULL
 );
 
 
@@ -856,38 +916,52 @@ COMMENT ON COLUMN public.cursos."updatedAt" IS 'Fecha de última actualización 
 
 
 --
+-- Name: COLUMN cursos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.cursos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: COLUMN cursos.titulo; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.cursos.titulo IS 'Título del curso de capacitación';
+COMMENT ON COLUMN public.cursos.titulo IS 'Título del curso';
 
 
 --
 -- Name: COLUMN cursos.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.cursos.descripcion IS 'Descripción del contenido del curso';
+COMMENT ON COLUMN public.cursos.descripcion IS 'Descripción del contenido';
 
 
 --
--- Name: COLUMN cursos."duracionHoras"; Type: COMMENT; Schema: public; Owner: puntopymes
+-- Name: COLUMN cursos.duration; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.cursos."duracionHoras" IS 'Duración total estimada en horas';
-
-
---
--- Name: COLUMN cursos."empresaId"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.cursos."empresaId" IS 'ID de la Empresa (Tenant) que ofrece el curso';
+COMMENT ON COLUMN public.cursos.duration IS 'Ej: 10 horas, 30 min';
 
 
 --
--- Name: COLUMN cursos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+-- Name: COLUMN cursos.instructor; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.cursos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+COMMENT ON COLUMN public.cursos.instructor IS 'Nombre del instructor';
+
+
+--
+-- Name: COLUMN cursos.category; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.cursos.category IS 'Tecnología, Ventas, etc.';
+
+
+--
+-- Name: COLUMN cursos."imageUrl"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.cursos."imageUrl" IS 'URL de la imagen';
 
 
 --
@@ -1310,13 +1384,14 @@ CREATE TABLE public.inscripciones_cursos (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
-    estado character varying(50) DEFAULT 'INSCRITO'::character varying NOT NULL,
-    calificacion double precision,
-    "fechaInscripcion" date DEFAULT ('now'::text)::date NOT NULL,
-    "cursoId" uuid NOT NULL,
-    "empleadoId" uuid NOT NULL,
     "deletedAt" timestamp with time zone,
-    "fechaCompletado" date
+    estado character varying(50) DEFAULT 'Inscrito'::character varying NOT NULL,
+    progreso integer DEFAULT 0 NOT NULL,
+    calificacion double precision,
+    "fechaInscripcion" timestamp without time zone DEFAULT now() NOT NULL,
+    "fechaCompletado" timestamp without time zone,
+    "cursoId" uuid NOT NULL,
+    "empleadoId" uuid NOT NULL
 );
 
 
@@ -1337,10 +1412,24 @@ COMMENT ON COLUMN public.inscripciones_cursos."updatedAt" IS 'Fecha de última a
 
 
 --
+-- Name: COLUMN inscripciones_cursos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.inscripciones_cursos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: COLUMN inscripciones_cursos.estado; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.inscripciones_cursos.estado IS 'Estado del progreso (INSCRITO, COMPLETADO...)';
+COMMENT ON COLUMN public.inscripciones_cursos.estado IS 'Estado del progreso (Inscrito, Completado...)';
+
+
+--
+-- Name: COLUMN inscripciones_cursos.progreso; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.inscripciones_cursos.progreso IS 'Porcentaje de avance del curso (0-100)';
 
 
 --
@@ -1354,35 +1443,14 @@ COMMENT ON COLUMN public.inscripciones_cursos.calificacion IS 'Nota final del cu
 -- Name: COLUMN inscripciones_cursos."fechaInscripcion"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.inscripciones_cursos."fechaInscripcion" IS 'Fecha de inscripción al curso';
-
-
---
--- Name: COLUMN inscripciones_cursos."cursoId"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.inscripciones_cursos."cursoId" IS 'ID del Curso al que se inscribió';
-
-
---
--- Name: COLUMN inscripciones_cursos."empleadoId"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.inscripciones_cursos."empleadoId" IS 'ID del Empleado (estudiante)';
-
-
---
--- Name: COLUMN inscripciones_cursos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.inscripciones_cursos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+COMMENT ON COLUMN public.inscripciones_cursos."fechaInscripcion" IS 'Fecha y hora de inscripción al curso';
 
 
 --
 -- Name: COLUMN inscripciones_cursos."fechaCompletado"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.inscripciones_cursos."fechaCompletado" IS 'Fecha de finalización del curso';
+COMMENT ON COLUMN public.inscripciones_cursos."fechaCompletado" IS 'Fecha y hora de finalización del curso';
 
 
 --
@@ -1993,9 +2061,10 @@ CREATE TABLE public.roles (
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
     nombre character varying(100) NOT NULL,
-    permisos jsonb NOT NULL,
+    permisos jsonb DEFAULT '{}'::jsonb NOT NULL,
     "empresaId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone
+    "deletedAt" timestamp with time zone,
+    "esDefecto" boolean DEFAULT false NOT NULL
 );
 
 
@@ -2041,6 +2110,13 @@ COMMENT ON COLUMN public.roles."empresaId" IS 'ID de la Empresa (Tenant) propiet
 --
 
 COMMENT ON COLUMN public.roles."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: COLUMN roles."esDefecto"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.roles."esDefecto" IS 'Si es true, este rol se asigna automáticamente a nuevos empleados';
 
 
 --
@@ -2680,9 +2756,10 @@ COPY public.asignaciones_tareas (id, "createdAt", "updatedAt", "tareaId", "emple
 -- Data for Name: beneficios; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.beneficios (id, "createdAt", "updatedAt", nombre, descripcion, "empresaId", "deletedAt") FROM stdin;
-71846bc7-694b-4972-8e58-6fcad672c720	2025-11-13 14:16:30.919593+00	2025-11-13 14:19:46.763761+00	Seguro de Salud Premium	Cobertura total (incluye dental y oftalmológico) - Actualizado.	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-67aabc63-1d19-4ce8-b074-7936b17500ed	2025-11-13 14:24:48.102914+00	2025-11-13 15:26:16.76245+00	Coso Para Borrar	Borrar	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-13 15:26:16.76245+00
+COPY public.beneficios (id, "createdAt", "updatedAt", "deletedAt", nombre, descripcion, tipo, "esAutomatico", "porcentajeCalculo", indicador, "esRecurrente", "montoEstimado", "empresaId") FROM stdin;
+ee423b74-2dac-4902-b1a9-83d3bbe38345	2025-12-13 20:16:47.226807+00	2025-12-13 20:16:47.226807+00	\N	Gimnasio	Creado desde configuración	Monetario	f	\N	Descuento	t	22.00	d845d7a9-9dcf-4db3-95f3-131b93e40673
+4ff1d788-7e38-49e3-ad77-f4d99240acb0	2025-12-16 16:55:47.37921+00	2025-12-16 16:55:47.37921+00	\N	Seguro Medico	Creado desde configuración	Monetario	f	\N	Descuento	t	30.00	d845d7a9-9dcf-4db3-95f3-131b93e40673
+ca336a88-0f24-4bad-b9df-2f4228ab9509	2025-12-17 16:19:50.442479+00	2025-12-17 16:19:50.442479+00	\N	Aporte Seguro	Creado desde configuración	Monetario	f	\N	Descuento	t	0.11	d845d7a9-9dcf-4db3-95f3-131b93e40673
 \.
 
 
@@ -2690,7 +2767,15 @@ COPY public.beneficios (id, "createdAt", "updatedAt", nombre, descripcion, "empr
 -- Data for Name: beneficios_asignados; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.beneficios_asignados (id, "createdAt", "updatedAt", "fechaAsignacion", "empleadoId", "beneficioId", "deletedAt") FROM stdin;
+COPY public.beneficios_asignados (id, "createdAt", "updatedAt", "deletedAt", "fechaAsignacion", "montoPersonalizado", activo, "empleadoId", "beneficioId") FROM stdin;
+32206b41-1723-48e4-a621-843ea25570e3	2025-12-16 03:49:20.359282+00	2025-12-16 03:49:20.359282+00	\N	2025-12-16	\N	t	03bfc407-1509-4e5e-82e4-ca7b3e348aab	ee423b74-2dac-4902-b1a9-83d3bbe38345
+f4266bed-6716-43c1-aaea-3642e5136f68	2025-12-16 03:49:20.359282+00	2025-12-16 03:49:20.359282+00	\N	2025-12-16	\N	t	70847fc0-7314-40d8-9b93-82763c14d4b9	ee423b74-2dac-4902-b1a9-83d3bbe38345
+477a65fe-8513-49d6-8c79-3233a14081ae	2025-12-16 03:49:20.359282+00	2025-12-16 03:49:20.359282+00	\N	2025-12-16	\N	t	7ca7fc59-9a54-4639-9693-e22e33a63244	ee423b74-2dac-4902-b1a9-83d3bbe38345
+01360b80-2232-4a3a-9f25-e2020b49b1e2	2025-12-16 03:49:20.359282+00	2025-12-16 03:49:20.359282+00	\N	2025-12-16	\N	t	6f912371-9183-4516-90b1-9d53c8a6b491	ee423b74-2dac-4902-b1a9-83d3bbe38345
+4b1ab782-5741-4972-abaa-23b9be932423	2025-12-16 16:56:52.846638+00	2025-12-16 16:56:52.846638+00	\N	2025-12-16	\N	t	cc6e191b-6566-46b7-8ed3-3ada5364414d	ee423b74-2dac-4902-b1a9-83d3bbe38345
+26fa6363-0d38-4ffb-91dc-adfeb52a7372	2025-12-16 16:56:52.846638+00	2025-12-16 16:56:52.846638+00	\N	2025-12-16	\N	t	fa703991-ff73-4097-825b-19355d867255	ee423b74-2dac-4902-b1a9-83d3bbe38345
+2dd8e4a7-47db-4752-8ea8-be5a14e0574d	2025-12-16 16:56:52.846638+00	2025-12-16 16:56:52.846638+00	\N	2025-12-16	\N	t	c52bd81b-9341-434f-9364-6817bfc82885	ee423b74-2dac-4902-b1a9-83d3bbe38345
+79f56edb-b842-41c5-906b-07686e73126a	2025-12-16 16:56:52.846638+00	2025-12-16 16:56:52.846638+00	\N	2025-12-16	\N	t	c351bc6e-bb11-4738-8fe0-db467bd6e1ce	ee423b74-2dac-4902-b1a9-83d3bbe38345
 \.
 
 
@@ -2732,12 +2817,9 @@ COPY public.ciclos_evaluacion (id, "createdAt", "updatedAt", nombre, "fechaInici
 -- Data for Name: conceptos_nomina; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.conceptos_nomina (id, "createdAt", "updatedAt", "deletedAt", nombre, tipo, "esFijo", formula, "empresaId") FROM stdin;
-fa54f6a4-0639-4288-8696-8795f9644c55	2025-11-15 04:09:07.644953+00	2025-11-15 04:09:07.644953+00	\N	Aporte IESS (9.45%)	Egreso	f	(SALARIO_BASE * 0.0945)	d845d7a9-9dcf-4db3-95f3-131b93e40673
-4684d2e3-698c-4fa2-a808-d60987bc8e91	2025-11-15 04:08:24.453219+00	2025-11-15 04:09:59.912939+00	\N	Salario Base (Actualizado)	Ingreso	t	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
-b7078be6-f2d3-4a37-ab3f-00007876322a	2025-11-15 04:10:53.263478+00	2025-11-15 04:11:08.586207+00	2025-11-15 04:11:08.586207+00	Borrable	Ingreso	t	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
-ee0648b4-da69-4ab0-9c7a-0b96c58665a4	2025-12-10 00:59:27.047671+00	2025-12-10 00:59:27.047671+00	\N	Bono Productividad	Ingreso	f	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
-5750ef7d-2262-4990-a315-7b89e1ac61c9	2025-12-10 01:44:08.314202+00	2025-12-10 01:44:08.314202+00	\N	Aporte Patronal	Egreso	t	11	d845d7a9-9dcf-4db3-95f3-131b93e40673
+COPY public.conceptos_nomina (id, "createdAt", "updatedAt", "deletedAt", nombre, tipo, "esFijo", formula, "esAutomatico", "montoEstimado", "empresaId") FROM stdin;
+d4a7eaaa-64ab-4aa6-a684-fb6af4c69f51	2025-12-17 16:19:21.506238+00	2025-12-17 16:19:21.506238+00	\N	Bono Navideño	Ingreso	f	\N	f	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
+dcab28c1-1d92-4f12-afad-d4820995f6ae	2025-12-17 16:20:49.733975+00	2025-12-17 16:20:49.733975+00	\N	Aporte Cena Empresa	Egreso	f	\N	f	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
 \.
 
 
@@ -2747,13 +2829,13 @@ ee0648b4-da69-4ab0-9c7a-0b96c58665a4	2025-12-10 00:59:27.047671+00	2025-12-10 00
 
 COPY public.contratos (id, "createdAt", "updatedAt", tipo, salario, moneda, "fechaInicio", "fechaFin", estado, "empleadoId", "deletedAt") FROM stdin;
 aa3fbf0e-56a4-485c-a571-441484b4425f	2025-11-08 05:57:28.62905+00	2025-11-08 05:57:28.62905+00	Indefinido	0	USD	2025-11-08	\N	Vigente	fa703991-ff73-4097-825b-19355d867255	\N
-e753fc13-cf0e-44d3-92ac-4b45b460f3e6	2025-11-13 05:04:44.515372+00	2025-11-13 05:04:44.515372+00	Indefinido	50000	USD	2025-01-01	\N	Vigente	96c517a9-ebd5-4be6-a678-00eb00f1f2f4	\N
 cbc1c5ec-77ba-4bb8-8fe1-7d92cd143954	2025-11-13 05:06:08.025331+00	2025-11-13 05:06:08.025331+00	Plazo Fijo	30000	USD	2024-01-01	2024-12-31	Finalizado	96c517a9-ebd5-4be6-a678-00eb00f1f2f4	\N
 0387d3d9-1eb3-4597-bfbc-03f45cd3583d	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Indefinido	0	USD	2025-11-26	\N	Vigente	20828f29-0d04-444b-b788-87f5acefc9c2	\N
 1b5bd607-38b4-4b6c-ab75-be7b0573ec1b	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Indefinido	0	USD	2025-11-27	\N	Vigente	9058a32e-6cbc-4e58-b344-bb70bfe99368	\N
 cd58ea72-f617-45bf-9378-e86f2c466f2b	2025-12-09 16:48:14.818679+00	2025-12-09 16:48:56.175346+00	Indefinido	2000	USD	2025-12-09	2025-12-09	Finalizado	429736bd-bf4b-44b6-b8f2-029f27bb2b24	\N
 e44c9b6b-05d7-425a-8031-feb6c4b88488	2025-12-09 17:02:48.240524+00	2025-12-09 17:03:10.740031+00	Plazo Fijo	2000	USD	2025-12-09	2025-12-09	Finalizado	50432592-194c-4707-a212-5a716cfca48e	\N
 2db3a639-ddef-4821-920e-caf02750b0b2	2025-12-09 23:09:56.031942+00	2025-12-09 23:09:56.031942+00	Indefinido	1500	USD	2025-12-09	\N	Vigente	c351bc6e-bb11-4738-8fe0-db467bd6e1ce	\N
+e753fc13-cf0e-44d3-92ac-4b45b460f3e6	2025-11-13 05:04:44.515372+00	2025-12-16 16:54:08.626269+00	Indefinido	50000	USD	2025-01-01	2025-12-16	Finalizado	96c517a9-ebd5-4be6-a678-00eb00f1f2f4	\N
 \.
 
 
@@ -2761,8 +2843,8 @@ e44c9b6b-05d7-425a-8031-feb6c4b88488	2025-12-09 17:02:48.240524+00	2025-12-09 17
 -- Data for Name: cursos; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.cursos (id, "createdAt", "updatedAt", titulo, descripcion, "duracionHoras", "empresaId", "deletedAt") FROM stdin;
-31885d04-a903-47ba-bc44-29b4ae679d8b	2025-11-20 15:18:13.514101+00	2025-11-20 15:19:02.762576+00	Introducción a NestJS (Avanzado)	Curso básico para aprender backend con Node.js y TypeScript.	15	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+COPY public.cursos (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, duration, instructor, category, "imageUrl", "isActive", "empresaId") FROM stdin;
+7803502f-ac52-4288-8bc7-118e8ea85c79	2025-12-16 16:33:09.125849+00	2025-12-16 16:33:09.125849+00	\N	VALENTINA DISEÑO	VALENTINA TE ENSEÑA A DISEÑAR	2 horas	Valentina Samaniego	Tecnología	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvPQt2VvSA3ENdFDEjWHTs2pdqZtWQyhayPQ&s	t	d845d7a9-9dcf-4db3-95f3-131b93e40673
 \.
 
 
@@ -2772,12 +2854,12 @@ COPY public.cursos (id, "createdAt", "updatedAt", titulo, descripcion, "duracion
 
 COPY public.departamentos (id, "createdAt", "updatedAt", nombre, "empresaId", "deletedAt") FROM stdin;
 eefa3998-7a2d-4f4d-be0f-54e8acfb8231	2025-11-08 05:57:28.62905+00	2025-11-23 01:52:44.571295+00	General	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-23 01:52:44.571295+00
-2bc47045-73ff-4e62-b53c-561fa26193e9	2025-11-23 02:01:32.580501+00	2025-11-23 02:01:32.580501+00	Marketing	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
 d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-11-23 02:01:37.803898+00	2025-11-23 02:01:37.803898+00	Finanzas	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
 7ee03611-e52b-424a-bca8-345a82d368b0	2025-11-23 02:01:43.791995+00	2025-11-23 02:01:43.791995+00	Development	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
 f54ec2d6-22f8-4bf9-adf1-2f2df9ab6a32	2025-11-23 21:57:42.178249+00	2025-11-23 21:57:42.178249+00	Diseño	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
 024860da-5fec-4fd8-8e9e-0881d96c38ff	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	General	8904d395-93eb-4171-b148-fe9f10133955	\N
 f28d5149-727c-4c0f-aef3-6695745b7587	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	General	61e81ec9-8d21-460b-81b3-addc2df089a4	\N
+2bc47045-73ff-4e62-b53c-561fa26193e9	2025-11-23 02:01:32.580501+00	2025-12-16 16:41:39.603986+00	Marketin	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
 \.
 
 
@@ -2796,7 +2878,6 @@ COPY public.documentos_empleados (id, "createdAt", "updatedAt", "deletedAt", nom
 --
 
 COPY public.empleados (id, "createdAt", "updatedAt", nombre, apellido, "tipoIdentificacion", "nroIdentificacion", "emailPersonal", telefono, direccion, "fechaNacimiento", estado, "datosPersonalizados", "empresaId", "usuarioId", "rolId", "cargoId", "jefeId", "deletedAt", "fotoUrl", "sucursalId") FROM stdin;
-96c517a9-ebd5-4be6-a678-00eb00f1f2f4	2025-11-13 05:03:27.236121+00	2025-11-13 05:03:27.236121+00	Empleado	Contratos	\N	\N	contratos@test.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
 cc6e191b-6566-46b7-8ed3-3ada5364414d	2025-11-15 04:59:12.532954+00	2025-11-15 04:59:12.532954+00	Gaby	Loyola	\N	\N	gaby@test.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
 6f912371-9183-4516-90b1-9d53c8a6b491	2025-11-22 06:08:15.174964+00	2025-11-22 06:08:15.174964+00	Erick	Rodas Jh	\N	\N	erickrodas559@gmail.com	0995520577	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
 fa703991-ff73-4097-825b-19355d867255	2025-11-08 05:57:28.62905+00	2025-11-22 22:57:45.013771+00	Juan	Pérez	\N	\N	\N	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	07ef5af6-1fba-4618-b461-22ccdc263c2b	9d8d7df7-ed94-4882-8936-799a2dc35a2e	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	http://localhost:3000/uploads/d845d7a9-9dcf-4db3-95f3-131b93e40673/empleados/fa703991-ff73-4097-825b-19355d867255/foto/46cff591ef22166109fa587e1bc3134d2.png	\N
@@ -2810,6 +2891,7 @@ c52bd81b-9341-434f-9364-6817bfc82885	2025-11-23 23:56:48.671596+00	2025-11-23 23
 429736bd-bf4b-44b6-b8f2-029f27bb2b24	2025-12-09 16:48:14.776958+00	2025-12-09 16:48:56.183975+00	Byron	Alvarez	\N	\N	jeimy1605@gmail.com	0995520577	\N	\N	Inactivo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	9a75b06a-0b74-4592-9e82-4d85c47920cf	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	31cd3ee8-eab6-4c25-97ac-4f7fea9fb029	\N	\N	\N	\N
 50432592-194c-4707-a212-5a716cfca48e	2025-12-09 17:02:48.208849+00	2025-12-09 17:03:10.748039+00	EsoTilin	.	\N	\N	jeimy1605@gmai.com	0995520577	\N	\N	Inactivo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	7cc24c3c-3393-417f-94d2-36dd2d318dc3	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	31cd3ee8-eab6-4c25-97ac-4f7fea9fb029	\N	\N	\N	\N
 c351bc6e-bb11-4738-8fe0-db467bd6e1ce	2025-11-27 20:13:33.018732+00	2025-12-09 23:09:56.086264+00	Wilson	Lozano	\N	\N	jeyxnwn@gmail.com	0995520577	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	b315bcdc-323a-44d1-b8af-7a148b9228f2	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	e22c878e-b03f-4139-adbc-9bce341e744a	\N	\N	\N	\N
+96c517a9-ebd5-4be6-a678-00eb00f1f2f4	2025-11-13 05:03:27.236121+00	2025-12-16 16:54:08.635768+00	Byron	Alvarez	\N	\N	contratos@test.com	\N	\N	\N	Inactivo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
 \.
 
 
@@ -2837,8 +2919,8 @@ COPY public.evaluaciones (id, "createdAt", "updatedAt", "calificacionPotencial",
 -- Data for Name: inscripciones_cursos; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.inscripciones_cursos (id, "createdAt", "updatedAt", estado, calificacion, "fechaInscripcion", "cursoId", "empleadoId", "deletedAt", "fechaCompletado") FROM stdin;
-9eaf748b-bf30-4b5a-94d5-dc3b9ecd7261	2025-11-20 15:43:56.632992+00	2025-11-20 15:44:51.907355+00	COMPLETADO	95	2025-11-20	31885d04-a903-47ba-bc44-29b4ae679d8b	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	2025-12-20
+COPY public.inscripciones_cursos (id, "createdAt", "updatedAt", "deletedAt", estado, progreso, calificacion, "fechaInscripcion", "fechaCompletado", "cursoId", "empleadoId") FROM stdin;
+e824383a-a758-446b-8162-dfb18d9e0bad	2025-12-16 16:39:58.827514+00	2025-12-16 16:39:58.827514+00	\N	Inscrito	0	\N	2025-12-16 16:39:58.827514	\N	7803502f-ac52-4288-8bc7-118e8ea85c79	fa703991-ff73-4097-825b-19355d867255
 \.
 
 
@@ -2870,7 +2952,6 @@ a36773d1-6eca-4e4c-8767-7f058562e0b7	2025-12-10 20:59:46.25652+00	2025-12-10 20:
 --
 
 COPY public.novedades_nomina (id, "createdAt", "updatedAt", "deletedAt", valor, fecha, observacion, estado, "empleadoId", "conceptoId", "empresaId") FROM stdin;
-ac34aa96-20fa-4c3d-bce5-41b774bdaf4b	2025-12-10 01:18:24.424213+00	2025-12-10 18:02:13.589865+00	\N	500.00	2025-12-09	Se lo Ganó	Procesada	96c517a9-ebd5-4be6-a678-00eb00f1f2f4	ee0648b4-da69-4ab0-9c7a-0b96c58665a4	d845d7a9-9dcf-4db3-95f3-131b93e40673
 \.
 
 
@@ -2953,12 +3034,14 @@ e6f737de-0925-43c5-8a8e-8eb46e53fe38	2025-11-24 01:15:10.304095+00	2025-11-24 01
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.roles (id, "createdAt", "updatedAt", nombre, permisos, "empresaId", "deletedAt") FROM stdin;
-9d8d7df7-ed94-4882-8936-799a2dc35a2e	2025-11-08 05:57:28.62905+00	2025-11-12 16:49:54.208008+00	Administrador	{"esAdmin": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-e879137e-6c6e-4318-82f6-2c01df53093a	2025-11-12 16:16:08.968761+00	2025-11-13 15:25:43.987177+00	Rol de Prueba (Admin)	{}	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-13 15:25:43.987177+00
-5e667a90-3c46-47fe-9922-b8928e59de4b	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Administrador	{"esAdmin": true, "puedeVerTodo": true}	8904d395-93eb-4171-b148-fe9f10133955	\N
-63b5fcb2-2fd6-4454-bf05-0f75a13a1227	2025-11-09 02:22:31.016007+00	2025-11-27 03:54:37.44122+00	Rol de Prueba	{"finanzas": "read", "asistencia.registro": true, "asistencia.reportes": true, "desempeno.ciclos.read": true, "desempeno.objetivos.read": true, "desempeno.objetivos.create": true, "desempeno.objetivos.update": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-5f79c09d-474f-481f-a177-97755549b116	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Administrador	{"esAdmin": true, "puedeVerTodo": true}	61e81ec9-8d21-460b-81b3-addc2df089a4	\N
+COPY public.roles (id, "createdAt", "updatedAt", nombre, permisos, "empresaId", "deletedAt", "esDefecto") FROM stdin;
+5e667a90-3c46-47fe-9922-b8928e59de4b	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Administrador	{"esAdmin": true, "puedeVerTodo": true}	8904d395-93eb-4171-b148-fe9f10133955	\N	f
+5f79c09d-474f-481f-a177-97755549b116	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Administrador	{"esAdmin": true, "puedeVerTodo": true}	61e81ec9-8d21-460b-81b3-addc2df089a4	\N	f
+e879137e-6c6e-4318-82f6-2c01df53093a	2025-11-12 16:16:08.968761+00	2025-12-16 17:45:51.295907+00	Rol de Prueba (Admin)	{}	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-13 15:25:43.987177+00	f
+63b5fcb2-2fd6-4454-bf05-0f75a13a1227	2025-11-09 02:22:31.016007+00	2025-12-16 17:45:51.295907+00	Rol de Prueba	{"finanzas": "read", "empleados.leer": true, "nomina.exportar": true, "empleados.editar": false, "asistencia.registro": true, "asistencia.reportes": true, "desempeno.ciclos.read": true, "desempeno.objetivos.read": true, "desempeno.objetivos.create": true, "desempeno.objetivos.update": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f
+fd570a79-4ba8-47a3-9a65-43a16ddcffa6	2025-12-12 05:25:50.422375+00	2025-12-16 17:45:51.295907+00	Rol Empleado BASE	{"empresa.configurar": false}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f
+9d8d7df7-ed94-4882-8936-799a2dc35a2e	2025-11-08 05:57:28.62905+00	2025-12-16 17:45:51.295907+00	Administrador	{"esAdmin": true, "nomina.leer": true, "reportes.ver": true, "empleados.leer": true, "empleados.crear": true, "nomina.exportar": true, "nomina.procesar": true, "roles.gestionar": true, "empleados.borrar": true, "empleados.editar": true, "tareas.gestionar": true, "activos.gestionar": true, "nomina.configurar": true, "asistencia.aprobar": true, "empleados.exportar": true, "empresa.configurar": true, "usuarios.gestionar": true, "desempeno.gestionar": true, "asistencia.leer_todo": true, "beneficios.gestionar": true, "documentos.gestionar": true, "onboarding.gestionar": true, "capacitacion.gestionar": true, "reclutamiento.gestionar": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f
+9b0fa648-2d0f-4531-8f8d-7e3a826961c7	2025-12-16 17:45:51.295907+00	2025-12-16 17:45:51.295907+00	Rol de prueba 2	{"empleados.leer": true, "empleados.crear": true, "empleados.borrar": true, "empleados.editar": true, "empleados.exportar": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	t
 \.
 
 
@@ -3030,7 +3113,7 @@ be3cd3ab-ea2f-4274-9d36-6ece33de709d	2025-11-24 04:51:26.430148+00	2025-11-24 04
 f747f889-5aeb-416c-b6e5-82e8057c48d0	2025-11-24 04:51:26.445488+00	2025-11-24 04:51:26.445488+00	\N	Diseño UI Dashboard	Crear mockups y flujo de navegación	5	PENDIENTE	ALTA	ba26c0b6-dda7-4a91-9091-6e837674fecf	24132e76-3b5f-4d55-bcbb-ce38f6eee07b	\N
 702c0a11-8e66-4002-b3ea-1d2a346c3143	2025-11-24 04:51:26.445488+00	2025-11-24 04:51:26.445488+00	\N	API de Métricas	Endpoint para estadísticas del usuario	8	PENDIENTE	ALTA	ba26c0b6-dda7-4a91-9091-6e837674fecf	24132e76-3b5f-4d55-bcbb-ce38f6eee07b	\N
 c64f6429-e718-4400-b329-835a19eeacc7	2025-11-24 04:51:26.445488+00	2025-11-24 04:51:26.445488+00	\N	Gráficos Interactivos	Implementar charts con animaciones	13	PENDIENTE	MEDIA	ba26c0b6-dda7-4a91-9091-6e837674fecf	24132e76-3b5f-4d55-bcbb-ce38f6eee07b	\N
-cdbb5cd4-2d20-46ed-abb9-d7a6b72f8626	2025-11-19 21:26:02.606684+00	2025-12-03 14:31:35.006573+00	\N	Tarea de Prueba Prioridad	Probando que no sea null	3	PENDIENTE	MEDIA	24ffc3f6-dd3a-4e17-8f3d-f5af06767827	2470e5bc-d50a-4419-932b-59d178e54a7e	\N
+cdbb5cd4-2d20-46ed-abb9-d7a6b72f8626	2025-11-19 21:26:02.606684+00	2025-12-13 05:37:21.004772+00	\N	Tarea de Prueba Prioridad	Probando que no sea null	3	PENDIENTE	MEDIA	24ffc3f6-dd3a-4e17-8f3d-f5af06767827	2470e5bc-d50a-4419-932b-59d178e54a7e	\N
 \.
 
 
@@ -4422,5 +4505,5 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict iO3t0MGs8Bd1z6hkyaEq4cK9bLmyYxDMdvGIdrSBgxBdipamfv0BhELDpEmOzjh
+\unrestrict SQ7hbfwTsPMfT1ACjQK4zhSml9mISmgqFqCGvta1m0pNRhXm7Ozq6oStfUc2l1q
 
