@@ -97,6 +97,7 @@ export class CourseCatalog implements OnInit {
   catalogCourses: Course[] = []; // Todos los cursos (maestra)
   filteredCatalogCourses: Course[] = []; // Cursos filtrados en vista
   myCareerPlan: CareerStep[] = [];
+  allCourses: Course[] = [];
 
   // Filtros
   searchTerm: string = '';
@@ -137,6 +138,7 @@ export class CourseCatalog implements OnInit {
 
     // Si queremos cargar el Plan de Carrera Mock por ahora (hasta tener endpoint)
     this.loadMockCareerPlan();
+    this.loadCoursesFromBackend();
   }
 
   // --- LÓGICA DE PERMISOS ---
@@ -163,23 +165,44 @@ export class CourseCatalog implements OnInit {
 
   // --- CARGA DE DATOS REALES ---
   loadCoursesFromBackend() {
-    // Asumiendo que tienes un endpoint GET /courses
-    // Si no tienes el endpoint listo, usa loadMockData() temporalmente
+    this.http.get<any[]>(`${environment.apiUrl}/capacitacion/cursos`).subscribe({
+      next: (dataBackend) => {
+        console.log('📦 Data cruda del Backend:', dataBackend);
 
-    this.http.get<Course[]>(`${environment.apiUrl}/courses`).subscribe({
-      next: (courses) => {
-        console.log('Cursos cargados:', courses);
+        // 1. MAPEO (TRADUCCIÓN): Backend (Español) -> Frontend (Inglés/Interface)
+        const coursesMapped: Course[] = dataBackend.map(item => ({
+          id: item.id,
+          title: item.titulo,             // 👈 AQUÍ ESTÁ LA CLAVE
+          description: item.descripcion,  // 👈 Y AQUÍ
+          instructor: item.instructor,    // (Coinciden)
+          category: item.category,        // (Coinciden)
+          duration: item.duration,        // (Coinciden si hiciste el cambio en DB)
+          imageUrl: item.imageUrl || 'assets/images/default-course.jpg',
+          isActive: item.isActive ?? true,
 
-        // Separar en "Mis Cursos" y "Catálogo"
-        // Esto asume que el backend devuelve un flag 'isEnrolled' para el usuario actual
-        this.myEnrolledCourses = courses.filter(c => c.isEnrolled);
-        this.catalogCourses = courses.filter(c => !c.isEnrolled);
+          // Valores por defecto para el frontend
+          progress: 0,
+          isEnrolled: false
+        }));
 
-        this.applyFilters(); // Actualizar vista
+        // 2. Guardar en la variable Maestra (Para el Admin)
+        this.allCourses = coursesMapped;
+        console.log('✅ Cursos listos para la tabla:', this.allCourses);
+
+        // 3. Separar para Estudiante (Lógica simple inicial)
+        this.catalogCourses = coursesMapped;
+
+        // 4. IMPORTANTE: Si ya tienes la lógica de 'mis cursos', 
+        // llámala aquí para actualizar quién está inscrito en qué.
+        const empleadoId = this.authService.getCurrentUserId();
+        if (empleadoId) {
+          this.loadMyEnrollments(empleadoId);
+        } else {
+          this.applyFilters();
+        }
       },
       error: (err) => {
-        console.warn('No se pudieron cargar cursos reales, usando MOCK:', err);
-
+        console.warn('Error cargando cursos reales', err);
       }
     });
   }

@@ -182,7 +182,7 @@
           </div>
 
           <div class="list-container">
-            <table mat-table [dataSource]="catalogCourses" class="admin-course-table">
+            <table mat-table [dataSource]="allCourses" class="admin-course-table">
 
               <ng-container matColumnDef="title">
                 <th mat-header-cell *matHeaderCellDef> Curso </th>
@@ -227,7 +227,7 @@
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
 
-            <div *ngIf="catalogCourses.length === 0" class="no-data-placeholder">
+            <div *ngIf="allCourses.length === 0" class="no-data-placeholder">
               <p>No hay cursos registrados en el sistema.</p>
             </div>
           </div>

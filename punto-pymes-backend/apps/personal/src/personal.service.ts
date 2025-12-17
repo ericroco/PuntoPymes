@@ -175,7 +175,7 @@ export class PersonalService {
       this.empleadoRepository.merge(empleadoAReactivar, {
         ...dto, // Sobrescribe nombre, telefono, dirección, etc.
         sucursalId: sucursalDestino,
-        estado: 'Activo', // ¡Lo revivimos!
+        estado: 'Activo',
         // Aseguramos que la identificación se actualice si el match fue por email
         nroIdentificacion: dto.nroIdentificacion,
         tipoIdentificacion: dto.tipoIdentificacion
