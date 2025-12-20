@@ -1,0 +1,62 @@
+<h2 mat-dialog-title>{{ isEditing ? 'Editar Activo' : 'Registrar Nuevo Activo' }}</h2>
+
+<mat-dialog-content [formGroup]="form">
+    <div class="form-grid">
+
+        <mat-form-field appearance="outline">
+            <mat-label>Nombre del Equipo / Activo</mat-label>
+            <input matInput formControlName="nombre" placeholder="Ej: Laptop Dell Latitude">
+            <mat-error *ngIf="form.get('nombre')?.hasError('required')">Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Categoría / Tipo</mat-label>
+            <input matInput formControlName="tipo" placeholder="Ej: Computación, Mobiliario">
+            <mat-error *ngIf="form.get('tipo')?.hasError('required')">Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Serial / Código</mat-label>
+            <input matInput formControlName="serial" placeholder="S/N...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Estado Inicial</mat-label>
+            <mat-select formControlName="estado">
+                <mat-option *ngFor="let status of assetStatuses" [value]="status">
+                    {{ status }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Valor (USD)</mat-label>
+            <input matInput type="number" formControlName="valor">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Fecha Adquisición</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="fechaAdquisicion">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>URL Imagen (Opcional)</mat-label>
+            <input matInput formControlName="imageUrl" placeholder="https://...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descripción / Notas</mat-label>
+            <textarea matInput formControlName="descripcion" rows="3"></textarea>
+        </mat-form-field>
+
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isLoading || form.invalid">
+        {{ isEditing ? 'Guardar Cambios' : 'Crear Activo' }}
+    </button>
+</mat-dialog-actions>

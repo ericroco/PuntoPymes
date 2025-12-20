@@ -77,6 +77,7 @@ import { CreateSolicitudDto } from 'apps/nomina/src/dto/create-solicitud.dto';
 import { CreateSucursalDto } from '../../personal/src/dto/create-sucursal.dto';
 import { UpdateSucursalDto } from '../../personal/src/dto/update-sucursal.dto';
 
+
 @Controller()
 export class AppController {
   constructor(
@@ -2024,6 +2025,107 @@ export class AppController {
     return this.nominaService.send(
       { cmd: 'obtener_reporte_nomina' },
       { empresaId: req.user.empresaId, periodoId }
+    );
+  }
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('empleados.crear') // Usamos el permiso de crear, o crea uno nuevo 'empleados.importar'
+  @Post('empleados/importar-masivo')    // 👈 Esta es la URL que llamará el Frontend
+  importarMasivoEmpleados(
+    @Request() req,
+    @Body() body: { employees: any[] } // El frontend envía { employees: [...] }
+  ) {
+    const { empresaId } = req.user;
+
+    // Enviamos el comando al Microservicio de Personal
+    // Asegúrate de que 'this.personalService' sea tu ClientProxy inyectado
+    return this.personalService.send(
+      { cmd: 'import_bulk_empleados' }, // 👈 Debe coincidir con el @MessagePattern del Microservicio
+      {
+        empresaId,
+        empleados: body.employees
+      }
+    );
+  }
+  /**
+   * 1. CREAR PLANTILLA (Para RRHH)
+   * Ruta: POST /onboarding/plantillas
+   */
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('onboarding.gestion') // O usa 'empleados.crear' si prefieres
+  @Post('onboarding/plantillas')
+  crearPlantillaOnboarding(@Request() req, @Body() dto: any) {
+    const { empresaId } = req.user;
+
+    return this.personalService.send(
+      { cmd: 'create_onboarding_template' }, // 👈 Coincide con Microservicio
+      { empresaId, dto }
+    );
+  }
+
+  /**
+   * 2. ASIGNAR PLANTILLA A EMPLEADO
+   * Ruta: POST /onboarding/asignar
+   */
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('empleados.editar')
+  @Post('onboarding/asignar')
+  asignarOnboarding(@Body() body: { empleadoId: string; plantillaId: string }) {
+    // Aquí no necesitamos empresaId porque ya va implícito en el empleado
+    return this.personalService.send(
+      { cmd: 'assign_onboarding' },
+      {
+        empleadoId: body.empleadoId,
+        plantillaId: body.plantillaId
+      }
+    );
+  }
+
+  /**
+   * 3. VER MIS TAREAS (Para el Empleado - Dashboard)
+   * Ruta: GET /empleados/me/onboarding
+   */
+  @UseGuards(JwtAuthGuard) // Solo necesita estar logueado
+  @Get('empleados/me/onboarding')
+  getMisTareasOnboarding(@Request() req) {
+    // ⚠️ IMPORTANTE: Asumo que tu JWT Strategy agrega 'empleadoId' al req.user.
+    // Si tu usuario es Administrador y no tiene empleadoId, esto podría llegar null.
+    // Verifica que req.user.empleadoId exista.
+    const { empleadoId } = req.user;
+
+    return this.personalService.send(
+      { cmd: 'get_my_onboarding' },
+      { empleadoId }
+    );
+  }
+
+  /**
+   * 4. MARCAR TAREA COMO COMPLETADA/PENDIENTE
+   * Ruta: PATCH /empleados/me/onboarding/:tareaId
+   */
+  @UseGuards(JwtAuthGuard)
+  @Patch('empleados/me/onboarding/:tareaId')
+  toggleTareaOnboarding(
+    @Param('tareaId') tareaId: string,
+    @Body() body: { isComplete: boolean }
+  ) {
+    return this.personalService.send(
+      { cmd: 'toggle_onboarding_task' },
+      {
+        tareaId,
+        isComplete: body.isComplete
+      }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('onboarding/seed-test')
+  runSeedTest(@Request() req) {
+    const { empresaId, empleadoId } = req.user; // Asegúrate de tener empleadoId en el token
+    // Si tu usuario admin no tiene empleadoId, tendrás que pasarlo por body
+
+    return this.personalService.send(
+      { cmd: 'seed_onboarding_test' },
+      { empresaId, empleadoId }
     );
   }
 }

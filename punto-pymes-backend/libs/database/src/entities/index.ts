@@ -46,3 +46,6 @@ export * from './documentoEmpleado.entity';
 export * from './solicitudVacaciones.entity';
 export * from './sucursal.entity';
 export * from './novedadNomina.entity';
+export * from './plantilla-onboarding.entity';
+export * from './tarea-plantilla.entity';
+export * from './tarea-empleado.entity';

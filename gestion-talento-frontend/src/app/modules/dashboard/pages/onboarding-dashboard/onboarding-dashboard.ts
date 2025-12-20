@@ -1,21 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router'; // For potential links
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
 // Material
-import { MatStepperModule } from '@angular/material/stepper'; // Use Stepper for visual progress
+import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCheckboxModule } from '@angular/material/checkbox'; // If tasks are manually checkable
-import { FormsModule } from '@angular/forms'; // For ngModel if needed
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-// Interface for an onboarding task
-interface OnboardingTask {
-  id: number;
+// Tu servicio (Asegúrate de que la ruta sea correcta)
+import { EmployeesService } from '../../services/employees';
+
+export interface OnboardingTask {
+  id: string;
   title: string;
   description: string;
-  link?: string; // Optional link (e.g., to profile edit)
+  link?: string;
   isComplete: boolean;
-  // Could add 'responsible' (e.g., Empleado, RRHH, TI)
 }
 
 @Component({
@@ -24,38 +27,55 @@ interface OnboardingTask {
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule, // Add
-    MatStepperModule, // Add Stepper
+    FormsModule,
+    MatStepperModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule // Add Checkbox
+    MatCheckboxModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './onboarding-dashboard.html',
   styleUrls: ['./onboarding-dashboard.scss']
 })
 export class OnboardingDashboard implements OnInit {
 
-  // Sample tasks - In reality, fetch based on assigned Onboarding Plan (RF-39-02)
-  onboardingTasks: OnboardingTask[] = [
-    { id: 1, title: 'Completa tu Información de Contacto', description: 'Ve a tu perfil y asegúrate de que tu teléfono y contacto de emergencia estén actualizados.', link: '/dashboard/employee/me', isComplete: false }, // Link to 'My Profile'
-    { id: 2, title: 'Sube tu Foto de Perfil', description: 'Ayuda a tus compañeros a reconocerte.', link: '/dashboard/employee/me', isComplete: false },
-    { id: 3, title: 'Lee el Manual del Empleado', description: 'Encuéntralo en la Biblioteca de Políticas y marca como leído.', link: '/dashboard/policies', isComplete: false },
-    { id: 4, title: 'Configura tu Contraseña Inicial', description: 'Por seguridad, cambia tu contraseña temporal.', link: '/dashboard/settings/account', isComplete: false }, // Example link
-    { id: 5, title: 'Confirma Recepción de Equipo (TI)', description: 'Marca esta tarea cuando TI te entregue tu laptop/equipo.', isComplete: false } // Manual check
-  ];
+  // Variables de estado
+  onboardingTasks: OnboardingTask[] = [];
+  isLoading = true;
 
-  constructor() {}
+  // Inyección del servicio
+  private employeeService = inject(EmployeesService);
 
   ngOnInit(): void {
-    // TODO: Fetch the specific onboarding tasks for the logged-in user
+    this.loadTasks();
   }
 
-  // Placeholder function to simulate completing a task
+  loadTasks() {
+    this.isLoading = true;
+    this.employeeService.getMyOnboardingTasks().subscribe({
+      next: (tasks) => {
+        this.onboardingTasks = tasks;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando tareas:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
   toggleTaskCompletion(task: OnboardingTask): void {
-     // In a real app, clicking might navigate or open a modal.
-     // For simple checkboxes, the [(ngModel)] handles the state.
-     // We might need an API call here to mark the task complete in the backend.
-     console.log(`Task '${task.title}' completion toggled to: ${task.isComplete}`);
-     // TODO: Call API to update task status
+    // Llamada al Backend para guardar el estado
+    this.employeeService.toggleOnboardingTask(task.id, task.isComplete).subscribe({
+      next: () => {
+        console.log(`Tarea "${task.title}" actualizada a: ${task.isComplete}`);
+      },
+      error: (err) => {
+        console.error('Error actualizando tarea:', err);
+        // Si falla la API, revertimos el checkbox visualmente para que no mienta
+        task.isComplete = !task.isComplete;
+        alert('Hubo un error al guardar el estado de la tarea. Inténtalo de nuevo.');
+      }
+    });
   }
 }

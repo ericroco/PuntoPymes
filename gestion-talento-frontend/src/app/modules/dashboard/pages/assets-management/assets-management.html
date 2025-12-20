@@ -1,0 +1,139 @@
+<div class="assets-page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Gestión de Activos y Equipos</h1>
+            <p class="subtitle">Inventario de hardware, mobiliario y asignaciones.</p>
+        </div>
+
+        <button *ngIf="canManageAssets" mat-flat-button color="primary" (click)="openAssetDialog()">
+            <mat-icon>add</mat-icon> Nuevo Activo
+        </button>
+    </div>
+
+    <div class="filters-bar">
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-icon matPrefix>search</mat-icon>
+            <mat-label>Buscar por nombre, serial o tipo...</mat-label>
+            <input matInput [formControl]="searchControl">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="status-field">
+            <mat-label>Estado</mat-label>
+            <mat-select [formControl]="statusFilterControl">
+                <mat-option *ngFor="let status of statusOptions" [value]="status">
+                    {{ status | titlecase }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+    <div class="table-container mat-elevation-z2">
+        <table mat-table [dataSource]="dataSource">
+
+            <ng-container matColumnDef="imageUrl">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let asset">
+                    <img [src]="asset.imageUrl || 'https://cdn-icons-png.flaticon.com/512/2888/2888703.png'"
+                        class="asset-thumb" alt="Foto" #img
+                        (error)="img.src='https://cdn-icons-png.flaticon.com/512/2888/2888703.png'">
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="info">
+                <th mat-header-cell *matHeaderCellDef> Equipo / Activo </th>
+                <td mat-cell *matCellDef="let asset">
+                    <div class="asset-info">
+                        <span class="asset-name">{{ asset.nombre }}</span>
+                        <span class="asset-desc" *ngIf="asset.descripcion">
+                            {{ asset.descripcion | slice:0:40 }}...
+                        </span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="categoria">
+                <th mat-header-cell *matHeaderCellDef> Categoría </th>
+                <td mat-cell *matCellDef="let asset"> {{ asset.tipo }} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="serial">
+                <th mat-header-cell *matHeaderCellDef> Serial / Cód </th>
+                <td mat-cell *matCellDef="let asset">
+                    <span class="serial-badge">{{ asset.serial || 'S/N' }}</span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef> Estado </th>
+                <td mat-cell *matCellDef="let asset">
+                    <span class="status-badge" [ngClass]="getStatusClass(asset.estado)">
+                        {{ asset.estado }}
+                    </span>
+
+                    <mat-icon *ngIf="asset.estado === AssetStatus.ASIGNADO" class="info-icon"
+                        [matTooltip]="'Asignado a: ' + (asset.asignadoA?.nombreEmpleado || 'Desconocido')">
+                        info
+                    </mat-icon>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="valor">
+                <th mat-header-cell *matHeaderCellDef> Valor </th>
+                <td mat-cell *matCellDef="let asset">
+                    {{ asset.valor ? (asset.valor | currency) : '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let asset" class="actions-cell">
+
+                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+
+                    <mat-menu #menu="matMenu">
+
+                        <button mat-menu-item *ngIf="canManageAssets" (click)="openAssetDialog(asset)">
+                            <mat-icon>edit</mat-icon> Editar
+                        </button>
+
+                        <button mat-menu-item *ngIf="canAssignAssets && asset.estado === AssetStatus.DISPONIBLE"
+                            (click)="openAssignDialog(asset)">
+                            <mat-icon>person_add</mat-icon> Asignar a Empleado
+                        </button>
+
+                        <button mat-menu-item *ngIf="canAssignAssets && asset.estado === AssetStatus.ASIGNADO"
+                            (click)="openReturnDialog(asset)">
+                            <mat-icon color="warn">assignment_return</mat-icon>
+                            <span>Registrar Devolución</span>
+                        </button>
+
+                        <button mat-menu-item (click)="openHistoryDialog(asset)">
+                            <mat-icon>history</mat-icon> Historial
+                        </button>
+
+                        <mat-divider *ngIf="canManageAssets"></mat-divider>
+
+                        <button mat-menu-item *ngIf="canManageAssets" (click)="deleteAsset(asset)">
+                            <mat-icon color="warn">delete</mat-icon> <span class="warn-text">Dar de Baja</span>
+                        </button>
+                    </mat-menu>
+
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+                    No se encontraron activos con ese criterio.
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

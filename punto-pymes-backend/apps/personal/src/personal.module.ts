@@ -5,6 +5,7 @@ import { PersonalController } from './personal.controller';
 import { PersonalService } from './personal.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { OnboardingService } from './onboarding.service';
 
 // --- 1. IMPORTAR ConfigModule ---
 import { ConfigModule } from '@nestjs/config';
@@ -22,6 +23,9 @@ import {
   Usuario,
   DocumentoEmpleado,
   Sucursal,
+  PlantillaOnboarding,
+  TareaPlantilla,
+  TareaEmpleado,
 } from 'default/database'; // <-- Usa tu prefijo correcto
 
 @Module({
@@ -46,6 +50,9 @@ import {
       Usuario,
       DocumentoEmpleado,
       Sucursal,
+      PlantillaOnboarding,
+      TareaPlantilla,
+      TareaEmpleado,
     ]),
     // 1. CLIENTE PARA LLAMAR AL AUTH SERVICE
     ClientsModule.register([
@@ -77,6 +84,6 @@ import {
     }),
   ],
   controllers: [PersonalController],
-  providers: [PersonalService],
+  providers: [PersonalService, OnboardingService],
 })
 export class PersonalModule { }

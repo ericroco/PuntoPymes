@@ -1624,9 +1624,26 @@ let ProductividadService = class ProductividadService {
         return this.activoRepository.save(activo);
     }
     async getActivos(empresaId) {
-        return this.activoRepository.find({
+        const activos = await this.activoRepository.find({
             where: { empresaId },
             order: { nombre: 'ASC' },
+            relations: ['asignaciones', 'asignaciones.empleado'],
+        });
+        return activos.map((activo) => {
+            const asignacionVigente = activo.asignaciones?.find((a) => a.estado === database_1.EstadoAsignacion.VIGENTE);
+            const activoProcesado = { ...activo };
+            if (asignacionVigente && asignacionVigente.empleado) {
+                activoProcesado.asignadoA = {
+                    id: asignacionVigente.id,
+                    empleadoId: asignacionVigente.empleado.id,
+                    nombreEmpleado: `${asignacionVigente.empleado.nombre} ${asignacionVigente.empleado.apellido}`,
+                };
+            }
+            else {
+                activoProcesado.asignadoA = null;
+            }
+            delete activoProcesado.asignaciones;
+            return activoProcesado;
         });
     }
     async updateActivo(empresaId, activoId, dto) {
@@ -1675,10 +1692,10 @@ let ProductividadService = class ProductividadService {
             relations: ['activo'],
         });
         if (!asignacion || asignacion.activo.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Asignación no encontrada.');
+            throw new common_1.NotFoundException('Asignación no encontrada o no pertenece a tu empresa.');
         }
         if (asignacion.estado === database_1.EstadoAsignacion.DEVUELTO) {
-            throw new common_1.ConflictException('Este activo ya fue devuelto.');
+            throw new common_1.ConflictException('Este activo ya fue devuelto anteriormente.');
         }
         asignacion.fechaDevolucion = dto.fechaDevolucion || new Date();
         asignacion.estado = database_1.EstadoAsignacion.DEVUELTO;
@@ -1687,7 +1704,7 @@ let ProductividadService = class ProductividadService {
                 ? `${asignacion.observaciones} | Devolución: ${dto.observaciones}`
                 : dto.observaciones;
         }
-        asignacion.activo.estado = database_1.EstadoActivo.DISPONIBLE;
+        asignacion.activo.estado = dto.estado || database_1.EstadoActivo.DISPONIBLE;
         await this.activoRepository.save(asignacion.activo);
         return this.activoAsignadoRepository.save(asignacion);
     }
@@ -2262,16 +2279,18 @@ var EstadoActivo;
 })(EstadoActivo || (exports.EstadoActivo = EstadoActivo = {}));
 let Activo = class Activo extends base_entity_1.BaseEntity {
     nombre;
+    descripcion;
     serial;
     tipo;
     estado;
     valor;
+    imageUrl;
     fechaAdquisicion;
     empresa;
     empresaId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, description: "Estado actual. Controlado por Enum.", enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number, description: "Valor estimado o costo de compra (Opcional pero \u00FAtil para inventario)" }, fechaAdquisicion: { required: true, type: () => Date, description: "Fecha de adquisici\u00F3n" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)], description: "Historial de asignaciones." } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number }, imageUrl: { required: true, type: () => String }, fechaAdquisicion: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] } };
     }
 };
 exports.Activo = Activo;
@@ -2279,10 +2298,18 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
         length: 255,
-        comment: 'Nombre o descripción del activo (Laptop Dell XPS, Silla)',
+        comment: 'Nombre del activo (Laptop Dell XPS)',
     }),
     __metadata("design:type", String)
 ], Activo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'Descripción detallada o notas',
+    }),
+    __metadata("design:type", String)
+], Activo.prototype, "descripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
@@ -2296,7 +2323,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
         length: 100,
-        comment: 'Categoría o tipo (Computación, Mobiliario, Vehículo)',
+        comment: 'Categoría (Computación, Mobiliario)',
     }),
     __metadata("design:type", String)
 ], Activo.prototype, "tipo", void 0);
@@ -2305,7 +2332,6 @@ __decorate([
         type: 'varchar',
         length: 50,
         default: EstadoActivo.DISPONIBLE,
-        comment: 'Estado actual (DISPONIBLE, ASIGNADO...)',
     }),
     __metadata("design:type", String)
 ], Activo.prototype, "estado", void 0);
@@ -2313,15 +2339,22 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         nullable: true,
-        comment: 'Valor monetario del activo',
+        comment: 'Costo de compra',
     }),
     __metadata("design:type", Number)
 ], Activo.prototype, "valor", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'URL de la foto del activo',
+    }),
+    __metadata("design:type", String)
+], Activo.prototype, "imageUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
         type: 'date',
         nullable: true,
-        comment: 'Fecha de compra o adquisición',
     }),
     __metadata("design:type", Date)
 ], Activo.prototype, "fechaAdquisicion", void 0);
@@ -2334,7 +2367,7 @@ __decorate([
     __metadata("design:type", empresa_entity_1.Empresa)
 ], Activo.prototype, "empresa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID de la Empresa propietaria' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Activo.prototype, "empresaId", void 0);
 __decorate([
@@ -2961,13 +2994,15 @@ const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
+    descripcion;
     salarioMin;
     salarioMax;
+    empresaId;
     departamento;
     departamentoId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, empresaId: { required: true, type: () => String }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Cargo = Cargo;
@@ -2979,6 +3014,14 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Cargo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'Descripción de las funciones del cargo',
+    }),
+    __metadata("design:type", String)
+], Cargo.prototype, "descripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
@@ -2998,6 +3041,14 @@ __decorate([
     __metadata("design:type", Number)
 ], Cargo.prototype, "salarioMax", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: 'uuid',
+        nullable: true,
+        comment: 'ID de la empresa (desnormalizado para optimizar)'
+    }),
+    __metadata("design:type", String)
+], Cargo.prototype, "empresaId", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => departamento_entity_1.Departamento, (departamento) => departamento.cargos, {
         nullable: false,
         onDelete: 'RESTRICT',
@@ -3015,7 +3066,8 @@ __decorate([
 ], Cargo.prototype, "empleados", void 0);
 exports.Cargo = Cargo = __decorate([
     (0, typeorm_1.Entity)({ name: 'cargos' }),
-    (0, typeorm_1.Index)(['departamentoId'])
+    (0, typeorm_1.Index)(['departamentoId']),
+    (0, typeorm_1.Index)(['empresaId'])
 ], Cargo);
 
 
@@ -4171,6 +4223,9 @@ __exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/datab
 __exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts"), exports);
 
 
 /***/ }),
@@ -4790,6 +4845,56 @@ exports.PeriodoNomina = PeriodoNomina = __decorate([
     (0, typeorm_1.Entity)({ name: 'periodos_nomina' }),
     (0, typeorm_1.Index)(['empresaId', 'estado'])
 ], PeriodoNomina);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/plantilla-onboarding.entity.ts":
+/*!*******************************************************************!*\
+  !*** ./libs/database/src/entities/plantilla-onboarding.entity.ts ***!
+  \*******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PlantillaOnboarding = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const tarea_plantilla_entity_1 = __webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts");
+let PlantillaOnboarding = class PlantillaOnboarding extends base_entity_1.BaseEntity {
+    nombre;
+    empresaId;
+    tareas;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String }, empresaId: { required: true, type: () => String }, tareas: { required: true, type: () => [(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts").TareaPlantilla)] } };
+    }
+};
+exports.PlantillaOnboarding = PlantillaOnboarding;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], PlantillaOnboarding.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid' }),
+    __metadata("design:type", String)
+], PlantillaOnboarding.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => tarea_plantilla_entity_1.TareaPlantilla, (tarea) => tarea.plantilla, { cascade: true }),
+    __metadata("design:type", Array)
+], PlantillaOnboarding.prototype, "tareas", void 0);
+exports.PlantillaOnboarding = PlantillaOnboarding = __decorate([
+    (0, typeorm_1.Entity)('plantillas_onboarding')
+], PlantillaOnboarding);
 
 
 /***/ }),
@@ -5504,6 +5609,126 @@ exports.Sucursal = Sucursal = __decorate([
     (0, typeorm_1.Entity)({ name: 'sucursales' }),
     (0, typeorm_1.Index)(['empresaId'])
 ], Sucursal);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/tarea-empleado.entity.ts":
+/*!*************************************************************!*\
+  !*** ./libs/database/src/entities/tarea-empleado.entity.ts ***!
+  \*************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TareaEmpleado = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+let TareaEmpleado = class TareaEmpleado extends base_entity_1.BaseEntity {
+    empleadoId;
+    titulo;
+    descripcion;
+    enlace;
+    completado;
+    plantillaOrigenId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleadoId: { required: true, type: () => String }, titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, enlace: { required: true, type: () => String }, completado: { required: true, type: () => Boolean }, plantillaOrigenId: { required: true, type: () => String } };
+    }
+};
+exports.TareaEmpleado = TareaEmpleado;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid' }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "enlace", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], TareaEmpleado.prototype, "completado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "plantillaOrigenId", void 0);
+exports.TareaEmpleado = TareaEmpleado = __decorate([
+    (0, typeorm_1.Entity)('tareas_empleado'),
+    (0, typeorm_1.Index)(['empleadoId'])
+], TareaEmpleado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/tarea-plantilla.entity.ts":
+/*!**************************************************************!*\
+  !*** ./libs/database/src/entities/tarea-plantilla.entity.ts ***!
+  \**************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TareaPlantilla = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const plantilla_onboarding_entity_1 = __webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts");
+let TareaPlantilla = class TareaPlantilla extends base_entity_1.BaseEntity {
+    titulo;
+    descripcion;
+    enlace;
+    plantilla;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, enlace: { required: true, type: () => String }, plantilla: { required: true, type: () => (__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts").PlantillaOnboarding) } };
+    }
+};
+exports.TareaPlantilla = TareaPlantilla;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], TareaPlantilla.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], TareaPlantilla.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], TareaPlantilla.prototype, "enlace", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => plantilla_onboarding_entity_1.PlantillaOnboarding, (p) => p.tareas),
+    __metadata("design:type", plantilla_onboarding_entity_1.PlantillaOnboarding)
+], TareaPlantilla.prototype, "plantilla", void 0);
+exports.TareaPlantilla = TareaPlantilla = __decorate([
+    (0, typeorm_1.Entity)('tareas_plantilla')
+], TareaPlantilla);
 
 
 /***/ }),

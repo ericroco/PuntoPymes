@@ -2,6 +2,75 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./apps/personal/src/dto/bulk-import-response.dto.ts":
+/*!***********************************************************!*\
+  !*** ./apps/personal/src/dto/bulk-import-response.dto.ts ***!
+  \***********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BulkImportResponseDto = exports.BulkErrorDetailDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+const class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
+class BulkErrorDetailDto {
+    identifier;
+    error;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { identifier: { required: true, type: () => String }, error: { required: true, type: () => String } };
+    }
+}
+exports.BulkErrorDetailDto = BulkErrorDetailDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], BulkErrorDetailDto.prototype, "identifier", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], BulkErrorDetailDto.prototype, "error", void 0);
+class BulkImportResponseDto {
+    total;
+    success;
+    errors;
+    details;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { total: { required: true, type: () => Number }, success: { required: true, type: () => Number }, errors: { required: true, type: () => Number }, details: { required: true, type: () => [(__webpack_require__(/*! ./bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts").BulkErrorDetailDto)] } };
+    }
+}
+exports.BulkImportResponseDto = BulkImportResponseDto;
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], BulkImportResponseDto.prototype, "total", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], BulkImportResponseDto.prototype, "success", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], BulkImportResponseDto.prototype, "errors", void 0);
+__decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => BulkErrorDetailDto),
+    __metadata("design:type", Array)
+], BulkImportResponseDto.prototype, "details", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/personal/src/dto/create-candidato.dto.ts":
 /*!*******************************************************!*\
   !*** ./apps/personal/src/dto/create-candidato.dto.ts ***!
@@ -62,6 +131,139 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/personal/src/onboarding.service.ts":
+/*!*************************************************!*\
+  !*** ./apps/personal/src/onboarding.service.ts ***!
+  \*************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.OnboardingService = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
+const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
+let OnboardingService = class OnboardingService {
+    plantillaRepo;
+    tareaEmpleadoRepo;
+    constructor(plantillaRepo, tareaEmpleadoRepo) {
+        this.plantillaRepo = plantillaRepo;
+        this.tareaEmpleadoRepo = tareaEmpleadoRepo;
+    }
+    async createPlantilla(empresaId, data) {
+        const nuevaPlantilla = this.plantillaRepo.create({
+            ...data,
+            empresaId,
+        });
+        return this.plantillaRepo.save(nuevaPlantilla);
+    }
+    async asignarPlantilla(empleadoId, plantillaId) {
+        const plantilla = await this.plantillaRepo.findOne({
+            where: { id: plantillaId },
+            relations: ['tareas'],
+        });
+        if (!plantilla) {
+            throw new common_1.NotFoundException('La plantilla de onboarding no existe.');
+        }
+        const tareasPersonales = plantilla.tareas.map((t) => {
+            return this.tareaEmpleadoRepo.create({
+                empleadoId: empleadoId,
+                titulo: t.titulo,
+                descripcion: t.descripcion,
+                enlace: t.enlace,
+                completado: false,
+                plantillaOrigenId: plantilla.id,
+            });
+        });
+        return this.tareaEmpleadoRepo.save(tareasPersonales);
+    }
+    async getMisTareas(empleadoId) {
+        const tareas = await this.tareaEmpleadoRepo.find({
+            where: { empleadoId },
+            order: { createdAt: 'ASC' },
+        });
+        return tareas.map((t) => ({
+            id: t.id,
+            title: t.titulo,
+            description: t.descripcion,
+            link: t.enlace,
+            isComplete: t.completado,
+        }));
+    }
+    async toggleTarea(tareaId, isComplete) {
+        await this.tareaEmpleadoRepo.update(tareaId, { completado: isComplete });
+        return { success: true };
+    }
+    async seedOnboarding(empresaId, empleadoId) {
+        const plantillaExistente = await this.plantillaRepo.findOne({
+            where: { empresaId, nombre: 'Onboarding General' },
+            relations: ['tareas']
+        });
+        if (plantillaExistente) {
+            console.log('ℹ️ La plantilla ya existía, asignando...');
+            return this.asignarPlantilla(empleadoId, plantillaExistente.id);
+        }
+        const nuevaPlantilla = this.plantillaRepo.create({
+            nombre: 'Onboarding General',
+            descripcion: 'Pasos básicos para todo nuevo ingreso en Punto Pymes.',
+            empresaId: empresaId,
+            tareas: [
+                {
+                    titulo: 'Completa tu Perfil',
+                    descripcion: 'Sube tu foto y actualiza tu teléfono de contacto.',
+                    diaRelativo: 0,
+                    enlace: '/dashboard/my-profile'
+                },
+                {
+                    titulo: 'Video de Bienvenida',
+                    descripcion: 'Mira el mensaje de nuestro CEO sobre la cultura de la empresa.',
+                    diaRelativo: 0,
+                    enlace: null
+                },
+                {
+                    titulo: 'Políticas de Seguridad',
+                    descripcion: 'Lee y acepta el manual de seguridad de la información.',
+                    diaRelativo: 1,
+                    enlace: '/dashboard/policies'
+                },
+                {
+                    titulo: 'Configuración de Correo',
+                    descripcion: 'Asegúrate de tener acceso a tu email corporativo.',
+                    diaRelativo: 1,
+                    enlace: null
+                }
+            ]
+        });
+        const plantillaGuardada = (await this.plantillaRepo.save(nuevaPlantilla));
+        console.log('✅ Plantilla General creada automáticamente.');
+        return this.asignarPlantilla(empleadoId, plantillaGuardada.id);
+    }
+};
+exports.OnboardingService = OnboardingService;
+exports.OnboardingService = OnboardingService = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, typeorm_1.InjectRepository)(database_1.PlantillaOnboarding)),
+    __param(1, (0, typeorm_1.InjectRepository)(database_1.TareaEmpleado)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
+], OnboardingService);
+
+
+/***/ }),
+
 /***/ "./apps/personal/src/personal.controller.ts":
 /*!**************************************************!*\
   !*** ./apps/personal/src/personal.controller.ts ***!
@@ -88,10 +290,13 @@ const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
 const create_candidato_dto_1 = __webpack_require__(/*! ./dto/create-candidato.dto */ "./apps/personal/src/dto/create-candidato.dto.ts");
+const onboarding_service_1 = __webpack_require__(/*! ./onboarding.service */ "./apps/personal/src/onboarding.service.ts");
 let PersonalController = class PersonalController {
     personalService;
-    constructor(personalService) {
+    onboardingService;
+    constructor(personalService, onboardingService) {
         this.personalService = personalService;
+        this.onboardingService = onboardingService;
     }
     getEmpleados(data) {
         return this.personalService.getEmpleados(data.empresaId);
@@ -206,6 +411,24 @@ let PersonalController = class PersonalController {
     }
     getPublicVacancy(data) {
         return this.personalService.getPublicVacancy(data.vacanteId);
+    }
+    async importBulkEmpleados(data) {
+        return this.personalService.bulkCreateEmpleados(data.empresaId, data.empleados);
+    }
+    createOnboardingTemplate(data) {
+        return this.onboardingService.createPlantilla(data.empresaId, data.dto);
+    }
+    assignOnboarding(data) {
+        return this.onboardingService.asignarPlantilla(data.empleadoId, data.plantillaId);
+    }
+    getMyOnboarding(data) {
+        return this.onboardingService.getMisTareas(data.empleadoId);
+    }
+    toggleTask(data) {
+        return this.onboardingService.toggleTarea(data.tareaId, data.isComplete);
+    }
+    seedOnboarding(data) {
+        return this.onboardingService.seedOnboarding(data.empresaId, data.empleadoId);
     }
 };
 exports.PersonalController = PersonalController;
@@ -501,9 +724,59 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PersonalController.prototype, "getPublicVacancy", null);
+__decorate([
+    openapi.ApiOperation({ summary: "Recibe la petici\u00F3n del Gateway para importar masivamente\ncmd: 'import_bulk_empleados'" }),
+    (0, microservices_1.MessagePattern)({ cmd: 'import_bulk_empleados' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ./dto/bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts").BulkImportResponseDto) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], PersonalController.prototype, "importBulkEmpleados", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_onboarding_template' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts").PlantillaOnboarding)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "createOnboardingTemplate", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'assign_onboarding' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts").TareaEmpleado)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "assignOnboarding", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_my_onboarding' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "getMyOnboarding", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'toggle_onboarding_task' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "toggleTask", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'seed_onboarding_test' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts").TareaEmpleado)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "seedOnboarding", null);
 exports.PersonalController = PersonalController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [personal_service_1.PersonalService])
+    __metadata("design:paramtypes", [personal_service_1.PersonalService,
+        onboarding_service_1.OnboardingService])
 ], PersonalController);
 
 
@@ -530,6 +803,7 @@ const personal_controller_1 = __webpack_require__(/*! ./personal.controller */ "
 const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
 const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const onboarding_service_1 = __webpack_require__(/*! ./onboarding.service */ "./apps/personal/src/onboarding.service.ts");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 let PersonalModule = class PersonalModule {
@@ -553,6 +827,9 @@ exports.PersonalModule = PersonalModule = __decorate([
                 database_1.Usuario,
                 database_1.DocumentoEmpleado,
                 database_1.Sucursal,
+                database_1.PlantillaOnboarding,
+                database_1.TareaPlantilla,
+                database_1.TareaEmpleado,
             ]),
             microservices_1.ClientsModule.register([
                 {
@@ -580,7 +857,7 @@ exports.PersonalModule = PersonalModule = __decorate([
             }),
         ],
         controllers: [personal_controller_1.PersonalController],
-        providers: [personal_service_1.PersonalService],
+        providers: [personal_service_1.PersonalService, onboarding_service_1.OnboardingService],
     })
 ], PersonalModule);
 
@@ -642,6 +919,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var PersonalService_1;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PersonalService = void 0;
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
@@ -658,7 +936,9 @@ const common_2 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
 const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
-let PersonalService = class PersonalService {
+const common_3 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const bulk_import_response_dto_1 = __webpack_require__(/*! ./dto/bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts");
+let PersonalService = PersonalService_1 = class PersonalService {
     empleadoRepository;
     rolRepository;
     cargoRepository;
@@ -672,6 +952,7 @@ let PersonalService = class PersonalService {
     mailerService;
     sucursalRepository;
     dataSource;
+    logger = new common_3.Logger(PersonalService_1.name);
     genAI;
     constructor(empleadoRepository, rolRepository, cargoRepository, configService, contratoRepository, deptoRepository, vacanteRepository, candidatoRepository, documentoRepository, authClient, mailerService, sucursalRepository, dataSource) {
         this.empleadoRepository = empleadoRepository;
@@ -1409,9 +1690,102 @@ let PersonalService = class PersonalService {
         }
         return vacante;
     }
+    async bulkCreateEmpleados(empresaId, empleadosDtos) {
+        const rolDefecto = await this.rolRepository.findOne({ where: { empresaId, esDefecto: true } });
+        const rolSeguroId = rolDefecto?.id || (await this.rolRepository.findOne({ where: { empresaId } }))?.id;
+        if (!rolSeguroId) {
+            throw new Error('CONFIGURACIÓN INCOMPLETA: No existen roles creados en la empresa.');
+        }
+        const departamentos = await this.deptoRepository.find({
+            where: { empresaId },
+            select: ['id', 'nombre'],
+        });
+        if (departamentos.length === 0) {
+            throw new Error('CONFIGURACIÓN INCOMPLETA: Debes crear al menos un departamento antes de importar.');
+        }
+        const response = new bulk_import_response_dto_1.BulkImportResponseDto();
+        response.total = empleadosDtos.length;
+        response.success = 0;
+        response.errors = 0;
+        response.details = [];
+        for (const dto of empleadosDtos) {
+            try {
+                if (!dto.rolId) {
+                    dto.rolId = rolSeguroId;
+                }
+                if (!dto.cargoId && !dto.cargoNombre) {
+                    dto.cargoNombre = 'Sin Cargo Asignado';
+                }
+                if (!dto.cargoId && dto.cargoNombre) {
+                    let cargo = await this.cargoRepository.findOne({
+                        where: {
+                            empresaId,
+                            nombre: dto.cargoNombre
+                        },
+                    });
+                    if (!cargo) {
+                        const deptoId = await this.predecirDepartamentoConIA(departamentos, dto.cargoNombre);
+                        const salarioBase = Number(dto.salario) || 400;
+                        const salarioMin = Math.max(0, salarioBase - 300);
+                        const salarioMax = salarioBase + 300;
+                        cargo = this.cargoRepository.create({
+                            nombre: dto.cargoNombre,
+                            descripcion: 'Generado automáticamente por Importación Masiva',
+                            empresaId: empresaId,
+                            departamentoId: deptoId,
+                            salarioMin: salarioMin,
+                            salarioMax: salarioMax,
+                        });
+                        await this.cargoRepository.save(cargo);
+                        this.logger.log(`🤖 Cargo creado con IA: "${cargo.nombre}" en Depto ID: ${deptoId}`);
+                    }
+                    dto.cargoId = cargo.id;
+                }
+                if (!dto.salario) {
+                    dto.salario = 400;
+                }
+                await this.createEmpleado(empresaId, dto);
+                response.success++;
+            }
+            catch (error) {
+                response.errors++;
+                response.details.push({
+                    identifier: `${dto.nombre} ${dto.apellido}` || 'Registro desconocido',
+                    error: error.message || 'Error interno',
+                });
+                this.logger.warn(`Error importando ${dto.nombre}: ${error.message}`);
+            }
+        }
+        return response;
+    }
+    async predecirDepartamentoConIA(listaDeptos, nombreCargo) {
+        try {
+            console.log(`🧠 Consultando a Gemini para clasificar: ${nombreCargo}`);
+            const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+            const nombresDeptos = listaDeptos.map(d => d.nombre).join(', ');
+            const prompt = `
+        Actúa como un Gerente de RRHH.
+        Tengo estos departamentos: [${nombresDeptos}].
+        Tengo un nuevo cargo: "${nombreCargo}".
+        Tarea: Responde ÚNICAMENTE con el nombre exacto del departamento de la lista donde encaja mejor este cargo.
+        Si no encaja en ninguno, responde con el nombre del primero de la lista.
+        No des explicaciones, solo el nombre exacto.
+      `;
+            const result = await model.generateContent(prompt);
+            const respuestaTexto = result.response.text().trim();
+            console.log(`🤖 Gemini sugiere: ${respuestaTexto}`);
+            const deptoEncontrado = listaDeptos.find(d => d.nombre.toLowerCase().includes(respuestaTexto.toLowerCase()) ||
+                respuestaTexto.toLowerCase().includes(d.nombre.toLowerCase()));
+            return deptoEncontrado ? deptoEncontrado.id : listaDeptos[0].id;
+        }
+        catch (error) {
+            console.error('❌ Error en IA de Deptos:', error);
+            return listaDeptos.length > 0 ? listaDeptos[0].id : '';
+        }
+    }
 };
 exports.PersonalService = PersonalService;
-exports.PersonalService = PersonalService = __decorate([
+exports.PersonalService = PersonalService = PersonalService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(database_1.Empleado)),
     __param(1, (0, typeorm_1.InjectRepository)(database_1.Rol)),
@@ -1638,16 +2012,18 @@ var EstadoActivo;
 })(EstadoActivo || (exports.EstadoActivo = EstadoActivo = {}));
 let Activo = class Activo extends base_entity_1.BaseEntity {
     nombre;
+    descripcion;
     serial;
     tipo;
     estado;
     valor;
+    imageUrl;
     fechaAdquisicion;
     empresa;
     empresaId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, description: "Estado actual. Controlado por Enum.", enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number, description: "Valor estimado o costo de compra (Opcional pero \u00FAtil para inventario)" }, fechaAdquisicion: { required: true, type: () => Date, description: "Fecha de adquisici\u00F3n" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)], description: "Historial de asignaciones." } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number }, imageUrl: { required: true, type: () => String }, fechaAdquisicion: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] } };
     }
 };
 exports.Activo = Activo;
@@ -1655,10 +2031,18 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
         length: 255,
-        comment: 'Nombre o descripción del activo (Laptop Dell XPS, Silla)',
+        comment: 'Nombre del activo (Laptop Dell XPS)',
     }),
     __metadata("design:type", String)
 ], Activo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'Descripción detallada o notas',
+    }),
+    __metadata("design:type", String)
+], Activo.prototype, "descripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
@@ -1672,7 +2056,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
         length: 100,
-        comment: 'Categoría o tipo (Computación, Mobiliario, Vehículo)',
+        comment: 'Categoría (Computación, Mobiliario)',
     }),
     __metadata("design:type", String)
 ], Activo.prototype, "tipo", void 0);
@@ -1681,7 +2065,6 @@ __decorate([
         type: 'varchar',
         length: 50,
         default: EstadoActivo.DISPONIBLE,
-        comment: 'Estado actual (DISPONIBLE, ASIGNADO...)',
     }),
     __metadata("design:type", String)
 ], Activo.prototype, "estado", void 0);
@@ -1689,15 +2072,22 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
         nullable: true,
-        comment: 'Valor monetario del activo',
+        comment: 'Costo de compra',
     }),
     __metadata("design:type", Number)
 ], Activo.prototype, "valor", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'URL de la foto del activo',
+    }),
+    __metadata("design:type", String)
+], Activo.prototype, "imageUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
         type: 'date',
         nullable: true,
-        comment: 'Fecha de compra o adquisición',
     }),
     __metadata("design:type", Date)
 ], Activo.prototype, "fechaAdquisicion", void 0);
@@ -1710,7 +2100,7 @@ __decorate([
     __metadata("design:type", empresa_entity_1.Empresa)
 ], Activo.prototype, "empresa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'ID de la Empresa propietaria' }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Activo.prototype, "empresaId", void 0);
 __decorate([
@@ -2337,13 +2727,15 @@ const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Cargo = class Cargo extends base_entity_1.BaseEntity {
     nombre;
+    descripcion;
     salarioMin;
     salarioMax;
+    empresaId;
     departamento;
     departamentoId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, empresaId: { required: true, type: () => String }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }, departamentoId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Cargo = Cargo;
@@ -2355,6 +2747,14 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Cargo.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'text',
+        nullable: true,
+        comment: 'Descripción de las funciones del cargo',
+    }),
+    __metadata("design:type", String)
+], Cargo.prototype, "descripcion", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
@@ -2374,6 +2774,14 @@ __decorate([
     __metadata("design:type", Number)
 ], Cargo.prototype, "salarioMax", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: 'uuid',
+        nullable: true,
+        comment: 'ID de la empresa (desnormalizado para optimizar)'
+    }),
+    __metadata("design:type", String)
+], Cargo.prototype, "empresaId", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => departamento_entity_1.Departamento, (departamento) => departamento.cargos, {
         nullable: false,
         onDelete: 'RESTRICT',
@@ -2391,7 +2799,8 @@ __decorate([
 ], Cargo.prototype, "empleados", void 0);
 exports.Cargo = Cargo = __decorate([
     (0, typeorm_1.Entity)({ name: 'cargos' }),
-    (0, typeorm_1.Index)(['departamentoId'])
+    (0, typeorm_1.Index)(['departamentoId']),
+    (0, typeorm_1.Index)(['empresaId'])
 ], Cargo);
 
 
@@ -3547,6 +3956,9 @@ __exportStar(__webpack_require__(/*! ./documentoEmpleado.entity */ "./libs/datab
 __exportStar(__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/src/entities/novedadNomina.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts"), exports);
 
 
 /***/ }),
@@ -4166,6 +4578,56 @@ exports.PeriodoNomina = PeriodoNomina = __decorate([
     (0, typeorm_1.Entity)({ name: 'periodos_nomina' }),
     (0, typeorm_1.Index)(['empresaId', 'estado'])
 ], PeriodoNomina);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/plantilla-onboarding.entity.ts":
+/*!*******************************************************************!*\
+  !*** ./libs/database/src/entities/plantilla-onboarding.entity.ts ***!
+  \*******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PlantillaOnboarding = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const tarea_plantilla_entity_1 = __webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts");
+let PlantillaOnboarding = class PlantillaOnboarding extends base_entity_1.BaseEntity {
+    nombre;
+    empresaId;
+    tareas;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String }, empresaId: { required: true, type: () => String }, tareas: { required: true, type: () => [(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts").TareaPlantilla)] } };
+    }
+};
+exports.PlantillaOnboarding = PlantillaOnboarding;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], PlantillaOnboarding.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid' }),
+    __metadata("design:type", String)
+], PlantillaOnboarding.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => tarea_plantilla_entity_1.TareaPlantilla, (tarea) => tarea.plantilla, { cascade: true }),
+    __metadata("design:type", Array)
+], PlantillaOnboarding.prototype, "tareas", void 0);
+exports.PlantillaOnboarding = PlantillaOnboarding = __decorate([
+    (0, typeorm_1.Entity)('plantillas_onboarding')
+], PlantillaOnboarding);
 
 
 /***/ }),
@@ -4884,6 +5346,126 @@ exports.Sucursal = Sucursal = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/tarea-empleado.entity.ts":
+/*!*************************************************************!*\
+  !*** ./libs/database/src/entities/tarea-empleado.entity.ts ***!
+  \*************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TareaEmpleado = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+let TareaEmpleado = class TareaEmpleado extends base_entity_1.BaseEntity {
+    empleadoId;
+    titulo;
+    descripcion;
+    enlace;
+    completado;
+    plantillaOrigenId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleadoId: { required: true, type: () => String }, titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, enlace: { required: true, type: () => String }, completado: { required: true, type: () => Boolean }, plantillaOrigenId: { required: true, type: () => String } };
+    }
+};
+exports.TareaEmpleado = TareaEmpleado;
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid' }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "enlace", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], TareaEmpleado.prototype, "completado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", String)
+], TareaEmpleado.prototype, "plantillaOrigenId", void 0);
+exports.TareaEmpleado = TareaEmpleado = __decorate([
+    (0, typeorm_1.Entity)('tareas_empleado'),
+    (0, typeorm_1.Index)(['empleadoId'])
+], TareaEmpleado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/tarea-plantilla.entity.ts":
+/*!**************************************************************!*\
+  !*** ./libs/database/src/entities/tarea-plantilla.entity.ts ***!
+  \**************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TareaPlantilla = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const plantilla_onboarding_entity_1 = __webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts");
+let TareaPlantilla = class TareaPlantilla extends base_entity_1.BaseEntity {
+    titulo;
+    descripcion;
+    enlace;
+    plantilla;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, enlace: { required: true, type: () => String }, plantilla: { required: true, type: () => (__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts").PlantillaOnboarding) } };
+    }
+};
+exports.TareaPlantilla = TareaPlantilla;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], TareaPlantilla.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], TareaPlantilla.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], TareaPlantilla.prototype, "enlace", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => plantilla_onboarding_entity_1.PlantillaOnboarding, (p) => p.tareas),
+    __metadata("design:type", plantilla_onboarding_entity_1.PlantillaOnboarding)
+], TareaPlantilla.prototype, "plantilla", void 0);
+exports.TareaPlantilla = TareaPlantilla = __decorate([
+    (0, typeorm_1.Entity)('tareas_plantilla')
+], TareaPlantilla);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/tarea.entity.ts":
 /*!****************************************************!*\
   !*** ./libs/database/src/entities/tarea.entity.ts ***!
@@ -5453,6 +6035,16 @@ module.exports = require("@nestjs/typeorm");
 /***/ ((module) => {
 
 module.exports = require("axios");
+
+/***/ }),
+
+/***/ "class-transformer":
+/*!************************************!*\
+  !*** external "class-transformer" ***!
+  \************************************/
+/***/ ((module) => {
+
+module.exports = require("class-transformer");
 
 /***/ }),
 

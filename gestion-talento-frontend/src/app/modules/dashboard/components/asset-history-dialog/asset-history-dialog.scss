@@ -1,0 +1,143 @@
+// Variables (Ajustadas a tu identidad visual)
+$primary-color: #3f51b5;
+$text-main: #333;
+$text-secondary: #666;
+$border-color: #e0e0e0;
+$success-bg: #e8f5e9;
+$success-text: #2e7d32;
+$gray-bg: #f5f5f5;
+$gray-text: #616161;
+
+// 1. ENCABEZADO
+h2[mat-dialog-title] {
+    margin: 0;
+    padding: 24px 24px 4px 24px;
+    font-family: 'Roboto', sans-serif;
+    color: $primary-color;
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+h3[mat-dialog-subtitle] {
+    margin: 0 0 10px 0; // Margen abajo
+    padding: 0 24px 16px 24px;
+    color: $text-secondary;
+    font-size: 0.95rem;
+    font-weight: 400;
+    border-bottom: 1px solid $border-color; // Línea separadora sutil
+}
+
+// 2. CONTENEDOR (Scroll y Layout)
+.history-container {
+    padding: 0 !important; // Quitamos padding default para que la tabla llegue a los bordes
+    max-height: 60vh; // Altura máxima fija
+    min-width: 600px; // Ancho mínimo cómodo
+    overflow-y: auto; // Scroll vertical
+
+    // Scrollbar moderna
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+}
+
+// 3. ESTADOS DE CARGA Y VACÍO
+.loading-shade {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: $text-secondary;
+    font-style: italic;
+    background: $gray-bg;
+    margin: 20px;
+    border-radius: 8px;
+    border: 1px dashed #ccc;
+}
+
+// 4. TABLA
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    // Cabecera pegajosa (Sticky Header)
+    th.mat-header-cell {
+        background: #fff; // Fondo blanco para tapar contenido al scrollear
+        color: $text-secondary;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 16px 24px;
+        border-bottom: 2px solid $gray-bg;
+    }
+
+    td.mat-cell {
+        padding: 16px 24px;
+        color: $text-main;
+        border-bottom: 1px solid $gray-bg;
+        font-size: 0.9rem;
+
+        // Ajuste para la columna de observaciones si es muy larga
+        &:nth-child(3) {
+            max-width: 250px;
+            white-space: normal;
+            line-height: 1.4;
+        }
+    }
+
+    // Efecto hover en filas
+    tr.mat-row:hover {
+        background-color: #fbfbfb;
+    }
+}
+
+// 5. DETALLES ESPECÍFICOS
+
+// Fechas pequeñas
+small {
+    color: #999;
+    font-size: 0.8em;
+    display: block; // Forzar salto de línea limpio
+    margin-top: 2px;
+}
+
+// Estado (Badge / Pill)
+td span {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: $gray-bg; // Por defecto (Devuelto)
+    color: $gray-text;
+    text-transform: uppercase;
+
+    // Estado Activo (Vigente)
+    &.status-active {
+        background-color: $success-bg;
+        color: $success-text;
+        border: 1px solid rgba($success-text, 0.1);
+    }
+}
+
+// 6. BOTONES (Footer)
+mat-dialog-actions {
+    padding: 16px 24px 24px 24px !important;
+    border-top: 1px solid $border-color;
+    background: #fff;
+}

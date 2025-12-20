@@ -5,37 +5,43 @@ import {
   OneToMany,
   JoinColumn,
   Index,
-  Unique, // Importante para la restricción compuesta
+  Unique,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
-// Nota: Asegúrate de que activoAsignado.entity.ts exista, si no, coméntalo temporalmente
-import { ActivoAsignado } from './activoAsignado.entity';
+import { ActivoAsignado } from './activoAsignado.entity'; // Descomenta cuando exista
 
 export enum EstadoActivo {
-  DISPONIBLE = 'DISPONIBLE',       // En bodega, listo para usar
-  ASIGNADO = 'ASIGNADO',           // Lo tiene un empleado
-  EN_REPARACION = 'EN_REPARACION', // Mantenimiento
-  DE_BAJA = 'DE_BAJA',             // Perdido, robado o vendido
+  DISPONIBLE = 'DISPONIBLE',
+  ASIGNADO = 'ASIGNADO',
+  EN_REPARACION = 'EN_REPARACION',
+  DE_BAJA = 'DE_BAJA',
 }
 
 @Entity({ name: 'activos' })
 @Index(['empresaId'])
-// REGLA DE ORO SAAS: El serial es único SOLO dentro de la misma empresa
-@Unique(['empresaId', 'serial'])
+@Unique(['empresaId', 'serial']) // Ojo: Postgres permite múltiples NULLs, así que está bien para activos sin serial
 export class Activo extends BaseEntity {
 
   @Column({
     type: 'varchar',
     length: 255,
-    comment: 'Nombre o descripción del activo (Laptop Dell XPS, Silla)',
+    comment: 'Nombre del activo (Laptop Dell XPS)',
   })
   nombre: string;
+
+  // 👇 Agregado para que puedas poner notas largas en el frontend
+  @Column({
+    type: 'text',
+    nullable: true,
+    comment: 'Descripción detallada o notas',
+  })
+  descripcion: string;
 
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true, // Algunos activos (sillas) no tienen serial
+    nullable: true,
     comment: 'Número de serial único (si aplica)',
   })
   serial: string;
@@ -43,38 +49,35 @@ export class Activo extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 100,
-    comment: 'Categoría o tipo (Computación, Mobiliario, Vehículo)',
+    comment: 'Categoría (Computación, Mobiliario)',
   })
   tipo: string;
 
-  /**
-   * Estado actual. Controlado por Enum.
-   */
   @Column({
     type: 'varchar',
     length: 50,
     default: EstadoActivo.DISPONIBLE,
-    comment: 'Estado actual (DISPONIBLE, ASIGNADO...)',
   })
   estado: EstadoActivo;
 
-  /**
-   * Valor estimado o costo de compra (Opcional pero útil para inventario)
-   */
   @Column({
     type: 'float',
     nullable: true,
-    comment: 'Valor monetario del activo',
+    comment: 'Costo de compra',
   })
   valor: number;
 
-  /**
-   * Fecha de adquisición
-   */
+  // 👇 Agregado para que se vea bonito en el catálogo
+  @Column({
+    type: 'text',
+    nullable: true,
+    comment: 'URL de la foto del activo',
+  })
+  imageUrl: string;
+
   @Column({
     type: 'date',
     nullable: true,
-    comment: 'Fecha de compra o adquisición',
   })
   fechaAdquisicion: Date;
 
@@ -87,12 +90,11 @@ export class Activo extends BaseEntity {
   @JoinColumn({ name: 'empresaId' })
   empresa: Empresa;
 
-  @Column({ comment: 'ID de la Empresa propietaria' })
+  @Column()
   empresaId: string;
 
-  /**
-   * Historial de asignaciones.
-   */
+
   @OneToMany(() => ActivoAsignado, (asignacion) => asignacion.activo)
   asignaciones: ActivoAsignado[];
+
 }

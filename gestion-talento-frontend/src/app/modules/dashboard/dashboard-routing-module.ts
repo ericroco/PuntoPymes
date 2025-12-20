@@ -129,6 +129,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/onboarding-dashboard/onboarding-dashboard').then(c => c.OnboardingDashboard)
   },
   {
+    path: 'assets', // URL: /dashboard/assets
+    loadComponent: () => import('./pages/assets-management/assets-management').then(c => c.AssetsManagement)
+  },
+  {
     path: '**',
     redirectTo: 'overview'
   }

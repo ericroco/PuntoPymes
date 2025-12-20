@@ -13,6 +13,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditEmployeeDialog } from '../../components/edit-employee-dialog/edit-employee-dialog';
+import { EmployeeImportDialog } from '../../components/employee-import-dialog.ts/employee-import-dialog';
 
 // Importamos la interfaz REAL del servicio
 import { EmployeesService, Employee } from '../../services/employees';
@@ -246,6 +247,21 @@ export class EmployeeManagement implements OnInit {
             this.snackBar.open(errorMsg, 'Cerrar', { duration: 5000 });
           }
         });
+      }
+    });
+  }
+  // FUNCIÓN PARA ABRIR EL IMPORTADOR
+  openImportDialog() {
+    const dialogRef = this.dialog.open(EmployeeImportDialog, {
+      width: '900px', // Ancho suficiente para la tabla de mapeo
+      disableClose: true, // Evita que se cierre si hacen clic afuera por error
+      maxHeight: '90vh'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Si el modal devuelve algo (true o datos), recargamos la tabla
+      if (result) {
+        this.loadEmployees(); // 👈 Asegúrate de llamar a tu función que refresca la lista
       }
     });
   }

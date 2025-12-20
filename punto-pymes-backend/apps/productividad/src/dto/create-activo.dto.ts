@@ -1,32 +1,39 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, Min, IsDate } from 'class-validator';
-import { Type } from 'class-transformer';
-// Asegúrate de importar el Enum desde tu entidad actualizada
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, Min, IsDateString } from 'class-validator';
+// ❌ Ya NO necesitas Type de class-transformer
 import { EstadoActivo } from 'default/database/entities/activo.entity';
 
 export class CreateActivoDto {
     @IsString()
     @IsNotEmpty()
-    nombre: string; // Ej: "MacBook Pro 16"
+    nombre: string;
 
     @IsString()
     @IsOptional()
-    serial?: string; // Ej: "C02..."
+    serial?: string;
 
     @IsString()
     @IsNotEmpty()
-    tipo: string; // Ej: "Laptop", "Monitor"
+    tipo: string;
 
     @IsEnum(EstadoActivo)
     @IsOptional()
-    estado?: EstadoActivo; // Default: DISPONIBLE
+    estado?: EstadoActivo;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    valor?: number; // Ej: 2500.00
+    valor?: number;
 
-    @IsDate()
-    @Type(() => Date)
+    // ✅ CAMBIO AQUÍ - Acepta string en formato ISO
+    @IsDateString()  // ← Cambiado de @IsDate()
     @IsOptional()
-    fechaAdquisicion?: Date;
+    fechaAdquisicion?: string; // ← Cambiado de Date a string
+
+    @IsString()
+    @IsOptional()
+    descripcion?: string;
+
+    @IsString()
+    @IsOptional()
+    imageUrl?: string;
 }

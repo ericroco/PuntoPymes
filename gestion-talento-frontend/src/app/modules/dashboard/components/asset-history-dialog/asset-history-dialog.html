@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>Historial de Asignaciones</h2>
+<h3 mat-dialog-subtitle>{{ data.asset.nombre }} ({{ data.asset.serial || 'S/N' }})</h3>
+
+<mat-dialog-content class="history-container">
+
+    <div *ngIf="isLoading" class="loading-shade">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div *ngIf="!isLoading && history.length === 0" class="no-data">
+        <p>Este activo no tiene historial de movimientos.</p>
+    </div>
+
+    <table mat-table [dataSource]="history" *ngIf="!isLoading && history.length > 0">
+
+        <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef> Fecha </th>
+            <td mat-cell *matCellDef="let row">
+                {{ row.fechaAsignacion | date:'shortDate' }}
+                <br>
+                <small *ngIf="row.fechaDevolucion">hasta {{ row.fechaDevolucion | date:'shortDate' }}</small>
+            </td>
+        </ng-container>
+
+        <ng-container matColumnDef="empleado">
+            <th mat-header-cell *matHeaderCellDef> Responsable </th>
+            <td mat-cell *matCellDef="let row">
+                {{ row.empleado?.nombres }} {{ row.empleado?.apellidos }}
+            </td>
+        </ng-container>
+
+        <ng-container matColumnDef="observaciones">
+            <th mat-header-cell *matHeaderCellDef> Notas </th>
+            <td mat-cell *matCellDef="let row"> {{ row.observaciones || '-' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef> Estado </th>
+            <td mat-cell *matCellDef="let row">
+                <span [class.status-active]="!row.fechaDevolucion">
+                    {{ row.fechaDevolucion ? 'Devuelto' : 'Vigente' }}
+                </span>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cerrar</button>
+</mat-dialog-actions>

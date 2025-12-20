@@ -1,0 +1,168 @@
+.assets-page-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+// --- CABECERA ---
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+
+    h1 {
+        font-size: 1.8rem;
+        font-weight: 500;
+        margin: 0 0 0.5rem 0;
+        color: #333;
+    }
+
+    .subtitle {
+        color: #666;
+        margin: 0;
+    }
+}
+
+// --- FILTROS ---
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .search-field {
+        flex: 1;
+    }
+
+    .status-field {
+        width: 200px;
+    }
+}
+
+// --- TABLA ---
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+
+    table {
+        width: 100%;
+
+        th.mat-header-cell {
+            background: #f9fafb;
+            color: #555;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        // Miniatura de imagen
+        .asset-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+
+        // Info Nombre
+        .asset-info {
+            display: flex;
+            flex-direction: column;
+
+            .asset-name {
+                font-weight: 500;
+                color: #2c3e50;
+            }
+
+            .asset-desc {
+                font-size: 0.8rem;
+                color: #95a5a6;
+            }
+        }
+
+        // Serial Badge
+        .serial-badge {
+            font-family: monospace;
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        // Actions
+        .actions-cell {
+            width: 60px;
+            text-align: right;
+        }
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+        font-style: italic;
+    }
+}
+
+// --- BADGES DE ESTADO (COLORES) ---
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &.status-available {
+        background-color: #e6f4ea; // Verde claro
+        color: #1e8e3e;
+    }
+
+    &.status-assigned {
+        background-color: #e8f0fe; // Azul claro
+        color: #1967d2;
+    }
+
+    &.status-maintenance {
+        background-color: #fef7e0; // Amarillo claro
+        color: #f9ab00;
+    }
+
+    &.status-down {
+        background-color: #fce8e6; // Rojo claro
+        color: #d93025;
+    }
+}
+
+.info-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    color: #1967d2;
+    margin-left: 5px;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.warn-text {
+    color: #d93025;
+}
+
+// Mobile responsive básico
+@media (max-width: 768px) {
+    .filters-bar {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .status-field {
+        width: 100%;
+    }
+}

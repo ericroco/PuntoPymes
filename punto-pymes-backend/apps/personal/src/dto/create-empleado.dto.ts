@@ -6,13 +6,9 @@ import {
   IsUUID,
   IsDateString,
   IsNumber,
-  Min,// <--- 1. HABILITADO (Antes estaba comentado o faltaba)
+  Min,
 } from 'class-validator';
 
-/**
- * DTO para crear un nuevo Empleado (RF-01-01)
- * Define las reglas de validación para los datos de entrada de la *persona*.
- */
 export class CreateEmpleadoDto {
   @IsNotEmpty({ message: 'El nombre es requerido.' })
   @IsString()
@@ -26,43 +22,55 @@ export class CreateEmpleadoDto {
   @IsEmail({}, { message: 'El email personal no es válido.' })
   emailPersonal?: string;
 
-  // --- NUEVOS CAMPOS AGREGADOS ---
-
   @IsOptional()
   @IsString()
   telefono?: string;
 
   @IsOptional()
-  @IsDateString({}, { message: 'La fecha de nacimiento debe ser una fecha válida (YYYY-MM-DD).' })
+  @IsDateString({}, { message: 'La fecha de nacimiento debe ser una fecha válida.' })
   fechaNacimiento?: string;
 
-  // --------------------------------
+  // =================================================================
+  // 🚨 CAMBIOS CLAVE PARA LA IMPORTACIÓN MASIVA E INTELIGENCIA ARTIFICIAL
+  // =================================================================
 
   /**
-   * El ID del Cargo (puesto) que ocupará.
+   * MODIFICADO: Ahora es Opcional.
+   * Razón: En la importación masiva no tenemos el ID, tenemos el nombre.
+   * El servicio se encargará de buscar el ID o crear uno nuevo con IA.
    */
-  @IsNotEmpty({ message: 'El cargo es requerido.' })
+  @IsOptional()
   @IsUUID('4', { message: 'El cargoId debe ser un UUID válido.' })
-  cargoId: string;
+  cargoId?: string;
 
   /**
-   * El ID del Rol (permisos) que tendrá.
+   * ✅ NUEVO CAMPO: Necesario para la IA.
+   * Aquí recibiremos "Gerente de Ventas" o "Desarrollador".
+   * Si cargoId no viene, el servicio usará este campo para Gemini.
    */
-  @IsNotEmpty({ message: 'El rol es requerido.' })
+  @IsOptional()
+  @IsString()
+  cargoNombre?: string;
+
+  /**
+   * MODIFICADO: Ahora es Opcional.
+   * Razón: El JSON no trae rol. El servicio asignará el "Rol por Defecto" automáticamente.
+   */
+  @IsOptional()
   @IsUUID('4', { message: 'El rolId debe ser un UUID válido.' })
-  rolId: string;
+  rolId?: string;
 
-  /**
-   * (Opcional) ID del Empleado que será su jefe.
-   */
+  // =================================================================
+
   @IsOptional()
   @IsUUID('4', { message: 'El jefeId debe ser un UUID válido.' })
   jefeId?: string;
 
-  @IsOptional() // Opcional porque el Admin Local no necesita enviarlo (se infiere)
+  @IsOptional()
   @IsUUID()
   sucursalId?: string;
-  // 👇 AGREGAR ESTOS CAMPOS NUEVOS PARA EL CONTRATO 👇
+
+  // --- DATOS DEL CONTRATO ---
 
   @IsOptional()
   @IsNumber()
@@ -83,7 +91,7 @@ export class CreateEmpleadoDto {
 
   @IsString()
   @IsNotEmpty()
-  tipoIdentificacion: string; // 'Cedula' | 'Pasaporte'
+  tipoIdentificacion: string;
 
   @IsString()
   @IsNotEmpty()

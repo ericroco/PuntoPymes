@@ -1148,9 +1148,38 @@ export class ProductividadService {
   }
 
   async getActivos(empresaId: string): Promise<Activo[]> {
-    return this.activoRepository.find({
+    const activos = await this.activoRepository.find({
       where: { empresaId },
       order: { nombre: 'ASC' },
+      // 👇 1. Traemos el historial de asignaciones y los datos del empleado
+      relations: ['asignaciones', 'asignaciones.empleado'],
+    });
+
+    // 👇 2. Procesamos cada activo para "facilitarle la vida" al Frontend
+    return activos.map((activo) => {
+      // Buscamos si tiene una asignación activa (VIGENTE)
+      const asignacionVigente = activo.asignaciones?.find(
+        (a) => a.estado === EstadoAsignacion.VIGENTE,
+      );
+
+      // Creamos una copia del objeto para agregarle datos extra
+      const activoProcesado: any = { ...activo };
+
+      if (asignacionVigente && asignacionVigente.empleado) {
+        // 👇 ESTO ES LO QUE NECESITA TU FRONTEND
+        activoProcesado.asignadoA = {
+          id: asignacionVigente.id, // <--- CRÍTICO: El ID de la asignación
+          empleadoId: asignacionVigente.empleado.id,
+          nombreEmpleado: `${asignacionVigente.empleado.nombre} ${asignacionVigente.empleado.apellido}`,
+        };
+      } else {
+        activoProcesado.asignadoA = null;
+      }
+
+      // Opcional: Borramos la lista gigante de asignaciones para no enviar basura
+      delete activoProcesado.asignaciones;
+
+      return activoProcesado;
     });
   }
 
@@ -1221,44 +1250,46 @@ export class ProductividadService {
 
     return this.activoAsignadoRepository.save(asignacion);
   }
-
   /**
-   * Registrar devolución de un activo
-   */
+     * Registrar devolución de un activo
+     */
   async returnActivo(
     empresaId: string,
     asignacionId: string,
     dto: ReturnActivoDto,
   ): Promise<ActivoAsignado> {
-    // 1. Buscar la asignación
+    // 1. Buscar la asignación con la relación del activo
     const asignacion = await this.activoAsignadoRepository.findOne({
       where: { id: asignacionId },
-      relations: ['activo'], // Necesitamos el activo para cambiar su estado
+      relations: ['activo'],
     });
 
+    // Validaciones de seguridad
     if (!asignacion || asignacion.activo.empresaId !== empresaId) {
-      throw new NotFoundException('Asignación no encontrada.');
+      throw new NotFoundException('Asignación no encontrada o no pertenece a tu empresa.');
     }
 
     if (asignacion.estado === EstadoAsignacion.DEVUELTO) {
-      throw new ConflictException('Este activo ya fue devuelto.');
+      throw new ConflictException('Este activo ya fue devuelto anteriormente.');
     }
 
-    // 2. Actualizar Asignación (Cerrarla)
+    // 2. Cerrar la Asignación
     asignacion.fechaDevolucion = dto.fechaDevolucion || new Date();
     asignacion.estado = EstadoAsignacion.DEVUELTO;
+
+    // Concatenar observaciones nuevas con las viejas (opcional, o reemplazar)
     if (dto.observaciones) {
       asignacion.observaciones = asignacion.observaciones
         ? `${asignacion.observaciones} | Devolución: ${dto.observaciones}`
         : dto.observaciones;
     }
 
-    // 3. Liberar el Activo (Ponerlo DISPONIBLE)
-    // Ojo: Si se devuelve roto, quizás deberíamos permitir cambiar estado a EN_REPARACION, 
-    // pero por ahora lo dejamos DISPONIBLE por defecto.
-    asignacion.activo.estado = EstadoActivo.DISPONIBLE;
-    await this.activoRepository.save(asignacion.activo);
+    // 3. Actualizar estado del Activo (LA PARTE CLAVE)
+    // Usamos el estado que viene del Frontend. Si no viene nada, por defecto DISPONIBLE.
+    asignacion.activo.estado = dto.estado || EstadoActivo.DISPONIBLE;
 
+    // Guardamos ambos cambios
+    await this.activoRepository.save(asignacion.activo);
     return this.activoAsignadoRepository.save(asignacion);
   }
 

@@ -1,0 +1,76 @@
+.upload-area {
+    border: 2px dashed #ccc;
+    padding: 30px;
+    text-align: center;
+    background: #fafafa;
+    margin: 20px 0;
+
+    mat-icon {
+        font-size: 48px;
+        height: 48px;
+        width: 48px;
+        color: #999;
+    }
+
+    .success-text {
+        color: green;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+}
+
+.mapping-table {
+    width: 100%;
+
+    td {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .req {
+        color: red;
+    }
+
+    .full-width {
+        width: 100%;
+    }
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.result-box {
+    text-align: center;
+
+    .header-success {
+        color: green;
+
+        mat-icon {
+            font-size: 50px;
+            height: 50px;
+            width: 50px;
+        }
+    }
+
+    .err {
+        color: #d32f2f;
+    }
+
+    .error-log {
+        text-align: left;
+        background: #ffebee;
+        padding: 10px;
+        max-height: 150px;
+        overflow: auto;
+        margin-top: 10px;
+    }
+}
+
+.confirm-area {
+    text-align: center;
+    padding: 20px;
+}

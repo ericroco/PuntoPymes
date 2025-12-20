@@ -121,8 +121,7 @@ export class AuthService {
         cargoId: cargoAdmin.id,
         nombre: nombreAdmin,
         apellido: apellidoAdmin,
-        estado: 'Activo', // Estado de actividad
-        // ¡Ya no hay fechaContratacion!
+        estado: 'Activo',
       });
       await manager.save(nuevoEmpleado);
 

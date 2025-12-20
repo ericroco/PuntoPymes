@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-
+import { BulkImportResponse } from '../models/bulk-import.models';
 // DTO para crear (Datos que enviamos)
 export interface CreateEmployeeDto {
     nombre: string;
@@ -11,16 +11,22 @@ export interface CreateEmployeeDto {
     nroIdentificacion: string;
     tipoIdentificacion: string;
     telefono: string;
-    fechaNacimiento?: string; // YYYY-MM-DD
-    rolId: string;   // UUID
-    cargoId: string; // UUID
-    jefeId?: string; // UUID
+    fechaNacimiento?: string;
+    rolId: string;
+    cargoId: string;
+    jefeId?: string;
     salario?: number;
     tipoContrato?: string;
     fechaInicio?: string;
     fechaFin?: string;
 }
-
+export interface OnboardingTask {
+    id: string; // Cambiado a string pq UUID
+    title: string;
+    description: string;
+    link?: string;
+    isComplete: boolean;
+}
 // Interfaz del Empleado (Datos que recibimos)
 export interface Employee {
     id: string;
@@ -124,5 +130,20 @@ export class EmployeesService {
     }
     deleteDocument(documentoId: string): Observable<any> {
         return this.http.delete(`${environment.apiUrl}/empleados/documentos/${documentoId}`);
+    }
+
+    importBulk(employees: any[]): Observable<BulkImportResponse> {
+        // Ajusta la URL a la ruta de tu API Gateway
+        return this.http.post<BulkImportResponse>(`${this.apiUrl}/importar-masivo`, { employees });
+    }
+
+    getMyOnboardingTasks(): Observable<OnboardingTask[]> {
+        // ⚠️ OJO: La ruta debe ser EXACTAMENTE la que definimos en el Gateway
+        // Si en el Gateway pusiste 'empleados/me/onboarding', aquí debe ser igual.
+        return this.http.get<OnboardingTask[]>(`${this.apiUrl}/me/onboarding`);
+    }
+
+    toggleOnboardingTask(taskId: string, isComplete: boolean): Observable<any> {
+        return this.http.patch(`${this.apiUrl}/me/onboarding/${taskId}`, { isComplete });
     }
 }

@@ -17,10 +17,14 @@ import { UpdateCandidatoAIDto } from './dto/update-candidato-ai.dto';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CreateSucursalDto } from './dto/create-sucursal.dto';
 import { UpdateSucursalDto } from './dto/update-sucursal.dto';
+import { BulkImportResponseDto } from './dto/bulk-import-response.dto';
+import { OnboardingService } from './onboarding.service';
 
 @Controller()
 export class PersonalController {
-  constructor(private readonly personalService: PersonalService) { }
+  constructor(private readonly personalService: PersonalService,
+    private readonly onboardingService: OnboardingService
+  ) { }
 
   /**
    * Escucha el comando 'get_empleados' (RF-01-02)
@@ -376,5 +380,46 @@ export class PersonalController {
   @MessagePattern({ cmd: 'get_public_vacancy' })
   getPublicVacancy(@Payload() data: { vacanteId: string }) {
     return this.personalService.getPublicVacancy(data.vacanteId);
+  }
+
+  /**
+     * Recibe la petición del Gateway para importar masivamente
+     * cmd: 'import_bulk_empleados'
+     */
+  @MessagePattern({ cmd: 'import_bulk_empleados' })
+  async importBulkEmpleados(
+    @Payload() data: { empresaId: string; empleados: CreateEmpleadoDto[] }
+  ): Promise<BulkImportResponseDto> {
+
+    // Delegamos al servicio
+    return this.personalService.bulkCreateEmpleados(data.empresaId, data.empleados);
+  }
+
+  // Crear la plantilla maestra
+  @MessagePattern({ cmd: 'create_onboarding_template' })
+  createOnboardingTemplate(@Payload() data: any) {
+    return this.onboardingService.createPlantilla(data.empresaId, data.dto);
+  }
+
+  // Asignar plantilla a un empleado (Se llama al crear empleado o manualmente)
+  @MessagePattern({ cmd: 'assign_onboarding' })
+  assignOnboarding(@Payload() data: { empleadoId: string, plantillaId: string }) {
+    return this.onboardingService.asignarPlantilla(data.empleadoId, data.plantillaId);
+  }
+
+  // Obtener tareas para el Dashboard (Frontend)
+  @MessagePattern({ cmd: 'get_my_onboarding' })
+  getMyOnboarding(@Payload() data: { empleadoId: string }) {
+    return this.onboardingService.getMisTareas(data.empleadoId);
+  }
+
+  // Marcar Checkbox
+  @MessagePattern({ cmd: 'toggle_onboarding_task' })
+  toggleTask(@Payload() data: { tareaId: string, isComplete: boolean }) {
+    return this.onboardingService.toggleTarea(data.tareaId, data.isComplete);
+  }
+  @MessagePattern({ cmd: 'seed_onboarding_test' })
+  seedOnboarding(@Payload() data: { empresaId: string, empleadoId: string }) {
+    return this.onboardingService.seedOnboarding(data.empresaId, data.empleadoId);
   }
 }

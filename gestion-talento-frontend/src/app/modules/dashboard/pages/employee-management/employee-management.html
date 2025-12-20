@@ -17,10 +17,19 @@
       </button>
     </div>
 
-    <button *ngIf="can(P.EMPLOYEES_CREATE)" mat-flat-button color="primary" (click)="openAddEmployeeDialog()">
-      <mat-icon>add</mat-icon>
-      Añadir Empleado
-    </button>
+    <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+
+      <button *ngIf="can(P.EMPLOYEES_CREATE)" mat-stroked-button color="primary" (click)="openImportDialog()">
+        <mat-icon>cloud_upload</mat-icon>
+        Importar JSON
+      </button>
+
+      <button *ngIf="can(P.EMPLOYEES_CREATE)" mat-flat-button color="primary" (click)="openAddEmployeeDialog()">
+        <mat-icon>add</mat-icon>
+        Añadir Empleado
+      </button>
+
+    </div>
   </header>
 
   <div class="employee-grid" @cardAnimation>

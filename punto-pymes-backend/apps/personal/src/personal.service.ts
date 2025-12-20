@@ -36,9 +36,13 @@ import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { MailerService } from '@nestjs-modules/mailer';
 import { firstValueFrom } from 'rxjs';
+import { Logger } from '@nestjs/common';
+import { BulkImportResponseDto } from './dto/bulk-import-response.dto';
+
 
 @Injectable()
 export class PersonalService {
+  private readonly logger = new Logger(PersonalService.name);
   private genAI: GoogleGenerativeAI;
   constructor(
     @InjectRepository(Empleado)
@@ -1245,5 +1249,165 @@ export class PersonalService {
     }
 
     return vacante;
+  }
+  async bulkCreateEmpleados(
+    empresaId: string,
+    empleadosDtos: CreateEmpleadoDto[],
+  ): Promise<BulkImportResponseDto> {
+
+    // --- 1. PREPARACIÓN DE DATOS (Optimizamos haciendo consultas una sola vez) ---
+
+    // A. Buscar Rol por Defecto
+    // Buscamos un rol marcado como defecto, o el primero que encontremos como fallback
+    const rolDefecto = await this.rolRepository.findOne({ where: { empresaId, esDefecto: true } });
+    const rolSeguroId = rolDefecto?.id || (await this.rolRepository.findOne({ where: { empresaId } }))?.id;
+
+    if (!rolSeguroId) {
+      // Si no hay roles, devolvemos error general inmediato porque nada funcionará
+      throw new Error('CONFIGURACIÓN INCOMPLETA: No existen roles creados en la empresa.');
+    }
+
+    // B. Cargar Departamentos para la IA
+    // Traemos solo ID y Nombre para no saturar la memoria ni el prompt de Gemini
+    const departamentos = await this.deptoRepository.find({
+      where: { empresaId },
+      select: ['id', 'nombre'],
+    });
+
+    if (departamentos.length === 0) {
+      throw new Error('CONFIGURACIÓN INCOMPLETA: Debes crear al menos un departamento antes de importar.');
+    }
+
+    // --- 2. INICIALIZAR RESPUESTA ---
+    const response = new BulkImportResponseDto();
+    response.total = empleadosDtos.length;
+    response.success = 0;
+    response.errors = 0;
+    response.details = [];
+
+    // --- 3. PROCESAMIENTO SECUENCIAL ---
+    for (const dto of empleadosDtos) {
+      try {
+
+        // ---------------------------------------------------------
+        // PASO A: ASIGNACIÓN AUTOMÁTICA DE ROL
+        // ---------------------------------------------------------
+        if (!dto.rolId) {
+          dto.rolId = rolSeguroId;
+        }
+
+        if (!dto.cargoId && !dto.cargoNombre) {
+          dto.cargoNombre = 'Sin Cargo Asignado';
+        }
+
+        // Ahora sí, entramos a la lógica (porque cargoNombre ya tiene valor)
+        if (!dto.cargoId && dto.cargoNombre) {
+
+          let cargo = await this.cargoRepository.findOne({
+            where: {
+              empresaId,
+              nombre: dto.cargoNombre
+            },
+          });
+
+          if (!cargo) {
+
+            // a) Usar IA para decidir el Departamento
+            const deptoId = await this.predecirDepartamentoConIA(departamentos, dto.cargoNombre);
+
+            // b) Calcular banda salarial automática
+            // Si el empleado gana 1500, el cargo será de 1200 a 1800
+            const salarioBase = Number(dto.salario) || 400; // 400 default si no trae salario
+            const salarioMin = Math.max(0, salarioBase - 300);
+            const salarioMax = salarioBase + 300;
+
+            // c) Crear la entidad Cargo
+            cargo = this.cargoRepository.create({
+              nombre: dto.cargoNombre,
+              descripcion: 'Generado automáticamente por Importación Masiva',
+              empresaId: empresaId, // Importante: Asigna la empresa
+              departamentoId: deptoId,
+              salarioMin: salarioMin,
+              salarioMax: salarioMax,
+            });
+
+            await this.cargoRepository.save(cargo);
+            this.logger.log(`🤖 Cargo creado con IA: "${cargo.nombre}" en Depto ID: ${deptoId}`);
+          }
+
+          // Asignamos el ID del cargo (existente o nuevo) al DTO
+          dto.cargoId = cargo.id;
+        }
+
+        if (!dto.salario) {
+          dto.salario = 400; // Valor por defecto seguro
+        }
+
+        // ---------------------------------------------------------
+        // PASO C: CREAR EMPLEADO
+        // ---------------------------------------------------------
+        // Llamamos a tu método individual que ya valida DNI, Email, etc.
+        await this.createEmpleado(empresaId, dto);
+
+        response.success++;
+
+      } catch (error) {
+        response.errors++;
+        response.details.push({
+          identifier: `${dto.nombre} ${dto.apellido}` || 'Registro desconocido',
+          error: error.message || 'Error interno',
+        });
+
+        // Logueamos el error pero NO detenemos el bucle
+        this.logger.warn(`Error importando ${dto.nombre}: ${error.message}`);
+      }
+    }
+
+    return response;
+  }
+
+  // 👇 NUEVA FUNCIÓN PRIVADA BASADA EN TU ESTILO
+  private async predecirDepartamentoConIA(
+    listaDeptos: { id: string; nombre: string }[],
+    nombreCargo: string
+  ): Promise<string> {
+    try {
+      console.log(`🧠 Consultando a Gemini para clasificar: ${nombreCargo}`);
+
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+      // Solo enviamos los nombres para ahorrar tokens
+      const nombresDeptos = listaDeptos.map(d => d.nombre).join(', ');
+
+      const prompt = `
+        Actúa como un Gerente de RRHH.
+        Tengo estos departamentos: [${nombresDeptos}].
+        Tengo un nuevo cargo: "${nombreCargo}".
+        Tarea: Responde ÚNICAMENTE con el nombre exacto del departamento de la lista donde encaja mejor este cargo.
+        Si no encaja en ninguno, responde con el nombre del primero de la lista.
+        No des explicaciones, solo el nombre exacto.
+      `;
+
+      // Generamos contenido (Texto simple, no necesitamos inlineData/PDF aquí)
+      const result = await model.generateContent(prompt);
+      const respuestaTexto = result.response.text().trim();
+
+      console.log(`🤖 Gemini sugiere: ${respuestaTexto}`);
+
+      // Buscamos el ID correspondiente al nombre que nos dio Gemini
+      // Usamos includes() para ser flexibles con mayúsculas/minúsculas o espacios extra
+      const deptoEncontrado = listaDeptos.find(d =>
+        d.nombre.toLowerCase().includes(respuestaTexto.toLowerCase()) ||
+        respuestaTexto.toLowerCase().includes(d.nombre.toLowerCase())
+      );
+
+      // Si encuentra, devuelve ID. Si no, devuelve el ID del primero (fallback).
+      return deptoEncontrado ? deptoEncontrado.id : listaDeptos[0].id;
+
+    } catch (error) {
+      console.error('❌ Error en IA de Deptos:', error);
+      // Fallback de seguridad: devolver el primer departamento
+      return listaDeptos.length > 0 ? listaDeptos[0].id : '';
+    }
   }
 }
