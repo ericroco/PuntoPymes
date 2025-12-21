@@ -12,15 +12,17 @@
     </a>
 
     <div class="nav-section"
-      *ngIf="can(P.EMPLOYEES_READ) || can(P.RECRUITMENT_MANAGE) || can(P.ONBOARDING_MANAGE) || can(P.PERFORMANCE_MANAGE)">
+      *ngIf="can(P.EMPLOYEES_READ_BASIC) || can(P.RECRUITMENT_MANAGE) || can(P.ONBOARDING_MANAGE) || can(P.PERFORMANCE_MANAGE)">
+
       <span class="nav-title">
         <mat-icon class="section-icon">people</mat-icon> Talento Humano
       </span>
-      <div class="nav-submenu">
 
-        <a *ngIf="can(P.EMPLOYEES_READ)" routerLink="/dashboard/employees" routerLinkActive="active" class="nav-item">
+      <div class="nav-submenu">
+        <a *ngIf="can(P.EMPLOYEES_READ_BASIC)" routerLink="/dashboard/employees" routerLinkActive="active"
+          class="nav-item">
           <mat-icon>badge</mat-icon>
-          <span>Empleados</span>
+          <span>Directorio</span>
         </a>
 
         <a *ngIf="can(P.RECRUITMENT_MANAGE)" routerLink="/dashboard/recruitment" routerLinkActive="active"
@@ -43,45 +45,53 @@
       </div>
     </div>
 
-    <div class="nav-section">
+    <div class="nav-section"
+      *ngIf="can(P.PROJECTS_READ) || can(P.TASKS_MY_READ) || can(P.ATTENDANCE_READ_ALL) || can(P.ATTENDANCE_MY_READ)">
+
       <span class="nav-title">
         <mat-icon class="section-icon">business_center</mat-icon> Operaciones
       </span>
+
       <div class="nav-submenu">
-        <a routerLink="/dashboard/sprints" routerLinkActive="active" class="nav-item">
+
+        <a *ngIf="can(P.PROJECTS_READ) || can(P.TASKS_MY_READ)" routerLink="/dashboard/sprints"
+          routerLinkActive="active" class="nav-item">
           <mat-icon>view_kanban</mat-icon>
           <span>Sprints y Tareas</span>
         </a>
 
-        <a routerLink="/dashboard/goals" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.PROJECTS_READ)" routerLink="/dashboard/goals" routerLinkActive="active" class="nav-item">
           <mat-icon>flag</mat-icon>
           <span>Metas y Objetivos</span>
         </a>
 
-        <a routerLink="/dashboard/timesheet" routerLinkActive="active" class="nav-item">
-          <mat-icon>schedule</mat-icon>
-          <span>Registro de Tiempo</span>
-        </a>
-
-        <a routerLink="/dashboard/attendance" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.ATTENDANCE_READ_ALL) || can(P.ATTENDANCE_MY_READ)" routerLink="/dashboard/attendance"
+          routerLinkActive="active" class="nav-item">
           <mat-icon>event_available</mat-icon>
           <span>Asistencia</span>
+        </a>
+
+        <a *ngIf="can(P.TASKS_EXECUTE)" routerLink="/dashboard/timesheet" routerLinkActive="active" class="nav-item">
+          <mat-icon>schedule</mat-icon>
+          <span>Registro de Tiempo</span>
         </a>
       </div>
     </div>
 
-    <div class="nav-section" *ngIf="can(P.PAYROLL_READ) || can(P.BENEFITS_MANAGE)">
+    <div class="nav-section" *ngIf="can(P.PAYROLL_READ) || can(P.PAYROLL_MY_READ) || can(P.BENEFITS_MANAGE)">
       <span class="nav-title">
         <mat-icon class="section-icon">payments</mat-icon> Compensación
       </span>
       <div class="nav-submenu">
 
-        <a *ngIf="can(P.PAYROLL_READ)" routerLink="/dashboard/payroll" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.PAYROLL_READ) || can(P.PAYROLL_MY_READ)" routerLink="/dashboard/payroll"
+          routerLinkActive="active" class="nav-item">
           <mat-icon>receipt_long</mat-icon>
           <span>Nómina</span>
         </a>
 
-        <a *ngIf="can(P.BENEFITS_MANAGE)" routerLink="/dashboard/benefits" routerLinkActive="active" class="nav-item">
+        <a *ngIf="can(P.BENEFITS_MANAGE) || can(P.LOANS_REQUEST)" routerLink="/dashboard/benefits"
+          routerLinkActive="active" class="nav-item">
           <mat-icon>card_giftcard</mat-icon>
           <span>Beneficios</span>
         </a>
@@ -93,7 +103,7 @@
       </div>
     </div>
 
-    <div class="nav-section">
+    <div class="nav-section" *ngIf="can(P.TRAINING_MANAGE) || can(P.PERFIL_ME)">
       <span class="nav-title">
         <mat-icon class="section-icon">trending_up</mat-icon> Desarrollo
       </span>
@@ -105,7 +115,7 @@
       </div>
     </div>
 
-    <div class="nav-section">
+    <div class="nav-section" *ngIf="can(P.DOCUMENTS_MANAGE) || can(P.ASSETS_MANAGE) || can(P.PERFIL_ME)">
       <span class="nav-title">
         <mat-icon class="section-icon">inventory_2</mat-icon> Recursos
       </span>
@@ -115,14 +125,9 @@
           <span>Documentos</span>
         </a>
 
-        <a routerLink="/dashboard/assets" routerLinkActive="active" class="nav-item" *ngIf="can(P.ASSETS_MANAGE)">
+        <a *ngIf="can(P.ASSETS_MANAGE)" routerLink="/dashboard/assets" routerLinkActive="active" class="nav-item">
           <mat-icon>devices</mat-icon>
           <span>Activos y Equipos</span>
-        </a>
-
-        <a routerLink="/dashboard/knowledge-base" routerLinkActive="active" class="nav-item">
-          <mat-icon>menu_book</mat-icon>
-          <span>Base de Conocimiento</span>
         </a>
       </div>
     </div>
@@ -146,24 +151,24 @@
       <span>Mi Perfil</span>
     </a>
 
-    <div class="nav-section">
+    <div class="nav-section" *ngIf="can(P.EMPLOYEES_READ_BASIC)">
       <span class="nav-title">
         <mat-icon class="section-icon">domain</mat-icon> Empresa
       </span>
       <div class="nav-submenu">
+
+        <a *ngIf="can(P.BRANCHES_MANAGE)" routerLink="/dashboard/branches" routerLinkActive="active" class="nav-item">
+          <mat-icon>store</mat-icon>
+          <span>Sucursales / Sedes</span>
+        </a>
         <a routerLink="/dashboard/organization-chart" routerLinkActive="active" class="nav-item">
           <mat-icon>account_tree</mat-icon>
           <span>Organigrama</span>
         </a>
 
-        <a routerLink="/dashboard/company-policies" routerLinkActive="active" class="nav-item">
+        <a routerLink="/dashboard/policies" routerLinkActive="active" class="nav-item">
           <mat-icon>gavel</mat-icon>
           <span>Políticas y Normas</span>
-        </a>
-
-        <a routerLink="/dashboard/company-culture" routerLinkActive="active" class="nav-item">
-          <mat-icon>favorite</mat-icon>
-          <span>Cultura y Valores</span>
         </a>
 
         <a routerLink="/dashboard/announcements" routerLinkActive="active" class="nav-item">

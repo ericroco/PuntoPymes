@@ -41,4 +41,8 @@ export class CreateProyectoDto {
     @IsEnum(EstadoProyecto)
     @IsOptional()
     estado?: EstadoProyecto;
+
+    @IsUUID()
+    @IsOptional()
+    sucursalId?: string;
 }

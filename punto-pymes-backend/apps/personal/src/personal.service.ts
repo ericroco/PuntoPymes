@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 // Tu import ya incluye 'Contrato', lo cual es perfecto.
 import {
   Empleado, Rol, Cargo, Departamento, Contrato, Candidato,
-  Vacante, EstadoCandidato, EstadoVacante, DocumentoEmpleado
+  Vacante, EstadoCandidato, EstadoVacante, DocumentoEmpleado, DocumentoEmpresa
 } from 'default/database';
 import { Repository, Not, DataSource } from 'typeorm';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
@@ -38,6 +38,9 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { firstValueFrom } from 'rxjs';
 import { Logger } from '@nestjs/common';
 import { BulkImportResponseDto } from './dto/bulk-import-response.dto';
+import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
+import { IsNull } from 'typeorm';
+import { CreateDocumentoEmpresaDto } from './dto/create-documento-empresa.dto';
 
 
 @Injectable()
@@ -68,6 +71,8 @@ export class PersonalService {
     private readonly mailerService: MailerService,
     @InjectRepository(Sucursal)
     private readonly sucursalRepository: Repository<Sucursal>,
+    @InjectRepository(DocumentoEmpresa)
+    private readonly documentoEmpresaRepository: Repository<DocumentoEmpresa>,
 
     private dataSource: DataSource,
   ) {
@@ -81,31 +86,74 @@ export class PersonalService {
    * Lógica de negocio para obtener todos los empleados
    * (Tu método existente - sin cambios)
    */
+  // =================================================================
+  // OBTENER EMPLEADOS (Con Filtro de Sucursal)
+  // =================================================================
   async getEmpleados(empresaId: string, filtroSucursalId?: string): Promise<Empleado[]> {
-    console.log(`Microservicio PERSONAL: Buscando empleados...`);
+    console.log(`Microservicio PERSONAL: Buscando empleados. Empresa: ${empresaId}, Sucursal: ${filtroSucursalId || 'Todas'}`);
 
-    const where: any = { empresaId };
+    // 1. Construimos el objeto WHERE base
+    const whereClause: any = {
+      empresaId,
+      estado: 'Activo' // Asumo que solo quieres los activos en la lista general
+    };
 
+    // 2. Si hay filtro de sucursal, lo agregamos al objeto
     if (filtroSucursalId) {
-      where.sucursalId = filtroSucursalId;
+      whereClause.sucursal = { id: filtroSucursalId };
     }
 
     return this.empleadoRepository.find({
-      where: { empresaId: empresaId, estado: 'Activo' },
-      // 👇 AGREGAMOS 'cargo.departamento' AQUÍ
-      relations: ['cargo', 'cargo.departamento', 'rol', 'sucursal', 'contratos'],
+      // 3. ¡IMPORTANTE! Usamos el objeto whereClause que construimos arriba
+      where: whereClause,
+
+      relations: [
+        'cargo',
+        'cargo.departamento',
+        'rol',
+        'sucursal', // Para mostrar la sede en la tabla
+        'contratos'
+      ],
+      order: {
+        createdAt: 'DESC' // Los más nuevos primero
+      }
     });
   }
-  async getEmpleado(empresaId: string, empleadoId: string): Promise<Empleado> {
+
+  // =================================================================
+  // OBTENER UN EMPLEADO (Perfil)
+  // =================================================================
+  async getEmpleado(empresaId: string, empleadoId: string, filtroSucursalId?: string): Promise<Empleado> {
+
+    // Construimos el WHERE
+    const whereClause: any = {
+      id: empleadoId,
+      empresaId
+    };
+
+    // 🔒 SEGURIDAD: Si nos pasan un filtro de sucursal (ej: es un Gerente de Sede),
+    // nos aseguramos de que NO pueda ver un empleado de otra sede, aunque tenga el ID.
+    if (filtroSucursalId) {
+      whereClause.sucursal = { id: filtroSucursalId };
+    }
+
     const empleado = await this.empleadoRepository.findOne({
-      where: { id: empleadoId, empresaId },
-      // Cargamos cargo, rol y el departamento del cargo para mostrarlo en el perfil
-      relations: ['cargo', 'rol', 'cargo.departamento'],
+      where: whereClause,
+      // Cargamos todas las relaciones necesarias para el perfil
+      relations: [
+        'cargo',
+        'rol',
+        'cargo.departamento',
+        'sucursal'
+      ],
     });
 
     if (!empleado) {
-      throw new NotFoundException('Empleado no encontrado.');
+      // Si el empleado existe pero es de otra sucursal, findOne devuelve null
+      // y aquí lanzamos el error, protegiendo los datos.
+      throw new NotFoundException('Empleado no encontrado o no pertenece a su jurisdicción.');
     }
+
     return empleado;
   }
   /**
@@ -387,10 +435,6 @@ export class PersonalService {
     return { message: 'Empleado desvinculado correctamente.' };
   }
 
-  /**
-   * Lógica de negocio para crear un nuevo Departamento (RF-02)
-   * (Tu método existente - sin cambios)
-   */
   async createDepartamento(
     empresaId: string,
     dto: CreateDepartamentoDto,
@@ -399,41 +443,66 @@ export class PersonalService {
       `Microservicio PERSONAL: Creando departamento para empresaId: ${empresaId}`,
     );
 
-    const deptoExistente = await this.deptoRepository.findOneBy({
+    // =========================================================
+    // 1. VALIDACIÓN DE DUPLICADOS MEJORADA
+    // Ahora validamos Nombre + Empresa + Sucursal
+    // =========================================================
+    const whereDuplicado: any = {
       nombre: dto.nombre,
       empresaId: empresaId,
+    };
+
+    // Si viene con sucursal, buscamos si ya existe en ESA sucursal
+    // Si es global, buscamos si ya existe uno global
+    whereDuplicado.sucursal = dto.sucursalId ? { id: dto.sucursalId } : IsNull();
+
+    const deptoExistente = await this.deptoRepository.findOne({
+      where: whereDuplicado
     });
 
     if (deptoExistente) {
       throw new ConflictException(
-        'Ya existe un departamento con ese nombre en esta empresa.',
+        'Ya existe un departamento con ese nombre en esta sede (o a nivel global).',
       );
     }
 
+    // =========================================================
+    // 2. CREACIÓN (Guardando la relación)
+    // =========================================================
     const nuevoDepto = this.deptoRepository.create({
       ...dto,
       empresaId: empresaId,
+      // 👇 Aquí guardamos la relación
+      sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined
     });
 
     return this.deptoRepository.save(nuevoDepto);
   }
 
   /**
-     * Lógica de negocio para obtener todos los Departamentos (RF-02)
-     * (Tu método existente - sin cambios)
-     */
-  async getDepartamentos(empresaId: string): Promise<Departamento[]> {
+   * Obtener Departamentos (Con Filtro)
+   */
+  async getDepartamentos(empresaId: string, filtroSucursalId?: string): Promise<Departamento[]> {
     console.log(
-      `Microservicio PERSONAL: Buscando departamentos para empresaId: ${empresaId}`,
+      `Microservicio PERSONAL: Buscando departamentos. Empresa: ${empresaId}, Sede: ${filtroSucursalId}`,
     );
+
+    // Construimos el WHERE dinámico
+    const whereClause: any = { empresaId: empresaId };
+
+    if (filtroSucursalId) {
+      // Si hay filtro, mostramos SOLO los de esa sucursal
+      // (Opcional: Si quieres que también salgan los globales, usarías un OR, 
+      // pero por ahora dejémoslo estricto por seguridad).
+      whereClause.sucursal = { id: filtroSucursalId };
+    }
+
     return this.deptoRepository.find({
-      where: {
-        empresaId: empresaId,
-      },
-      relations: ['cargos'],
+      where: whereClause,
+      relations: ['cargos', 'sucursal'], // 👈 Agregamos 'sucursal' para verla en el front
+      order: { nombre: 'ASC' }
     });
   }
-
   /**
    * Lógica de negocio para actualizar un Departamento (RF-02)
    * (Tu método existente - sin cambios)
@@ -549,20 +618,30 @@ export class PersonalService {
    * Lógica de negocio para OBTENER TODOS los Cargos (RF-02)
    * de una empresa (Multi-Tenant).
    */
-  async getCargos(empresaId: string): Promise<Cargo[]> {
+  async getCargos(empresaId: string, filtroSucursalId?: string): Promise<Cargo[]> {
     console.log(
-      `Microservicio PERSONAL: Buscando cargos para empresaId: ${empresaId}`,
+      `Microservicio PERSONAL: Buscando cargos. Empresa: ${empresaId}, Sede: ${filtroSucursalId || 'Todas'}`,
     );
 
-    // Buscamos cargos a través de la relación Cargo -> Departamento -> Empresa
-    return this.cargoRepository.find({
-      where: {
-        departamento: {
-          empresaId: empresaId,
-        },
+    // 1. Construimos el Where Base (Empresa)
+    const whereClause: any = {
+      departamento: {
+        empresaId: empresaId,
       },
-      relations: ['departamento'], // Incluimos info del depto al que pertenecen
-      withDeleted: false, // ¡Importante! No mostrar los borrados lógicamente
+    };
+
+    // 2. Si hay filtro de sucursal, profundizamos en la relación
+    // TypeORM permite filtrar: Cargo -> Departamento -> Sucursal -> ID
+    if (filtroSucursalId) {
+      whereClause.departamento.sucursal = { id: filtroSucursalId };
+    }
+
+    return this.cargoRepository.find({
+      where: whereClause,
+      // 👇 Agregamos 'departamento.sucursal' para que el Front sepa de qué sede es
+      relations: ['departamento', 'departamento.sucursal'],
+      withDeleted: false,
+      order: { nombre: 'ASC' }
     });
   }
 
@@ -701,6 +780,129 @@ export class PersonalService {
   }
 
   /**
+   * 🏭 SEEDER: Crea los 5 roles maestros para una nueva empresa.
+   * Se debe llamar al registrar una empresa nueva.
+   */
+  async crearRolesPorDefecto(empresaId: string) {
+    console.log(`🏭 Generando roles base para la empresa: ${empresaId}`);
+
+    const rolesDefecto = [
+      // 1. SUPER ADMIN (Dueño)
+      {
+        nombre: 'Super Admin',
+        descripcion: 'Acceso total y control de configuración de la empresa.',
+        esNativo: true,    // No se puede borrar
+        esDefecto: false,
+        permisos: ['*']    // Wildcard: Todo permitido
+      },
+
+      // 2. GERENTE DE RRHH (Administrativo)
+      {
+        nombre: 'Gerente de RRHH',
+        descripcion: 'Gestión integral de personal, nómina, contratos y reclutamiento.',
+        esNativo: false,
+        esDefecto: false,
+        permisos: [
+          // Gestión de Personas
+          PERMISSIONS.EMPLOYEES_MANAGE,
+          PERMISSIONS.EMPLOYEES_READ_SENSITIVE,
+          PERMISSIONS.SALARIES_READ,
+          // Estructura
+          PERMISSIONS.BRANCHES_MANAGE,
+          PERMISSIONS.DEPARTMENTS_MANAGE,
+          PERMISSIONS.POSITIONS_MANAGE,
+          // Nómina
+          PERMISSIONS.PAYROLL_PROCESS,
+          PERMISSIONS.PAYROLL_READ_ALL,
+          PERMISSIONS.PAYROLL_CONFIG,
+          // Procesos
+          PERMISSIONS.ONBOARDING_MANAGE,
+          PERMISSIONS.RECRUITMENT_MANAGE,
+          PERMISSIONS.LOANS_APPROVE
+        ]
+      },
+
+      // 3. GERENTE DE SUCURSAL (Operativo Físico)
+      {
+        nombre: 'Gerente de Sucursal',
+        descripcion: 'Supervisión operativa de ubicación física. Control de asistencia.',
+        esNativo: false,
+        esDefecto: false,
+        permisos: [
+          PERMISSIONS.EMPLOYEES_READ_BASIC,
+          PERMISSIONS.EMPLOYEES_READ_SENSITIVE, // Para emergencias
+          PERMISSIONS.ATTENDANCE_READ_ALL,
+          PERMISSIONS.ATTENDANCE_MODIFY,
+          PERMISSIONS.SHIFTS_MANAGE,
+          // PERMISSIONS.VACATIONS_APPROVE, // (Si tienes este permiso definido)
+          PERMISSIONS.ONBOARDING_VIEW_PROGRESS,
+          PERMISSIONS.ASSETS_MANAGE
+        ]
+      },
+
+      // 4. LÍDER DE PROYECTO (Operativo Digital)
+      {
+        nombre: 'Líder de Proyecto',
+        descripcion: 'Gestión de productividad, sprints y asignación de tareas.',
+        esNativo: false,
+        esDefecto: false,
+        permisos: [
+          PERMISSIONS.PROJECTS_MANAGE,
+          PERMISSIONS.TASKS_MANAGE,
+          PERMISSIONS.EMPLOYEES_READ_BASIC,
+          PERMISSIONS.REPORTS_VIEW
+        ]
+      },
+
+      // 5. COLABORADOR (Empleado Base - DEFAULT)
+      {
+        nombre: 'Colaborador',
+        descripcion: 'Rol estándar. Acceso a portal personal y ejecución de tareas.',
+        esNativo: true,
+        esDefecto: true, // 👈 ESTE SERÁ EL ÚNICO TRUE
+        permisos: [
+          // Portal Personal
+          PERMISSIONS.PERFIL_ME, // Asegúrate de tener este en tus constantes o usa EMPLOYEES_READ_OWN
+          PERMISSIONS.PAYROLL_MY_READ,
+          PERMISSIONS.ONBOARDING_MY_PROGRESS,
+          PERMISSIONS.ATTENDANCE_MY_READ,
+          PERMISSIONS.LOANS_REQUEST,
+
+          // Productividad (Lo que pediste para los Sprints)
+          PERMISSIONS.PROJECTS_READ,
+          PERMISSIONS.TASKS_MY_READ,
+          PERMISSIONS.TASKS_EXECUTE
+        ]
+      }
+    ];
+
+    // Usamos una transacción para que se creen todos o ninguno
+    await this.dataSource.transaction(async (manager) => {
+      for (const r of rolesDefecto) {
+        // 1. Verificamos si existe (Idempotencia: para no duplicar si se corre 2 veces)
+        const existe = await manager.findOne(Rol, {
+          where: { empresaId, nombre: r.nombre }
+        });
+
+        if (!existe) {
+          const nuevoRol = manager.create(Rol, {
+            nombre: r.nombre,
+            descripcion: r.descripcion,
+            esNativo: r.esNativo,
+            esDefecto: r.esDefecto, // Aquí ya viene correcto (solo 1 es true)
+            empresaId: empresaId,
+            permisos: r.permisos as any
+          });
+
+          await manager.save(nuevoRol);
+        }
+      }
+    });
+
+    console.log(`✅ 5 Roles base configurados correctamente para la empresa ${empresaId}`);
+  }
+
+  /**
    * Lógica de negocio para OBTENER TODOS los Roles (RF-29)
    * de una empresa (Multi-Tenant RNF20).
    */
@@ -835,22 +1037,39 @@ export class PersonalService {
       // ------------------------------------------------
     }
 
-    // 2. Crear la Vacante (Lógica estándar)
+    // 2. Crear la Vacante (Guardando Sucursal)
     const vacante = this.vacanteRepository.create({
       ...dto,
       empresaId,
       estado: dto.estado || EstadoVacante.BORRADOR,
+      // 👇 GUARDAR RELACIÓN SUCURSAL
+      sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
     });
 
     return this.vacanteRepository.save(vacante);
   }
 
-  async getVacantes(empresaId: string, soloPublicas: boolean = false): Promise<Vacante[]> {
+  async getVacantes(empresaId: string, soloPublicas: boolean = false, filtroSucursalId?: string): Promise<Vacante[]> {
+
+    // 1. Where Base
     const where: any = { empresaId };
+
+    // 2. Filtro de Públicas
     if (soloPublicas) {
       where.estado = EstadoVacante.PUBLICA;
     }
-    return this.vacanteRepository.find({ where, order: { createdAt: 'DESC' } });
+
+    // 3. Filtro de Sucursal (Solo aplica si NO estamos viendo solo públicas externas)
+    // OJO: Generalmente si es pública se muestra todo, pero si es gestión interna (Admin dashboard) filtramos.
+    if (filtroSucursalId && !soloPublicas) {
+      where.sucursal = { id: filtroSucursalId };
+    }
+
+    return this.vacanteRepository.find({
+      where,
+      order: { createdAt: 'DESC' },
+      relations: ['departamento', 'sucursal'] // 👈 Agregar sucursal para verla en la tabla
+    });
   }
 
   async updateVacante(empresaId: string, vacanteId: string, dto: UpdateVacanteDto): Promise<Vacante> {
@@ -904,38 +1123,31 @@ export class PersonalService {
 
       let pdfBuffer: Buffer;
 
-      // --- 1. OBTENER EL ARCHIVO (Lógica Híbrida) ---
+      // --- 1. OBTENER EL ARCHIVO ---
       if (candidato.cvUrl.includes('localhost')) {
         const urlParts = candidato.cvUrl.split('/uploads/');
-
-        if (!urlParts[1]) {
-          throw new Error('Formato de URL local no reconocido');
-        }
-
+        if (!urlParts[1]) throw new Error('Formato de URL local no reconocido');
         const filePath = join(process.cwd(), 'uploads', urlParts[1]);
-
-        console.log(`📂 Leyendo archivo local desde: ${filePath}`);
-
-        if (!fs.existsSync(filePath)) {
-          throw new Error(`El archivo no existe en la ruta física: ${filePath}`);
-        }
-
+        if (!fs.existsSync(filePath)) throw new Error(`El archivo no existe: ${filePath}`);
         pdfBuffer = fs.readFileSync(filePath);
-
       } else {
-        console.log(`🌐 Descargando archivo remoto: ${candidato.cvUrl}`);
         const response = await axios.get(candidato.cvUrl, { responseType: 'arraybuffer' });
         pdfBuffer = Buffer.from(response.data);
       }
 
-      // --- 2. ENVIAR PDF DIRECTAMENTE A GEMINI (¡Magia!) ---
-      console.log('🧠 Enviando PDF directamente a Gemini...');
-
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-
-      // Convertimos el buffer a base64
       const pdfBase64 = pdfBuffer.toString('base64');
+
+      // --- 2. CONFIGURAR EL MODELO EXACTO DE TU LISTA ---
+      const generationConfig = {
+        temperature: 0.4,
+        responseMimeType: "application/json",
+      };
+
+      // USAMOS EL NOMBRE EXACTO QUE APARECE EN TU JSON:
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-flash-latest',// <--- ESTE ES EL BUENO (Estable Enero 2025)
+        generationConfig
+      });
 
       const prompt = `
       Actúa como un Reclutador Técnico Experto.
@@ -946,59 +1158,64 @@ export class PersonalService {
       - Descripción: ${vacante.descripcion}
       - Requisitos: ${vacante.requisitos}
 
-      INSTRUCCIONES:
-      1. Lee TODO el contenido del CV (incluso si está en formato imagen).
-      2. Evalúa la coincidencia de habilidades técnicas y blandas.
-      3. Tu respuesta DEBE ser estrictamente un objeto JSON válido (sin markdown, sin bloques de código).
-      4. El contenido del JSON debe estar SIEMPRE EN ESPAÑOL.
-
-      FORMATO JSON ESPERADO:
+      Responde SOLO con este JSON válido en ESPAÑOL:
       {
         "aiScore": (número entero 0-100),
-        "aiAnalysis": (resumen de texto justificando el puntaje, máximo 300 caracteres)
+        "aiAnalysis": (resumen breve justificando el puntaje)
       }
-    `;
+      `;
 
-      // Enviamos el PDF junto con el prompt
-      const result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            data: pdfBase64,
-            mimeType: 'application/pdf'
+      // --- 3. BUCLE DE REINTENTOS (Mantenemos esto por seguridad) ---
+      let result;
+      let intentos = 0;
+      const maxIntentos = 3;
+      let exito = false;
+
+      while (intentos < maxIntentos && !exito) {
+        try {
+          if (intentos > 0) console.log(`🔄 Reintento ${intentos + 1}...`);
+
+          result = await model.generateContent([
+            prompt,
+            { inlineData: { data: pdfBase64, mimeType: 'application/pdf' } }
+          ]);
+
+          exito = true;
+
+        } catch (apiError: any) {
+          if (apiError.message?.includes('429') || apiError.message?.includes('503')) {
+            intentos++;
+            if (intentos >= maxIntentos) throw apiError;
+            // Si es la versión estable, 10 segundos deberían bastar, pero 20 es seguro
+            const tiempoEspera = 20000;
+            console.warn(`⏳ API ocupada. Esperando ${tiempoEspera / 1000}s...`);
+            await new Promise(r => setTimeout(r, tiempoEspera));
+          } else {
+            throw apiError;
           }
         }
-      ]);
+      }
 
+      // --- 4. PROCESAR RESULTADO ---
       const responseText = result.response.text();
-
-      console.log('✅ Gemini procesó el PDF correctamente');
-
-      // --- 3. LIMPIAR Y PARSEAR ---
+      // Limpieza preventiva aunque usemos responseMimeType
       const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
       const analisis = JSON.parse(jsonString);
 
-      // --- 4. ACTUALIZAR BD ---
       await this.candidatoRepository.update(candidato.id, {
         aiScore: analisis.aiScore,
         aiAnalysis: analisis.aiAnalysis,
         estado: EstadoCandidato.NUEVO,
       });
 
-      console.log(`✅ Análisis IA completado con éxito. Score: ${analisis.aiScore}`);
+      console.log(`✅ Análisis completado. Score: ${analisis.aiScore}`);
 
     } catch (error) {
-      console.error('❌ Error procesando IA:', error);
-      console.error('📋 Stack trace:', error.stack);
-
-      try {
-        await this.candidatoRepository.update(candidato.id, {
-          estado: EstadoCandidato.REVISION,
-          aiAnalysis: `Error en análisis automático: ${error.message}`
-        });
-      } catch (updateError) {
-        console.error('❌ Error al actualizar estado de candidato:', updateError);
-      }
+      console.error('❌ Error FINAL IA:', error.message);
+      await this.candidatoRepository.update(candidato.id, {
+        estado: EstadoCandidato.REVISION,
+        aiAnalysis: `Fallo: ${error.message}`
+      });
     }
   }
   // ==========================================
@@ -1200,19 +1417,58 @@ export class PersonalService {
 
     return { message: 'Permisos de empleados corregidos.' };
   }
+  // =================================================================
+  // 1. CREAR SUCURSAL CON ASIGNACIÓN DE JEFE AUTOMÁTICA
+  // =================================================================
   async createSucursal(empresaId: string, dto: CreateSucursalDto): Promise<Sucursal> {
-    const sucursal = this.sucursalRepository.create({
-      ...dto,
-      empresaId,
-      activa: true
+
+    return this.dataSource.transaction(async (manager) => {
+
+      // 1. Preparamos la data de la sucursal
+      const sucursalData: any = {
+        ...dto,
+        empresaId,
+        activa: true
+      };
+
+      // Si viene jefeId en el DTO, lo asignamos directamente a la entidad
+      // (Gracias a que agregamos @Column jefeId y la relación)
+      if (dto.jefeId) {
+        sucursalData.jefeId = dto.jefeId;
+      }
+
+      // 2. Crear la Sucursal
+      const nuevaSucursal = manager.create(Sucursal, sucursalData);
+      const sucursalGuardada = await manager.save(nuevaSucursal);
+
+      // 3. Lógica Inversa (Actualizar al Empleado)
+      // Aunque la sucursal ya sabe quién es su jefe, el empleado también debe saber
+      // que trabaja en esa sucursal y tener el ROL correcto.
+      if (dto.jefeId) {
+        const empleado = await manager.findOneBy(Empleado, { id: dto.jefeId, empresaId });
+
+        if (empleado) {
+          // Buscar el Rol de Gerente
+          const rolGerente = await manager.findOneBy(Rol, { nombre: 'Gerente de Sucursal', empresaId });
+
+          // Actualizamos al empleado
+          empleado.sucursal = sucursalGuardada;
+          if (rolGerente) {
+            empleado.rol = rolGerente;
+          }
+          await manager.save(empleado);
+        }
+      }
+
+      return sucursalGuardada;
     });
-    return this.sucursalRepository.save(sucursal);
   }
 
   async getSucursales(empresaId: string): Promise<Sucursal[]> {
     return this.sucursalRepository.find({
       where: { empresaId },
-      order: { nombre: 'ASC' }
+      order: { nombre: 'ASC' },
+      relations: ['jefe', 'jefe.cargo']
     });
   }
 
@@ -1228,8 +1484,18 @@ export class PersonalService {
     const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalId, empresaId });
     if (!sucursal) throw new NotFoundException('Sucursal no encontrada.');
 
-    const empleados = await this.empleadoRepository.count({ where: { sucursalId } });
-    if (empleados > 0) throw new ConflictException('No se puede borrar, tiene empleados asignados.');
+    // Validación de Departamentos (Ahora sí funcionará pq inyectamos deptoRepo)
+    const deptosCount = await this.deptoRepository.count({ where: { sucursal: { id: sucursalId } } });
+
+    if (deptosCount > 0) {
+      throw new ConflictException('No se puede borrar: Hay departamentos asignados a esta sucursal.');
+    }
+
+    // Validación de Empleados (Opcional pero recomendada)
+    const empleadosCount = await this.empleadoRepository.count({ where: { sucursal: { id: sucursalId } } });
+    if (empleadosCount > 0) {
+      throw new ConflictException('No se puede borrar: Hay empleados asignados a esta sucursal.');
+    }
 
     await this.sucursalRepository.remove(sucursal);
     return { message: 'Sucursal eliminada correctamente.' };
@@ -1374,7 +1640,7 @@ export class PersonalService {
     try {
       console.log(`🧠 Consultando a Gemini para clasificar: ${nombreCargo}`);
 
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       // Solo enviamos los nombres para ahorrar tokens
       const nombresDeptos = listaDeptos.map(d => d.nombre).join(', ');
@@ -1409,5 +1675,79 @@ export class PersonalService {
       // Fallback de seguridad: devolver el primer departamento
       return listaDeptos.length > 0 ? listaDeptos[0].id : '';
     }
+  }
+
+  // ==========================================
+  //  GESTIÓN DOCUMENTAL CORPORATIVA (Híbrido)
+  // ==========================================
+
+  async createDocumentoEmpresa(empresaId: string, dto: CreateDocumentoEmpresaDto) {
+    const doc = this.documentoEmpresaRepository.create({
+      ...dto,
+      empresaId,
+      // Si el DTO trae ID, se asigna. Si no, queda NULL (Global)
+      sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
+    });
+    return this.documentoEmpresaRepository.save(doc);
+  }
+
+  async getDocumentosEmpresa(empresaId: string, filtroSucursalId?: string) {
+
+    // CASO 1: VISTA ADMIN / TODAS LAS SEDES (Sin filtro)
+    // Si no me mandas filtro, asumo que quieres ver TODO lo de la empresa.
+    if (!filtroSucursalId) {
+      return this.documentoEmpresaRepository.find({
+        where: { empresaId: empresaId }, // Trae todo lo que coincida con la empresa
+        order: { fechaSubida: 'DESC' },
+        relations: ['sucursal']
+      });
+    }
+
+    // CASO 2: VISTA FILTRADA (Ej: "Estoy en Sede Norte")
+    // Quiero ver: (Globales) O (Míos de Sede Norte)
+    return this.documentoEmpresaRepository.find({
+      where: [
+        // Condición A: Documentos Globales (sucursalId ES NULL)
+        {
+          empresaId: empresaId,
+          sucursalId: IsNull() // 👈 Usar IsNull() es más seguro que poner null directo
+        },
+        // Condición B: Documentos de MI sede
+        {
+          empresaId: empresaId,
+          sucursalId: filtroSucursalId
+        }
+      ],
+      order: { fechaSubida: 'DESC' },
+      relations: ['sucursal']
+    });
+  }
+  async deleteDocumentoEmpresa(empresaId: string, docId: string) {
+    const doc = await this.documentoEmpresaRepository.findOneBy({ id: docId, empresaId });
+    if (!doc) throw new NotFoundException('Documento no encontrado');
+    return this.documentoEmpresaRepository.remove(doc);
+  }
+
+  async getDirectorioPublico(empresaId: string) {
+    return this.empleadoRepository.find({
+      where: {
+        empresaId,
+        estado: 'Activo' // Ojo: Tu entidad dice 'Activo' (Mayúscula), no 'ACTIVO'
+      },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        emailPersonal: true, // Usamos este ya que es el que tienes en la entidad
+        telefono: true,
+        fotoUrl: true,
+        // Relaciones disponibles en tu entidad:
+        sucursal: { nombre: true },
+        cargo: { nombre: true } // 👈 CAMBIO: Usamos Cargo en vez de Departamento
+      },
+      // Cargamos las relaciones reales que tienes
+      relations: ['sucursal', 'cargo'],
+      order: { nombre: 'ASC' }
+    });
   }
 }

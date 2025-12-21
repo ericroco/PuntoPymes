@@ -1,10 +1,30 @@
 <header class="navbar-container">
   <div class="page-title">
     <h1>Vista General</h1>
-    <p>Bienvenido de nuevo, {{ displayName | titlecase }}</p>
+    <p *ngIf="!selectedBranchId">Bienvenido de nuevo, {{ displayName | titlecase }}</p>
+    <p *ngIf="selectedBranchId" class="filtered-msg">
+      <span class="dot"></span> Filtrando por Sucursal
+    </p>
   </div>
 
   <div class="navbar-actions">
+
+    <div class="branch-selector" *ngIf="canSwitchBranch">
+      <mat-form-field appearance="outline" class="dense-select">
+        <mat-select [value]="selectedBranchId" (selectionChange)="onBranchChange($event.value)"
+          placeholder="🏢 Todas las Sedes">
+
+          <mat-option [value]="null">
+            <span class="option-text">🏢 Todas las Sedes</span>
+          </mat-option>
+
+          <mat-option *ngFor="let b of branches" [value]="b.id">
+            <span class="option-text">📍 {{ b.nombre }}</span>
+          </mat-option>
+
+        </mat-select>
+      </mat-form-field>
+    </div>
     <div class="search-bar">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="search-icon">
         <path
@@ -22,8 +42,7 @@
     </button>
 
     <div class="user-profile">
-      <img [src]="userAvatar" alt="Avatar de Usuario" onerror="this.src='assets/images/default-avatar.png'">
-
+      <img [src]="userAvatar" alt="Avatar" onerror="this.src='assets/images/default-avatar.png'">
       <div class="user-info">
         <span class="user-name">{{ displayName | titlecase }}</span>
         <span class="user-role">{{ userRole }}</span>

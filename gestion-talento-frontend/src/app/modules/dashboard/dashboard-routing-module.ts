@@ -80,10 +80,6 @@ const routes: Routes = [
     loadComponent: () => import('./pages/career-paths/career-paths').then(c => c.CareerPaths)
   },
   {
-    path: 'policies',
-    loadComponent: () => import('./pages/policy-library/policy-library').then(c => c.PolicyLibrary)
-  },
-  {
     path: 'sprints/:sprintId',
     loadComponent: () => import('./pages/sprint-board/sprint-board').then(c => c.SprintBoard)
   },
@@ -131,6 +127,34 @@ const routes: Routes = [
   {
     path: 'assets', // URL: /dashboard/assets
     loadComponent: () => import('./pages/assets-management/assets-management').then(c => c.AssetsManagement)
+  },
+  {
+    path: 'branches',
+    loadComponent: () => import('../organization/pages/branches-list/branches-list')
+      .then(m => m.BranchesListComponent),
+
+    // 🔒 Recomendado: Descomenta esto cuando tengas el PermissionGuard listo
+    // canActivate: [PermissionGuard],
+    // data: { permission: 'sucursales.gestion' } 
+  },
+
+  {
+    path: 'documents',
+    // 1. Salimos de dashboard (..)
+    // 2. Entramos a resources/pages/documents-page
+    // 3. Importamos el componente
+    loadComponent: () => import('../resources/pages/documents-page/documents-page')
+      .then(m => m.DocumentsPageComponent)
+  },
+  {
+    path: 'policies',
+    loadComponent: () => import('./pages/policies-page/policies-page')
+      .then(m => m.PoliciesPageComponent)
+  },
+  {
+    path: 'company-directory',
+    loadComponent: () => import('./pages/directory-page/directory-page')
+      .then(m => m.DirectoryPageComponent)
   },
   {
     path: '**',

@@ -30,6 +30,7 @@ const auth_service_1 = __webpack_require__(/*! ./auth.service */ "./apps/auth/sr
 const register_dto_1 = __webpack_require__(/*! ./dto/register.dto */ "./apps/auth/src/dto/register.dto.ts");
 const login_dto_1 = __webpack_require__(/*! ./dto/login.dto */ "./apps/auth/src/dto/login.dto.ts");
 const switch_company_dto_1 = __webpack_require__(/*! ./dto/switch-company.dto */ "./apps/auth/src/dto/switch-company.dto.ts");
+const microservices_2 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -49,6 +50,17 @@ let AuthController = class AuthController {
     }
     async createUserAuto(data) {
         return this.authService.createUserForEmployee(data);
+    }
+    async createCompanyExisting(data) {
+        console.log('═══════════════════════════════════════');
+        console.log('📨 MICROSERVICIO AUTH - Recibido cmd create_company_existing');
+        console.log('👤 UsuarioId recibido:', data.usuarioId);
+        console.log('📦 Datos completos:', data);
+        console.log('═══════════════════════════════════════');
+        if (!data.usuarioId) {
+            throw new microservices_2.RpcException('usuarioId es requerido');
+        }
+        return this.authService.createCompanyForExistingUser(data.usuarioId, data);
     }
     switchCompany(data) {
         return this.authService.switchCompany(data);
@@ -92,6 +104,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "createUserAuto", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_company_existing' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "createCompanyExisting", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'switch_company' }),
     openapi.ApiResponse({ status: 200 }),
@@ -238,6 +258,7 @@ const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 const bcrypt = __importStar(__webpack_require__(/*! bcrypt */ "bcrypt"));
 const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
+const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
 let AuthService = class AuthService {
     usuarioRepository;
     empresaRepository;
@@ -268,37 +289,122 @@ let AuthService = class AuthService {
     }
     async register(registerDto) {
         const { email, password, nombreEmpresa, nombreAdmin, apellidoAdmin, logoUrl, colorCorporativo, planSuscripcion } = registerDto;
-        const usuarioExistente = await this.usuarioRepository.findOneBy({ email });
-        if (usuarioExistente) {
+        const usuarioExistente = await this.entityManager.findOneBy(database_1.Usuario, { email });
+        if (usuarioExistente)
             throw new common_1.ConflictException('El correo electrónico ya está registrado.');
-        }
-        const empresaExistente = await this.empresaRepository.findOneBy({ nombre: nombreEmpresa });
-        if (empresaExistente) {
+        const empresaExistente = await this.entityManager.findOneBy(database_1.Empresa, { nombre: nombreEmpresa });
+        if (empresaExistente)
             throw new common_1.ConflictException('El nombre de la empresa ya está en uso.');
-        }
         const passwordHash = await this.hashPassword(password);
         return this.entityManager.transaction(async (manager) => {
             const nuevaEmpresa = manager.create(database_1.Empresa, {
                 nombre: nombreEmpresa,
                 planSuscripcion: planSuscripcion || 'basic',
-                branding: {
-                    logoUrl: logoUrl || null,
-                    primaryColor: colorCorporativo || '#3f51b5',
-                }
+                branding: { logoUrl: logoUrl || null, primaryColor: colorCorporativo || '#3f51b5' }
             });
             await manager.save(nuevaEmpresa);
             const nuevoUsuario = manager.create(database_1.Usuario, {
-                email: email,
-                passwordHash: passwordHash,
+                email,
+                passwordHash,
                 emailVerificado: true,
             });
             await manager.save(nuevoUsuario);
-            const rolAdmin = manager.create(database_1.Rol, {
-                empresaId: nuevaEmpresa.id,
-                nombre: 'Administrador',
-                permisos: { esAdmin: true, puedeVerTodo: true },
-            });
-            await manager.save(rolAdmin);
+            const rolesDefinidos = [
+                {
+                    nombre: 'Super Admin',
+                    descripcion: 'Acceso total y control de configuración de la empresa.',
+                    esNativo: true, esDefecto: false,
+                    permisos: ['*']
+                },
+                {
+                    nombre: 'Gerente de RRHH',
+                    descripcion: 'Gestión integral de personal, nómina, contratos y reclutamiento.',
+                    esNativo: false, esDefecto: false,
+                    permisos: [
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_SENSITIVE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_MANAGE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_EDIT,
+                        permissions_1.PERMISSIONS.EMPLOYEES_DELETE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_EXPORT,
+                        permissions_1.PERMISSIONS.SALARIES_READ,
+                        permissions_1.PERMISSIONS.PAYROLL_READ_ALL,
+                        permissions_1.PERMISSIONS.PAYROLL_READ,
+                        permissions_1.PERMISSIONS.PAYROLL_PROCESS,
+                        permissions_1.PERMISSIONS.PAYROLL_CONFIG,
+                        permissions_1.PERMISSIONS.PAYROLL_EXPORT,
+                        permissions_1.PERMISSIONS.LOANS_APPROVE,
+                        permissions_1.PERMISSIONS.BENEFITS_MANAGE,
+                        permissions_1.PERMISSIONS.BRANCHES_MANAGE,
+                        permissions_1.PERMISSIONS.DEPARTMENTS_MANAGE,
+                        permissions_1.PERMISSIONS.POSITIONS_MANAGE,
+                        permissions_1.PERMISSIONS.ONBOARDING_MANAGE,
+                        permissions_1.PERMISSIONS.RECRUITMENT_MANAGE,
+                        permissions_1.PERMISSIONS.PERFORMANCE_MANAGE,
+                        permissions_1.PERMISSIONS.DOCUMENTS_MANAGE,
+                        permissions_1.PERMISSIONS.TRAINING_MANAGE,
+                        permissions_1.PERMISSIONS.REPORTS_VIEW
+                    ]
+                },
+                {
+                    nombre: 'Gerente de Sucursal',
+                    descripcion: 'Supervisión operativa de ubicación física. Control de asistencia.',
+                    esNativo: false, esDefecto: false,
+                    permisos: [
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
+                        permissions_1.PERMISSIONS.ATTENDANCE_READ_ALL,
+                        permissions_1.PERMISSIONS.ATTENDANCE_MODIFY,
+                        permissions_1.PERMISSIONS.ATTENDANCE_APPROVE,
+                        permissions_1.PERMISSIONS.SHIFTS_MANAGE,
+                        permissions_1.PERMISSIONS.VACATIONS_APPROVE,
+                        permissions_1.PERMISSIONS.ONBOARDING_VIEW_PROGRESS,
+                        permissions_1.PERMISSIONS.ASSETS_MANAGE,
+                        permissions_1.PERMISSIONS.REPORTS_VIEW
+                    ]
+                },
+                {
+                    nombre: 'Líder de Proyecto',
+                    descripcion: 'Gestión de productividad, sprints y asignación de tareas.',
+                    esNativo: false, esDefecto: false,
+                    permisos: [
+                        permissions_1.PERMISSIONS.PROJECTS_MANAGE,
+                        permissions_1.PERMISSIONS.PROJECTS_READ,
+                        permissions_1.PERMISSIONS.TASKS_MANAGE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
+                        permissions_1.PERMISSIONS.REPORTS_VIEW
+                    ]
+                },
+                {
+                    nombre: 'Colaborador',
+                    descripcion: 'Rol estándar. Acceso a portal personal y ejecución de tareas.',
+                    esNativo: true, esDefecto: true,
+                    permisos: [
+                        permissions_1.PERMISSIONS.PERFIL_ME,
+                        permissions_1.PERMISSIONS.PAYROLL_MY_READ,
+                        permissions_1.PERMISSIONS.ATTENDANCE_MY_READ,
+                        permissions_1.PERMISSIONS.VACATIONS_REQUEST,
+                        permissions_1.PERMISSIONS.LOANS_REQUEST,
+                        permissions_1.PERMISSIONS.ONBOARDING_MY_PROGRESS,
+                        permissions_1.PERMISSIONS.PROJECTS_READ,
+                        permissions_1.PERMISSIONS.TASKS_MY_READ,
+                        permissions_1.PERMISSIONS.TASKS_EXECUTE
+                    ]
+                }
+            ];
+            let rolSuperAdminId = null;
+            for (const r of rolesDefinidos) {
+                const nuevoRol = manager.create(database_1.Rol, {
+                    empresaId: nuevaEmpresa.id,
+                    nombre: r.nombre,
+                    descripcion: r.descripcion,
+                    esNativo: r.esNativo,
+                    esDefecto: r.esDefecto,
+                    permisos: r.permisos
+                });
+                const rolGuardado = await manager.save(nuevoRol);
+                if (r.nombre === 'Super Admin') {
+                    rolSuperAdminId = rolGuardado.id;
+                }
+            }
             const deptoGeneral = manager.create(database_1.Departamento, {
                 empresaId: nuevaEmpresa.id,
                 nombre: 'General',
@@ -306,13 +412,16 @@ let AuthService = class AuthService {
             await manager.save(deptoGeneral);
             const cargoAdmin = manager.create(database_1.Cargo, {
                 departamentoId: deptoGeneral.id,
-                nombre: 'Administrador',
+                nombre: 'Gerente General',
             });
             await manager.save(cargoAdmin);
+            if (!rolSuperAdminId) {
+                throw new common_1.InternalServerErrorException('Error crítico: No se generó el rol de Super Admin.');
+            }
             const nuevoEmpleado = manager.create(database_1.Empleado, {
                 empresaId: nuevaEmpresa.id,
                 usuarioId: nuevoUsuario.id,
-                rolId: rolAdmin.id,
+                rolId: rolSuperAdminId,
                 cargoId: cargoAdmin.id,
                 nombre: nombreAdmin,
                 apellido: apellidoAdmin,
@@ -328,12 +437,222 @@ let AuthService = class AuthService {
                 estado: 'Vigente',
             });
             await manager.save(nuevoContrato);
-            const { passwordHash: _, ...usuarioParaRespuesta } = nuevoUsuario;
+            const { passwordHash: _, ...usuarioResponse } = nuevoUsuario;
             return {
-                usuario: usuarioParaRespuesta,
-                empresa: nuevaEmpresa,
-                empleado: nuevoEmpleado,
-                contrato: nuevoContrato,
+                status: 'success',
+                message: 'Empresa registrada y roles configurados exitosamente.',
+                data: {
+                    empresa: nuevaEmpresa,
+                    usuario: usuarioResponse,
+                    empleado: nuevoEmpleado
+                }
+            };
+        });
+    }
+    async createCompanyForExistingUser(usuarioId, data) {
+        const { nombreEmpresa, logoUrl, colorCorporativo, planSuscripcion, nombreAdmin, apellidoAdmin } = data;
+        console.log('═══════════════════════════════════════');
+        console.log('🏢 AUTH SERVICE - createCompanyForExistingUser');
+        console.log('👤 UsuarioId a buscar:', usuarioId);
+        console.log('📦 Datos de empresa:', { nombreEmpresa, nombreAdmin, apellidoAdmin });
+        console.log('═══════════════════════════════════════');
+        const empresaExistente = await this.entityManager.findOneBy(database_1.Empresa, { nombre: nombreEmpresa });
+        if (empresaExistente) {
+            throw new common_1.ConflictException('El nombre de la empresa ya está en uso.');
+        }
+        const usuario = await this.entityManager.findOne(database_1.Usuario, {
+            where: { id: usuarioId },
+            select: ['id', 'email', 'emailVerificado']
+        });
+        if (!usuario) {
+            console.error('❌ Usuario NO encontrado con ID:', usuarioId);
+            throw new common_1.NotFoundException('Usuario no encontrado.');
+        }
+        console.log('✅ Usuario ENCONTRADO:', {
+            id: usuario.id,
+            email: usuario.email
+        });
+        return this.entityManager.transaction(async (manager) => {
+            const usuarioEnTransaccion = await manager.findOne(database_1.Usuario, {
+                where: { id: usuarioId },
+                select: ['id', 'email', 'emailVerificado']
+            });
+            if (!usuarioEnTransaccion) {
+                throw new common_1.NotFoundException('Usuario no encontrado en transacción.');
+            }
+            console.log('✅ Usuario confirmado en transacción:', usuarioEnTransaccion.email);
+            const nuevaEmpresa = manager.create(database_1.Empresa, {
+                nombre: nombreEmpresa,
+                planSuscripcion: planSuscripcion || 'basic',
+                branding: {
+                    logoUrl: logoUrl || null,
+                    primaryColor: colorCorporativo || '#3f51b5'
+                }
+            });
+            await manager.save(nuevaEmpresa);
+            console.log('🏢 Empresa creada:', {
+                id: nuevaEmpresa.id,
+                nombre: nuevaEmpresa.nombre
+            });
+            const rolesDefinidos = [
+                {
+                    nombre: 'Super Admin',
+                    descripcion: 'Control total del sistema y configuración.',
+                    esNativo: true, esDefecto: false,
+                    permisos: ['*']
+                },
+                {
+                    nombre: 'Gerente de RRHH',
+                    descripcion: 'Gestión integral de talento, nómina y reclutamiento.',
+                    esNativo: false, esDefecto: false,
+                    permisos: [
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_SENSITIVE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_MANAGE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_EDIT,
+                        permissions_1.PERMISSIONS.EMPLOYEES_DELETE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_EXPORT,
+                        permissions_1.PERMISSIONS.SALARIES_READ,
+                        permissions_1.PERMISSIONS.PAYROLL_READ_ALL,
+                        permissions_1.PERMISSIONS.PAYROLL_READ,
+                        permissions_1.PERMISSIONS.PAYROLL_PROCESS,
+                        permissions_1.PERMISSIONS.PAYROLL_CONFIG,
+                        permissions_1.PERMISSIONS.PAYROLL_EXPORT,
+                        permissions_1.PERMISSIONS.LOANS_APPROVE,
+                        permissions_1.PERMISSIONS.BENEFITS_MANAGE,
+                        permissions_1.PERMISSIONS.BRANCHES_MANAGE,
+                        permissions_1.PERMISSIONS.DEPARTMENTS_MANAGE,
+                        permissions_1.PERMISSIONS.POSITIONS_MANAGE,
+                        permissions_1.PERMISSIONS.ONBOARDING_MANAGE,
+                        permissions_1.PERMISSIONS.RECRUITMENT_MANAGE,
+                        permissions_1.PERMISSIONS.PERFORMANCE_MANAGE,
+                        permissions_1.PERMISSIONS.DOCUMENTS_MANAGE,
+                        permissions_1.PERMISSIONS.TRAINING_MANAGE,
+                        permissions_1.PERMISSIONS.REPORTS_VIEW
+                    ]
+                },
+                {
+                    nombre: 'Gerente de Sucursal',
+                    descripcion: 'Supervisión operativa, turnos y asistencia.',
+                    esNativo: false, esDefecto: false,
+                    permisos: [
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
+                        permissions_1.PERMISSIONS.ATTENDANCE_READ_ALL,
+                        permissions_1.PERMISSIONS.ATTENDANCE_MODIFY,
+                        permissions_1.PERMISSIONS.ATTENDANCE_APPROVE,
+                        permissions_1.PERMISSIONS.SHIFTS_MANAGE,
+                        permissions_1.PERMISSIONS.VACATIONS_APPROVE,
+                        permissions_1.PERMISSIONS.ONBOARDING_VIEW_PROGRESS,
+                        permissions_1.PERMISSIONS.ASSETS_MANAGE,
+                        permissions_1.PERMISSIONS.REPORTS_VIEW
+                    ]
+                },
+                {
+                    nombre: 'Líder de Proyecto',
+                    descripcion: 'Gestión de sprints, tareas y productividad.',
+                    esNativo: false, esDefecto: false,
+                    permisos: [
+                        permissions_1.PERMISSIONS.PROJECTS_MANAGE,
+                        permissions_1.PERMISSIONS.PROJECTS_READ,
+                        permissions_1.PERMISSIONS.TASKS_MANAGE,
+                        permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
+                        permissions_1.PERMISSIONS.REPORTS_VIEW
+                    ]
+                },
+                {
+                    nombre: 'Colaborador',
+                    descripcion: 'Rol estándar para empleados. Autoservicio.',
+                    esNativo: true, esDefecto: true,
+                    permisos: [
+                        permissions_1.PERMISSIONS.PERFIL_ME,
+                        permissions_1.PERMISSIONS.PAYROLL_MY_READ,
+                        permissions_1.PERMISSIONS.ATTENDANCE_MY_READ,
+                        permissions_1.PERMISSIONS.VACATIONS_REQUEST,
+                        permissions_1.PERMISSIONS.LOANS_REQUEST,
+                        permissions_1.PERMISSIONS.ONBOARDING_MY_PROGRESS,
+                        permissions_1.PERMISSIONS.TASKS_MY_READ,
+                        permissions_1.PERMISSIONS.TASKS_EXECUTE,
+                        permissions_1.PERMISSIONS.PROJECTS_READ
+                    ]
+                }
+            ];
+            let rolSuperAdminId = null;
+            for (const r of rolesDefinidos) {
+                const nuevoRol = manager.create(database_1.Rol, {
+                    empresaId: nuevaEmpresa.id,
+                    nombre: r.nombre,
+                    descripcion: r.descripcion,
+                    esNativo: r.esNativo,
+                    esDefecto: r.esDefecto,
+                    permisos: r.permisos
+                });
+                const rolGuardado = await manager.save(nuevoRol);
+                if (r.nombre === 'Super Admin') {
+                    rolSuperAdminId = rolGuardado.id;
+                }
+            }
+            if (!rolSuperAdminId) {
+                throw new common_1.InternalServerErrorException('Error crítico: No se generó el rol de Super Admin.');
+            }
+            console.log('👑 Roles creados. Super Admin ID:', rolSuperAdminId);
+            const deptoGeneral = manager.create(database_1.Departamento, {
+                empresaId: nuevaEmpresa.id,
+                nombre: 'General',
+            });
+            await manager.save(deptoGeneral);
+            const cargoGerente = manager.create(database_1.Cargo, {
+                departamentoId: deptoGeneral.id,
+                nombre: 'Gerente General',
+            });
+            await manager.save(cargoGerente);
+            console.log('🏗️ Estructura base creada');
+            const nuevoEmpleado = manager.create(database_1.Empleado, {
+                empresaId: nuevaEmpresa.id,
+                usuario: usuarioEnTransaccion,
+                rolId: rolSuperAdminId,
+                cargoId: cargoGerente.id,
+                nombre: nombreAdmin || 'Admin',
+                apellido: apellidoAdmin || 'Principal',
+                estado: 'Activo',
+            });
+            console.log('💼 Empleado a crear:', {
+                empresaId: nuevoEmpleado.empresaId,
+                usuarioEmail: usuarioEnTransaccion.email,
+                nombre: nuevoEmpleado.nombre,
+                apellido: nuevoEmpleado.apellido
+            });
+            const empleadoGuardado = await manager.save(nuevoEmpleado);
+            console.log('✅ Empleado GUARDADO:', {
+                id: empleadoGuardado.id,
+                nombre: empleadoGuardado.nombre,
+                apellido: empleadoGuardado.apellido
+            });
+            const nuevoContrato = manager.create(database_1.Contrato, {
+                empleadoId: empleadoGuardado.id,
+                tipo: 'Indefinido',
+                salario: 0,
+                moneda: 'USD',
+                fechaInicio: new Date(),
+                estado: 'Vigente',
+            });
+            await manager.save(nuevoContrato);
+            console.log('📄 Contrato creado');
+            console.log('═══════════════════════════════════════');
+            console.log('✅ TRANSACCIÓN COMPLETADA CON ÉXITO');
+            console.log('═══════════════════════════════════════');
+            return {
+                status: 'success',
+                message: 'Organización creada y configurada correctamente.',
+                data: {
+                    id: nuevaEmpresa.id,
+                    nombre: nuevaEmpresa.nombre,
+                    branding: nuevaEmpresa.branding,
+                    empleadoCreado: {
+                        id: empleadoGuardado.id,
+                        nombre: empleadoGuardado.nombre,
+                        usuarioEmail: usuarioEnTransaccion.email
+                    }
+                }
             };
         });
     }
@@ -344,17 +663,28 @@ let AuthService = class AuthService {
             .addSelect('usuario.passwordHash')
             .where('usuario.email = :email', { email })
             .getOne();
-        if (!usuario) {
+        if (!usuario)
             throw new common_1.UnauthorizedException('Credenciales inválidas');
-        }
         const passwordValida = await this.comparePassword(password, usuario.passwordHash);
-        if (!passwordValida) {
+        if (!passwordValida)
             throw new common_1.UnauthorizedException('Credenciales inválidas');
-        }
+        console.log(`🔍 Buscando membresías para Usuario ID: ${usuario.id}`);
         const membresias = await this.empleadoRepository.find({
-            where: { usuarioId: usuario.id },
-            relations: ['empresa', 'rol'],
+            where: {
+                usuario: { id: usuario.id }
+            },
+            relations: [
+                'empresa',
+                'rol'
+            ],
+            order: {
+                createdAt: 'DESC'
+            }
         });
+        console.log(`✅ Membresías encontradas: ${membresias.length}`);
+        if (membresias.length < 2 && process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ Alerta: Se esperaba más de 1 empresa. Verifica la tabla "empleados".');
+        }
         if (membresias.length === 0) {
             throw new common_1.UnauthorizedException('Este usuario no tiene membresías activas.');
         }
@@ -365,9 +695,9 @@ let AuthService = class AuthService {
             empresaId: membresiaActiva.empresaId,
             empleadoId: membresiaActiva.id,
             rolId: membresiaActiva.rolId,
-            rol: membresiaActiva.rol.nombre,
-            permisos: membresiaActiva.rol.permisos,
-            fotoUrl: membresiaActiva.fotoUrl
+            rol: membresiaActiva.rol?.nombre || 'Sin Rol',
+            permisos: membresiaActiva.rol?.permisos || [],
+            fotoUrl: membresiaActiva.empresa?.branding?.logoUrl
         };
         const accessToken = await this.jwtService.signAsync(payload);
         return {
@@ -757,6 +1087,146 @@ __decorate([
 
 /***/ }),
 
+/***/ "./libs/common/src/constants/permissions.ts":
+/*!**************************************************!*\
+  !*** ./libs/common/src/constants/permissions.ts ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PERMISSION_GROUPS = exports.PERMISSIONS = void 0;
+exports.PERMISSIONS = {
+    PERFIL_ME: 'perfil.me',
+    PAYROLL_MY_READ: 'nomina.leer_propia',
+    ATTENDANCE_MY_READ: 'asistencia.leer_propia',
+    VACATIONS_REQUEST: 'vacaciones.solicitar',
+    LOANS_REQUEST: 'prestamos.solicitar',
+    ONBOARDING_MY_PROGRESS: 'onboarding.mi_progreso',
+    TASKS_MY_READ: 'tareas.leer_propias',
+    EMPLOYEES_READ_BASIC: 'empleados.leer_basico',
+    EMPLOYEES_READ_SENSITIVE: 'empleados.leer_sensible',
+    EMPLOYEES_READ: 'empleados.leer',
+    EMPLOYEES_CREATE: 'empleados.crear',
+    EMPLOYEES_EDIT: 'empleados.editar',
+    EMPLOYEES_MANAGE: 'empleados.gestion',
+    EMPLOYEES_DELETE: 'empleados.borrar',
+    EMPLOYEES_EXPORT: 'empleados.exportar',
+    BRANCHES_MANAGE: 'sucursales.gestion',
+    DEPARTMENTS_MANAGE: 'departamentos.gestion',
+    POSITIONS_MANAGE: 'cargos.gestion',
+    PROJECTS_READ: 'proyectos.leer',
+    PROJECTS_MANAGE: 'proyectos.gestion',
+    TASKS_MANAGE: 'tareas.gestion',
+    TASKS_EXECUTE: 'tareas.ejecutar',
+    SALARIES_READ: 'salarios.leer',
+    PAYROLL_READ_ALL: 'nomina.leer_todo',
+    PAYROLL_READ: 'nomina.leer',
+    PAYROLL_PROCESS: 'nomina.procesar',
+    PAYROLL_CONFIG: 'nomina.configurar',
+    PAYROLL_EXPORT: 'nomina.exportar',
+    BENEFITS_MANAGE: 'beneficios.gestionar',
+    LOANS_APPROVE: 'prestamos.aprobar',
+    ATTENDANCE_READ_ALL: 'asistencia.leer_todo',
+    ATTENDANCE_APPROVE: 'asistencia.aprobar',
+    ATTENDANCE_MODIFY: 'asistencia.modificar',
+    SHIFTS_MANAGE: 'turnos.gestion',
+    VACATIONS_APPROVE: 'vacaciones.aprobar',
+    RECRUITMENT_MANAGE: 'reclutamiento.gestion',
+    ONBOARDING_MANAGE: 'onboarding.gestion',
+    ONBOARDING_VIEW_PROGRESS: 'onboarding.ver_progreso',
+    PERFORMANCE_MANAGE: 'desempeno.gestionar',
+    TRAINING_MANAGE: 'capacitacion.gestionar',
+    ASSETS_MANAGE: 'activos.gestionar',
+    DOCUMENTS_MANAGE: 'documentos.gestionar',
+    ROLES_MANAGE: 'roles.gestion',
+    USERS_MANAGE: 'usuarios.gestion',
+    COMPANY_CONFIG: 'empresa.configurar',
+    REPORTS_VIEW: 'reportes.ver',
+    AUDIT_LOG_VIEW: 'auditoria.ver',
+    COMPANY_POLICIES_MANAGE: 'politicas.gestion',
+};
+exports.PERMISSION_GROUPS = [
+    {
+        name: 'Portal del Colaborador (Autoservicio)',
+        permissions: [
+            { key: exports.PERMISSIONS.PERFIL_ME, label: 'Ver/Editar mi Perfil' },
+            { key: exports.PERMISSIONS.PAYROLL_MY_READ, label: 'Ver mis Roles de Pago' },
+            { key: exports.PERMISSIONS.ATTENDANCE_MY_READ, label: 'Ver mi Asistencia' },
+            { key: exports.PERMISSIONS.VACATIONS_REQUEST, label: 'Solicitar Vacaciones' },
+            { key: exports.PERMISSIONS.LOANS_REQUEST, label: 'Solicitar Préstamos' },
+            { key: exports.PERMISSIONS.TASKS_MY_READ, label: 'Ver mis Tareas (Proyectos)' },
+        ]
+    },
+    {
+        name: 'Gestión de Talento Humano',
+        permissions: [
+            { key: exports.PERMISSIONS.EMPLOYEES_READ_BASIC, label: 'Ver Directorio (Público)' },
+            { key: exports.PERMISSIONS.EMPLOYEES_READ_SENSITIVE, label: 'Ver Datos Sensibles (RRHH)' },
+            { key: exports.PERMISSIONS.EMPLOYEES_CREATE, label: 'Contratar Empleados' },
+            { key: exports.PERMISSIONS.EMPLOYEES_EDIT, label: 'Editar Datos Personales' },
+            { key: exports.PERMISSIONS.EMPLOYEES_DELETE, label: 'Desvincular Personal' },
+            { key: exports.PERMISSIONS.EMPLOYEES_EXPORT, label: 'Exportar Excel' },
+            { key: exports.PERMISSIONS.SALARIES_READ, label: 'Ver Salarios' },
+        ]
+    },
+    {
+        name: 'Nómina y Pagos',
+        permissions: [
+            { key: exports.PERMISSIONS.PAYROLL_READ, label: 'Ver Historial de Nóminas' },
+            { key: exports.PERMISSIONS.PAYROLL_PROCESS, label: 'Procesar/Calcular Rol' },
+            { key: exports.PERMISSIONS.PAYROLL_EXPORT, label: 'Archivos Bancarios' },
+            { key: exports.PERMISSIONS.PAYROLL_CONFIG, label: 'Configurar Fórmulas' },
+            { key: exports.PERMISSIONS.BENEFITS_MANAGE, label: 'Gestionar Beneficios' },
+        ]
+    },
+    {
+        name: 'Operaciones y Desempeño',
+        permissions: [
+            { key: exports.PERMISSIONS.ATTENDANCE_READ_ALL, label: 'Ver Asistencias' },
+            { key: exports.PERMISSIONS.ATTENDANCE_APPROVE, label: 'Aprobar Asistencias' },
+            { key: exports.PERMISSIONS.SHIFTS_MANAGE, label: 'Gestionar Turnos' },
+            { key: exports.PERMISSIONS.VACATIONS_APPROVE, label: 'Aprobar Vacaciones' },
+            { key: exports.PERMISSIONS.PERFORMANCE_MANAGE, label: 'Gestionar Evaluaciones' },
+        ]
+    },
+    {
+        name: 'Proyectos y Productividad (Agile)',
+        permissions: [
+            { key: exports.PERMISSIONS.PROJECTS_READ, label: 'Ver Tableros' },
+            { key: exports.PERMISSIONS.TASKS_EXECUTE, label: 'Colaborador: Ejecutar Tareas' },
+            { key: exports.PERMISSIONS.PROJECTS_MANAGE, label: 'Manager: Crear Proyectos' },
+            { key: exports.PERMISSIONS.TASKS_MANAGE, label: 'Manager: Gestionar Tareas' },
+        ]
+    },
+    {
+        name: 'Estructura y Reclutamiento',
+        permissions: [
+            { key: exports.PERMISSIONS.BRANCHES_MANAGE, label: 'Gestionar Sucursales' },
+            { key: exports.PERMISSIONS.DEPARTMENTS_MANAGE, label: 'Gestionar Departamentos' },
+            { key: exports.PERMISSIONS.POSITIONS_MANAGE, label: 'Gestionar Cargos' },
+            { key: exports.PERMISSIONS.RECRUITMENT_MANAGE, label: 'Gestionar Reclutamiento' },
+            { key: exports.PERMISSIONS.ONBOARDING_MANAGE, label: 'Gestionar Onboarding' },
+        ]
+    },
+    {
+        name: 'Recursos y Admin',
+        permissions: [
+            { key: exports.PERMISSIONS.ASSETS_MANAGE, label: 'Activos e Inventario' },
+            { key: exports.PERMISSIONS.DOCUMENTS_MANAGE, label: 'Documentos Legales' },
+            { key: exports.PERMISSIONS.TRAINING_MANAGE, label: 'Capacitación' },
+            { key: exports.PERMISSIONS.ROLES_MANAGE, label: 'Gestionar Roles' },
+            { key: exports.PERMISSIONS.USERS_MANAGE, label: 'Gestionar Usuarios' },
+            { key: exports.PERMISSIONS.COMPANY_CONFIG, label: 'Configuración Empresa' },
+            { key: exports.PERMISSIONS.REPORTS_VIEW, label: 'Ver Reportes' },
+            { key: exports.PERMISSIONS.COMPANY_POLICIES_MANAGE, label: 'Gestionar Políticas' },
+        ]
+    }
+];
+
+
+/***/ }),
+
 /***/ "./libs/database/src/database.module.ts":
 /*!**********************************************!*\
   !*** ./libs/database/src/database.module.ts ***!
@@ -865,6 +1335,7 @@ const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 const activoAsignado_entity_1 = __webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts");
 var EstadoActivo;
 (function (EstadoActivo) {
@@ -884,9 +1355,11 @@ let Activo = class Activo extends base_entity_1.BaseEntity {
     fechaAdquisicion;
     empresa;
     empresaId;
+    sucursal;
+    sucursalId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number }, imageUrl: { required: true, type: () => String }, fechaAdquisicion: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number }, imageUrl: { required: true, type: () => String }, fechaAdquisicion: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] } };
     }
 };
 exports.Activo = Activo;
@@ -967,12 +1440,25 @@ __decorate([
     __metadata("design:type", String)
 ], Activo.prototype, "empresaId", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, {
+        nullable: true,
+        onDelete: 'SET NULL'
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Activo.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Activo.prototype, "sucursalId", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => activoAsignado_entity_1.ActivoAsignado, (asignacion) => asignacion.activo),
     __metadata("design:type", Array)
 ], Activo.prototype, "asignaciones", void 0);
 exports.Activo = Activo = __decorate([
     (0, typeorm_1.Entity)({ name: 'activos' }),
     (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId']),
     (0, typeorm_1.Unique)(['empresaId', 'serial'])
 ], Activo);
 
@@ -2100,13 +2586,16 @@ const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const cargo_entity_1 = __webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 let Departamento = class Departamento extends base_entity_1.BaseEntity {
     nombre;
     empresa;
     empresaId;
+    sucursal;
+    sucursalId;
     cargos;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del \u00E1rea o departamento\nMapea: string nombre \"Nombre area departamento\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria\"" }, cargos: { required: true, type: () => [(__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo)] } };
+        return { nombre: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, cargos: { required: true, type: () => [(__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo)] } };
     }
 };
 exports.Departamento = Departamento;
@@ -2131,13 +2620,115 @@ __decorate([
     __metadata("design:type", String)
 ], Departamento.prototype, "empresaId", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, (sucursal) => sucursal.departamentos, {
+        nullable: true,
+        onDelete: 'RESTRICT',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Departamento.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'uuid',
+        nullable: true,
+        comment: 'ID de la Sucursal a la que pertenece'
+    }),
+    __metadata("design:type", String)
+], Departamento.prototype, "sucursalId", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => cargo_entity_1.Cargo, (cargo) => cargo.departamento),
     __metadata("design:type", Array)
 ], Departamento.prototype, "cargos", void 0);
 exports.Departamento = Departamento = __decorate([
     (0, typeorm_1.Entity)({ name: 'departamentos' }),
-    (0, typeorm_1.Index)(['empresaId'])
+    (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId'])
 ], Departamento);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/documento-empresa.entity.ts":
+/*!****************************************************************!*\
+  !*** ./libs/database/src/entities/documento-empresa.entity.ts ***!
+  \****************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DocumentoEmpresa = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
+let DocumentoEmpresa = class DocumentoEmpresa extends base_entity_1.BaseEntity {
+    nombre;
+    descripcion;
+    url;
+    categoria;
+    fechaSubida;
+    empresa;
+    empresaId;
+    sucursal;
+    sucursalId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, url: { required: true, type: () => String }, categoria: { required: true, type: () => String }, fechaSubida: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String } };
+    }
+};
+exports.DocumentoEmpresa = DocumentoEmpresa;
+__decorate([
+    (0, typeorm_1.Column)({ length: 255 }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', comment: 'URL del archivo en S3/Cloudinary/Local' }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "url", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ length: 50, nullable: true, comment: 'Ej: LEGAL, MANUALES, FORMATOS' }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "categoria", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_DATE' }),
+    __metadata("design:type", Date)
+], DocumentoEmpresa.prototype, "fechaSubida", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", empresa_entity_1.Empresa)
+], DocumentoEmpresa.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], DocumentoEmpresa.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "sucursalId", void 0);
+exports.DocumentoEmpresa = DocumentoEmpresa = __decorate([
+    (0, typeorm_1.Entity)({ name: 'documentos_empresa' }),
+    (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId'])
+], DocumentoEmpresa);
 
 
 /***/ }),
@@ -2822,6 +3413,7 @@ __exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/
 __exportStar(__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts"), exports);
 
 
 /***/ }),
@@ -3520,6 +4112,7 @@ const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/dat
 const sprint_entity_1 = __webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts");
 const tarea_entity_1 = __webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts");
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 let Proyecto = class Proyecto extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
@@ -3528,10 +4121,12 @@ let Proyecto = class Proyecto extends base_entity_1.BaseEntity {
     empresaId;
     lider;
     liderId;
+    sucursal;
+    sucursalId;
     sprints;
     tareas;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del proyecto\nMapea: string nombre \"Nombre proyecto\"" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del proyecto\nMapea: string descripcion \"Descripcion proyecto\"" }, estado: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria proyecto\"" }, lider: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, liderId: { required: true, type: () => String }, sprints: { required: true, type: () => [(__webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts").Sprint)] }, tareas: { required: true, type: () => [(__webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts").Tarea)], description: "Relaci\u00F3n: Un Proyecto contiene muchas Tareas.\n'cascade: true' = Si se borra el Proyecto, sus Tareas se borran." } };
+        return { nombre: { required: true, type: () => String, description: "Nombre del proyecto" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del proyecto" }, estado: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, lider: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado), description: "Relaci\u00F3n: Un Proyecto tiene UN l\u00EDder (Empleado)." }, liderId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, sprints: { required: true, type: () => [(__webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts").Sprint)] }, tareas: { required: true, type: () => [(__webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts").Tarea)] } };
     }
 };
 exports.Proyecto = Proyecto;
@@ -3587,6 +4182,15 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Proyecto.prototype, "liderId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Proyecto.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: 'ID de la Sucursal a la que pertenece este proyecto' }),
+    __metadata("design:type", String)
+], Proyecto.prototype, "sucursalId", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => sprint_entity_1.Sprint, (sprint) => sprint.proyecto, { cascade: true }),
     __metadata("design:type", Array)
@@ -4156,6 +4760,7 @@ const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts");
 let Sucursal = class Sucursal extends base_entity_1.BaseEntity {
     nombre;
     direccion;
@@ -4164,8 +4769,11 @@ let Sucursal = class Sucursal extends base_entity_1.BaseEntity {
     empresa;
     empresaId;
     empleados;
+    departamentos;
+    jefe;
+    jefeId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, direccion: { required: true, type: () => String }, telefono: { required: true, type: () => String }, activa: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String }, direccion: { required: true, type: () => String }, telefono: { required: true, type: () => String }, activa: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)] }, jefe: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, jefeId: { required: true, type: () => String } };
     }
 };
 exports.Sucursal = Sucursal;
@@ -4201,6 +4809,19 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.sucursal),
     __metadata("design:type", Array)
 ], Sucursal.prototype, "empleados", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => departamento_entity_1.Departamento, (depto) => depto.sucursal),
+    __metadata("design:type", Array)
+], Sucursal.prototype, "departamentos", void 0);
+__decorate([
+    (0, typeorm_1.OneToOne)(() => empleado_entity_1.Empleado, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'jefeId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], Sucursal.prototype, "jefe", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Sucursal.prototype, "jefeId", void 0);
 exports.Sucursal = Sucursal = __decorate([
     (0, typeorm_1.Entity)({ name: 'sucursales' }),
     (0, typeorm_1.Index)(['empresaId'])
@@ -4658,6 +5279,7 @@ const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts");
 const candidato_entity_1 = __webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 var EstadoVacante;
 (function (EstadoVacante) {
     EstadoVacante["BORRADOR"] = "BORRADOR";
@@ -4678,9 +5300,11 @@ let Vacante = class Vacante extends base_entity_1.BaseEntity {
     empresaId;
     departamento;
     departamentoId;
+    sucursal;
+    sucursalId;
     candidatos;
     static _OPENAPI_METADATA_FACTORY() {
-        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, requisitos: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").EstadoVacante) }, ubicacion: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, fechaCierre: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento), description: "Relaci\u00F3n con el Departamento (Marketing, TI, Ventas)." }, departamentoId: { required: true, type: () => String }, candidatos: { required: true, type: () => [(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato)] } };
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, requisitos: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").EstadoVacante) }, ubicacion: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, fechaCierre: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento), description: "Relaci\u00F3n con el Departamento (Marketing, TI, Ventas)." }, departamentoId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, candidatos: { required: true, type: () => [(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato)] } };
     }
 };
 exports.Vacante = Vacante;
@@ -4771,12 +5395,22 @@ __decorate([
     __metadata("design:type", String)
 ], Vacante.prototype, "departamentoId", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Vacante.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Vacante.prototype, "sucursalId", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => candidato_entity_1.Candidato, (candidato) => candidato.vacante, { cascade: true }),
     __metadata("design:type", Array)
 ], Vacante.prototype, "candidatos", void 0);
 exports.Vacante = Vacante = __decorate([
     (0, typeorm_1.Entity)({ name: 'vacantes' }),
     (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId']),
     (0, typeorm_1.Index)(['estado'])
 ], Vacante);
 

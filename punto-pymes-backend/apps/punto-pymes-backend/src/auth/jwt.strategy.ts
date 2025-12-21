@@ -9,7 +9,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(configService: ConfigService) {
         const secret = configService.get<string>('JWT_SECRET');
 
-        // Validar que el secret existe
         if (!secret) {
             throw new Error('JWT_SECRET is not defined in environment variables');
         }
@@ -17,30 +16,32 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: secret, // Ahora TypeScript sabe que no es undefined
+            secretOrKey: secret,
         });
     }
 
-    /**
-     * 4. El método "validate" (El más importante)
-     *
-     * Si la firma del token es válida y el token no ha expirado
-     * (Passport lo verifica automáticamente usando las opciones de arriba),
-     * SÓLO ENTONCES se ejecuta este método.
-     *
-     * Recibe como argumento el "payload" (el contenido) que
-     * pusimos dentro del token en el 'auth_service'.
-     * (Recuerda: payload = { sub: '...', email: '...' })
-     */
     async validate(payload: any) {
-        // El 'payload' es el objeto que creamos en auth.service.ts
-        return {
-            userId: payload.sub, // ID del Usuario
+        // 🔥 LOG DE DEBUGGING (puedes quitarlo después)
+        console.log('🔑 JWT Strategy - Payload recibido:', payload);
+
+        // 👇 RETORNAMOS AMBAS VERSIONES PARA COMPATIBILIDAD TOTAL
+        const user = {
+            // Propiedades originales (para servicios existentes)
+            userId: payload.sub,
             email: payload.email,
-            empresaId: payload.empresaId, // ID del Tenant
-            empleadoId: payload.empleadoId, // ID del Empleado
+            empresaId: payload.empresaId,
+            empleadoId: payload.empleadoId,
             rolId: payload.rolId,
-            permisos: payload.permisos, // <-- ¡AQUÍ ESTÁ LA MAGIA!
+            permisos: payload.permisos,
+
+            // 👇 ALIASES ADICIONALES (para compatibilidad total)
+            sub: payload.sub,              // Alias de userId
+            id: payload.sub,               // Otro alias común
+            rol: payload.rol,              // Por si algún servicio usa 'rol' en vez de 'rolId'
         };
+
+        console.log('✅ JWT Strategy - Usuario validado (compatible con todo):', user);
+
+        return user;
     }
 }

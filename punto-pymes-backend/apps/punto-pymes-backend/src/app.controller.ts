@@ -17,6 +17,7 @@ import {
   UploadedFile,
   BadRequestException,
   UnauthorizedException,
+  Headers
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ClientProxy } from '@nestjs/microservices';
@@ -76,6 +77,9 @@ import { CreateVacanteDto } from 'apps/personal/src/dto/create-vacante.dto';
 import { CreateSolicitudDto } from 'apps/nomina/src/dto/create-solicitud.dto';
 import { CreateSucursalDto } from '../../personal/src/dto/create-sucursal.dto';
 import { UpdateSucursalDto } from '../../personal/src/dto/update-sucursal.dto';
+import { CreateDocumentoEmpresaDto } from 'apps/personal/src/dto/create-documento-empresa.dto';
+
+import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 
 
 @Controller()
@@ -127,46 +131,112 @@ export class AppController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('auth/create-company')
+  createCompany(@Request() req, @Body() data: any) {
+    // 🔥 LOGS DE DEBUGGING
+    console.log('═══════════════════════════════════════');
+    console.log('🎯 GATEWAY - CREATE COMPANY');
+    console.log('👤 req.user completo:', req.user);
+    console.log('📦 Body recibido:', data);
+
+    // 👇 CAMBIO CRÍTICO: Usar fallbacks para compatibilidad total
+    const usuarioId = req.user?.userId || req.user?.sub || req.user?.id;
+
+    console.log('✅ UsuarioId extraído:', usuarioId);
+    console.log('═══════════════════════════════════════');
+
+    if (!usuarioId) {
+      throw new UnauthorizedException('Token inválido: no se pudo identificar al usuario');
+    }
+
+    console.log('📡 Gateway: Enviando solicitud al microservicio AUTH');
+
+    // Enviamos el mensaje al Microservicio
+    return this.authService.send(
+      { cmd: 'create_company_existing' },
+      { usuarioId, ...data }  // 👈 Aseguramos que usuarioId va primero
+    );
+  }
+
   // --- Endpoints de Personal (Protegidos) ---
 
   @UseGuards(JwtAuthGuard)
   @Get('empleados')
-  getEmpleados(@Request() req) {
-    const { empresaId } = req.user;
-    console.log(`Gateway: Pidiendo empleados para empresaId: ${empresaId}`);
+  getEmpleados(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 1. Capturamos el Header
+  ) {
+    const { empresaId, sucursalId, permisos } = req.user;
+
+    // LOGICA DE FILTRO:
+    // Si soy Admin (tengo '*'), puedo usar el filtro del Header.
+    // Si soy Gerente (tengo sucursalId en el token), ignoro el header y uso mi token.
+
+    // Determinamos qué ID mandar al microservicio
+    const idParaFiltrar = (sucursalId) ? sucursalId : headerSucursalId;
+
+    console.log(`Gateway: Pidiendo empleados. Filtro final: ${idParaFiltrar || 'TODOS'}`);
+
     return this.personalService.send(
       { cmd: 'get_empleados' },
-      { empresaId: empresaId },
+      {
+        empresaId: empresaId,
+        filtroSucursalId: idParaFiltrar // 👈 2. Lo enviamos en el paquete
+      },
     );
   }
   /**
    * Crea un nuevo empleado (RF-01-01)
    */
-  @UseGuards(JwtAuthGuard) // 1. Protegido: Solo usuarios con token pueden crear
+  @UseGuards(JwtAuthGuard)
   @Post('empleados')
   @UsePipes(new ValidationPipe())
   createEmpleado(
-    @Request() req, // 2. Para obtener el req.user (con el token)
-    @Body() dto: CreateEmpleadoDto, // 3. Para obtener el body (con los datos del nuevo empleado)
+    @Request() req,
+    @Body() dto: CreateEmpleadoDto,
+    @Headers('x-sucursal-id') headerSucursalId: string
   ) {
-    // 4. Extraemos el 'empresaId' del token del admin
-    const { empresaId, sucursalId } = req.user; // Asumiendo que el token tiene sucursalId
+    const { empresaId, sucursalId, permisos } = req.user;
 
-    // Pasamos los datos del creador para aplicar la regla de negocio
-    const usuarioCreador = sucursalId ? { sucursalId } : undefined;
+    // --- REGLA DE ASIGNACIÓN DE SUCURSAL ---
 
-    console.log(`Gateway: Petición POST /empleados para empresaId: ${empresaId}`);
+    if (sucursalId) {
+      // CASO 1: Soy Gerente de Sucursal (tengo ID en el token)
+      // FORZAMOS que el nuevo empleado pertenezca a mi sucursal.
+      // No importa si en el formulario intentó poner otra cosa.
+      dto.sucursalId = sucursalId;
+    }
+    else if (headerSucursalId) {
+      // CASO 2: Soy Super Admin y estoy filtrando por una sede (Contexto Global)
+      // Asignamos el empleado a la sede que estoy viendo actualmente.
+      dto.sucursalId = headerSucursalId;
+    }
+    // CASO 3: Soy Super Admin viendo "Todas las sedes".
+    // Respetamos lo que venga en el dto.sucursalId (el select del formulario),
+    // o si no viene nada, queda como empleado global (sin sucursal).
 
-    // 5. Enviamos AMBAS cosas (el empresaId y el DTO) al microservicio
+    console.log(`Gateway: Creando empleado en sucursal: ${dto.sucursalId || 'Global'}`);
+
     return this.personalService.send(
       { cmd: 'create_empleado' },
       {
         empresaId: empresaId,
-        dto: dto,
-        usuarioCreador,
+        dto: dto, // El DTO ya va "curado" con la sucursal correcta
       },
     );
-  }// --- 4. ¡NUEVO ENDPOINT PATCH /empleados/:id! (RF-01-03) ---
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('empleados/lista-directorio')
+  getDirectorio(@Request() req) {
+    return this.personalService.send(
+      { cmd: 'get_directorio' },
+      { empresaId: req.user.empresaId }
+    );
+  }
+
+  // --- 4. ¡NUEVO ENDPOINT PATCH /empleados/:id! (RF-01-03) ---
   // NUEVO: Obtener un empleado por ID
   @UseGuards(JwtAuthGuard) // Protegido, pero accesible para empleados (si ajustas permisos)
   @Get('empleados/:id')
@@ -274,17 +344,29 @@ export class AppController {
     );
   }
   /**
-   * Crea un nuevo departamento (RF-02)
-   */
-  @UseGuards(JwtAuthGuard) // 1. Protegido
-  @Post('departamentos') // 2. Escucha en POST /departamentos
+     * Crea un nuevo departamento (RF-02)
+     */
+  @UseGuards(JwtAuthGuard)
+  @Post('departamentos')
   @UsePipes(new ValidationPipe())
   createDepartamento(
-    @Request() req, // 3. Para obtener el empresaId del token
-    @Body() dto: CreateDepartamentoDto, // 4. Para obtener el 'nombre' del body
+    @Request() req,
+    @Body() dto: CreateDepartamentoDto,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 1. Capturamos Header
   ) {
-    const { empresaId } = req.user;
-    console.log(`Gateway: Petición POST /departamentos para empresaId: ${empresaId}`);
+    const { empresaId, sucursalId } = req.user;
+
+    // 2. Lógica de Asignación de Sede
+    if (sucursalId) {
+      // A. Gerente: Se crea en SU sucursal obligatoriamente
+      dto.sucursalId = sucursalId;
+    } else if (headerSucursalId) {
+      // B. Admin: Se crea en la sucursal que está viendo (filtro)
+      dto.sucursalId = headerSucursalId;
+    }
+    // C. Si no hay ninguno, se crea como Global (sucursalId = null/undefined)
+
+    console.log(`Gateway: Creando departamento en sucursal: ${dto.sucursalId || 'Global'}`);
 
     return this.personalService.send(
       { cmd: 'create_departamento' },
@@ -294,21 +376,29 @@ export class AppController {
       },
     );
   }
+
   /**
-   * Obtiene la lista de departamentos para la empresa del usuario (RF-02)
+   * Obtiene la lista de departamentos (Con Filtro de Sede)
    */
-  @UseGuards(JwtAuthGuard) // <-- Protegido
-  @Get('departamentos') // <-- La nueva ruta GET
-  getDepartamentos(@Request() req) {
-    // Extraemos el 'empresaId' del token
-    const { empresaId } = req.user;
+  @UseGuards(JwtAuthGuard)
+  @Get('departamentos')
+  getDepartamentos(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 3. Capturamos Header
+  ) {
+    const { empresaId, sucursalId } = req.user;
 
-    console.log(`Gateway: Pidiendo departamentos para empresaId: ${empresaId}`);
+    // 4. Lógica de Filtrado
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
 
-    // Enviamos el mensaje al microservicio PERSONAL
+    console.log(`Gateway: Pidiendo departamentos. Filtro: ${filtroFinal || 'Todos'}`);
+
     return this.personalService.send(
       { cmd: 'get_departamentos' },
-      { empresaId: empresaId },
+      {
+        empresaId: empresaId,
+        filtroSucursalId: filtroFinal // 👈 5. Enviamos el filtro
+      },
     );
   }
   /**
@@ -388,17 +478,14 @@ export class AppController {
    * Endpoint del Gateway para OBTENER TODOS los Cargos.
    */
   @UseGuards(JwtAuthGuard)
-  @Get('cargos') // <-- Escucha en GET /cargos
-  getCargos(@Request() req) {
-    const { empresaId } = req.user;
-    console.log(
-      `Gateway: Petición GET /cargos para empresaId: ${empresaId}`,
-    );
+  @Get('cargos')
+  getCargos(@Request() req, @Headers('x-sucursal-id') headerSucursalId: string) {
+    const { empresaId, sucursalId } = req.user;
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
 
-    // Envía el mensaje al microservicio PERSONAL
     return this.personalService.send(
       { cmd: 'get_cargos' },
-      { empresaId: empresaId },
+      { empresaId, filtroSucursalId: filtroFinal }
     );
   }
 
@@ -833,27 +920,56 @@ export class AppController {
   }
   // --- INICIO DE CRUD PARA PROYECTO (Semana 9) ---
 
+  // ==========================================
+  //  GET: Leer Proyectos (Con Filtro)
+  // ==========================================
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission('productividad.proyectos.read') // <-- Define tu permiso
+  @RequirePermission('productividad.proyectos.read')
   @Get('proyectos')
-  getProyectos(@Request() req) {
-    const { empresaId } = req.user;
-    // Envía el mensaje al microservicio de productividad
+  getProyectos(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 2. Capturamos Header
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // Lógica de Prioridad:
+    // 1. Si soy Gerente (tengo sucursalId en token) -> Mando mi ID.
+    // 2. Si soy Admin (no tengo sucursalId) -> Mando lo que diga el Header (Contexto).
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+
     return this.productividadService.send(
-      { cmd: 'get_proyectos' }, // El "comando" que escuchará
-      { empresaId: empresaId },
+      { cmd: 'get_proyectos' },
+      {
+        empresaId: empresaId,
+        filtroSucursalId: filtroFinal // 👈 3. Enviamos el filtro
+      },
     );
   }
 
+  // ==========================================
+  //  POST: Crear Proyecto (Con Asignación)
+  // ==========================================
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('productividad.proyectos.create')
   @Post('proyectos')
   @UsePipes(new ValidationPipe())
   createProyecto(
     @Request() req,
-    @Body() dto: CreateProyectoDto, // <-- El DTO que ya creamos
+    @Body() dto: CreateProyectoDto,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 4. Capturamos Header
   ) {
-    const { empresaId } = req.user;
+    const { empresaId, sucursalId } = req.user;
+
+    // Lógica de Seguridad (Assignment):
+    if (sucursalId) {
+      // Soy Gerente: El proyecto ES MÍO obligatoriamente.
+      dto.sucursalId = sucursalId;
+    } else if (headerSucursalId) {
+      // Soy Admin filtrando una sede: Lo creo en esa sede por comodidad.
+      dto.sucursalId = headerSucursalId;
+    }
+    // Si no hay ninguno, se crea como "Global" o lo que diga el DTO original.
+
     return this.productividadService.send(
       { cmd: 'create_proyecto' },
       { empresaId: empresaId, dto: dto },
@@ -1441,24 +1557,54 @@ export class AppController {
     );
   }
   // ==========================================
-  //        GESTIÓN DE ACTIVOS
+  //  POST: Crear Activo (Con Asignación de Sede)
   // ==========================================
-
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission('activos.gestion') // Permiso sugerido
+  @RequirePermission('activos.gestion')
   @Post('activos')
   @UsePipes(new ValidationPipe({ transform: true }))
-  createActivo(@Request() req, @Body() dto: CreateActivoDto) {
-    const { empresaId } = req.user;
-    return this.productividadService.send({ cmd: 'create_activo' }, { empresaId, dto });
+  createActivo(
+    @Request() req,
+    @Body() dto: CreateActivoDto,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 1. Capturar Header
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // 2. Lógica de Seguridad (Assignment)
+    if (sucursalId) {
+      dto.sucursalId = sucursalId; // Gerente -> Su sede
+    } else if (headerSucursalId) {
+      dto.sucursalId = headerSucursalId; // Admin -> Sede filtrada
+    }
+
+    return this.productividadService.send(
+      { cmd: 'create_activo' },
+      { empresaId, dto }
+    );
   }
 
+  // ==========================================
+  //  GET: Leer Activos (Con Filtro)
+  // ==========================================
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('activos.gestion')
   @Get('activos')
-  getActivos(@Request() req) {
-    const { empresaId } = req.user;
-    return this.productividadService.send({ cmd: 'get_activos' }, { empresaId });
+  getActivos(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 3. Capturar Header
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // 4. Lógica de Filtro
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+
+    return this.productividadService.send(
+      { cmd: 'get_activos' },
+      {
+        empresaId,
+        filtroSucursalId: filtroFinal // 👈 5. Enviar filtro
+      }
+    );
   }
 
   @UseGuards(JwtAuthGuard, PermissionGuard)
@@ -1619,13 +1765,25 @@ export class AppController {
   // ==========================================
 
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission('analiticas.ver') // Permiso para ver el dashboard
+  @RequirePermission('analiticas.ver')
   @Get('analiticas/dashboard')
-  getDashboard(@Request() req) {
-    const { empresaId } = req.user;
+  getDashboard(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 1. Capturamos Header
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // 2. Lógica de Prioridad (Igual que en Proyectos/Empleados)
+    // Si soy Gerente (token) -> Mando mi ID.
+    // Si soy Admin (header) -> Mando el del selector.
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+
     return this.productividadService.send(
       { cmd: 'get_dashboard_kpis' },
-      { empresaId },
+      {
+        empresaId,
+        filtroSucursalId: filtroFinal // 👈 3. Enviamos el filtro
+      },
     );
   }
   // ==========================================
@@ -1637,7 +1795,7 @@ export class AppController {
     // USAMOS EL HELPER: Carpeta 'certificados', Max 5MB, solo PDF/Imágenes
     FileInterceptor('file', createMulterOptions('certificados', 5))
   )
-  uploadCertificado(
+  ploadCertificado(
     @Request() req,
     @Param('id') inscripcionId: string,
     @UploadedFile() file: Express.Multer.File,
@@ -1660,7 +1818,7 @@ export class AppController {
   //        RECLUTAMIENTO (ATS)
   // ==========================================
 
-  // 1. PUBLICAR VACANTE (Admin)
+  // 1. PUBLICAR VACANTEu
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('reclutamiento.gestion')
   @Post('reclutamiento/vacantes')
@@ -1668,23 +1826,43 @@ export class AppController {
   createVacante(
     @Request() req,
     @Body() dto: CreateVacanteDto,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 1. Capturar
   ) {
-    const { empresaId } = req.user;
+    const { empresaId, sucursalId } = req.user;
+
+    // 2. Lógica de Asignación
+    if (sucursalId) {
+      dto.sucursalId = sucursalId; // Gerente crea para su sede
+    } else if (headerSucursalId) {
+      dto.sucursalId = headerSucursalId; // Admin crea para la sede filtrada
+    }
+
     return this.personalService.send(
       { cmd: 'create_vacante' },
       { empresaId, dto },
     );
   }
 
-  // 2. LISTAR VACANTES (Público o Admin)
+  // 2. LISTAR VACANTES (Admin/Interno)
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('reclutamiento.gestion')
   @Get('reclutamiento/vacantes')
-  getVacantesAdmin(@Request() req) {
-    const { empresaId } = req.user;
+  getVacantesAdmin(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 3. Capturar
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // 4. Lógica de Filtro
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+
     return this.personalService.send(
       { cmd: 'get_vacantes' },
-      { empresaId, publicas: false },
+      {
+        empresaId,
+        publicas: false,
+        filtroSucursalId: filtroFinal // 👈 5. Enviar filtro
+      },
     );
   }
 
@@ -2128,4 +2306,94 @@ export class AppController {
       { empresaId, empleadoId }
     );
   }
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission(PERMISSIONS.ROLES_MANAGE) // Solo admins pueden hacer esto
+  @Post('roles/seed-defaults')
+  seedRolesDefault(@Request() req) {
+    // Tomamos el ID de la empresa del usuario logueado
+    const { empresaId } = req.user;
+
+    console.log(`📡 Gateway: Solicitando roles por defecto para empresa ${empresaId}`);
+
+    return this.personalService.send(
+      { cmd: 'seed_roles_default' },
+      { empresaId }
+    );
+  }
+
+  // ==========================================
+  //  DOCUMENTOS CORPORATIVOS
+  // ==========================================
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('documentos.gestion')
+  @Post('documentos-empresa')
+  createDocEmpresa(
+    @Request() req,
+    @Body() dto: CreateDocumentoEmpresaDto,
+    @Headers('x-sucursal-id') headerSucursalId: string
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // LÓGICA DE ASIGNACIÓN:
+    // 1. Gerente: Siempre Local.
+    if (sucursalId) {
+      dto.sucursalId = sucursalId;
+    }
+    // 2. Admin: 
+    //    - Si tiene filtro en Navbar -> Lo crea Local para esa sede.
+    //    - Si NO tiene filtro -> Lo crea GLOBAL (sucursalId undefined).
+    else if (headerSucursalId) {
+      dto.sucursalId = headerSucursalId;
+    }
+
+    return this.personalService.send(
+      { cmd: 'create_doc_empresa' },
+      { empresaId, dto }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard) // Permiso más relajado (lectura)
+  @Get('documentos-empresa')
+  getDocsEmpresa(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string
+  ) {
+    const { empresaId, sucursalId } = req.user;
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+
+    return this.personalService.send(
+      { cmd: 'get_docs_empresa' },
+      { empresaId, filtroSucursalId: filtroFinal }
+    );
+  }
+
+  // ==========================================
+  //  SUBIDA DE ARCHIVOS CORPORATIVOS (Solo físico)
+  // ==========================================
+  @UseGuards(JwtAuthGuard) // Necesario para obtener req.user.empresaId
+  @Post('documentos-empresa/upload') // Endpoint: localhost:3000/documentos-empresa/upload
+  @UseInterceptors(
+    // Reutilizamos TU helper. 
+    // Guardará en: /uploads/{empresaId}/documentos-empresa/archivo.pdf
+    FileInterceptor('file', createMulterOptions('documentos-empresa', 10)) // 10MB max
+  )
+  uploadDocumentoFisico(
+    @Request() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    const { empresaId } = req.user;
+
+    // Construimos la URL igual que en tu ejemplo de certificados
+    // Asegúrate de que 'uploads' sea estático en tu app.module
+    const fileUrl = `http://localhost:3000/uploads/${empresaId}/documentos-empresa/${file.filename}`;
+
+    // Devolvemos la URL para que el Frontend la use en el paso 2
+    return { url: fileUrl };
+  }
+
+
 }

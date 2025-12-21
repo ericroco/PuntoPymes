@@ -66,9 +66,24 @@ export class RoleSettings implements OnInit {
   }
 
   // Helper para contar permisos activos (Solo visual)
-  countActivePermissions(permisos: Record<string, boolean>): number {
+  // Helper HÍBRIDO para contar permisos
+  countActivePermissions(permisos: any): number {
     if (!permisos) return 0;
+
+    // CASO A: Es un Array (Formato del Backend / Seed inicial)
+    if (Array.isArray(permisos)) {
+      // Si tiene '*', visualmente mostramos un número alto o lo manejamos en el HTML
+      if (permisos.includes('*')) return 999; // Código para "Todos"
+      return permisos.length;
+    }
+
+    // CASO B: Es un Objeto (Formato antiguo o temporal del frontend)
     return Object.values(permisos).filter(val => val === true).length;
+  }
+
+  // Opcional: Un helper para el texto en el HTML
+  getPermissionLabel(count: number): string {
+    return count === 999 ? 'Acceso Total (Super Admin)' : `${count} permisos activos`;
   }
 
   // --- CREAR NUEVO ROL ---

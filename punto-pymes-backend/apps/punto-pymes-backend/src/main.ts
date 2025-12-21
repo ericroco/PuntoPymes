@@ -1,40 +1,44 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'; // 1. Importar Swagger
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+// 👇 1. IMPORTAR ESTO DE EXPRESS
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // --- A. CONFIGURACIÓN DE CORS ---
-  // Esto permite que Angular (puerto 4200) hable con NestJS (puerto 3000)
+  // --- A. CONFIGURACIÓN DE TAMAÑO DE ARCHIVOS (ESTO ARREGLA EL ERROR 413) ---
+  // Aumentamos el límite a 50MB (o lo que necesites)
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
+
+
+  // --- B. CONFIGURACIÓN DE CORS ---
   app.enableCors({
-    origin: 'http://localhost:4200', // Permitir solo al Frontend
+    origin: 'http://localhost:4200',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  // --- B. CONFIGURACIÓN DE PIPES GLOBALES ---
-  // Esto ya lo deberías tener, pero asegúrate para que los DTOs funcionen bien
+  // --- C. CONFIGURACIÓN DE PIPES GLOBALES ---
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Elimina campos extra que no estén en el DTO
-      transform: true, // Transforma tipos (ej: string a number en params)
-      forbidNonWhitelisted: true, // Lanza error si envían campos basura
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
     }),
   );
 
-  // --- C. CONFIGURACIÓN DE SWAGGER ---
+  // --- D. CONFIGURACIÓN DE SWAGGER ---
   const config = new DocumentBuilder()
     .setTitle('PuntoPyMES API')
     .setDescription('Documentación de la API del Sistema de RRHH')
     .setVersion('1.0')
-    .addBearerAuth() // ¡Vital! Agrega el botón de "Authorize" para meter el Token
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
-  // La documentación estará en: http://localhost:3000/api/docs
   SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);

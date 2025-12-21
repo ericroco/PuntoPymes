@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PolicyLibrary } from './policy-library';
+import { UploadDocumentDialog } from './upload-document-dialog';
 
-describe('PolicyLibrary', () => {
-  let component: PolicyLibrary;
-  let fixture: ComponentFixture<PolicyLibrary>;
+describe('UploadDocumentDialog', () => {
+  let component: UploadDocumentDialog;
+  let fixture: ComponentFixture<UploadDocumentDialog>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PolicyLibrary]
+      imports: [UploadDocumentDialog]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PolicyLibrary);
+    fixture = TestBed.createComponent(UploadDocumentDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

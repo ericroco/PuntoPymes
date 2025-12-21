@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { SwitchCompanyDto } from './dto/switch-company.dto';
+import { RpcException } from '@nestjs/microservices';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -46,6 +47,22 @@ export class AuthController {
   @MessagePattern({ cmd: 'create_user_auto' })
   async createUserAuto(@Payload() data: { empleadoId: string; email: string; nombre: string; empresaId: string }) {
     return this.authService.createUserForEmployee(data);
+  }
+
+  @MessagePattern({ cmd: 'create_company_existing' })
+  async createCompanyExisting(@Payload() data: any) {
+    // 🔥 LOGS DE DEBUGGING
+    console.log('═══════════════════════════════════════');
+    console.log('📨 MICROSERVICIO AUTH - Recibido cmd create_company_existing');
+    console.log('👤 UsuarioId recibido:', data.usuarioId);
+    console.log('📦 Datos completos:', data);
+    console.log('═══════════════════════════════════════');
+
+    if (!data.usuarioId) {
+      throw new RpcException('usuarioId es requerido');
+    }
+
+    return this.authService.createCompanyForExistingUser(data.usuarioId, data);
   }
 
   @MessagePattern({ cmd: 'switch_company' })

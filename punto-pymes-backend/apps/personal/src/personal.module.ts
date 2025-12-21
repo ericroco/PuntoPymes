@@ -26,6 +26,7 @@ import {
   PlantillaOnboarding,
   TareaPlantilla,
   TareaEmpleado,
+  DocumentoEmpresa,
 } from 'default/database'; // <-- Usa tu prefijo correcto
 
 @Module({
@@ -53,6 +54,7 @@ import {
       PlantillaOnboarding,
       TareaPlantilla,
       TareaEmpleado,
+      DocumentoEmpresa,
     ]),
     // 1. CLIENTE PARA LLAMAR AL AUTH SERVICE
     ClientsModule.register([

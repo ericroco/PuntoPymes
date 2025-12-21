@@ -1,0 +1,42 @@
+.full-width {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.title-icon {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .mini-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .tiny-role {
+        font-size: 0.8em;
+        color: #666;
+        margin-left: auto;
+    }
+}
+
+.warning-hint {
+    color: #d32f2f; // Un color rojizo/naranja para advertir del cambio de rol
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+
+    mat-icon {
+        font-size: 14px;
+        height: 14px;
+        width: 14px;
+    }
+}

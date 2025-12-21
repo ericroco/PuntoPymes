@@ -39,21 +39,12 @@ export class ProductividadController {
   // --- INICIO DE CRUD PARA PROYECTO (Semana 9) ---
 
   @MessagePattern({ cmd: 'get_proyectos' })
-  getProyectos(@Payload() data: { empresaId: string }) {
-    console.log(
-      `Microservicio PRODUCTIVIDAD: Recibido get_proyectos para empresa: ${data.empresaId}`,
-    );
-    return this.productividadService.getProyectos(data.empresaId);
+  getProyectos(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
+    // 👇 Pasamos el filtro al servicio
+    return this.productividadService.getProyectos(data.empresaId, data.filtroSucursalId);
   }
-
   @MessagePattern({ cmd: 'create_proyecto' })
-  @UsePipes(new ValidationPipe())
-  createProyecto(
-    @Payload() data: { empresaId: string; dto: CreateProyectoDto },
-  ) {
-    console.log(
-      `Microservicio PRODUCTIVIDAD: Recibido create_proyecto: ${data.dto.nombre}`,
-    );
+  createProyecto(@Payload() data: { empresaId: string, dto: CreateProyectoDto }) {
     return this.productividadService.createProyecto(data.empresaId, data.dto);
   }
 
@@ -384,8 +375,8 @@ export class ProductividadController {
   }
 
   @MessagePattern({ cmd: 'get_activos' })
-  getActivos(@Payload() data: { empresaId: string }) {
-    return this.productividadService.getActivos(data.empresaId);
+  getActivos(@Payload() data: { empresaId: string, filtroSucursalId?: string }) { // 👈 Recibir opcional
+    return this.productividadService.getActivos(data.empresaId, data.filtroSucursalId);
   }
 
   @MessagePattern({ cmd: 'update_activo' })
@@ -445,8 +436,9 @@ export class ProductividadController {
     return this.productividadService.updateEstadoReporte(data.empresaId, data.reporteId, data.dto);
   }
   @MessagePattern({ cmd: 'get_dashboard_kpis' })
-  getDashboardKpis(@Payload() data: { empresaId: string }) {
-    return this.productividadService.getDashboardKPIs(data.empresaId);
+  getDashboardKpis(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
+    // 👇 Pasamos el filtro al servicio
+    return this.productividadService.getDashboardKPIs(data.empresaId, data.filtroSucursalId);
   }
   @MessagePattern({ cmd: 'get_ciclo_activo' })
   getCicloActivo(@Payload() data: { empresaId: string }) {

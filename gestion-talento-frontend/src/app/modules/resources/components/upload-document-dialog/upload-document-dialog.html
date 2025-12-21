@@ -1,0 +1,64 @@
+<h2 mat-dialog-title>Subir Documento Corporativo</h2>
+
+<mat-dialog-content [formGroup]="form">
+
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Alcance / Destino</mat-label>
+        <mat-select formControlName="sucursalId">
+            <mat-option [value]="null">
+                <mat-icon class="text-blue-500">public</mat-icon>
+                Global (Toda la Empresa)
+            </mat-option>
+
+            <mat-option *ngFor="let b of branches" [value]="b.id">
+                <mat-icon class="text-green-600">store</mat-icon>
+                {{ b.nombre }}
+            </mat-option>
+        </mat-select>
+        <mat-hint>Si es Global, todas las sedes podrán verlo.</mat-hint>
+    </mat-form-field>
+
+    <div class="file-drop" (click)="fileInput.click()">
+        <mat-icon class="text-gray-400" style="font-size: 40px; height: 40px; width: 40px;">cloud_upload</mat-icon>
+
+        <p *ngIf="!form.get('file')?.value">Clic para seleccionar archivo</p>
+
+        <p *ngIf="form.get('file')?.value" class="text-primary font-bold">
+            {{ form.get('file')?.value?.name }}
+        </p>
+
+        <input #fileInput type="file" style="display: none" (change)="onFileSelected($event)">
+    </div>
+
+    <mat-error *ngIf="form.get('file')?.touched && form.get('file')?.invalid" style="font-size: 12px;">
+        El archivo es requerido.
+    </mat-error>
+
+    <div class="grid grid-cols-2 gap-4 mt-4">
+        <mat-form-field appearance="outline" class="col-span-2">
+            <mat-label>Nombre del Documento</mat-label>
+            <input matInput formControlName="nombre" placeholder="Ej: Manual de Operaciones 2024">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Categoría</mat-label>
+            <mat-select formControlName="categoria">
+                <mat-option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Descripción (Opcional)</mat-label>
+            <input matInput formControlName="descripcion">
+        </mat-form-field>
+    </div>
+
+    <mat-progress-bar *ngIf="isUploading" mode="indeterminate"></mat-progress-bar>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close [disabled]="isUploading">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="save()" [disabled]="form.invalid || isUploading">
+        {{ isUploading ? 'Subiendo...' : 'Guardar' }}
+    </button>
+</mat-dialog-actions>

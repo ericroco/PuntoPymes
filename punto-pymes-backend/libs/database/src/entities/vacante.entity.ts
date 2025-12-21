@@ -10,6 +10,7 @@ import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
 import { Departamento } from './departamento.entity'; // Asegúrate de tener esta entidad
 import { Candidato } from './candidato.entity';
+import { Sucursal } from './sucursal.entity';
 
 export enum EstadoVacante {
     BORRADOR = 'BORRADOR',   // Aún se está redactando
@@ -20,6 +21,7 @@ export enum EstadoVacante {
 
 @Entity({ name: 'vacantes' })
 @Index(['empresaId'])
+@Index(['sucursalId'])
 @Index(['estado']) // Para filtrar rápidamenete las "PÚBLICAS"
 export class Vacante extends BaseEntity {
 
@@ -101,6 +103,14 @@ export class Vacante extends BaseEntity {
 
     @Column({ nullable: true, comment: 'ID del Departamento solicitante' })
     departamentoId: string;
+
+    // 👇👇 LO NUEVO: SUCURSAL 👇👇
+    @ManyToOne(() => Sucursal, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'sucursalId' })
+    sucursal: Sucursal;
+
+    @Column({ nullable: true })
+    sucursalId: string;
 
     @OneToMany(() => Candidato, (candidato) => candidato.vacante, { cascade: true })
     candidatos: Candidato[];

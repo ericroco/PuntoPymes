@@ -48,5 +48,13 @@ export class CreateVacanteDto {
 
     @IsUUID()
     @IsOptional()
-    departamentoId?: string; // Para vincularlo a Marketing, TI, etc.
+    departamentoId?: string;
+
+    @IsUUID()
+    @IsOptional()
+    empresaId?: string;
+
+    @IsUUID()
+    @IsOptional()
+    sucursalId?: string;
 }

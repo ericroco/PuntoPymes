@@ -8,7 +8,7 @@
         {{ getInitials(employee.nombre, employee.apellido) }}
       </div>
 
-      <div class="avatar-overlay" *ngIf="canEditContact" (click)="openEditAvatarDialog()">
+      <div class="avatar-overlay" *ngIf="isMyProfile || can(P.EMPLOYEES_EDIT)" (click)="openEditAvatarDialog()">
         <mat-icon>camera_alt</mat-icon>
         <span>Editar</span>
       </div>
@@ -26,12 +26,12 @@
       </span>
     </div>
 
-    <button *ngIf="canEditContact" mat-stroked-button color="primary" class="edit-contact-btn"
+    <button *ngIf="isMyProfile || can(P.EMPLOYEES_EDIT)" mat-stroked-button color="primary" class="edit-contact-btn"
       (click)="openEditContactInfoDialog()">
       <mat-icon>edit</mat-icon> <span>Editar Contacto</span>
     </button>
 
-    <button *ngIf="canEditSensitive" mat-stroked-button color="primary" class="edit-profile-btn"
+    <button *ngIf="can(P.EMPLOYEES_MANAGE)" mat-stroked-button color="primary" class="edit-profile-btn"
       (click)="openEditProfileDialog()">
       <mat-icon>manage_accounts</mat-icon> Editar Perfil (Admin)
     </button>
@@ -42,13 +42,19 @@
   <section class="details-section general-info-section">
     <h3>Información General</h3>
     <div class="info-grid">
+
       <div class="info-item">
         <span class="info-label">Correo Personal:</span>
-        <span class="info-value">{{ employee.emailPersonal || '---' }}</span>
+        <span class="info-value" *ngIf="isMyProfile || can(P.EMPLOYEES_READ_SENSITIVE); else hiddenData">
+          {{ employee.emailPersonal || '---' }}
+        </span>
       </div>
+
       <div class="info-item">
         <span class="info-label">Teléfono / Celular:</span>
-        <span class="info-value">{{ employee.telefono || '---' }}</span>
+        <span class="info-value" *ngIf="isMyProfile || can(P.EMPLOYEES_READ_SENSITIVE); else hiddenData">
+          {{ employee.telefono || '---' }}
+        </span>
       </div>
 
       <div class="info-item" *ngIf="can(P.ROLES_MANAGE)">
@@ -58,20 +64,30 @@
 
       <div class="info-item">
         <span class="info-label">Dirección:</span>
-        <span class="info-value">{{ employee.direccion || '---' }}</span>
+        <span class="info-value" *ngIf="isMyProfile || can(P.EMPLOYEES_READ_SENSITIVE); else hiddenData">
+          {{ employee.direccion || '---' }}
+        </span>
       </div>
+
       <div class="info-item">
         <span class="info-label">Fecha Nacimiento:</span>
-        <span class="info-value">{{ employee.fechaNacimiento ? (employee.fechaNacimiento | date:'longDate') : '---'
-          }}</span>
+        <span class="info-value" *ngIf="isMyProfile || can(P.EMPLOYEES_READ_SENSITIVE); else hiddenData">
+          {{ employee.fechaNacimiento ? (employee.fechaNacimiento | date:'longDate') : '---' }}
+        </span>
       </div>
+
+      <ng-template #hiddenData>
+        <span class="info-value private-data">
+          <mat-icon style="font-size: 14px; height: 14px; width: 14px;">lock</mat-icon> Privado
+        </span>
+      </ng-template>
     </div>
   </section>
 
-  <section class="details-section schedule-section" *ngIf="can(P.ATTENDANCE_APPROVE) || can(P.EMPLOYEES_EDIT)">
+  <section class="details-section schedule-section" *ngIf="can(P.SHIFTS_MANAGE) || can(P.ATTENDANCE_READ_ALL)">
     <div class="section-header">
       <h3>Horario Asignado</h3>
-      <button *ngIf="can(P.EMPLOYEES_EDIT)" mat-stroked-button color="primary" (click)="openEditScheduleDialog()">
+      <button *ngIf="can(P.SHIFTS_MANAGE)" mat-stroked-button color="primary" (click)="openEditScheduleDialog()">
         <mat-icon>edit_calendar</mat-icon>
         Editar Horario
       </button>
@@ -102,7 +118,9 @@
     </div>
   </section>
 
-  <section class="details-section salary-section" *ngIf="can(P.PAYROLL_READ)">
+  <section class="details-section salary-section"
+    *ngIf="can(P.PAYROLL_READ_ALL) || (isMyProfile && can(P.PAYROLL_MY_READ))">
+
     <h3>Historial Salarial y Compensación</h3>
     <div class="document-list" *ngIf="salaryHistory.length > 0; else noSalaryHistory">
       <div class="document-item header">
@@ -114,7 +132,11 @@
       <div *ngFor="let item of salaryHistory" class="document-item">
         <span>{{ item.date | date:'dd MMM, yyyy' }}</span>
         <span>{{ item.type }}</span>
-        <span class="salary">{{ item.amount | currency:'USD':'symbol':'1.2-2' }}</span>
+        <span class="salary" *ngIf="can(P.SALARIES_READ) || isMyProfile; else hiddenSalary">
+          {{ item.amount | currency:'USD':'symbol':'1.2-2' }}
+        </span>
+        <ng-template #hiddenSalary><span>****</span></ng-template>
+
         <span class="comments">{{ item.comments }}</span>
       </div>
     </div>
@@ -170,7 +192,7 @@
           <option value="Reconocimiento Interno">Reconocimiento Interno</option>
         </select>
       </div>
-      <button *ngIf="canEditContact || can(P.DOCUMENTS_MANAGE)" class="btn btn-secondary"
+      <button *ngIf="isMyProfile || can(P.DOCUMENTS_MANAGE)" class="btn btn-secondary"
         (click)="openAddDocumentDialog()">
         <mat-icon>upload_file</mat-icon>
         <span>Añadir Documento</span>
@@ -201,7 +223,7 @@
           <button class="btn-icon" title="Descargar" (click)="downloadDocument(doc)">
             📥 </button>
 
-          <button *ngIf="doc.canDelete && can(P.DOCUMENTS_MANAGE)" class="btn-icon btn-danger"
+          <button *ngIf="doc.canDelete && (can(P.DOCUMENTS_MANAGE) || isMyProfile)" class="btn-icon btn-danger"
             (click)="deleteDocument(doc)" title="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>

@@ -118,7 +118,30 @@ export class AuthService {
     if (!user || !user.permisos) {
       return false;
     }
-    // Retorna true solo si la llave existe y es true
+
+    // -----------------------------------------------------
+    // CASO 1: El Backend envía un ARRAY (['*', 'empleados.leer'])
+    // -----------------------------------------------------
+    if (Array.isArray(user.permisos)) {
+      // 👑 REGLA DE ORO: Si tiene '*', es Super Admin y puede hacer TODO.
+      if (user.permisos.includes('*')) {
+        return true;
+      }
+      // Si no es admin, buscamos si tiene el permiso exacto en la lista
+      return user.permisos.includes(permissionKey);
+    }
+
+    // -----------------------------------------------------
+    // CASO 2: Tu lógica antigua (Objeto { 'empleados.leer': true })
+    // -----------------------------------------------------
+    // Mantenemos esto por compatibilidad, pero agregamos el check de admin
+
+    // Si por casualidad tu objeto tiene la llave '*' en true
+    if (user.permisos['*'] === true) {
+      return true;
+    }
+
+    // Tu lógica original intacta
     return user.permisos[permissionKey] === true;
   }
 
@@ -275,5 +298,64 @@ export class AuthService {
   getCurrentUserId(): string {
     const user = this.getUser();
     return user?.empleadoId || '';
+  }
+
+  // ==========================================
+  // GESTIÓN DE EMPRESA (LOGUEADO) - AGREGAR ESTO
+  // ==========================================
+
+  /**
+   * Crea una nueva empresa vinculada al usuario que ya está logueado.
+   * @param data Datos del formulario (nombre, plan, colores, etc.)
+   */
+  createCompany(data: {
+    nombreEmpresa: string;
+    nombreAdmin: string;
+    apellidoAdmin: string;
+    logoUrl?: string;
+    colorCorporativo?: string;
+    planSuscripcion: string;
+  }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-company`, data);
+  }
+
+  /**
+   * Actualiza la lista de membresías del usuario localmente.
+   * Llámalo después de crear una empresa para que aparezca en el selector.
+   */
+  refreshMemberships(): Observable<any[]> {
+    // En lugar de llamar a la API, simplemente devolvemos lo que hay guardado.
+    // (Si acabas de crear una empresa, la añadiremos manualmente en el componente)
+    return new Observable(obs => {
+      const stored = this.getStoredMemberships();
+      obs.next(stored);
+      obs.complete();
+    });
+  }
+
+  addCompanyToLocalCache(newCompany: any) {
+    // 1. IMPORTANTE: Forzamos la carga de lo que ya existe en localStorage
+    // Si no hacemos esto, 'this.memberships' podría estar vacío y sobrescribiríamos todo.
+    this.getStoredMemberships();
+
+    const user = this.getUser();
+
+    // 2. Creamos el objeto de membresía simulado
+    const newMembership = {
+      rol: { nombre: 'Super Admin' },
+      empresa: newCompany,
+      empresaId: newCompany.id,
+      usuarioId: user?.id,
+      // Agregamos cargo para que no se vea feo en la tarjeta
+      cargo: { nombre: 'Gerente General' }
+    };
+
+    // 3. Agregamos al array existente
+    this.memberships.push(newMembership);
+
+    // 4. Guardamos el array COMPLETO de nuevo
+    localStorage.setItem('membresias', JSON.stringify(this.memberships));
+
+    console.log('✅ Cache local actualizada. Total empresas:', this.memberships.length);
   }
 }

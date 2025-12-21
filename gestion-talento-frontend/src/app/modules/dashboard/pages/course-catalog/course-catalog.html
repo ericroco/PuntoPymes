@@ -3,7 +3,7 @@
   <div class="header-actions-row">
     <app-subpage-header title="Portal de Desarrollo"></app-subpage-header>
 
-    <div *ngIf="canManageTraining" class="view-toggle">
+    <div *ngIf="can(P.TRAINING_MANAGE)" class="view-toggle">
       <span class="toggle-label">Modo:</span>
       <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()" appearance="legacy">
         <mat-button-toggle value="student" aria-label="Vista Estudiante">
@@ -20,7 +20,6 @@
 
     <mat-tab-group animationDuration="300ms" mat-stretch-tabs="false" mat-align-tabs="start">
 
-      <!-- ============ MI APRENDIZAJE ============ -->
       <mat-tab label="Mi Aprendizaje ({{myEnrolledCourses.length}})">
         <div class="tab-content-container" @cardAnimation>
 
@@ -64,7 +63,6 @@
         </div>
       </mat-tab>
 
-      <!-- ============ CATÁLOGO ============ -->
       <mat-tab label="Catálogo de Cursos">
         <div class="tab-content-container">
 
@@ -113,7 +111,6 @@
         </div>
       </mat-tab>
 
-      <!-- ============ PLAN DE CARRERA ============ -->
       <mat-tab label="Mi Plan de Carrera">
         <div class="tab-content-container">
 
@@ -166,17 +163,15 @@
     </mat-tab-group>
   </div>
 
-  <!-- ============ VISTA ADMINISTRADOR ============ -->
-  <div *ngIf="viewMode === 'admin'" class="admin-lms-view">
+  <div *ngIf="viewMode === 'admin' && can(P.TRAINING_MANAGE)" class="admin-lms-view">
 
     <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false">
 
-      <!-- ============ INVENTARIO DE CURSOS ============ -->
       <mat-tab label="Inventario de Cursos">
         <div class="report-tab-content">
 
           <div class="tab-action-header">
-            <button mat-flat-button color="primary" (click)="openCourseDialog()">
+            <button *ngIf="can(P.TRAINING_MANAGE)" mat-flat-button color="primary" (click)="openCourseDialog()">
               <mat-icon>add</mat-icon> Crear Nuevo Curso
             </button>
           </div>
@@ -213,10 +208,10 @@
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <mat-menu #menu="matMenu">
-                    <button mat-menu-item (click)="openCourseDialog(course)">
+                    <button *ngIf="can(P.TRAINING_MANAGE)" mat-menu-item (click)="openCourseDialog(course)">
                       <mat-icon>edit</mat-icon> Editar
                     </button>
-                    <button mat-menu-item (click)="deleteCourse(course)">
+                    <button *ngIf="can(P.TRAINING_MANAGE)" mat-menu-item (click)="deleteCourse(course)">
                       <mat-icon color="warn">delete</mat-icon> Eliminar
                     </button>
                   </mat-menu>
@@ -234,7 +229,6 @@
         </div>
       </mat-tab>
 
-      <!-- ============ GESTIÓN DE PLANES ============ -->
       <mat-tab label="Gestión de Planes de Carrera">
         <div class="report-tab-content">
           <div class="no-data-placeholder">
@@ -245,8 +239,7 @@
         </div>
       </mat-tab>
 
-      <!-- ============ REPORTES Y MÉTRICAS ============ -->
-      <mat-tab label="Reportes y Métricas">
+      <mat-tab label="Reportes y Métricas" *ngIf="can(P.REPORTS_VIEW) || can(P.TRAINING_MANAGE)">
         <div class="report-tab-content" @listAnimation>
 
           <div class="report-widget-grid">

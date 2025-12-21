@@ -5,7 +5,8 @@
   padding: 1rem 2rem;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
+  /* Subí un poco el z-index para que el dropdown no quede tapado */
 }
 
 .navbar-container {
@@ -20,9 +21,28 @@
     margin: 0;
     line-height: 1.2;
   }
+
   p {
     margin: 0;
     color: var(--color-text-secondary);
+  }
+
+  // 👇 ESTILO NUEVO: Mensaje de "Filtrando por..."
+  .filtered-msg {
+    color: #f57c00; // Naranja llamativo
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: #f57c00;
+      border-radius: 50%;
+      display: inline-block;
+    }
   }
 }
 
@@ -30,10 +50,47 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+
+  // 👇 ESTILO NUEVO: Selector de Sucursales
+  .branch-selector {
+    width: 220px;
+
+    // Hacks para personalizar Material Design (Angular Material)
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none; // Quita el espacio extra de abajo
+    }
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: var(--color-background); // Mismo fondo que el input search
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      height: 42px; // Altura fija igual al search
+      padding: 0;
+    }
+
+    ::ng-deep .mat-mdc-form-field-flex {
+      align-items: center;
+      padding: 0 12px !important;
+      height: 100%;
+    }
+
+    ::ng-deep .mat-mdc-select-value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    // El icono de la flechita
+    ::ng-deep .mat-mdc-select-arrow {
+      color: var(--color-text-secondary);
+    }
+  }
 }
 
 .search-bar {
   position: relative;
+  height: 42px; // Aseguramos altura para alinear con el selector
+
   .search-icon {
     position: absolute;
     left: 1rem;
@@ -42,7 +99,9 @@
     width: 20px;
     height: 20px;
     color: var(--color-text-secondary);
+    z-index: 2;
   }
+
   input {
     background-color: var(--color-background);
     border: 1px solid var(--color-border);
@@ -52,11 +111,13 @@
     font-family: var(--font-family-base);
     font-size: 0.95rem;
     transition: width 0.3s ease, box-shadow 0.3s ease;
+    height: 100%; // Llenar el contenedor
+    box-sizing: border-box;
 
     &:focus {
       outline: none;
       box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
-      width: 300px; /* La barra se expande al hacer foco */
+      width: 300px;
     }
   }
 }
@@ -102,15 +163,28 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  cursor: pointer; // Agregado para UX
+
   img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    object-fit: cover; // Para que no se deforme
+    border: 1px solid var(--color-border);
   }
+
   .user-info {
     display: flex;
     flex-direction: column;
-    .user-name { font-weight: 600; }
-    .user-role { font-size: 0.8rem; color: var(--color-text-secondary); }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .user-role {
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+    }
   }
 }

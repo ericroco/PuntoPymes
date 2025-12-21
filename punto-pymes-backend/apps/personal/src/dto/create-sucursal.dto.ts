@@ -12,4 +12,8 @@ export class CreateSucursalDto {
     @IsOptional()
     @IsString()
     telefono?: string;
+
+    @IsOptional()
+    @IsString()
+    jefeId?: string;
 }

@@ -1,4 +1,3 @@
-// libs/database/src/entities/proyecto.entity.ts
 import {
   Entity,
   Column,
@@ -12,6 +11,7 @@ import { Empresa } from './empresa.entity';
 import { Sprint } from './sprint.entity';
 import { Tarea } from './tarea.entity';
 import { Empleado } from './empleado.entity';
+import { Sucursal } from './sucursal.entity'; // 👈 1. IMPORTAR SUCURSAL
 
 /**
  * Entidad que representa un Proyecto dentro de una Empresa.
@@ -19,12 +19,11 @@ import { Empleado } from './empleado.entity';
  * Mapea la tabla 'proyectos'
  */
 @Entity({ name: 'proyectos' })
-// Indexamos para buscar proyectos rápidamente por empresa
+// Indexamos para buscar proyectos rápidamente por empresa y ahora por sucursal
 @Index(['empresaId'])
 export class Proyecto extends BaseEntity {
   /**
    * Nombre del proyecto
-   * Mapea: string nombre "Nombre proyecto"
    */
   @Column({
     type: 'varchar',
@@ -35,7 +34,6 @@ export class Proyecto extends BaseEntity {
 
   /**
    * Descripción detallada del proyecto
-   * Mapea: string descripcion "Descripcion proyecto"
    */
   @Column({
     type: 'text',
@@ -46,71 +44,68 @@ export class Proyecto extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 50, // O la longitud que necesites para tus estados
-    default: 'ACTIVO', // Replicamos la lógica del servicio
+    length: 50,
+    default: 'ACTIVO',
     comment: 'Estado actual del proyecto',
   })
   estado: string;
 
   // ---
-  // RELACIONES "MUCHOS A UNO" (Un Proyecto PERTENECE A...)
+  // RELACIONES "MUCHOS A UNO"
   // ---
 
   /**
    * Relación: Un Proyecto es gestionado por UNA Empresa (Tenant).
-   * onDelete: 'CASCADE' = Si la Empresa se borra, sus proyectos se borran.
    */
   @ManyToOne(() => Empresa, (empresa) => empresa.proyectos, {
-    nullable: false, // Requerido
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empresaId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empresaId' })
   empresa: Empresa;
 
-  /**
-   * Mapea: string empresaId FK "Empresa propietaria proyecto"
-   */
   @Column({ comment: 'ID de la Empresa (Tenant) propietaria del proyecto' })
   empresaId: string;
 
-  // --- 2. AÑADIR LA RELACIÓN CON EL LÍDER (EMPLEADO) ---
   /**
-   * Relación: Un Proyecto tiene UN líder (que es un Empleado).
-   * Es opcional (nullable: true).
-   * onDelete: 'SET NULL' = Si el empleado se borra, el proyecto se queda sin líder.
+   * Relación: Un Proyecto tiene UN líder (Empleado).
    */
   @ManyToOne(() => Empleado, {
-    nullable: true, // Un proyecto puede no tener líder
-    onDelete: 'SET NULL', // Si se borra el empleado, el campo liderId queda null
+    nullable: true,
+    onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'liderId' }) // La columna FK se llamará 'liderId'
-  lider: Empleado; // Esta es la propiedad que usas en 'relations: ['lider']'
+  @JoinColumn({ name: 'liderId' })
+  lider: Empleado;
 
-  // --- 3. AÑADIR LA COLUMNA 'liderId' ---
-  /**
-   * Mapea: string liderId FK "Empleado líder del proyecto"
-   */
   @Column({
-    nullable: true, // Debe coincidir con la relación
+    nullable: true,
     comment: 'ID del Empleado (opcional) que lidera el proyecto',
   })
-  liderId: string; // <-- Esta es la propiedad que te faltaba
+  liderId: string;
 
-  // ---
-  // RELACIONES "UNO A MUCHOS" (Un Proyecto TIENE MUCHOS...)
-  // ---
+  // =========================================================
+  // 👇 2. NUEVA RELACIÓN: EL PROYECTO PERTENECE A UNA SUCURSAL
+  // =========================================================
 
   /**
-   * Relación: Un Proyecto contiene muchos Sprints.
-   * 'cascade: true' = Si se borra el Proyecto, sus Sprints se borran.
+   * Relación: Un Proyecto puede pertenecer a una Sucursal específica.
+   * nullable: true -> Para proyectos "Globales" o creados antes de tener sucursales.
+   * onDelete: 'SET NULL' -> Si se borra la sucursal, el proyecto no se borra, solo queda sin sede.
    */
+  @ManyToOne(() => Sucursal, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'sucursalId' })
+  sucursal: Sucursal;
+
+  @Column({ nullable: true, comment: 'ID de la Sucursal a la que pertenece este proyecto' })
+  sucursalId: string;
+
+  // ---
+  // RELACIONES "UNO A MUCHOS"
+  // ---
+
   @OneToMany(() => Sprint, (sprint) => sprint.proyecto, { cascade: true })
   sprints: Sprint[];
 
-  /**
-   * Relación: Un Proyecto contiene muchas Tareas.
-   * 'cascade: true' = Si se borra el Proyecto, sus Tareas se borran.
-   */
   @OneToMany(() => Tarea, (tarea) => tarea.proyecto, { cascade: true })
   tareas: Tarea[];
 }

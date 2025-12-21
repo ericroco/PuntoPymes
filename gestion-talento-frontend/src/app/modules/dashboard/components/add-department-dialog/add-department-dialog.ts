@@ -45,8 +45,13 @@ export class AddDepartmentDialog implements OnInit {
 
   onSave(): void {
     if (this.form.valid) {
-      // Devolvemos el valor del formulario
-      this.dialogRef.close(this.form.value);
+      // Creamos el objeto final combinando el formulario con el estado por defecto
+      const departmentData = {
+        ...this.form.value,
+        estado: 'Activo' // 👈 AGREGAMOS ESTO MANUALMENTE
+      };
+
+      this.dialogRef.close(departmentData);
     }
   }
 }

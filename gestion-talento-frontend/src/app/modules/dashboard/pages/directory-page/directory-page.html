@@ -1,0 +1,91 @@
+<div class="page-container">
+
+    <div class="header-section">
+        <div class="title-block">
+            <h1>Directorio Corporativo</h1>
+            <p>Encuentra y contacta a tus compañeros de equipo rápidamente.</p>
+        </div>
+
+        <div class="filters-bar">
+            <mat-form-field appearance="outline" class="search-field">
+                <mat-icon matPrefix>search</mat-icon>
+                <mat-label>Nombre, cargo o palabra clave</mat-label>
+                <input matInput [(ngModel)]="searchText" (keyup)="applyFilter()"
+                    placeholder="Ej: Juan Perez o Gerente...">
+                <button *ngIf="searchText" matSuffix mat-icon-button (click)="searchText=''; applyFilter()">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="branch-field">
+                <mat-icon matPrefix>location_on</mat-icon>
+                <mat-label>Sucursal</mat-label>
+                <mat-select [(ngModel)]="selectedBranch" (selectionChange)="applyFilter()">
+                    <mat-option value="">Todas las sedes</mat-option>
+                    <mat-option *ngFor="let branch of uniqueBranches" [value]="branch">
+                        {{ branch }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="directory-grid" *ngIf="!isLoading && filteredEmployees.length > 0">
+
+        <div class="employee-card" *ngFor="let emp of filteredEmployees">
+            <div class="card-header-bg"></div>
+
+            <div class="avatar-container">
+                <img [src]="emp.fotoUrl || 'assets/images/default-avatar.png'"
+                    (error)="$any($event.target).src = 'assets/images/default-avatar.png'"
+                    alt="Foto de {{ emp.nombre }}">
+            </div>
+
+            <div class="card-body">
+                <h3 class="emp-name">{{ emp.nombre }} {{ emp.apellido }}</h3>
+                <p class="emp-position">{{ emp.cargo?.nombre || 'Personal' }}</p>
+
+                <div class="emp-tags">
+                    <span class="tag branch" *ngIf="emp.sucursal">
+                        <mat-icon>place</mat-icon>
+                        {{ emp.sucursal.nombre }}
+                    </span>
+                </div>
+
+                <div class="contact-info">
+                    <div class="info-row" *ngIf="emp.emailPersonal" (click)="copyEmail(emp.emailPersonal)"
+                        matTooltip="Click para copiar correo">
+                        <mat-icon>email</mat-icon>
+                        <span class="text-truncate">{{ emp.emailPersonal }}</span>
+                    </div>
+
+                    <div class="info-row" *ngIf="emp.telefono">
+                        <mat-icon>phone</mat-icon>
+                        <span>{{ emp.telefono }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button mat-flat-button color="primary" class="full-btn" (click)="sendMail(emp.emailPersonal)">
+                    <mat-icon>send</mat-icon>
+                    Contactar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+        <p>Cargando directorio...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredEmployees.length === 0" class="empty-state">
+        <mat-icon>search_off</mat-icon>
+        <h3>No se encontraron resultados</h3>
+        <p>Intenta con otros términos o cambia la sucursal seleccionada.</p>
+        <button mat-stroked-button (click)="searchText=''; selectedBranch=''; applyFilter()">
+            Limpiar filtros
+        </button>
+    </div>
+
+</div>

@@ -57,12 +57,18 @@
       </div>
 
       <div class="card-body">
-        <div class="info-row">
+
+        <div class="info-row" *ngIf="can(P.EMPLOYEES_READ_SENSITIVE)">
           <mat-icon class="info-icon">email</mat-icon>
           <span class="value" [title]="employee.emailPersonal">{{ employee.emailPersonal }}</span>
         </div>
 
-        <div class="info-row">
+        <div class="info-row" *ngIf="!can(P.EMPLOYEES_READ_SENSITIVE)">
+          <mat-icon class="info-icon" style="opacity: 0.5;">lock</mat-icon>
+          <span class="value" style="color: #999; font-style: italic;">Email Privado</span>
+        </div>
+
+        <div class="info-row" *ngIf="can(P.EMPLOYEES_READ_SENSITIVE)">
           <mat-icon class="info-icon">phone</mat-icon>
           <span class="value">{{ employee.telefono || 'Sin teléfono' }}</span>
         </div>

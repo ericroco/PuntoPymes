@@ -29,32 +29,49 @@ import { Rol } from '../../services/roles';
 })
 export class AddRoleDialog implements OnInit {
   roleForm: FormGroup;
-  permissionGroups = PERMISSION_GROUPS; // Los grupos de checkboxes
-
-  // Mapa de estado: { 'nomina.leer': true, 'empleados.borrar': false }
+  permissionGroups = PERMISSION_GROUPS;
   permissionsMap: Record<string, boolean> = {};
 
   constructor(
     public dialogRef: MatDialogRef<AddRoleDialog>,
     private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: { role?: Rol } // Recibimos data opcional para editar
+    @Inject(MAT_DIALOG_DATA) public data: { role?: Rol }
   ) {
     const rol = data?.role;
 
-    // Si estamos editando, cargamos los permisos existentes
+    // 1. 🛠️ CORRECCIÓN EN LA CARGA DE DATOS
     if (rol && rol.permisos) {
-      this.permissionsMap = { ...rol.permisos };
+      if (Array.isArray(rol.permisos)) {
+        // CONVERSIÓN: Array ['A', 'B'] -> Objeto { 'A': true, 'B': true }
+        rol.permisos.forEach((perm: string) => {
+          if (perm === '*') {
+            // Si es Super Admin, marcamos TODO visualmente (o manejamos lógica especial)
+            this.markAllAsTrue();
+          } else {
+            this.permissionsMap[perm] = true;
+          }
+        });
+      } else {
+        // Si ya viene como objeto (legacy), lo usamos directo
+        this.permissionsMap = { ...rol.permisos };
+      }
     }
 
     this.roleForm = this.fb.group({
       name: [rol?.nombre || '', Validators.required],
-      description: [''], // Opcional, si quieres mantenerlo
-      esDefecto: [rol?.esDefecto || false] // La bandera "Rol Automático"
+      description: [''],
+      esDefecto: [rol?.esDefecto || false]
     });
   }
 
   ngOnInit(): void { }
 
+
+  private markAllAsTrue() {
+    this.permissionGroups.forEach(group => {
+      group.permissions.forEach(p => this.permissionsMap[p.key] = true);
+    });
+  }
   // Se ejecuta al hacer clic en un permiso
   togglePermission(key: string, isChecked: boolean) {
     this.permissionsMap[key] = isChecked;
@@ -71,12 +88,18 @@ export class AddRoleDialog implements OnInit {
 
   onSave(): void {
     if (this.roleForm.valid) {
-      // Devolvemos el objeto listo para el Backend
+
+      // Convertimos el mapa { 'permiso': true, 'otro': false } 
+      // A un array limpio ['permiso'] para el Backend
+      const permissionsArray = Object.keys(this.permissionsMap).filter(key => this.permissionsMap[key] === true);
+
       const result = {
         nombre: this.roleForm.value.name,
         esDefecto: this.roleForm.value.esDefecto,
-        permisos: this.permissionsMap
+        // Enviamos ARRAY al backend para mantener consistencia
+        permisos: permissionsArray
       };
+
       this.dialogRef.close(result);
     } else {
       this.roleForm.markAllAsTouched();

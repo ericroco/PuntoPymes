@@ -1,0 +1,108 @@
+.page-container {
+    padding: 24px;
+}
+
+.header-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.branches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.branch-card {
+    position: relative;
+    overflow: hidden;
+
+    .card-status-strip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #ccc; // Inactivo
+
+        &.active {
+            background-color: #4caf50; // Verde activo
+        }
+    }
+
+    .branch-icon {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+        margin-top: 8px;
+    }
+
+    .manager-info {
+        small {
+            color: #888;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .manager-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+
+            .avatar,
+            .avatar-placeholder {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .avatar-placeholder {
+                background: #3f51b5;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+            }
+        }
+
+        .no-manager {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #999;
+            font-style: italic;
+        }
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+
+    mat-icon {
+        font-size: 48px;
+        height: 48px;
+        width: 48px;
+        margin-bottom: 16px;
+        color: #ccc;
+    }
+}
+
+.danger-text {
+    color: #f44336;
+}

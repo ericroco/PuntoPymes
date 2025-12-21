@@ -1,0 +1,239 @@
+$primary: #3f51b5;
+$bg-light: #f3f4f6;
+$text-dark: #1f2937;
+$text-muted: #6b7280;
+
+.page-container {
+    padding: 24px;
+    background-color: $bg-light;
+    min-height: 100%;
+}
+
+// Header
+.header-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+    text-align: center;
+
+    .title-block {
+        margin-bottom: 20px;
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: $text-dark;
+            margin: 0;
+        }
+
+        p {
+            color: $text-muted;
+            margin-top: 5px;
+        }
+    }
+
+    .search-block {
+        width: 100%;
+        max-width: 500px;
+
+        .search-field {
+            width: 100%;
+        }
+
+        ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+        }
+
+        // Ocultar espacio de error
+    }
+}
+
+// GRID SYSTEM
+.directory-grid {
+    display: grid;
+    // Responsive: Columnas automáticas de mínimo 280px
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+// TARJETA DE EMPLEADO
+.employee-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    // Decoración Superior
+    .card-header-bg {
+        height: 60px;
+        background: linear-gradient(135deg, $primary 0%, lighten($primary, 20%) 100%);
+    }
+
+    // Avatar (superpuesto)
+    .avatar-container {
+        width: 80px;
+        height: 80px;
+        margin: -40px auto 10px; // Sube la imagen para que pise el fondo
+        border-radius: 50%;
+        border: 4px solid white;
+        background: white;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    .card-body {
+        padding: 0 16px 16px;
+        text-align: center;
+        flex-grow: 1;
+
+        .emp-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: $text-dark;
+            margin: 0 0 4px;
+        }
+
+        .emp-position {
+            font-size: 14px;
+            color: $primary;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        // Chips de Dept/Sede
+        .emp-tags {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+
+            .tag {
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 10px;
+                font-weight: 600;
+
+                &.dept {
+                    background: #f3f4f6;
+                    color: #4b5563;
+                }
+
+                &.branch {
+                    background: #eff6ff;
+                    color: #2563eb;
+                }
+            }
+        }
+
+        .contact-info {
+            text-align: left;
+            margin-top: 10px;
+
+            .info-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 6px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.2s;
+
+                &:hover {
+                    background: #f9fafb;
+                }
+
+                mat-icon {
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                    color: $text-muted;
+                }
+
+                span {
+                    font-size: 13px;
+                    color: $text-dark;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+
+    .card-actions {
+        padding: 16px;
+        border-top: 1px solid #f3f4f6;
+
+        .full-btn {
+            width: 100%;
+        }
+    }
+}
+
+// Empty State
+.empty-state {
+    text-align: center;
+    padding: 60px;
+
+    mat-icon {
+        font-size: 64px;
+        height: 64px;
+        width: 64px;
+        color: #d1d5db;
+    }
+
+    p {
+        color: $text-muted;
+        margin-top: 10px;
+    }
+}
+
+.filters-bar {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+
+    .search-field {
+        flex: 2;
+        min-width: 280px;
+    }
+
+    .branch-field {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+
+    mat-icon {
+        font-size: 64px;
+        height: 64px;
+        width: 64px;
+        color: #ccc;
+    }
+}

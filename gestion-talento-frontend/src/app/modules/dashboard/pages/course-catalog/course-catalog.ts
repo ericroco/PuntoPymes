@@ -98,6 +98,7 @@ export class CourseCatalog implements OnInit {
   filteredCatalogCourses: Course[] = []; // Cursos filtrados en vista
   myCareerPlan: CareerStep[] = [];
   allCourses: Course[] = [];
+  P = PERMISSIONS; // Para usar en el HTML
 
   // Filtros
   searchTerm: string = '';
@@ -120,6 +121,10 @@ export class CourseCatalog implements OnInit {
     { name: 'Excel Avanzado', value: 95 },
     { name: 'Liderazgo Ágil', value: 80 }
   ];
+
+  can(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
 
   enrollmentTrendData = [
     {

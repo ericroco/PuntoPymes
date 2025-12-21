@@ -36,4 +36,8 @@ export class CreateActivoDto {
     @IsString()
     @IsOptional()
     imageUrl?: string;
+
+    @IsString()
+    @IsOptional()
+    sucursalId?: string;
 }

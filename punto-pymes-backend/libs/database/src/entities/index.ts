@@ -49,3 +49,4 @@ export * from './novedadNomina.entity';
 export * from './plantilla-onboarding.entity';
 export * from './tarea-plantilla.entity';
 export * from './tarea-empleado.entity';
+export * from './documento-empresa.entity';

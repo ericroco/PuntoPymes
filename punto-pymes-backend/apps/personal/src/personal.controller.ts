@@ -19,6 +19,7 @@ import { CreateSucursalDto } from './dto/create-sucursal.dto';
 import { UpdateSucursalDto } from './dto/update-sucursal.dto';
 import { BulkImportResponseDto } from './dto/bulk-import-response.dto';
 import { OnboardingService } from './onboarding.service';
+import { CreateDocumentoEmpresaDto } from './dto/create-documento-empresa.dto';
 
 @Controller()
 export class PersonalController {
@@ -30,8 +31,9 @@ export class PersonalController {
    * Escucha el comando 'get_empleados' (RF-01-02)
    */
   @MessagePattern({ cmd: 'get_empleados' })
-  getEmpleados(@Payload() data: { empresaId: string }) {
-    return this.personalService.getEmpleados(data.empresaId);
+  getEmpleados(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
+    // 👈 3. Recibimos y pasamos al servicio
+    return this.personalService.getEmpleados(data.empresaId, data.filtroSucursalId);
   }
   @MessagePattern({ cmd: 'get_empleado' })
   getEmpleado(@Payload() data: { empresaId: string; empleadoId: string }) {
@@ -116,11 +118,12 @@ export class PersonalController {
      * Escucha el comando 'get_departamentos' (RF-02)
      */
   @MessagePattern({ cmd: 'get_departamentos' })
-  getDepartamentos(@Payload() data: { empresaId: string }) {
+  getDepartamentos(@Payload() data: { empresaId: string, filtroSucursalId?: string }) { // 👈 Agregamos el opcional
     console.log(
       `Microservicio PERSONAL: Recibido get_departamentos para empresa: ${data.empresaId}`,
     );
-    return this.personalService.getDepartamentos(data.empresaId);
+    // 👇 Pasamos el filtro al servicio
+    return this.personalService.getDepartamentos(data.empresaId, data.filtroSucursalId);
   }
   /**
    * Escucha el comando 'update_departamento' (RF-02)
@@ -180,11 +183,8 @@ export class PersonalController {
    * Escucha el comando 'get_cargos' (RF-02)
    */
   @MessagePattern({ cmd: 'get_cargos' })
-  getCargos(@Payload() data: { empresaId: string }) {
-    console.log(
-      `Microservicio PERSONAL: Recibido get_cargos para empresa: ${data.empresaId}`,
-    );
-    return this.personalService.getCargos(data.empresaId);
+  getCargos(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
+    return this.personalService.getCargos(data.empresaId, data.filtroSucursalId);
   }
 
   /**
@@ -297,8 +297,8 @@ export class PersonalController {
   }
 
   @MessagePattern({ cmd: 'get_vacantes' })
-  getVacantes(@Payload() data: { empresaId: string; publicas?: boolean }) {
-    return this.personalService.getVacantes(data.empresaId, data.publicas);
+  getVacantes(@Payload() data: { empresaId: string; publicas?: boolean; filtroSucursalId?: string }) { // 👈 Nuevo param
+    return this.personalService.getVacantes(data.empresaId, data.publicas, data.filtroSucursalId);
   }
 
   @MessagePattern({ cmd: 'update_vacante' })
@@ -421,5 +421,29 @@ export class PersonalController {
   @MessagePattern({ cmd: 'seed_onboarding_test' })
   seedOnboarding(@Payload() data: { empresaId: string, empleadoId: string }) {
     return this.onboardingService.seedOnboarding(data.empresaId, data.empleadoId);
+  }
+
+  @MessagePattern({ cmd: 'seed_roles_default' })
+  async seedRolesDefault(@Payload() data: { empresaId: string }) {
+    return this.personalService.crearRolesPorDefecto(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'create_doc_empresa' })
+  createDocEmpresa(@Payload() data: { empresaId: string, dto: CreateDocumentoEmpresaDto }) {
+    return this.personalService.createDocumentoEmpresa(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'get_docs_empresa' })
+  getDocsEmpresa(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
+    return this.personalService.getDocumentosEmpresa(data.empresaId, data.filtroSucursalId);
+  }
+
+  @MessagePattern({ cmd: 'delete_doc_empresa' })
+  deleteDocEmpresa(@Payload() data: { empresaId: string, docId: string }) {
+    return this.personalService.deleteDocumentoEmpresa(data.empresaId, data.docId);
+  }
+  @MessagePattern({ cmd: 'get_directorio' })
+  getDirectorio(@Payload() data: { empresaId: string }) {
+    return this.personalService.getDirectorioPublico(data.empresaId);
   }
 }

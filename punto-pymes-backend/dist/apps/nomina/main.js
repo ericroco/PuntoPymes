@@ -1542,6 +1542,7 @@ const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 const activoAsignado_entity_1 = __webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts");
 var EstadoActivo;
 (function (EstadoActivo) {
@@ -1561,9 +1562,11 @@ let Activo = class Activo extends base_entity_1.BaseEntity {
     fechaAdquisicion;
     empresa;
     empresaId;
+    sucursal;
+    sucursalId;
     asignaciones;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number }, imageUrl: { required: true, type: () => String }, fechaAdquisicion: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] } };
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, serial: { required: true, type: () => String }, tipo: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").EstadoActivo) }, valor: { required: true, type: () => Number }, imageUrl: { required: true, type: () => String }, fechaAdquisicion: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, asignaciones: { required: true, type: () => [(__webpack_require__(/*! ./activoAsignado.entity */ "./libs/database/src/entities/activoAsignado.entity.ts").ActivoAsignado)] } };
     }
 };
 exports.Activo = Activo;
@@ -1644,12 +1647,25 @@ __decorate([
     __metadata("design:type", String)
 ], Activo.prototype, "empresaId", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, {
+        nullable: true,
+        onDelete: 'SET NULL'
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Activo.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Activo.prototype, "sucursalId", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => activoAsignado_entity_1.ActivoAsignado, (asignacion) => asignacion.activo),
     __metadata("design:type", Array)
 ], Activo.prototype, "asignaciones", void 0);
 exports.Activo = Activo = __decorate([
     (0, typeorm_1.Entity)({ name: 'activos' }),
     (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId']),
     (0, typeorm_1.Unique)(['empresaId', 'serial'])
 ], Activo);
 
@@ -2777,13 +2793,16 @@ const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const cargo_entity_1 = __webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 let Departamento = class Departamento extends base_entity_1.BaseEntity {
     nombre;
     empresa;
     empresaId;
+    sucursal;
+    sucursalId;
     cargos;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del \u00E1rea o departamento\nMapea: string nombre \"Nombre area departamento\"" }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria\"" }, cargos: { required: true, type: () => [(__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo)] } };
+        return { nombre: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, cargos: { required: true, type: () => [(__webpack_require__(/*! ./cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo)] } };
     }
 };
 exports.Departamento = Departamento;
@@ -2808,13 +2827,115 @@ __decorate([
     __metadata("design:type", String)
 ], Departamento.prototype, "empresaId", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, (sucursal) => sucursal.departamentos, {
+        nullable: true,
+        onDelete: 'RESTRICT',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Departamento.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'uuid',
+        nullable: true,
+        comment: 'ID de la Sucursal a la que pertenece'
+    }),
+    __metadata("design:type", String)
+], Departamento.prototype, "sucursalId", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => cargo_entity_1.Cargo, (cargo) => cargo.departamento),
     __metadata("design:type", Array)
 ], Departamento.prototype, "cargos", void 0);
 exports.Departamento = Departamento = __decorate([
     (0, typeorm_1.Entity)({ name: 'departamentos' }),
-    (0, typeorm_1.Index)(['empresaId'])
+    (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId'])
 ], Departamento);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/documento-empresa.entity.ts":
+/*!****************************************************************!*\
+  !*** ./libs/database/src/entities/documento-empresa.entity.ts ***!
+  \****************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DocumentoEmpresa = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
+let DocumentoEmpresa = class DocumentoEmpresa extends base_entity_1.BaseEntity {
+    nombre;
+    descripcion;
+    url;
+    categoria;
+    fechaSubida;
+    empresa;
+    empresaId;
+    sucursal;
+    sucursalId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, url: { required: true, type: () => String }, categoria: { required: true, type: () => String }, fechaSubida: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String } };
+    }
+};
+exports.DocumentoEmpresa = DocumentoEmpresa;
+__decorate([
+    (0, typeorm_1.Column)({ length: 255 }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "nombre", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', comment: 'URL del archivo en S3/Cloudinary/Local' }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "url", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ length: 50, nullable: true, comment: 'Ej: LEGAL, MANUALES, FORMATOS' }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "categoria", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_DATE' }),
+    __metadata("design:type", Date)
+], DocumentoEmpresa.prototype, "fechaSubida", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empresa_entity_1.Empresa, { nullable: false, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'empresaId' }),
+    __metadata("design:type", empresa_entity_1.Empresa)
+], DocumentoEmpresa.prototype, "empresa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], DocumentoEmpresa.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], DocumentoEmpresa.prototype, "sucursalId", void 0);
+exports.DocumentoEmpresa = DocumentoEmpresa = __decorate([
+    (0, typeorm_1.Entity)({ name: 'documentos_empresa' }),
+    (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId'])
+], DocumentoEmpresa);
 
 
 /***/ }),
@@ -3499,6 +3620,7 @@ __exportStar(__webpack_require__(/*! ./novedadNomina.entity */ "./libs/database/
 __exportStar(__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts"), exports);
 
 
 /***/ }),
@@ -4197,6 +4319,7 @@ const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/dat
 const sprint_entity_1 = __webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts");
 const tarea_entity_1 = __webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts");
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 let Proyecto = class Proyecto extends base_entity_1.BaseEntity {
     nombre;
     descripcion;
@@ -4205,10 +4328,12 @@ let Proyecto = class Proyecto extends base_entity_1.BaseEntity {
     empresaId;
     lider;
     liderId;
+    sucursal;
+    sucursalId;
     sprints;
     tareas;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del proyecto\nMapea: string nombre \"Nombre proyecto\"" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del proyecto\nMapea: string descripcion \"Descripcion proyecto\"" }, estado: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria proyecto\"" }, lider: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, liderId: { required: true, type: () => String }, sprints: { required: true, type: () => [(__webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts").Sprint)] }, tareas: { required: true, type: () => [(__webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts").Tarea)], description: "Relaci\u00F3n: Un Proyecto contiene muchas Tareas.\n'cascade: true' = Si se borra el Proyecto, sus Tareas se borran." } };
+        return { nombre: { required: true, type: () => String, description: "Nombre del proyecto" }, descripcion: { required: true, type: () => String, description: "Descripci\u00F3n detallada del proyecto" }, estado: { required: true, type: () => String }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, lider: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado), description: "Relaci\u00F3n: Un Proyecto tiene UN l\u00EDder (Empleado)." }, liderId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, sprints: { required: true, type: () => [(__webpack_require__(/*! ./sprint.entity */ "./libs/database/src/entities/sprint.entity.ts").Sprint)] }, tareas: { required: true, type: () => [(__webpack_require__(/*! ./tarea.entity */ "./libs/database/src/entities/tarea.entity.ts").Tarea)] } };
     }
 };
 exports.Proyecto = Proyecto;
@@ -4264,6 +4389,15 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Proyecto.prototype, "liderId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Proyecto.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: 'ID de la Sucursal a la que pertenece este proyecto' }),
+    __metadata("design:type", String)
+], Proyecto.prototype, "sucursalId", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => sprint_entity_1.Sprint, (sprint) => sprint.proyecto, { cascade: true }),
     __metadata("design:type", Array)
@@ -4833,6 +4967,7 @@ const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts");
 let Sucursal = class Sucursal extends base_entity_1.BaseEntity {
     nombre;
     direccion;
@@ -4841,8 +4976,11 @@ let Sucursal = class Sucursal extends base_entity_1.BaseEntity {
     empresa;
     empresaId;
     empleados;
+    departamentos;
+    jefe;
+    jefeId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, direccion: { required: true, type: () => String }, telefono: { required: true, type: () => String }, activa: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String }, direccion: { required: true, type: () => String }, telefono: { required: true, type: () => String }, activa: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)] }, jefe: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, jefeId: { required: true, type: () => String } };
     }
 };
 exports.Sucursal = Sucursal;
@@ -4878,6 +5016,19 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.sucursal),
     __metadata("design:type", Array)
 ], Sucursal.prototype, "empleados", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => departamento_entity_1.Departamento, (depto) => depto.sucursal),
+    __metadata("design:type", Array)
+], Sucursal.prototype, "departamentos", void 0);
+__decorate([
+    (0, typeorm_1.OneToOne)(() => empleado_entity_1.Empleado, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'jefeId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], Sucursal.prototype, "jefe", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Sucursal.prototype, "jefeId", void 0);
 exports.Sucursal = Sucursal = __decorate([
     (0, typeorm_1.Entity)({ name: 'sucursales' }),
     (0, typeorm_1.Index)(['empresaId'])
@@ -5335,6 +5486,7 @@ const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/
 const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts");
 const departamento_entity_1 = __webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts");
 const candidato_entity_1 = __webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
 var EstadoVacante;
 (function (EstadoVacante) {
     EstadoVacante["BORRADOR"] = "BORRADOR";
@@ -5355,9 +5507,11 @@ let Vacante = class Vacante extends base_entity_1.BaseEntity {
     empresaId;
     departamento;
     departamentoId;
+    sucursal;
+    sucursalId;
     candidatos;
     static _OPENAPI_METADATA_FACTORY() {
-        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, requisitos: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").EstadoVacante) }, ubicacion: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, fechaCierre: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento), description: "Relaci\u00F3n con el Departamento (Marketing, TI, Ventas)." }, departamentoId: { required: true, type: () => String }, candidatos: { required: true, type: () => [(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato)] } };
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, requisitos: { required: true, type: () => String }, estado: { required: true, enum: (__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").EstadoVacante) }, ubicacion: { required: true, type: () => String }, salarioMin: { required: true, type: () => Number }, salarioMax: { required: true, type: () => Number }, fechaCierre: { required: true, type: () => Date }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String }, departamento: { required: true, type: () => (__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento), description: "Relaci\u00F3n con el Departamento (Marketing, TI, Ventas)." }, departamentoId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String }, candidatos: { required: true, type: () => [(__webpack_require__(/*! ./candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato)] } };
     }
 };
 exports.Vacante = Vacante;
@@ -5448,12 +5602,22 @@ __decorate([
     __metadata("design:type", String)
 ], Vacante.prototype, "departamentoId", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'SET NULL' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Vacante.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Vacante.prototype, "sucursalId", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => candidato_entity_1.Candidato, (candidato) => candidato.vacante, { cascade: true }),
     __metadata("design:type", Array)
 ], Vacante.prototype, "candidatos", void 0);
 exports.Vacante = Vacante = __decorate([
     (0, typeorm_1.Entity)({ name: 'vacantes' }),
     (0, typeorm_1.Index)(['empresaId']),
+    (0, typeorm_1.Index)(['sucursalId']),
     (0, typeorm_1.Index)(['estado'])
 ], Vacante);
 

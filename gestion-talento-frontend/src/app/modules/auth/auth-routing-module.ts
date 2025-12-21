@@ -6,27 +6,21 @@ import { RegisterComponent } from './pages/register/register';
 import { CompanySelectorComponent } from './pages/company-selector/company-selector';
 
 const routes: Routes = [
-  {
-    path: 'login',
-    component: Login
-  },
-  {
-    path: 'register',
-    component: RegisterComponent
-  },
+  // Rutas Públicas
+  { path: 'login', component: Login },
+  { path: 'register', component: RegisterComponent },
+
+  // Rutas Protegidas (Requieren Token)
   {
     path: 'create-company',
-    component: CreateCompanyComponent
+    component: CreateCompanyComponent,
   },
   {
     path: 'select-company',
-    component: CompanySelectorComponent
-  },
-  {
-    path: '**',
-    redirectTo: 'login'
+    component: CompanySelectorComponent,
   },
 
+  { path: '**', redirectTo: 'login' }
 ];
 
 @NgModule({

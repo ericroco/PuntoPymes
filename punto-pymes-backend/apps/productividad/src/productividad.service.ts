@@ -85,11 +85,20 @@ export class ProductividadService {
    * OBTENER todos los proyectos de una empresa (Multi-Tenant RNF20)
    *
    */
-  async getProyectos(empresaId: string): Promise<Proyecto[]> {
+  async getProyectos(empresaId: string, filtroSucursalId?: string): Promise<Proyecto[]> {
+
+    // 1. Construimos el Where dinámico
+    const whereClause: any = { empresaId };
+
+    if (filtroSucursalId) {
+      whereClause.sucursal = { id: filtroSucursalId };
+    }
+
     return this.proyectoRepository.find({
-      where: { empresaId: empresaId },
-      relations: ['lider'], // Cargar la info del empleado líder
-      withDeleted: false, // Usamos Soft Delete
+      where: whereClause, // Usamos el where dinámico
+      relations: ['lider', 'sucursal'], // Agregamos 'sucursal' para verla en el frontend
+      withDeleted: false,
+      order: { nombre: 'ASC' }
     });
   }
 
@@ -127,8 +136,10 @@ export class ProductividadService {
     // 3. Crear el proyecto
     const nuevoProyecto = this.proyectoRepository.create({
       ...dto,
-      empresaId: empresaId, // ¡Forzamos el Multi-tenancy!
-      estado: dto.estado || EstadoProyecto.ACTIVO, // Default
+      empresaId: empresaId,
+      // 👇 Si el DTO trae sucursalId (puesto por el Gateway), creamos la relación
+      sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
+      estado: dto.estado || EstadoProyecto.ACTIVO,
     });
 
     return this.proyectoRepository.save(nuevoProyecto);
@@ -1137,22 +1148,32 @@ export class ProductividadService {
       }
     }
 
-    // 2. Crear
+    // 2. Crear (Guardando Sucursal)
     const activo = this.activoRepository.create({
       ...dto,
       empresaId,
       estado: dto.estado || EstadoActivo.DISPONIBLE,
+      // 👇 AGREGAR ESTO: Relación con Sucursal
+      sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
     });
 
     return this.activoRepository.save(activo);
   }
 
-  async getActivos(empresaId: string): Promise<Activo[]> {
+  async getActivos(empresaId: string, filtroSucursalId?: string): Promise<Activo[]> { // 👈 Recibir parametro
+
+    // 1. Construir Where Dinámico
+    const whereClause: any = { empresaId };
+
+    if (filtroSucursalId) {
+      whereClause.sucursal = { id: filtroSucursalId };
+    }
+
     const activos = await this.activoRepository.find({
-      where: { empresaId },
+      where: whereClause, // 👈 Usar where dinámico
       order: { nombre: 'ASC' },
-      // 👇 1. Traemos el historial de asignaciones y los datos del empleado
-      relations: ['asignaciones', 'asignaciones.empleado'],
+      // 👇 Agregar 'sucursal' a las relaciones para ver dónde está el activo
+      relations: ['asignaciones', 'asignaciones.empleado', 'sucursal'],
     });
 
     // 👇 2. Procesamos cada activo para "facilitarle la vida" al Frontend
@@ -1458,67 +1479,101 @@ export class ProductividadService {
 
     return this.reporteRepository.save(reporte);
   }
-  // ==========================================
-  //        ANALÍTICAS Y DASHBOARD (KPIs)
-  // ==========================================
+  async getDashboardKPIs(empresaId: string, filtroSucursalId?: string): Promise<DashboardKpiDto> {
 
-  async getDashboardKPIs(empresaId: string): Promise<DashboardKpiDto> {
+    // ============================================================
+    // 🛠️ HELPER: Objeto de filtro reutilizable
+    // ============================================================
+    // Si hay filtro, creamos la condición: { sucursal: { id: filtro } }
+    // Si no, devolvemos objeto vacío.
+    const condicionSucursal = filtroSucursalId
+      ? { sucursal: { id: filtroSucursalId } }
+      : {};
+
+    // ============================================================
     // 1. Total Empleados (Headcount)
+    // ============================================================
     const totalEmpleados = await this.empleadoRepository.count({
-      where: { empresaId, estado: 'Activo' } // Asumiendo que 'estado' es string 'Activo'
-    });
-
-    // 2. Proyectos Activos
-    const totalProyectosActivos = await this.proyectoRepository.count({
       where: {
         empresaId,
-        estado: EstadoProyecto.ACTIVO // O usa el Enum EstadoProyecto.ACTIVO si lo tienes importado
+        estado: 'Activo',
+        ...condicionSucursal // 👈 Inyectamos filtro (si existe)
       }
     });
 
-    // 3. Total Gastos Aprobados (Suma de dinero)
-    const gastos = await this.reporteRepository
-      .createQueryBuilder('reporte')
-      .leftJoin('reporte.empleado', 'empleado')
-      .where('empleado.empresaId = :empresaId', { empresaId })
-      .andWhere('reporte.estado = :estado', { estado: EstadoReporte.APROBADO })
-      .select('SUM(reporte.total)', 'sum')
-      .getRawOne();
+    // ============================================================
+    // 2. Proyectos Activos
+    // ============================================================
+    const totalProyectosActivos = await this.proyectoRepository.count({
+      where: {
+        empresaId,
+        estado: EstadoProyecto.ACTIVO, // Asegúrate de usar tu Enum o string
+        ...condicionSucursal // 👈 El proyecto también tiene sucursalId
+      }
+    });
 
+    // ============================================================
+    // 3. Total Gastos Aprobados (QueryBuilder)
+    // ============================================================
+    const queryGastos = this.reporteRepository
+      .createQueryBuilder('reporte')
+      .leftJoin('reporte.empleado', 'empleado') // Join para ver la sucursal del empleado
+      .where('empleado.empresaId = :empresaId', { empresaId })
+      .andWhere('reporte.estado = :estado', { estado: EstadoReporte.APROBADO });
+
+    // En QueryBuilder el filtro se agrega manualmente con un IF
+    if (filtroSucursalId) {
+      queryGastos.andWhere('empleado.sucursalId = :sucursalId', { sucursalId: filtroSucursalId });
+    }
+
+    const gastos = await queryGastos.select('SUM(reporte.total)', 'sum').getRawOne();
     const totalGastosAprobados = parseFloat(gastos.sum || '0');
 
+    // ============================================================
     // 4. Asistencia de HOY (% de asistencia)
+    // ============================================================
     const hoy = new Date();
     const inicioDia = new Date(hoy.setHours(0, 0, 0, 0));
     const finDia = new Date(hoy.setHours(23, 59, 59, 999));
 
     const asistenciasHoy = await this.asistenciaRepository.count({
       where: {
-        empleado: { empresaId }, // Join implícito
-        fecha: Between(inicioDia, finDia)
+        fecha: Between(inicioDia, finDia),
+        // Relación anidada: Empleado -> Sucursal
+        empleado: {
+          empresaId,
+          ...condicionSucursal // 👈 Filtramos si el empleado pertenece a la sucursal
+        }
       }
     });
 
+    // Calculamos tasa con base en los empleados filtrados
     const tasaAsistenciaHoy = totalEmpleados > 0
       ? Math.round((asistenciasHoy / totalEmpleados) * 100)
       : 0;
 
+    // ============================================================
     // 5. Talento (9-Box Resumen)
-    // Contamos cuántos "Estrellas" (Alto Desempeño + Alto Potencial)
-    // Asumimos escala 1-9. Alto es >= 7.
+    // ============================================================
     const estrellas = await this.evaluacionRepository.count({
       where: {
-        evaluado: { empresaId },
         calificacionDesempeno: MoreThanOrEqual(7),
-        calificacionPotencial: MoreThanOrEqual(7)
+        calificacionPotencial: MoreThanOrEqual(7),
+        evaluado: {
+          empresaId,
+          ...condicionSucursal // 👈 Filtramos al evaluado por sucursal
+        }
       }
     });
 
     const enRiesgo = await this.evaluacionRepository.count({
       where: {
-        evaluado: { empresaId },
         calificacionDesempeno: LessThanOrEqual(3),
-        calificacionPotencial: LessThanOrEqual(3)
+        calificacionPotencial: LessThanOrEqual(3),
+        evaluado: {
+          empresaId,
+          ...condicionSucursal
+        }
       }
     });
 
@@ -1530,6 +1585,7 @@ export class ProductividadService {
       distribucion9Box: {
         altoDesempenoAltoPotencial: estrellas,
         bajoDesempenoBajoPotencial: enRiesgo,
+        // ... (resto en 0 por brevedad)
         bajoDesempenoAltoPotencial: 0,
         altoDesempenoBajoPotencial: 0,
         bajoDesempenoMedioPotencial: 0,

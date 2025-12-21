@@ -1,4 +1,3 @@
-// libs/database/src/entities/departamento.entity.ts
 import {
   Entity,
   Column,
@@ -6,26 +5,17 @@ import {
   OneToMany,
   JoinColumn,
   Index,
-  DeleteDateColumn,
+  // DeleteDateColumn, // Si usas soft delete, descomenta esto
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
 import { Cargo } from './cargo.entity';
+import { Sucursal } from './sucursal.entity'; // 👈 1. IMPORTA LA SUCURSAL
 
-/**
- * Entidad que representa un Departamento o Área dentro de una Empresa.
- * (Ej: 'Ventas', 'Tecnología', 'Marketing').
- * Agrupa los Cargos/Puestos de trabajo (RF-02).
- * Mapea la tabla 'departamentos'
- */
 @Entity({ name: 'departamentos' })
-// Indexamos esta columna para búsquedas rápidas de departamentos por empresa
 @Index(['empresaId'])
+@Index(['sucursalId']) // 👈 2. INDEXA SUCURSAL PARA BÚSQUEDAS RÁPIDAS
 export class Departamento extends BaseEntity {
-  /**
-   * Nombre del área o departamento
-   * Mapea: string nombre "Nombre area departamento"
-   */
   @Column({
     type: 'varchar',
     length: 255,
@@ -34,42 +24,41 @@ export class Departamento extends BaseEntity {
   nombre: string;
 
   // ---
-  // RELACIONES "MUCHOS A UNO" (Un Departamento PERTENECE A...)
+  // RELACIONES "MUCHOS A UNO"
   // ---
 
-  /**
-   * Relación: Un Departamento pertenece a UNA Empresa (Tenant).
-   * onDelete: 'CASCADE' = Si la Empresa se borra, sus departamentos se borran.
-   */
   @ManyToOne(() => Empresa, (empresa) => empresa.departamentos, {
-    nullable: false, // Un departamento no puede existir sin una empresa
+    nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'empresaId' }) // Define el nombre de la columna FK
+  @JoinColumn({ name: 'empresaId' })
   empresa: Empresa;
 
-  /**
-   * Mapea: string empresaId FK "Empresa propietaria"
-   */
   @Column({ comment: 'ID de la Empresa (Tenant) propietaria' })
   empresaId: string;
 
+  // 👇👇 LO NUEVO: RELACIÓN CON SUCURSAL 👇👇
+
+  @ManyToOne(() => Sucursal, (sucursal) => sucursal.departamentos, {
+    nullable: true, // ⚠️ IMPORTANTE: Ponlo true al principio para no romper datos viejos
+    onDelete: 'RESTRICT', // No borres la sucursal si tiene departamentos
+  })
+  @JoinColumn({ name: 'sucursalId' })
+  sucursal: Sucursal;
+
+  @Column({
+    type: 'uuid',
+    nullable: true, // Debe coincidir con la relación
+    comment: 'ID de la Sucursal a la que pertenece'
+  })
+  sucursalId: string;
+
+  // ------------------------------------------
+
   // ---
-  // RELACIONES "UNO A MUCHOS" (Un Departamento TIENE MUCHOS...)
+  // RELACIONES "UNO A MUCHOS"
   // ---
 
-  /**
-   * Relación: Un Departamento contiene muchos Cargos.
-   * Este es el "otro lado" de la relación que ya definimos en 'cargo.entity.ts'.
-   */
   @OneToMany(() => Cargo, (cargo) => cargo.departamento)
   cargos: Cargo[];
-  /**
-   * Columna para Soft Delete (Borrado Lógico)
-   * Esta es la "bandera" que propusiste.
-   * Si es NULL, el registro está activo.
-   * Si tiene una fecha, el registro está "borrado" y
-   * TypeORM lo ocultará automáticamente de todas las
-   * consultas 'find()'.
-   */
 }

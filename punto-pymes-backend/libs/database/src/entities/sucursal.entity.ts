@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empresa } from './empresa.entity';
-import { Empleado } from './empleado.entity';
+import { Empleado } from './empleado.entity'; // 👈 Asegúrate de importar esto
+import { Departamento } from './departamento.entity';
 
 @Entity({ name: 'sucursales' })
 @Index(['empresaId'])
@@ -19,7 +20,7 @@ export class Sucursal extends BaseEntity {
     @Column({ type: 'boolean', default: true })
     activa: boolean;
 
-    // --- RELACIONES ---
+    // --- RELACIONES EXISTENTES ---
 
     @ManyToOne(() => Empresa, (empresa) => empresa.sucursales, {
         nullable: false,
@@ -33,4 +34,16 @@ export class Sucursal extends BaseEntity {
 
     @OneToMany(() => Empleado, (empleado) => empleado.sucursal)
     empleados: Empleado[];
+
+    @OneToMany(() => Departamento, (depto) => depto.sucursal)
+    departamentos: Departamento[];
+
+    // --- 👇 NUEVA RELACIÓN: EL JEFE DE LA SUCURSAL ---
+
+    @OneToOne(() => Empleado, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'jefeId' }) // Esto crea la columna 'jefeId' en la DB
+    jefe: Empleado;
+
+    @Column({ nullable: true })
+    jefeId: string; // Para poder acceder al ID directamente sin cargar toda la relación
 }

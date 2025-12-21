@@ -1,6 +1,20 @@
-<h2 mat-dialog-title>Subir Documento</h2>
+<h2 mat-dialog-title>{{ data?.title || 'Subir Documento' }}</h2>
+
 <mat-dialog-content [formGroup]="documentForm">
 
+  <div *ngIf="data?.mode === 'company'" style="margin-bottom: 1rem;">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Alcance / Destino</mat-label>
+      <mat-select formControlName="sucursalId">
+        <mat-option [value]="null">
+          <mat-icon style="margin-right: 8px;">public</mat-icon> Global (Toda la Empresa)
+        </mat-option>
+        <mat-option *ngFor="let b of branches" [value]="b.id">
+          <mat-icon style="margin-right: 8px;">store</mat-icon> {{ b.nombre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Nombre del Documento</mat-label>
     <input matInput formControlName="fileName" placeholder="Ej: Título Universitario">
@@ -9,10 +23,9 @@
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Tipo de Documento</mat-label>
     <mat-select formControlName="documentType">
-      <mat-option value="Legal">Legal</mat-option>
-      <mat-option value="Certificación Externa">Certificación Externa</mat-option>
-      <mat-option value="Reconocimiento Interno">Reconocimiento</mat-option>
-      <mat-option value="Otros">Otros</mat-option>
+      <mat-option *ngFor="let type of documentTypes" [value]="type">
+        {{ type }}
+      </mat-option>
     </mat-select>
   </mat-form-field>
 
@@ -30,7 +43,7 @@
 
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()" [disabled]=" documentForm.invalid || !selectedFile">
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="documentForm.invalid || !selectedFile">
     Subir
   </button>
 </mat-dialog-actions>

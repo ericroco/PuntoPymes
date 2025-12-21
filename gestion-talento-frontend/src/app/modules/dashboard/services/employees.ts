@@ -27,6 +27,18 @@ export interface OnboardingTask {
     link?: string;
     isComplete: boolean;
 }
+
+export interface DirectorioEmpleado {
+    id: string;
+    nombre: string;
+    apellido: string;
+    emailPersonal: string; // 👈 Ajustado a tu entidad
+    telefono?: string;
+    fotoUrl?: string;
+    sucursal?: { nombre: string };
+    cargo?: { nombre: string }; // 👈 Ajustado: Cargo en vez de Departamento
+}
+
 // Interfaz del Empleado (Datos que recibimos)
 export interface Employee {
     id: string;
@@ -145,5 +157,9 @@ export class EmployeesService {
 
     toggleOnboardingTask(taskId: string, isComplete: boolean): Observable<any> {
         return this.http.patch(`${this.apiUrl}/me/onboarding/${taskId}`, { isComplete });
+    }
+
+    getDirectory(): Observable<DirectorioEmpleado[]> {
+        return this.http.get<DirectorioEmpleado[]>(`${this.apiUrl}/lista-directorio`);
     }
 }
