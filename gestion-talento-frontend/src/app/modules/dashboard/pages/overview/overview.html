@@ -139,6 +139,72 @@
 
     <div class="overview-grid employee-grid">
 
+      <mat-card class="overview-widget announcements-widget">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon class="icon-header">campaign</mat-icon> Cartelera Digital
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="scrollable-list">
+          <div *ngFor="let anuncio of anuncios" class="anuncio-card" [ngClass]="anuncio.prioridad.toLowerCase()">
+            <div class="anuncio-top">
+              <span class="badge">{{ anuncio.prioridad }}</span>
+              <span class="date">{{ anuncio.createdAt | date:'dd MMM' }}</span>
+            </div>
+            <h4>{{ anuncio.titulo }}</h4>
+            <p>{{ anuncio.contenido }}</p>
+          </div>
+          <p *ngIf="anuncios.length === 0" class="no-data-placeholder">No hay anuncios nuevos.</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="overview-widget polls-widget">
+        <mat-card-header>
+          <mat-card-title>
+            <div class="title-with-badge">
+              <span><mat-icon class="icon-header">poll</mat-icon> Tu Opinión</span>
+              <span class="badge-count" *ngIf="encuestasPendientes.length > 0">
+                {{ encuestasPendientes.length }}
+              </span>
+            </div>
+          </mat-card-title>
+
+          <mat-card-subtitle *ngIf="encuestasPendientes.length > 0">
+            Encuestas por responder
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div *ngIf="encuestasPendientes.length > 0; else noPolls">
+            <div class="poll-preview">
+
+              <h5 class="poll-title">{{ encuestasPendientes[0].titulo }}</h5>
+
+              <p class="poll-desc" *ngIf="encuestasPendientes[0].descripcion">
+                {{ encuestasPendientes[0].descripcion }}
+              </p>
+
+              <div class="actions">
+                <button mat-flat-button color="primary" (click)="openVoteDialog(encuestasPendientes[0])">
+                  Participar ahora
+                </button>
+              </div>
+
+              <div class="queue-info" *ngIf="encuestasPendientes.length > 1">
+                <small>⚠️ Tienes {{ encuestasPendientes.length - 1 }} más en espera.</small>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noPolls>
+            <div class="empty-state">
+              <mat-icon class="empty-icon">check_circle_outline</mat-icon>
+              <p class="no-data-placeholder">¡Estás al día! No tienes encuestas pendientes.</p>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+
       <mat-card class="overview-widget kpi-widget">
         <mat-card-header>
           <mat-card-title>Mis Indicadores</mat-card-title>
@@ -158,6 +224,7 @@
           <mat-card-title>Solicitar Vacaciones</mat-card-title>
           <mat-card-subtitle>Días disponibles: {{ availableLeaveDays }}</mat-card-subtitle>
         </mat-card-header>
+
         <form [formGroup]="leaveRequestForm" (ngSubmit)="requestLeave()">
           <mat-card-content class="leave-request-form">
             <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker" class="date-range-inputs">
@@ -166,11 +233,13 @@
             </mat-date-range-input>
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-date-range-picker #picker></mat-date-range-picker>
+
             <mat-error
               *ngIf="leaveRequestForm.controls['startDate'].hasError('required') || leaveRequestForm.controls['endDate'].hasError('required')">
               Ambas fechas son obligatorias.
             </mat-error>
           </mat-card-content>
+
           <mat-card-actions align="end">
             <button type="submit" mat-flat-button color="primary" [disabled]="leaveRequestForm.invalid">
               <mat-icon>send</mat-icon> Solicitar

@@ -1192,56 +1192,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UpdateEmpleadoDto = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
+const create_empleado_dto_1 = __webpack_require__(/*! ./create-empleado.dto */ "./apps/personal/src/dto/create-empleado.dto.ts");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class UpdateEmpleadoDto {
-    nombre;
-    apellido;
-    emailPersonal;
-    fechaContratacion;
-    cargoId;
-    rolId;
-    jefeId;
+class UpdateEmpleadoDto extends (0, mapped_types_1.PartialType)(create_empleado_dto_1.CreateEmpleadoDto) {
     estado;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: false, type: () => String }, apellido: { required: false, type: () => String }, emailPersonal: { required: false, type: () => String, format: "email" }, fechaContratacion: { required: false, type: () => Date }, cargoId: { required: false, type: () => String, format: "uuid" }, rolId: { required: false, type: () => String, format: "uuid" }, jefeId: { required: false, type: () => String, format: "uuid" }, estado: { required: false, type: () => String } };
+        return { estado: { required: false, type: () => String } };
     }
 }
 exports.UpdateEmpleadoDto = UpdateEmpleadoDto;
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "apellido", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)({}, { message: 'El email personal no es válido.' }),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "emailPersonal", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsDateString)({}, { message: 'La fecha de contratación debe ser una fecha válida.' }),
-    __metadata("design:type", Date)
-], UpdateEmpleadoDto.prototype, "fechaContratacion", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "cargoId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "rolId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], UpdateEmpleadoDto.prototype, "jefeId", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -1291,6 +1251,28 @@ class UpdateSucursalDto extends (0, mapped_types_1.PartialType)(create_sucursal_
     }
 }
 exports.UpdateSucursalDto = UpdateSucursalDto;
+
+
+/***/ }),
+
+/***/ "./apps/personal/src/dto/update-vacante.dto.ts":
+/*!*****************************************************!*\
+  !*** ./apps/personal/src/dto/update-vacante.dto.ts ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.UpdateVacanteDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const mapped_types_1 = __webpack_require__(/*! @nestjs/mapped-types */ "@nestjs/mapped-types");
+const create_vacante_dto_1 = __webpack_require__(/*! ./create-vacante.dto */ "./apps/personal/src/dto/create-vacante.dto.ts");
+class UpdateVacanteDto extends (0, mapped_types_1.PartialType)(create_vacante_dto_1.CreateVacanteDto) {
+    static _OPENAPI_METADATA_FACTORY() {
+        return {};
+    }
+}
+exports.UpdateVacanteDto = UpdateVacanteDto;
 
 
 /***/ }),
@@ -1509,6 +1491,67 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/productividad/src/dto/create-anuncio.dto.ts":
+/*!**********************************************************!*\
+  !*** ./apps/productividad/src/dto/create-anuncio.dto.ts ***!
+  \**********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateAnuncioDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+const anuncio_entity_1 = __webpack_require__(/*! default/database/entities/anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts");
+class CreateAnuncioDto {
+    titulo;
+    contenido;
+    prioridad;
+    fechaExpiracion;
+    sucursalId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, contenido: { required: true, type: () => String }, prioridad: { required: false, enum: (__webpack_require__(/*! ../../../../libs/database/src/entities/anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts").PrioridadAnuncio) }, fechaExpiracion: { required: false, type: () => String }, sucursalId: { required: false, type: () => String, format: "uuid" } };
+    }
+}
+exports.CreateAnuncioDto = CreateAnuncioDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateAnuncioDto.prototype, "titulo", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateAnuncioDto.prototype, "contenido", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(anuncio_entity_1.PrioridadAnuncio),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateAnuncioDto.prototype, "prioridad", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateAnuncioDto.prototype, "fechaExpiracion", void 0);
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateAnuncioDto.prototype, "sucursalId", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/productividad/src/dto/create-asignacion.dto.ts":
 /*!*************************************************************!*\
   !*** ./apps/productividad/src/dto/create-asignacion.dto.ts ***!
@@ -1675,6 +1718,85 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateCursoDto.prototype, "isActive", void 0);
+
+
+/***/ }),
+
+/***/ "./apps/productividad/src/dto/create-encuesta.dto.ts":
+/*!***********************************************************!*\
+  !*** ./apps/productividad/src/dto/create-encuesta.dto.ts ***!
+  \***********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateEncuestaDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+const class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
+class OpcionDto {
+    texto;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { texto: { required: true, type: () => String } };
+    }
+}
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], OpcionDto.prototype, "texto", void 0);
+class CreateEncuestaDto {
+    titulo;
+    descripcion;
+    fechaFin;
+    esAnonima;
+    sucursalId;
+    opciones;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, descripcion: { required: false, type: () => String }, fechaFin: { required: true, type: () => String }, esAnonima: { required: false, type: () => Boolean }, sucursalId: { required: false, type: () => String, format: "uuid" }, opciones: { required: true, type: () => [OpcionDto], minItems: 2 } };
+    }
+}
+exports.CreateEncuestaDto = CreateEncuestaDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateEncuestaDto.prototype, "titulo", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEncuestaDto.prototype, "descripcion", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateEncuestaDto.prototype, "fechaFin", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateEncuestaDto.prototype, "esAnonima", void 0);
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEncuestaDto.prototype, "sucursalId", void 0);
+__decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayMinSize)(2, { message: 'La encuesta debe tener al menos 2 opciones' }),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => OpcionDto),
+    __metadata("design:type", Array)
+], CreateEncuestaDto.prototype, "opciones", void 0);
 
 
 /***/ }),
@@ -2503,6 +2625,42 @@ exports.UpdateTareaDto = UpdateTareaDto;
 
 /***/ }),
 
+/***/ "./apps/productividad/src/dto/vote.dto.ts":
+/*!************************************************!*\
+  !*** ./apps/productividad/src/dto/vote.dto.ts ***!
+  \************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.VoteDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class VoteDto {
+    opcionId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { opcionId: { required: true, type: () => String, format: "uuid" } };
+    }
+}
+exports.VoteDto = VoteDto;
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], VoteDto.prototype, "opcionId", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/punto-pymes-backend/src/app.controller.ts":
 /*!********************************************************!*\
   !*** ./apps/punto-pymes-backend/src/app.controller.ts ***!
@@ -2584,6 +2742,10 @@ const create_solicitud_dto_1 = __webpack_require__(/*! apps/nomina/src/dto/creat
 const create_sucursal_dto_1 = __webpack_require__(/*! ../../personal/src/dto/create-sucursal.dto */ "./apps/personal/src/dto/create-sucursal.dto.ts");
 const update_sucursal_dto_1 = __webpack_require__(/*! ../../personal/src/dto/update-sucursal.dto */ "./apps/personal/src/dto/update-sucursal.dto.ts");
 const create_documento_empresa_dto_1 = __webpack_require__(/*! apps/personal/src/dto/create-documento-empresa.dto */ "./apps/personal/src/dto/create-documento-empresa.dto.ts");
+const update_vacante_dto_1 = __webpack_require__(/*! apps/personal/src/dto/update-vacante.dto */ "./apps/personal/src/dto/update-vacante.dto.ts");
+const create_anuncio_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-anuncio.dto */ "./apps/productividad/src/dto/create-anuncio.dto.ts");
+const create_encuesta_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-encuesta.dto */ "./apps/productividad/src/dto/create-encuesta.dto.ts");
+const vote_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/vote.dto */ "./apps/productividad/src/dto/vote.dto.ts");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
 let AppController = class AppController {
     appService;
@@ -2659,6 +2821,9 @@ let AppController = class AppController {
     }
     getDirectorio(req) {
         return this.personalService.send({ cmd: 'get_directorio' }, { empresaId: req.user.empresaId });
+    }
+    async getOrganigrama(req) {
+        return this.personalService.send({ cmd: 'get_organigrama_data' }, { empresaId: req.user.empresaId });
     }
     getEmpleado(req, empleadoId) {
         const { empresaId } = req.user;
@@ -3122,6 +3287,14 @@ let AppController = class AppController {
         }
         return this.personalService.send({ cmd: 'create_vacante' }, { empresaId, dto });
     }
+    updateVacante(req, vacanteId, dto) {
+        const { empresaId } = req.user;
+        return this.personalService.send({ cmd: 'update_vacante' }, {
+            empresaId,
+            vacanteId,
+            dto
+        });
+    }
     getVacantesAdmin(req, headerSucursalId) {
         const { empresaId, sucursalId } = req.user;
         const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
@@ -3321,6 +3494,52 @@ let AppController = class AppController {
         const fileUrl = `http://localhost:3000/uploads/${empresaId}/documentos-empresa/${file.filename}`;
         return { url: fileUrl };
     }
+    createAnuncio(req, dto, headerSucursalId) {
+        const { empresaId, sucursalId } = req.user;
+        if (sucursalId) {
+            dto.sucursalId = sucursalId;
+        }
+        else if (headerSucursalId) {
+            dto.sucursalId = headerSucursalId;
+        }
+        return this.productividadService.send({ cmd: 'create_anuncio' }, { empresaId, dto });
+    }
+    getMyAnuncios(req, headerSucursalId) {
+        const { empresaId, sucursalId, role } = req.user;
+        console.log('--- DEBUG ANUNCIOS GATEWAY ---');
+        console.log('Usuario:', req.user.email);
+        console.log('Rol:', role);
+        console.log('Sucursal en Token:', sucursalId);
+        const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+        return this.productividadService.send({ cmd: 'get_anuncios' }, {
+            empresaId,
+            filtroSucursalId: filtroFinal
+        });
+    }
+    createEncuesta(req, dto) {
+        return this.productividadService.send({ cmd: 'create_encuesta' }, {
+            empresaId: req.user.empresaId,
+            user: req.user,
+            dto
+        });
+    }
+    getMyEncuestas(req) {
+        return this.productividadService.send({ cmd: 'get_encuestas' }, {
+            empresaId: req.user.empresaId,
+            sucursalId: req.user.sucursalId,
+            empleadoId: req.user.sub
+        });
+    }
+    getAllSurveysAdmin(req) {
+        return this.productividadService.send({ cmd: 'get_all_encuestas_admin' }, { empresaId: req.user.empresaId });
+    }
+    votarEncuesta(req, encuestaId, dto) {
+        return this.productividadService.send({ cmd: 'registrar_voto' }, {
+            encuestaId,
+            opcionId: dto.opcionId,
+            empleadoId: req.user.sub
+        });
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -3406,6 +3625,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getDirectorio", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('empleados/organigrama'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getOrganigrama", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('empleados/:id'),
@@ -4494,6 +4722,19 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('reclutamiento.gestion'),
+    (0, common_1.Patch)('reclutamiento/vacantes/:id'),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe({ transform: true, whitelist: true })),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, update_vacante_dto_1.UpdateVacanteDto]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "updateVacante", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('reclutamiento.gestion'),
     (0, common_1.Get)('reclutamiento/vacantes'),
     openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, common_1.Request)()),
@@ -4887,6 +5128,66 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "uploadDocumentoFisico", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('anuncios'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Headers)('x-sucursal-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_anuncio_dto_1.CreateAnuncioDto, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "createAnuncio", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('anuncios'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Headers)('x-sucursal-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getMyAnuncios", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('encuestas'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_encuesta_dto_1.CreateEncuestaDto]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "createEncuesta", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('encuestas'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getMyEncuestas", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('productividad/admin/encuestas'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getAllSurveysAdmin", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('encuestas/:id/votar'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, vote_dto_1.VoteDto]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "votarEncuesta", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -5220,7 +5521,9 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             empresaId: payload.empresaId,
             empleadoId: payload.empleadoId,
             rolId: payload.rolId,
+            role: payload.role,
             permisos: payload.permisos,
+            sucursalId: payload.sucursalId,
             sub: payload.sub,
             id: payload.sub,
             rol: payload.rol,
@@ -5773,6 +6076,87 @@ exports.ActivoAsignado = ActivoAsignado = __decorate([
     (0, typeorm_1.Index)(['activoId']),
     (0, typeorm_1.Index)(['empleadoId'])
 ], ActivoAsignado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/anuncio.entity.ts":
+/*!******************************************************!*\
+  !*** ./libs/database/src/entities/anuncio.entity.ts ***!
+  \******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Anuncio = exports.PrioridadAnuncio = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
+var PrioridadAnuncio;
+(function (PrioridadAnuncio) {
+    PrioridadAnuncio["BAJA"] = "BAJA";
+    PrioridadAnuncio["MEDIA"] = "MEDIA";
+    PrioridadAnuncio["ALTA"] = "ALTA";
+})(PrioridadAnuncio || (exports.PrioridadAnuncio = PrioridadAnuncio = {}));
+let Anuncio = class Anuncio extends base_entity_1.BaseEntity {
+    titulo;
+    contenido;
+    prioridad;
+    fechaExpiracion;
+    empresaId;
+    sucursal;
+    sucursalId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, contenido: { required: true, type: () => String }, prioridad: { required: true, enum: (__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts").PrioridadAnuncio) }, fechaExpiracion: { required: true, type: () => Date }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String, nullable: true } };
+    }
+};
+exports.Anuncio = Anuncio;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Anuncio.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], Anuncio.prototype, "contenido", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: PrioridadAnuncio,
+        default: PrioridadAnuncio.MEDIA
+    }),
+    __metadata("design:type", String)
+], Anuncio.prototype, "prioridad", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Date)
+], Anuncio.prototype, "fechaExpiracion", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Anuncio.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Anuncio.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", Object)
+], Anuncio.prototype, "sucursalId", void 0);
+exports.Anuncio = Anuncio = __decorate([
+    (0, typeorm_1.Entity)({ name: 'anuncios' })
+], Anuncio);
 
 
 /***/ }),
@@ -7450,6 +7834,113 @@ exports.Empresa = Empresa = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/encuesta.entity.ts":
+/*!*******************************************************!*\
+  !*** ./libs/database/src/entities/encuesta.entity.ts ***!
+  \*******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.OpcionEncuesta = exports.Encuesta = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+let Encuesta = class Encuesta extends base_entity_1.BaseEntity {
+    titulo;
+    descripcion;
+    fechaFin;
+    esAnonima;
+    activa;
+    empresaId;
+    sucursalId;
+    opciones;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, fechaFin: { required: true, type: () => Date }, esAnonima: { required: true, type: () => Boolean }, activa: { required: true, type: () => Boolean }, empresaId: { required: true, type: () => String }, sucursalId: { required: true, type: () => String, nullable: true }, opciones: { required: true, type: () => [(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").OpcionEncuesta)] } };
+    }
+};
+exports.Encuesta = Encuesta;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Encuesta.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Encuesta.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp' }),
+    __metadata("design:type", Date)
+], Encuesta.prototype, "fechaFin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], Encuesta.prototype, "esAnonima", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: true }),
+    __metadata("design:type", Boolean)
+], Encuesta.prototype, "activa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Encuesta.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", Object)
+], Encuesta.prototype, "sucursalId", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => OpcionEncuesta, (opcion) => opcion.encuesta, {
+        cascade: true,
+    }),
+    __metadata("design:type", Array)
+], Encuesta.prototype, "opciones", void 0);
+exports.Encuesta = Encuesta = __decorate([
+    (0, typeorm_1.Entity)({ name: 'encuestas' })
+], Encuesta);
+let OpcionEncuesta = class OpcionEncuesta extends base_entity_1.BaseEntity {
+    texto;
+    votos;
+    encuesta;
+    encuestaId;
+    miVoto;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { texto: { required: true, type: () => String }, votos: { required: true, type: () => Number }, encuesta: { required: true, type: () => (__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }, encuestaId: { required: true, type: () => String }, miVoto: { required: false, type: () => (__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts").Voto) } };
+    }
+};
+exports.OpcionEncuesta = OpcionEncuesta;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], OpcionEncuesta.prototype, "texto", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], OpcionEncuesta.prototype, "votos", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => Encuesta, (encuesta) => encuesta.opciones, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'encuestaId' }),
+    __metadata("design:type", Encuesta)
+], OpcionEncuesta.prototype, "encuesta", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], OpcionEncuesta.prototype, "encuestaId", void 0);
+exports.OpcionEncuesta = OpcionEncuesta = __decorate([
+    (0, typeorm_1.Entity)({ name: 'encuesta_opciones' })
+], OpcionEncuesta);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/evaluacion.entity.ts":
 /*!*********************************************************!*\
   !*** ./libs/database/src/entities/evaluacion.entity.ts ***!
@@ -7618,6 +8109,9 @@ __exportStar(__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/da
 __exportStar(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts"), exports);
 
 
 /***/ }),
@@ -9617,6 +10111,70 @@ exports.Vacante = Vacante = __decorate([
     (0, typeorm_1.Index)(['sucursalId']),
     (0, typeorm_1.Index)(['estado'])
 ], Vacante);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/voto.entity.ts":
+/*!***************************************************!*\
+  !*** ./libs/database/src/entities/voto.entity.ts ***!
+  \***************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Voto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const encuesta_entity_1 = __webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts");
+const encuesta_entity_2 = __webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts");
+let Voto = class Voto extends base_entity_1.BaseEntity {
+    empleadoId;
+    encuestaId;
+    opcionId;
+    encuesta;
+    opcion;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleadoId: { required: true, type: () => String }, encuestaId: { required: true, type: () => String }, opcionId: { required: true, type: () => String }, encuesta: { required: true, type: () => (__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }, opcion: { required: true, type: () => (__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").OpcionEncuesta) } };
+    }
+};
+exports.Voto = Voto;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Voto.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Voto.prototype, "encuestaId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Voto.prototype, "opcionId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => encuesta_entity_1.Encuesta),
+    (0, typeorm_1.JoinColumn)({ name: 'encuestaId' }),
+    __metadata("design:type", encuesta_entity_1.Encuesta)
+], Voto.prototype, "encuesta", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => encuesta_entity_2.OpcionEncuesta),
+    (0, typeorm_1.JoinColumn)({ name: 'opcionId' }),
+    __metadata("design:type", encuesta_entity_2.OpcionEncuesta)
+], Voto.prototype, "opcion", void 0);
+exports.Voto = Voto = __decorate([
+    (0, typeorm_1.Entity)({ name: 'votos' }),
+    (0, typeorm_1.Unique)(['encuestaId', 'empleadoId'])
+], Voto);
 
 
 /***/ }),

@@ -1,60 +1,112 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select'; // <--- Importante
 import { MatIconModule } from '@angular/material/icon';
-import { Employee } from '../../services/employees'; // Asegúrate de importar la interfaz correcta
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDivider } from '@angular/material/divider';
+
+// Interfaces necesarias
+export interface EditEmployeeData {
+  employee: any;           // El empleado a editar
+  roles: any[];            // Lista de roles disponibles
+  managers: any[];         // Lista de posibles jefes
+}
 
 @Component({
   selector: 'app-edit-employee-dialog',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule, MatIconModule
+    CommonModule, ReactiveFormsModule, MatDialogModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatSelectModule, MatIconModule, MatDivider
   ],
-  templateUrl: './edit-employee-dialog.html',
-  styleUrls: ['./edit-employee-dialog.scss']
+  templateUrl: './edit-employee-dialog.html'
 })
 export class EditEmployeeDialog implements OnInit {
   editForm: FormGroup;
 
+  // Guardamos la sucursal heredada aquí
+  private targetSucursalId: string | null = null;
+
   constructor(
-    public dialogRef: MatDialogRef<EditEmployeeDialog>,
     private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: { employee: Employee }
+    private dialogRef: MatDialogRef<EditEmployeeDialog>,
+    private snackBar: MatSnackBar,
+    @Inject(MAT_DIALOG_DATA) public data: EditEmployeeData
   ) {
-    const emp = data.employee;
-
-    // Inicializamos el formulario SOLO con los datos personales básicos
+    // Inicializamos el formulario con los nuevos campos
     this.editForm = this.fb.group({
-      nombre: [emp.nombre, Validators.required],
-      apellido: [emp.apellido, Validators.required],
-
-      // Email personal (Editable por si hubo error de dedo al crear)
-      emailPersonal: [emp.emailPersonal, [Validators.required, Validators.email]],
-
-      telefono: [emp.telefono || ''],
-
-      // Si tu interfaz Employee tiene dirección, agrégala aquí. Si no, quítala.
-      // direccion: [emp.direccion || ''] 
+      nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
+      emailPersonal: ['', [Validators.required, Validators.email]],
+      telefono: [''],
+      // 👇 NUEVOS CAMPOS
+      rolId: ['', Validators.required],
+      jefeId: [null] // Puede ser null
     });
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    if (this.data.employee) {
+      const emp = this.data.employee;
 
-  onCancel(): void {
-    this.dialogRef.close();
+      // 1. Cargar datos actuales
+      this.editForm.patchValue({
+        nombre: emp.nombre,
+        apellido: emp.apellido,
+        emailPersonal: emp.emailPersonal,
+        telefono: emp.telefono,
+        rolId: emp.rolId || emp.usuario?.rolId, // Ajusta según tu estructura
+        jefeId: emp.jefeId
+      });
+
+      // Inicializar la sucursal actual por si no cambia de jefe
+      this.targetSucursalId = emp.sucursalId;
+    }
+
+    // 2. Lógica de Herencia de Sucursal
+    this.setupBranchInheritance();
   }
 
-  onSave(): void {
-    if (this.editForm.valid) {
-      // Devolvemos solo los valores editados
-      this.dialogRef.close(this.editForm.value);
-    } else {
-      this.editForm.markAllAsTouched();
-    }
+  setupBranchInheritance() {
+    // Escuchar cambios en el select de Jefe
+    this.editForm.get('jefeId')?.valueChanges.subscribe((newJefeId) => {
+      if (newJefeId) {
+        // Buscamos al jefe completo en la lista que recibimos
+        const boss = this.data.managers.find(m => m.id === newJefeId);
+
+        if (boss && boss.sucursalId) {
+          // ¡EUREKA! Encontramos la sucursal del jefe
+          this.targetSucursalId = boss.sucursalId;
+
+          // Opcional: Avisar al usuario
+          this.snackBar.open(
+            `Se asignará la sucursal: ${boss.sucursal?.nombre || 'del jefe'}`,
+            'Ok', { duration: 3000 }
+          );
+        }
+      }
+    });
+  }
+
+  onSave() {
+    if (this.editForm.invalid) return;
+
+    // Preparamos el objeto para enviar al Backend
+    const updateData = {
+      ...this.editForm.value,
+      sucursalId: this.targetSucursalId // 👇 Aquí enviamos la sucursal heredada
+    };
+
+    this.dialogRef.close(updateData);
+  }
+
+  onCancel() {
+    this.dialogRef.close();
   }
 }

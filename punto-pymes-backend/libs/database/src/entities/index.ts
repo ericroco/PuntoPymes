@@ -50,3 +50,6 @@ export * from './plantilla-onboarding.entity';
 export * from './tarea-plantilla.entity';
 export * from './tarea-empleado.entity';
 export * from './documento-empresa.entity';
+export * from './anuncio.entity';
+export * from './encuesta.entity';
+export * from './voto.entity';

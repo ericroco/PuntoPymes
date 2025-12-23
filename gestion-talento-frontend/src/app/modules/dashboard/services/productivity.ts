@@ -3,51 +3,111 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
-// --- INTERFACES ---
+// =========================================================
+// 1. INTERFACES DE GESTIÓN DE PROYECTOS (HARD SKILLS)
+// =========================================================
 
 export interface Project {
   id: string;
   nombre: string;
   descripcion: string;
   estado: string;
-  // ...
 }
 
 export interface Sprint {
   id: string;
   nombre: string;
-  objetivo?: string; // o description
+  objetivo?: string;
   fechaInicio: string;
   fechaFin: string;
-  estado?: string; // Calculado o del backend
+  estado?: string;
   proyectoId: string;
-  // El backend no devuelve 'tasks' count directamente en el listado simple, 
-  // a menos que el endpoint lo incluya.
-  // Si no, lo calcularemos o pediremos un DTO extendido.
 }
 
 export interface Task {
   id: string;
   titulo: string;
   descripcion?: string;
-  estado: 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADA'; // Ajusta a tus Enums
-  prioridad: string;
+  estado: 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADA';
+  prioridad: 'ALTA' | 'MEDIA' | 'BAJA';
   puntosHistoria: number;
   sprintId: string;
-  asignaciones?: any[]; // Para ver quién la tiene
+  asignaciones?: any[];
   objetivoId?: string;
 }
+
+// =========================================================
+// 2. INTERFACES DE CLIMA LABORAL (SOFT SKILLS) - ¡NUEVO!
+// =========================================================
+
+export interface Anuncio {
+  id: string;
+  titulo: string;
+  contenido: string;
+  prioridad: 'ALTA' | 'MEDIA' | 'BAJA';
+  createdAt: string;
+  fechaExpiracion?: string;
+  sucursalId?: string | null; // Null si es Global
+}
+
+export interface OpcionEncuesta {
+  id: string;
+  texto: string;
+  votos: number;
+}
+
+export interface Voto {
+  opcionId: string;
+  encuestaId?: string;
+}
+
+export interface Encuesta {
+  id: string;
+  titulo: string;
+  descripcion?: string;
+  activa: boolean;
+  createdAt: string;
+  opciones: OpcionEncuesta[];
+
+  // Propiedades calculadas o virtuales
+  miVoto?: Voto;
+  totalVotos?: number; // Lo calculamos en el front si el back no lo manda
+}
+
+// DTOs para creación (Opcional, pero recomendado)
+export interface CreateAnuncioDto {
+  titulo: string;
+  contenido: string;
+  prioridad?: string;
+  sucursalId?: string; // Opcional
+}
+
+export interface CreateEncuestaDto {
+  titulo: string;
+  descripcion?: string;
+  fechaFin: string;
+  opciones: { texto: string }[];
+  sucursalId?: string | null;
+}
+
+// =========================================================
+// SERVICIO PRINCIPAL
+// =========================================================
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductivityService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl; // http://localhost:3000
+  // Asegúrate que tu environment.apiUrl apunte al API Gateway (ej: http://localhost:3000)
+  private apiUrl = environment.apiUrl;
+
+  // =========================================================
+  // SECCIÓN A: GESTIÓN DE PROYECTOS (Jira-like)
+  // =========================================================
 
   // --- PROYECTOS ---
   getProjects(): Observable<Project[]> {
-    // Asumimos ruta GET /proyectos (definida en AppController)
     return this.http.get<Project[]>(`${this.apiUrl}/proyectos`);
   }
 
@@ -57,12 +117,10 @@ export class ProductivityService {
 
   // --- SPRINTS ---
   getSprintsByProject(projectId: string): Observable<Sprint[]> {
-    // GET /proyectos/:id/sprints
     return this.http.get<Sprint[]>(`${this.apiUrl}/proyectos/${projectId}/sprints`);
   }
 
   createSprint(projectId: string, data: any): Observable<Sprint> {
-    // POST /proyectos/:id/sprints
     return this.http.post<Sprint>(`${this.apiUrl}/proyectos/${projectId}/sprints`, data);
   }
 
@@ -72,17 +130,83 @@ export class ProductivityService {
 
   // --- TAREAS ---
   getTasksBySprint(sprintId: string): Observable<Task[]> {
-    // GET /sprints/:id/tareas
     return this.http.get<Task[]>(`${this.apiUrl}/sprints/${sprintId}/tareas`);
   }
 
   createTask(sprintId: string, data: any): Observable<Task> {
-    // POST /sprints/:id/tareas
     return this.http.post<Task>(`${this.apiUrl}/sprints/${sprintId}/tareas`, data);
   }
 
   updateTask(taskId: string, data: any): Observable<Task> {
-    // PATCH /tareas/:id (para mover en el kanban)
     return this.http.patch<Task>(`${this.apiUrl}/tareas/${taskId}`, data);
   }
+
+  // =========================================================
+  // SECCIÓN B: CLIMA LABORAL Y COMUNICACIÓN (NUEVO)
+  // Rutas basadas en el Gateway que configuramos (/productividad/...)
+  // =========================================================
+
+  // --- ANUNCIOS (Cartelera Digital) ---
+
+  // Obtener anuncios (El backend filtra automáticamente por mi sucursal + globales)
+  getMyAnuncios(): Observable<Anuncio[]> {
+    return this.http.get<Anuncio[]>(`${this.apiUrl}/anuncios`);
+  }
+
+  // Crear anuncio (Solo Admin/RRHH)
+  createAnuncio(data: CreateAnuncioDto): Observable<Anuncio> {
+    return this.http.post<Anuncio>(`${this.apiUrl}/anuncios`, data);
+  }
+
+  // --- ENCUESTAS (Votación) ---
+
+  // Obtener encuestas activas (incluye si ya voté o no)
+  getMyEncuestas(): Observable<Encuesta[]> {
+    return this.http.get<Encuesta[]>(`${this.apiUrl}/encuestas`);
+  }
+
+  // Crear encuesta (Solo Admin/RRHH)
+  createEncuesta(data: CreateEncuestaDto): Observable<Encuesta> {
+    return this.http.post<Encuesta>(`${this.apiUrl}/encuestas`, data);
+  }
+
+  // Votar en una encuesta
+  votar(encuestaId: string, opcionId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/encuestas/${encuestaId}/votar`, { opcionId });
+  }
+
+
+  // ================= ADMIN ENCUESTAS =================
+
+  // 1. Obtener TODAS las encuestas (Admin View)
+  getAllSurveys(): Observable<Encuesta[]> {
+    // 🔴 ANTES (MAL): return this.http.get<Encuesta[]>(`${this.apiUrl}/encuestas/all`);
+
+    // ✅ CORREGIDO:
+    // 1. Agregamos '/productividad'
+    // 2. Cambiamos '/all' por '/admin/encuestas' para coincidir con tu Backend y evitar bugs
+    return this.http.get<Encuesta[]>(`${this.apiUrl}/productividad/admin/encuestas`);
+  }
+
+  // 2. Eliminar encuesta
+  deleteSurvey(id: string): Observable<any> {
+    // Esto está bien, siempre y cuando tu backend tenga el endpoint DELETE
+    return this.http.delete(`${this.apiUrl}/encuestas/${id}`);
+  }
+
+  // 3. Helper para calcular total de respuestas
+  countVotes(encuesta: Encuesta): number {
+    if (!encuesta.opciones) return 0;
+    return encuesta.opciones.reduce((acc, curr) => acc + curr.votos, 0);
+  }
+
+  votarEncuesta(encuestaId: string, opcionId: string) {
+    return this.http.post(`${this.apiUrl}/encuestas/${encuestaId}/votar`, { opcionId });
+  }
+
+  getAnuncios() {
+    // Ya el interceptor se encarga de mandar el token con tu ID
+    return this.http.get<any[]>(`${this.apiUrl}/anuncios`);
+  }
+
 }

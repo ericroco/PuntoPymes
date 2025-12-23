@@ -69,4 +69,9 @@ export class RecruitmentService {
     // Apunta al nuevo endpoint que creamos
     return this.http.get<Vacancy>(`${environment.apiUrl}/public/vacantes/${id}`);
   }
+
+  updateVacancy(id: string, data: any) {
+    // Esto llamará a tu endpoint existente: PATCH /vacantes/:id
+    return this.http.patch(`${this.apiUrl}/${id}`, data);
+  }
 }

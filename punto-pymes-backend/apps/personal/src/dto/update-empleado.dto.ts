@@ -1,46 +1,20 @@
-// apps/personal/src/dto/update-empleado.dto.ts
-import {
-  IsEmail,
-  IsOptional,
-  IsString,
-  IsUUID,
-  IsDateString,
-} from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types'; // 👈 Importante
+import { CreateEmpleadoDto } from './create-empleado.dto';
+import { IsOptional, IsString } from 'class-validator';
 
 /**
- * DTO para actualizar un Empleado (RF-01-03)
- * Todas las propiedades son opcionales para permitir PATCH.
+ * UpdateEmpleadoDto extiende de CreateEmpleadoDto.
+ * PartialType hace que:
+ * 1. Heredes AUTOMÁTICAMENTE: telefono, sucursalId, salario, etc.
+ * 2. Todos los campos heredados se vuelvan @IsOptional().
  */
-export class UpdateEmpleadoDto {
+export class UpdateEmpleadoDto extends PartialType(CreateEmpleadoDto) {
+
+  // Aquí solo agregamos campos que NO existen en la creación, como 'estado'
   @IsOptional()
   @IsString()
-  nombre?: string;
+  estado?: string;
 
-  @IsOptional()
-  @IsString()
-  apellido?: string;
-
-  @IsOptional()
-  @IsEmail({}, { message: 'El email personal no es válido.' })
-  emailPersonal?: string;
-
-  @IsOptional()
-  @IsDateString({}, { message: 'La fecha de contratación debe ser una fecha válida.'})
-  fechaContratacion?: Date;
-
-  @IsOptional()
-  @IsUUID()
-  cargoId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  rolId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  jefeId?: string;
-
-  @IsOptional()
-  @IsString()
-  estado?: string; // Para desactivar (RF-01-04)
+  // Nota: Si en Create se llama 'fechaInicio' y aquí querías 'fechaContratacion',
+  // PartialType usará 'fechaInicio'. Asegúrate de que el frontend envíe el nombre correcto.
 }

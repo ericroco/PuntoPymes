@@ -367,3 +367,74 @@ mat-divider {
   // Ejemplo: Reducir altura si es necesario
   // height: 56px !important;
 }
+
+.polls-widget {
+  min-height: 200px;
+  /* Evita que la tarjeta salte de tamaño */
+
+  .title-with-badge {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .badge-count {
+    background-color: #f44336;
+    /* Rojo notificación */
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+  }
+
+  .poll-preview {
+    text-align: center;
+    padding: 10px 0;
+
+    .poll-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .poll-desc {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .queue-info {
+      margin-top: 15px;
+      color: #888;
+      font-style: italic;
+    }
+  }
+
+  /* Estado vacío bonito */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    color: #4caf50;
+    /* Verde éxito */
+
+    .empty-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+    }
+
+    .no-data-placeholder {
+      color: #666;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+}

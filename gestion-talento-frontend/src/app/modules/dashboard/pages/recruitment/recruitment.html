@@ -1,4 +1,5 @@
 <div class="page-container">
+
   <header class="page-header">
     <h2>Vacantes Activas</h2>
 
@@ -21,7 +22,7 @@
     <div *ngFor="let vacancy of vacancies" class="job-card" [ngClass]="'status-' + vacancy.estado.toLowerCase()">
 
       <div class="job-header">
-        <h3 class="job-title">{{ vacancy.titulo }}</h3>
+        <h3 class="job-title" [matTooltip]="vacancy.titulo">{{ vacancy.titulo }}</h3>
 
         <span class="job-status">
           {{ vacancy.estado }}
@@ -44,15 +45,28 @@
       </p>
 
       <div class="job-footer">
+
         <div class="candidates-info">
           <strong>{{ vacancy.candidatosCount || 0 }}</strong>
           <span>Candidatos</span>
         </div>
 
         <div class="actions">
+
           <button class="btn btn-secondary" [routerLink]="['/dashboard/recruitment', vacancy.id]">
-            Ver Vacante
+            Ver
           </button>
+
+          <button *ngIf="vacancy.estado !== 'CERRADA'" class="btn-icon-danger" mat-icon-button
+            matTooltip="Cerrar Vacante (Detener postulaciones)" (click)="onCloseVacancy(vacancy)">
+            <mat-icon>block</mat-icon>
+          </button>
+
+          <span *ngIf="vacancy.estado === 'CERRADA'" class="closed-badge"
+            matTooltip="Esta vacante ya no recibe postulantes">
+            <mat-icon>lock</mat-icon> Cerrada
+          </span>
+
         </div>
       </div>
 

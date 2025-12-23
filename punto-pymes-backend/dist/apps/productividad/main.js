@@ -401,6 +401,40 @@ let ProductividadController = class ProductividadController {
     getMisCursos(data) {
         return this.productividadService.getMisCursos(data.empresaId, data.empleadoId);
     }
+    createAnuncio(data) {
+        return this.productividadService.createAnuncio(data.empresaId, data.dto);
+    }
+    getAnuncios(data) {
+        return this.productividadService.getAnuncios(data.empresaId, data.filtroSucursalId);
+    }
+    async createEncuesta(data) {
+        console.log('--- 🔍 DEBUG FINAL ---');
+        console.log('1. Rol Nombre:', data.user.role);
+        console.log('2. Sucursal DTO:', data.dto.sucursalId);
+        console.log('3. Sucursal User:', data.user.sucursalId);
+        let targetSucursalId = null;
+        const rolNombre = data.user.role ? data.user.role.toLowerCase() : '';
+        const esJefeGlobal = rolNombre.includes('admin') || rolNombre.includes('root');
+        if (esJefeGlobal) {
+            console.log('✅ ES ADMIN: Usamos lo que eligió en el diálogo (DTO)');
+            targetSucursalId = data.dto.sucursalId || null;
+        }
+        else {
+            console.log('🔒 ES MORTAL: Forzamos su sucursal asignada');
+            targetSucursalId = data.user.sucursalId;
+        }
+        console.log('🚀 ID FINAL A DB:', targetSucursalId);
+        return this.productividadService.createEncuesta(data.empresaId, targetSucursalId, data.dto);
+    }
+    getEncuestas(data) {
+        return this.productividadService.getEncuestasActivas(data.empresaId, data.sucursalId, data.empleadoId);
+    }
+    registrarVoto(data) {
+        return this.productividadService.registrarVoto(data.encuestaId, data.opcionId, data.empleadoId);
+    }
+    getAllEncuestasAdmin(data) {
+        return this.productividadService.getAllEncuestasAdmin(data.empresaId);
+    }
 };
 exports.ProductividadController = ProductividadController;
 __decorate([
@@ -892,6 +926,54 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductividadController.prototype, "getMisCursos", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_anuncio' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts").Anuncio) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "createAnuncio", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_anuncios' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts").Anuncio)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "getAnuncios", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'create_encuesta' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ProductividadController.prototype, "createEncuesta", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_encuestas' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "getEncuestas", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'registrar_voto' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "registrarVoto", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_all_encuestas_admin' }),
+    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta)] }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductividadController.prototype, "getAllEncuestasAdmin", null);
 exports.ProductividadController = ProductividadController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [productividad_service_1.ProductividadService])
@@ -949,6 +1031,10 @@ exports.ProductividadModule = ProductividadModule = __decorate([
                 database_1.ReporteGasto,
                 database_1.ItemGasto,
                 database_1.Departamento,
+                database_1.Anuncio,
+                database_1.Encuesta,
+                database_1.Voto,
+                database_1.OpcionEncuesta,
             ]),
         ],
         controllers: [productividad_controller_1.ProductividadController],
@@ -986,6 +1072,7 @@ const database_1 = __webpack_require__(/*! default/database */ "./libs/database/
 const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 const create_proyecto_dto_1 = __webpack_require__(/*! ./dto/create-proyecto.dto */ "./apps/productividad/src/dto/create-proyecto.dto.ts");
 const create_tarea_dto_1 = __webpack_require__(/*! ./dto/create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
+const typeorm_3 = __webpack_require__(/*! typeorm */ "typeorm");
 let ProductividadService = class ProductividadService {
     proyectoRepository;
     sprintRepository;
@@ -1002,7 +1089,11 @@ let ProductividadService = class ProductividadService {
     activoAsignadoRepository;
     reporteRepository;
     itemGastoRepository;
-    constructor(proyectoRepository, sprintRepository, empleadoRepository, tareaRepository, asignacionRepository, cicloRepository, objetivoRepository, evaluacionRepository, cursoRepository, inscripcionRepository, asistenciaRepository, activoRepository, activoAsignadoRepository, reporteRepository, itemGastoRepository) {
+    anuncioRepo;
+    encuestaRepo;
+    votoRepo;
+    opcionRepo;
+    constructor(proyectoRepository, sprintRepository, empleadoRepository, tareaRepository, asignacionRepository, cicloRepository, objetivoRepository, evaluacionRepository, cursoRepository, inscripcionRepository, asistenciaRepository, activoRepository, activoAsignadoRepository, reporteRepository, itemGastoRepository, anuncioRepo, encuestaRepo, votoRepo, opcionRepo) {
         this.proyectoRepository = proyectoRepository;
         this.sprintRepository = sprintRepository;
         this.empleadoRepository = empleadoRepository;
@@ -1018,6 +1109,10 @@ let ProductividadService = class ProductividadService {
         this.activoAsignadoRepository = activoAsignadoRepository;
         this.reporteRepository = reporteRepository;
         this.itemGastoRepository = itemGastoRepository;
+        this.anuncioRepo = anuncioRepo;
+        this.encuestaRepo = encuestaRepo;
+        this.votoRepo = votoRepo;
+        this.opcionRepo = opcionRepo;
     }
     async getProyectos(empresaId, filtroSucursalId) {
         const whereClause = { empresaId };
@@ -2155,6 +2250,83 @@ let ProductividadService = class ProductividadService {
         });
         return inscripciones;
     }
+    async createAnuncio(empresaId, dto) {
+        const anuncio = this.anuncioRepo.create({
+            ...dto,
+            empresaId,
+            sucursalId: dto.sucursalId || null
+        });
+        return this.anuncioRepo.save(anuncio);
+    }
+    async getAnuncios(empresaId, filtroSucursalId) {
+        const condicionesWhere = [
+            {
+                empresaId,
+                sucursalId: (0, typeorm_3.IsNull)()
+            }
+        ];
+        if (filtroSucursalId) {
+            condicionesWhere.push({
+                empresaId,
+                sucursalId: filtroSucursalId
+            });
+        }
+        return this.anuncioRepo.find({
+            where: condicionesWhere,
+            order: { createdAt: 'DESC' },
+            relations: ['sucursal']
+        });
+    }
+    async createEncuesta(empresaId, sucursalId, dto) {
+        const encuesta = this.encuestaRepo.create({
+            ...dto,
+            empresaId,
+            sucursalId,
+            opciones: dto.opciones.map(op => ({ texto: op.texto }))
+        });
+        return this.encuestaRepo.save(encuesta);
+    }
+    async getEncuestasActivas(empresaId, sucursalIdEmpleado, empleadoId) {
+        return this.encuestaRepo.createQueryBuilder('encuesta')
+            .leftJoinAndSelect('encuesta.opciones', 'opciones')
+            .leftJoinAndMapOne('encuesta.miVoto', database_1.Voto, 'voto', 'voto.encuestaId = encuesta.id AND voto.empleadoId = :empleadoId', { empleadoId })
+            .where('encuesta.empresaId = :empresaId', { empresaId })
+            .andWhere('encuesta.activa = :activa', { activa: true })
+            .andWhere('(encuesta.sucursalId IS NULL OR encuesta.sucursalId = :sucursalId)', { sucursalId: sucursalIdEmpleado })
+            .orderBy('encuesta.createdAt', 'DESC')
+            .getMany();
+    }
+    async registrarVoto(encuestaId, opcionId, empleadoId) {
+        const encuesta = await this.encuestaRepo.findOneBy({ id: encuestaId });
+        if (!encuesta)
+            throw new common_1.NotFoundException('Encuesta no encontrada');
+        if (!encuesta.activa)
+            throw new common_1.BadRequestException('La encuesta ya está cerrada.');
+        if (new Date() > encuesta.fechaFin)
+            throw new common_1.BadRequestException('El tiempo para votar ha terminado.');
+        const votoExistente = await this.votoRepo.findOneBy({ encuestaId, empleadoId });
+        if (votoExistente) {
+            throw new common_1.ConflictException('Ya has participado en esta encuesta.');
+        }
+        await this.votoRepo.save({
+            encuestaId,
+            opcionId,
+            empleadoId
+        });
+        await this.opcionRepo.increment({ id: opcionId }, 'votos', 1);
+        return { message: 'Voto registrado exitosamente' };
+    }
+    async checkVotoUsuario(encuestaId, empleadoId) {
+        const voto = await this.votoRepo.findOneBy({ encuestaId, empleadoId });
+        return { yaVoto: !!voto, opcionId: voto?.opcionId || null };
+    }
+    async getAllEncuestasAdmin(empresaId) {
+        return this.encuestaRepo.find({
+            where: { empresaId },
+            relations: ['opciones'],
+            order: { createdAt: 'DESC' }
+        });
+    }
 };
 exports.ProductividadService = ProductividadService;
 exports.ProductividadService = ProductividadService = __decorate([
@@ -2174,7 +2346,15 @@ exports.ProductividadService = ProductividadService = __decorate([
     __param(12, (0, typeorm_1.InjectRepository)(database_1.ActivoAsignado)),
     __param(13, (0, typeorm_1.InjectRepository)(database_1.ReporteGasto)),
     __param(14, (0, typeorm_1.InjectRepository)(database_1.ItemGasto)),
+    __param(15, (0, typeorm_1.InjectRepository)(database_1.Anuncio)),
+    __param(16, (0, typeorm_1.InjectRepository)(database_1.Encuesta)),
+    __param(17, (0, typeorm_1.InjectRepository)(database_1.Voto)),
+    __param(18, (0, typeorm_1.InjectRepository)(database_1.OpcionEncuesta)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -2536,6 +2716,87 @@ exports.ActivoAsignado = ActivoAsignado = __decorate([
     (0, typeorm_1.Index)(['activoId']),
     (0, typeorm_1.Index)(['empleadoId'])
 ], ActivoAsignado);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/anuncio.entity.ts":
+/*!******************************************************!*\
+  !*** ./libs/database/src/entities/anuncio.entity.ts ***!
+  \******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Anuncio = exports.PrioridadAnuncio = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const sucursal_entity_1 = __webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts");
+var PrioridadAnuncio;
+(function (PrioridadAnuncio) {
+    PrioridadAnuncio["BAJA"] = "BAJA";
+    PrioridadAnuncio["MEDIA"] = "MEDIA";
+    PrioridadAnuncio["ALTA"] = "ALTA";
+})(PrioridadAnuncio || (exports.PrioridadAnuncio = PrioridadAnuncio = {}));
+let Anuncio = class Anuncio extends base_entity_1.BaseEntity {
+    titulo;
+    contenido;
+    prioridad;
+    fechaExpiracion;
+    empresaId;
+    sucursal;
+    sucursalId;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, contenido: { required: true, type: () => String }, prioridad: { required: true, enum: (__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts").PrioridadAnuncio) }, fechaExpiracion: { required: true, type: () => Date }, empresaId: { required: true, type: () => String }, sucursal: { required: true, type: () => (__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }, sucursalId: { required: true, type: () => String, nullable: true } };
+    }
+};
+exports.Anuncio = Anuncio;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Anuncio.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], Anuncio.prototype, "contenido", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: PrioridadAnuncio,
+        default: PrioridadAnuncio.MEDIA
+    }),
+    __metadata("design:type", String)
+], Anuncio.prototype, "prioridad", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Date)
+], Anuncio.prototype, "fechaExpiracion", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Anuncio.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => sucursal_entity_1.Sucursal, { nullable: true, onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'sucursalId' }),
+    __metadata("design:type", sucursal_entity_1.Sucursal)
+], Anuncio.prototype, "sucursal", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", Object)
+], Anuncio.prototype, "sucursalId", void 0);
+exports.Anuncio = Anuncio = __decorate([
+    (0, typeorm_1.Entity)({ name: 'anuncios' })
+], Anuncio);
 
 
 /***/ }),
@@ -4213,6 +4474,113 @@ exports.Empresa = Empresa = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/encuesta.entity.ts":
+/*!*******************************************************!*\
+  !*** ./libs/database/src/entities/encuesta.entity.ts ***!
+  \*******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.OpcionEncuesta = exports.Encuesta = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+let Encuesta = class Encuesta extends base_entity_1.BaseEntity {
+    titulo;
+    descripcion;
+    fechaFin;
+    esAnonima;
+    activa;
+    empresaId;
+    sucursalId;
+    opciones;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, fechaFin: { required: true, type: () => Date }, esAnonima: { required: true, type: () => Boolean }, activa: { required: true, type: () => Boolean }, empresaId: { required: true, type: () => String }, sucursalId: { required: true, type: () => String, nullable: true }, opciones: { required: true, type: () => [(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").OpcionEncuesta)] } };
+    }
+};
+exports.Encuesta = Encuesta;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Encuesta.prototype, "titulo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Encuesta.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp' }),
+    __metadata("design:type", Date)
+], Encuesta.prototype, "fechaFin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], Encuesta.prototype, "esAnonima", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: true }),
+    __metadata("design:type", Boolean)
+], Encuesta.prototype, "activa", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Encuesta.prototype, "empresaId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", Object)
+], Encuesta.prototype, "sucursalId", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => OpcionEncuesta, (opcion) => opcion.encuesta, {
+        cascade: true,
+    }),
+    __metadata("design:type", Array)
+], Encuesta.prototype, "opciones", void 0);
+exports.Encuesta = Encuesta = __decorate([
+    (0, typeorm_1.Entity)({ name: 'encuestas' })
+], Encuesta);
+let OpcionEncuesta = class OpcionEncuesta extends base_entity_1.BaseEntity {
+    texto;
+    votos;
+    encuesta;
+    encuestaId;
+    miVoto;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { texto: { required: true, type: () => String }, votos: { required: true, type: () => Number }, encuesta: { required: true, type: () => (__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }, encuestaId: { required: true, type: () => String }, miVoto: { required: false, type: () => (__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts").Voto) } };
+    }
+};
+exports.OpcionEncuesta = OpcionEncuesta;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], OpcionEncuesta.prototype, "texto", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], OpcionEncuesta.prototype, "votos", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => Encuesta, (encuesta) => encuesta.opciones, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'encuestaId' }),
+    __metadata("design:type", Encuesta)
+], OpcionEncuesta.prototype, "encuesta", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], OpcionEncuesta.prototype, "encuestaId", void 0);
+exports.OpcionEncuesta = OpcionEncuesta = __decorate([
+    (0, typeorm_1.Entity)({ name: 'encuesta_opciones' })
+], OpcionEncuesta);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/evaluacion.entity.ts":
 /*!*********************************************************!*\
   !*** ./libs/database/src/entities/evaluacion.entity.ts ***!
@@ -4381,6 +4749,9 @@ __exportStar(__webpack_require__(/*! ./plantilla-onboarding.entity */ "./libs/da
 __exportStar(__webpack_require__(/*! ./tarea-plantilla.entity */ "./libs/database/src/entities/tarea-plantilla.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts"), exports);
 
 
 /***/ }),
@@ -6380,6 +6751,70 @@ exports.Vacante = Vacante = __decorate([
     (0, typeorm_1.Index)(['sucursalId']),
     (0, typeorm_1.Index)(['estado'])
 ], Vacante);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/voto.entity.ts":
+/*!***************************************************!*\
+  !*** ./libs/database/src/entities/voto.entity.ts ***!
+  \***************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Voto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const encuesta_entity_1 = __webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts");
+const encuesta_entity_2 = __webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts");
+let Voto = class Voto extends base_entity_1.BaseEntity {
+    empleadoId;
+    encuestaId;
+    opcionId;
+    encuesta;
+    opcion;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleadoId: { required: true, type: () => String }, encuestaId: { required: true, type: () => String }, opcionId: { required: true, type: () => String }, encuesta: { required: true, type: () => (__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }, opcion: { required: true, type: () => (__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").OpcionEncuesta) } };
+    }
+};
+exports.Voto = Voto;
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Voto.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Voto.prototype, "encuestaId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Voto.prototype, "opcionId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => encuesta_entity_1.Encuesta),
+    (0, typeorm_1.JoinColumn)({ name: 'encuestaId' }),
+    __metadata("design:type", encuesta_entity_1.Encuesta)
+], Voto.prototype, "encuesta", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => encuesta_entity_2.OpcionEncuesta),
+    (0, typeorm_1.JoinColumn)({ name: 'opcionId' }),
+    __metadata("design:type", encuesta_entity_2.OpcionEncuesta)
+], Voto.prototype, "opcion", void 0);
+exports.Voto = Voto = __decorate([
+    (0, typeorm_1.Entity)({ name: 'votos' }),
+    (0, typeorm_1.Unique)(['encuestaId', 'empleadoId'])
+], Voto);
 
 
 /***/ }),

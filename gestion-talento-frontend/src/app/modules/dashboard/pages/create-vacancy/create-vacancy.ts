@@ -132,9 +132,25 @@ export class CreateVacancy implements OnInit {
 
   // --- Guardar ---
   onSave(publish: boolean = false): void {
-    if (this.vacancyForm.invalid) {
+    // 1. Si es PUBLICAR, exigimos todo el formulario válido
+    if (publish && this.vacancyForm.invalid) {
       this.vacancyForm.markAllAsTouched();
       return;
+    }
+
+    // 2. Si es BORRADOR, solo validamos lo que el Backend exige sí o sí (Título y Descripción)
+    if (!publish) {
+      const titleControl = this.vacancyForm.get('title');
+      const descControl = this.vacancyForm.get('description');
+
+      if (titleControl?.invalid || descControl?.invalid) {
+        this.vacancyForm.markAllAsTouched(); // Marca errores visuales
+        this.snackBar.open('Para guardar borrador, el Título y Descripción son obligatorios', 'Ok');
+        return;
+      }
+      // Si faltan otros campos (como ubicación), no importa, el backend los acepta opcionales en Update? 
+      // OJO: Tu CreateVacanteDto tiene @IsNotEmpty en titulo y descripcion, los demás son opcionales en tu DTO?
+      // REVISANDO TU DTO: 'ubicacion', 'salario', etc son @IsOptional(). ¡PERFECTO!
     }
 
     this.isSubmitting = true;

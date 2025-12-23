@@ -1,0 +1,58 @@
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Tablero de Comunicados</h1>
+            <p class="subtitle">Noticias y actualizaciones importantes de la empresa.</p>
+        </div>
+
+        <button *ngIf="canCreate" mat-flat-button color="primary" (click)="openCreateDialog()">
+            <mat-icon>add</mat-icon> Nuevo Anuncio
+        </button>
+    </div>
+
+    <div class="feed-container">
+
+        <div *ngIf="isLoading" class="loading-state">
+            <p>Cargando comunicados...</p>
+        </div>
+
+        <div *ngIf="!isLoading && anuncios.length === 0" class="empty-state">
+            <mat-icon>campaign</mat-icon>
+            <h3>No hay comunicados recientes</h3>
+            <p>Todo está tranquilo por aquí.</p>
+        </div>
+
+        <mat-card *ngFor="let anuncio of anuncios" class="anuncio-card">
+
+            <mat-card-header>
+                <div mat-card-avatar class="anuncio-avatar" [ngClass]="anuncio.prioridad">
+                    <mat-icon>notifications</mat-icon>
+                </div>
+
+                <mat-card-title>{{ anuncio.titulo }}</mat-card-title>
+                <mat-card-subtitle>
+                    {{ anuncio.createdAt | date:'mediumDate' }} •
+
+                    <span *ngIf="!anuncio.sucursalId" class="badge-global">🌐 Global</span>
+                    <span *ngIf="anuncio.sucursalId" class="badge-local">📍 {{ anuncio.sucursal?.nombre || 'Mi Sede'
+                        }}</span>
+                </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+                <p class="anuncio-content">{{ anuncio.contenido }}</p>
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+                <mat-chip-set>
+                    <mat-chip [color]="getPriorityColor(anuncio.prioridad)" selected>
+                        {{ anuncio.prioridad }}
+                    </mat-chip>
+                </mat-chip-set>
+            </mat-card-actions>
+
+        </mat-card>
+
+    </div>
+</div>

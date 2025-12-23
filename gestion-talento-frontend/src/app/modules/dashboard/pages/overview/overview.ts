@@ -16,6 +16,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
 
@@ -23,6 +24,8 @@ import { trigger, transition, query, style, stagger, animate } from '@angular/an
 import { DashboardService, DashboardKPIs } from '../../services/dashboard';
 import { AuthService } from '../../../auth/services/auth';
 import { VacationService } from '../../services/vacation';
+import { VoteDialogComponent } from '../../components/vote-dialog/vote-dialog';
+import { ProductivityService, Anuncio, Encuesta } from '../../services/productivity';
 
 // Interfaces
 interface AdminKPI { title: string; value: string; trend: string; isPositive: boolean; color: string; }
@@ -74,6 +77,8 @@ export class Overview implements OnInit {
   private vacationService = inject(VacationService);
   private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+  private productivityService = inject(ProductivityService);
 
   viewingAsAdmin: boolean = false;
   isLoading: boolean = true;
@@ -87,6 +92,10 @@ export class Overview implements OnInit {
     { title: 'Cursos Completados', value: 0, unit: 'cursos' },
     { title: 'Días de Vacaciones Restantes', value: 15, unit: 'días' }
   ];
+
+  anuncios: Anuncio[] = [];
+  encuestas: Encuesta[] = [];
+  encuestasPendientes: any[] = [];
 
   upcomingHolidays: Holiday[] = [
     { date: '2025-11-03', name: 'Independencia de Cuenca' },
@@ -128,6 +137,7 @@ export class Overview implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadEncuestas();
     this.viewingAsAdmin = this.authService.isAdmin();
     console.log('¿Es Admin?', this.viewingAsAdmin);
 
@@ -137,7 +147,37 @@ export class Overview implements OnInit {
     } else {
       // Aquí podrías cargar datos específicos del empleado
       this.isLoading = false;
+      this.loadEmployeeData();
     }
+  }
+
+  // 👇 5. NUEVA FUNCIÓN PARA CARGAR TODO LO DEL EMPLEADO EN PARALELO
+  loadEmployeeData() {
+    this.isLoading = true;
+
+    // Usamos Promesas o ForksJoin si quisieramos esperar a todo, 
+    // pero suscripciones individuales están bien para que se vaya pintando lo que llegue.
+
+    // A. Anuncios
+    this.productivityService.getMyAnuncios().subscribe({
+      next: (data) => this.anuncios = data,
+      error: (err) => console.error('Error cargando anuncios', err)
+    });
+
+    // B. Encuestas
+    this.productivityService.getMyEncuestas().subscribe({
+      next: (data) => {
+        this.encuestas = data;
+        // Calculamos participación si hace falta
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando encuestas', err);
+        this.isLoading = false;
+      }
+    });
+
+    // C. Otros datos (Vacaciones, Tareas, etc) pueden ir aquí...
   }
 
   loadDashboardData() {
@@ -233,6 +273,23 @@ export class Overview implements OnInit {
     });
   }
 
+  loadEncuestas() {
+    this.isLoading = true;
+    this.productivityService.getMyEncuestas().subscribe({
+      next: (data) => {
+        this.encuestas = data;
+
+        // 🧠 LÓGICA DE COLA: Filtramos solo las que NO tienen 'miVoto'
+        this.encuestasPendientes = data.filter((e: any) => !e.miVoto);
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando encuestas', err);
+        this.isLoading = false;
+      }
+    });
+  }
   // Placeholders
   approveRequest(id: number): void {
     console.log('Aprobando:', id);
@@ -243,5 +300,22 @@ export class Overview implements OnInit {
   rejectRequest(id: number): void {
     console.log('Rechazando:', id);
     this.snackBar.open('Solicitud rechazada (simulación)', 'Cerrar', { duration: 2000 });
+  }
+
+  // Función para abrir el modal
+  openVoteDialog(encuesta: any) {
+    const dialogRef = this.dialog.open(VoteDialogComponent, {
+      width: '400px',
+      data: { encuesta }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // ✅ Si votó exitosamente, recargamos.
+        // Al recargar, la encuesta votada dejará de ser "pendiente" 
+        // y pasará al siguiente item de la lista.
+        this.loadEncuestas();
+      }
+    });
   }
 }

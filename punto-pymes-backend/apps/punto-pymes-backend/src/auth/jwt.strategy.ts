@@ -32,7 +32,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             empresaId: payload.empresaId,
             empleadoId: payload.empleadoId,
             rolId: payload.rolId,
+            role: payload.role,
             permisos: payload.permisos,
+            sucursalId: payload.sucursalId,
 
             // 👇 ALIASES ADICIONALES (para compatibilidad total)
             sub: payload.sub,              // Alias de userId

@@ -1,25 +1,47 @@
 <div class="page-container">
   <header class="page-header">
-    <h2>Organigrama de la Empresa</h2>
-    <div class="zoom-controls">
-      <button class="btn btn-secondary">-</button>
-      <span>100%</span>
-      <button class="btn btn-secondary">+</button>
+    <div class="header-titles">
+      <h2>Organigrama Estructural</h2>
+      <p class="subtitle">Visualización jerárquica de la organización</p>
+    </div>
+
+    <div class="zoom-controls card-shadow">
+      <button class="btn-icon" (click)="zoomOut()">−</button>
+      <span class="zoom-level">{{ (zoomScale * 100) | number:'1.0-0' }}%</span>
+      <button class="btn-icon" (click)="zoomIn()">+</button>
     </div>
   </header>
 
   <div class="org-chart-container">
-    <div class="org-chart">
+    <div *ngIf="isLoading" class="loading-spinner">Cargando...</div>
+
+    <div class="org-chart" [style.transform]="'scale(' + zoomScale + ')'" [style.transform-origin]="'top center'"
+      *ngIf="!isLoading">
+
       <ng-template #nodeTemplate let-node>
-        <div class="node-content" [ngClass]="node.cssClass">
-          <img [src]="node.image" class="node-image" alt="Avatar">
-          <div class="node-info">
-            <div class="node-name">{{ node.name }}</div>
-            <div class="node-title">{{ node.title }}</div>
+        <div class="node-wrapper">
+
+          <div class="node-content" [ngClass]="getNodeClass(node)">
+            <div class="avatar-wrapper">
+              <img [src]="node.fotoUrl || 'assets/images/default-avatar.png'"
+                (error)="$any($event.target).src = 'assets/images/default-avatar.png'" alt="Avatar">
+              <div class="status-indicator"></div>
+            </div>
+
+            <div class="node-info">
+              <div class="node-name">{{ node.nombre }} {{ node.apellido }}</div>
+              <div class="node-title">{{ node.cargo?.nombre || 'Sin Cargo' }}</div>
+            </div>
           </div>
+
+          <div class="toggle-btn" *ngIf="node.children && node.children.length > 0" (click)="toggleNode(node)">
+            {{ node.expanded ? '−' : '+' }}
+          </div>
+
         </div>
-        <ul *ngIf="node.childs && node.childs.length > 0">
-          <li *ngFor="let child of node.childs">
+
+        <ul *ngIf="node.children && node.children.length > 0 && node.expanded" class="slide-down-animation">
+          <li *ngFor="let child of node.children">
             <ng-container *ngTemplateOutlet="nodeTemplate; context:{$implicit: child}"></ng-container>
           </li>
         </ul>
@@ -30,6 +52,7 @@
           <ng-container *ngTemplateOutlet="nodeTemplate; context:{$implicit: node}"></ng-container>
         </li>
       </ul>
+
     </div>
   </div>
 </div>

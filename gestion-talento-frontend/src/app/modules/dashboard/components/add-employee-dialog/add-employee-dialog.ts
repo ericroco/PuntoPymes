@@ -21,6 +21,13 @@ interface DialogData {
   availableJobs: JobPosition[];
   availableManagers: Manager[];
 }
+
+interface Manager {
+  id: string;
+  nombre: string;
+  apellido: string;
+  cargo?: { nombre: string }; // Opcional, para mostrar el cargo en la lista
+}
 interface JobPosition {
   id: number | string;
   name: string;
@@ -28,7 +35,6 @@ interface JobPosition {
   minSalary: number;
   maxSalary: number;
 }
-interface Manager { id: number | string; name: string; }
 
 @Component({
   selector: 'app-add-employee-dialog',
@@ -144,6 +150,7 @@ export class AddEmployeeDialog implements OnInit {
     // Disparar la validación inicial (para aplicar las reglas de Cédula al cargar)
     tipoControl?.updateValueAndValidity();
     this.loadRoles();
+    this.loadPotentialManagers();
   }
 
   onCancel(): void {
@@ -168,7 +175,22 @@ export class AddEmployeeDialog implements OnInit {
       }
     });
   }
-
+  // --- NUEVA FUNCIÓN: CARGAR JEFES DESDE BACKEND ---
+  loadPotentialManagers() {
+    // Usamos getDirectory o el endpoint que tengas para listar empleados
+    this.employeesService.getDirectory().subscribe({
+      next: (employees: any[]) => {
+        // Mapeamos para que coincida con la interfaz Manager
+        this.availableManagers = employees.map(emp => ({
+          id: emp.id,
+          nombre: emp.nombre,
+          apellido: emp.apellido,
+          cargo: emp.cargo
+        }));
+      },
+      error: (err) => console.error('Error cargando jefes', err)
+    });
+  }
   onSave(): void {
     if (this.step1Form.invalid || this.step2Form.invalid || this.step3Form.invalid) {
       this.step1Form.markAllAsTouched();
@@ -209,6 +231,7 @@ export class AddEmployeeDialog implements OnInit {
 
       cargoId: cargoSeleccionado.id,
       rolId: selectedRole ? selectedRole.id : '',
+      jefeId: this.step2Form.value.reportsTo || '',
 
       salario: this.step3Form.value.initialSalary,
       tipoContrato: this.step2Form.value.contractType,

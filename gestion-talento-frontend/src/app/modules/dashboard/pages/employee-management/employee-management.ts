@@ -13,6 +13,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditEmployeeDialog } from '../../components/edit-employee-dialog/edit-employee-dialog';
+import { MatDivider } from '@angular/material/divider';
 import { EmployeeImportDialog } from '../../components/employee-import-dialog.ts/employee-import-dialog';
 
 // Importamos la interfaz REAL del servicio
@@ -20,6 +21,7 @@ import { EmployeesService, Employee } from '../../services/employees';
 import { CatalogService, JobPosition } from '../../services/catalog';
 import { AuthService } from '../../../auth/services/auth';
 import { PERMISSIONS } from '../../../../shared/constants/permissions';
+import { RolesService } from '../../services/roles';
 
 @Component({
   selector: 'app-employee-management',
@@ -34,7 +36,8 @@ import { PERMISSIONS } from '../../../../shared/constants/permissions';
     MatCardModule,
     MatChipsModule,
     MatProgressBarModule,
-    MatMenuModule
+    MatMenuModule,
+    MatDivider
   ],
   templateUrl: './employee-management.html',
   styleUrls: ['./employee-management.scss'],
@@ -57,11 +60,13 @@ export class EmployeeManagement implements OnInit {
   private catalogService = inject(CatalogService);
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
+  private rolesService = inject(RolesService);
   P = PERMISSIONS; // Para usar P.EMPLOYEES_CREATE en el template
 
   // --- DATOS REALES ---
   employees: Employee[] = [];
   filteredEmployees: Employee[] = []; // Usamos la interfaz real Employee
+  availableRoles: any[] = [];
   isLoading = true;
 
   // --- DATOS AUXILIARES (Simulados por ahora hasta que conectes los catálogos) ---
@@ -207,46 +212,66 @@ export class EmployeeManagement implements OnInit {
     });
   }
   openEditDialog(employee: Employee): void {
-    const dialogRef = this.dialog.open(EditEmployeeDialog, {
-      width: '500px',
-      data: { employee }
-    });
+    this.isLoading = true; // Mostramos carga mientras obtenemos los roles
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.isLoading = true;
+    // 1. OBTENEMOS LOS ROLES ACTUALIZADOS
+    this.rolesService.getRoles().subscribe({
+      next: (roles) => {
+        this.availableRoles = roles;
+        this.isLoading = false;
 
-        // 👇 1. LIMPIEZA DE DATOS (IMPORTANTE)
-        // Convertimos cadenas vacías ("") a undefined para que el backend las ignore
-        const dataToUpdate = { ...result };
-
-        // Recorremos el objeto para limpiar
-        Object.keys(dataToUpdate).forEach(key => {
-          if (dataToUpdate[key] === '' || dataToUpdate[key] === null) {
-            delete dataToUpdate[key]; // Lo eliminamos del objeto
+        // 2. ABRIMOS EL DIÁLOGO CON TODO EL CONTEXTO
+        const dialogRef = this.dialog.open(EditEmployeeDialog, {
+          width: '600px', // Un poco más ancho para que quepan los selects
+          data: {
+            employee: employee,            // A quien editamos
+            roles: this.availableRoles,    // Lista de roles
+            managers: this.employees       // Lista de posibles jefes (todos los empleados)
           }
         });
 
-        console.log('📤 Enviando actualización limpia:', dataToUpdate);
+        // 3. PROCESAMOS EL RESULTADO AL CERRAR
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.isLoading = true;
 
-        // 2. LLAMADA AL SERVICIO
-        this.employeesService.updateEmployee(employee.id, dataToUpdate).subscribe({
-          next: (updatedEmp) => {
-            this.snackBar.open('Datos actualizados correctamente', 'Cerrar', { duration: 3000 });
-            this.loadEmployees();
-          },
-          error: (err) => {
-            console.error('Error detallado:', err); // Mira la consola para ver qué dice el array 'message'
-            this.isLoading = false;
+            const dataToUpdate = { ...result };
 
-            // 👇 MEJORA: Mostrar al usuario qué falló
-            const errorMsg = err.error?.message ?
-              (Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message)
-              : 'Error al actualizar';
+            // 👇 LIMPIEZA INTELIGENTE:
+            // Borramos undefined o cadenas vacías, PERO DEJAMOS LOS NULL.
+            // (Null es necesario para decir "Quítale el jefe")
+            Object.keys(dataToUpdate).forEach(key => {
+              if (dataToUpdate[key] === '' || dataToUpdate[key] === undefined) {
+                delete dataToUpdate[key];
+              }
+            });
 
-            this.snackBar.open(errorMsg, 'Cerrar', { duration: 5000 });
+            console.log('📤 Enviando actualización:', dataToUpdate);
+
+            this.employeesService.updateEmployee(employee.id, dataToUpdate).subscribe({
+              next: () => {
+                this.snackBar.open('Empleado actualizado correctamente', 'Cerrar', { duration: 3000 });
+                this.loadEmployees(); // Recargamos la tabla
+              },
+              error: (err) => {
+                console.error('Error:', err);
+                this.isLoading = false;
+
+                // Mostrar mensaje de error legible
+                const msg = err.error?.message
+                  ? (Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message)
+                  : 'Error al actualizar empleado';
+
+                this.snackBar.open(msg, 'Cerrar', { duration: 5000 });
+              }
+            });
           }
         });
+      },
+      error: (err) => {
+        console.error('Error al cargar roles', err);
+        this.isLoading = false;
+        this.snackBar.open('No se pudieron cargar los roles para editar', 'Cerrar');
       }
     });
   }

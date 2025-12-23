@@ -10,7 +10,7 @@ import {
   Proyecto, Sprint, Empleado, Tarea, AsignacionTarea, CicloEvaluacion,
   Objetivo, Evaluacion, EstadoCiclo, Curso, InscripcionCurso, EstadoInscripcion, RegistroAsistencia,
   Activo, ActivoAsignado, EstadoActivo, EstadoAsignacion, ReporteGasto,
-  ItemGasto, EstadoReporte, Departamento, TipoObjetivo,
+  ItemGasto, EstadoReporte, Departamento, TipoObjetivo, Anuncio, Encuesta, Voto, OpcionEncuesta
 } from 'default/database';
 import { Repository, Not, Between, MoreThanOrEqual, LessThanOrEqual, In } from 'typeorm';
 import {
@@ -44,6 +44,11 @@ import { CreateReporteDto } from './dto/create-reporte.dto';
 import { CreateItemGastoDto } from './dto/create-item-gasto.dto';
 import { UpdateReporteEstadoDto } from './dto/update-reporte-estado.dto';
 import { DashboardKpiDto } from './dto/dashboard-kpi.dto';
+import { CreateAnuncioDto } from './dto/create-anuncio.dto';
+import { CreateEncuestaDto } from './dto/create-encuesta.dto';
+import { VoteDto } from './dto/vote.dto';
+import { IsNull } from 'typeorm';
+
 @Injectable()
 export class ProductividadService {
   constructor(
@@ -77,6 +82,10 @@ export class ProductividadService {
     private readonly activoAsignadoRepository: Repository<ActivoAsignado>,
     @InjectRepository(ReporteGasto) private readonly reporteRepository: Repository<ReporteGasto>,
     @InjectRepository(ItemGasto) private readonly itemGastoRepository: Repository<ItemGasto>,
+    @InjectRepository(Anuncio) private readonly anuncioRepo: Repository<Anuncio>,
+    @InjectRepository(Encuesta) private readonly encuestaRepo: Repository<Encuesta>,
+    @InjectRepository(Voto) private readonly votoRepo: Repository<Voto>,
+    @InjectRepository(OpcionEncuesta) private readonly opcionRepo: Repository<OpcionEncuesta>,
   ) { }
 
   // --- INICIO DE CRUD PARA PROYECTO (Semana 9) ---
@@ -1929,4 +1938,139 @@ export class ProductividadService {
     // o puedes devolver la inscripción tal cual y mapearla en el frontend.
     return inscripciones;
   }
+
+  // ================= ANUNCIOS =================
+
+  async createAnuncio(empresaId: string, dto: CreateAnuncioDto) {
+    const anuncio = this.anuncioRepo.create({
+      ...dto,
+      empresaId,
+      // Si viene ID se guarda, si no (undefined/null), se guarda NULL explícito
+      sucursalId: dto.sucursalId || null
+    });
+    return this.anuncioRepo.save(anuncio);
+  }
+
+  async getAnuncios(empresaId: string, filtroSucursalId?: string) {
+
+    // 1. BASE: Siempre vamos a querer ver los anuncios GLOBALES (públicos)
+    // Esto significa: sucursalId IS NULL
+    const condicionesWhere: any[] = [
+      {
+        empresaId,
+        sucursalId: IsNull() // 🌐 Globales
+      }
+    ];
+
+    // 2. FILTRO: Solo si me envían un ID (ej: "Sede B"), agrego esa condición extra.
+    if (filtroSucursalId) {
+      condicionesWhere.push({
+        empresaId,
+        sucursalId: filtroSucursalId // 📍 Locales de mi sede
+      });
+    }
+
+    // 🕵️‍♂️ EXPLICACIÓN DEL ARREGLO:
+    // TypeORM hace un "OR" cuando le pasas un array de objetos.
+    //
+    // - Si filtroSucursalId EXISTE (Soy Empleado Sede B):
+    //   Busca: (Es Global) O (Es Sede B). -> ✅ CORRECTO.
+    //
+    // - Si filtroSucursalId NO EXISTE (Soy Admin Global o hubo un error):
+    //   Busca: (Es Global). -> ✅ CORRECTO (Ya no veo Sede A ni B).
+
+    return this.anuncioRepo.find({
+      where: condicionesWhere,
+      order: { createdAt: 'DESC' },
+      relations: ['sucursal'] // Para mostrar "📍 Sede Norte" en la tarjeta
+    });
+  }
+
+  // ================= ENCUESTAS =================
+
+  // 👇 AQUÍ ESTÁ EL CAMBIO: Agrega "| null"
+  async createEncuesta(empresaId: string, sucursalId: string | null, dto: CreateEncuestaDto) {
+    const encuesta = this.encuestaRepo.create({
+      ...dto,
+      empresaId,
+      sucursalId,
+      opciones: dto.opciones.map(op => ({ texto: op.texto }))
+    });
+
+    return this.encuestaRepo.save(encuesta);
+  }
+
+  async getEncuestasActivas(empresaId: string, sucursalIdEmpleado: string, empleadoId: string) {
+    //                                                                     ^^^^^^^^^^
+    //                                                         Nuevo parámetro necesario
+
+    return this.encuestaRepo.createQueryBuilder('encuesta')
+      .leftJoinAndSelect('encuesta.opciones', 'opciones') // Trae las opciones (A, B, C)
+
+      // 👇 LA MAGIA: Buscamos si ESTE empleado votó
+      .leftJoinAndMapOne(
+        'encuesta.miVoto', // ¿Dónde lo guardo? En la prop virtual
+        Voto,              // ¿Qué entidad busco?
+        'voto',            // Alias
+        'voto.encuestaId = encuesta.id AND voto.empleadoId = :empleadoId', // Condición
+        { empleadoId }     // Parámetro
+      )
+
+      .where('encuesta.empresaId = :empresaId', { empresaId })
+      .andWhere('encuesta.activa = :activa', { activa: true })
+      // Lógica de sucursal (Global o Local)
+      .andWhere(
+        '(encuesta.sucursalId IS NULL OR encuesta.sucursalId = :sucursalId)',
+        { sucursalId: sucursalIdEmpleado }
+      )
+      .orderBy('encuesta.createdAt', 'DESC')
+      .getMany();
+  }
+
+  async registrarVoto(encuestaId: string, opcionId: string, empleadoId: string) {
+
+    // 1. VALIDACIÓN: ¿La encuesta sigue activa?
+    const encuesta = await this.encuestaRepo.findOneBy({ id: encuestaId });
+    if (!encuesta) throw new NotFoundException('Encuesta no encontrada');
+    if (!encuesta.activa) throw new BadRequestException('La encuesta ya está cerrada.');
+    if (new Date() > encuesta.fechaFin) throw new BadRequestException('El tiempo para votar ha terminado.');
+
+    // 2. VERIFICACIÓN: ¿Ya votó este usuario?
+    const votoExistente = await this.votoRepo.findOneBy({ encuestaId, empleadoId });
+    if (votoExistente) {
+      throw new ConflictException('Ya has participado en esta encuesta.');
+    }
+
+    // 3. TRANSACCIÓN (Opcional pero recomendada, aquí lo haré secuencial seguro)
+
+    // A. Guardamos el registro "Yo voté"
+    // Si la DB tiene la restricción UNIQUE y hay concurrencia, esto fallará aquí protegiéndonos.
+    await this.votoRepo.save({
+      encuestaId,
+      opcionId,
+      empleadoId
+    });
+
+    // B. Incrementamos el contador de la opción (Atomic Update)
+    // Usamos 'increment' en lugar de traer el objeto, sumar 1 y guardar.
+    // Esto es mucho más eficiente y seguro.
+    await this.opcionRepo.increment({ id: opcionId }, 'votos', 1);
+
+    return { message: 'Voto registrado exitosamente' };
+  }
+
+  // EXTRA: Saber si yo ya voté en una lista de encuestas
+  async checkVotoUsuario(encuestaId: string, empleadoId: string) {
+    const voto = await this.votoRepo.findOneBy({ encuestaId, empleadoId });
+    return { yaVoto: !!voto, opcionId: voto?.opcionId || null };
+  }
+
+  async getAllEncuestasAdmin(empresaId: string) {
+    return this.encuestaRepo.find({
+      where: { empresaId },
+      relations: ['opciones'], // Importante traer opciones para contar votos
+      order: { createdAt: 'DESC' }
+    });
+  }
+
 }

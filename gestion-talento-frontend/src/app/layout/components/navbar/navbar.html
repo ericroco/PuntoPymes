@@ -33,13 +33,31 @@
       <input type="text" placeholder="Buscar empleado o tarea...">
     </div>
 
-    <button class="icon-button notification-button">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path
-          d="M12 22a2 2 0 002-2h-4a2 2 0 002 2zm6-6v-5a6 6 0 00-5-5.917V4a1 1 0 00-2 0v1.083A6 6 0 006 11v5l-2 2v1h16v-1l-2-2z" />
-      </svg>
-      <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+    <button class="icon-button notification-button" [matMenuTriggerFor]="notificationMenu">
+      <mat-icon>notifications</mat-icon> <span class="notification-badge" *ngIf="notificationCount > 0">{{
+        notificationCount }}</span>
     </button>
+
+    <mat-menu #notificationMenu="matMenu" xPosition="before" class="notification-panel">
+      <div class="notification-header">
+        <span>Notificaciones</span>
+        <button mat-button color="primary" (click)="markAllRead()">Marcar leídas</button>
+      </div>
+
+      <div class="notification-list">
+        <button mat-menu-item *ngFor="let notif of notifications" [class.unread]="!notif.read">
+          <mat-icon [color]="notif.color">{{ notif.icon }}</mat-icon>
+          <div class="notif-content">
+            <span class="notif-title">{{ notif.title }}</span>
+            <span class="notif-time">{{ notif.time }}</span>
+          </div>
+        </button>
+
+        <div *ngIf="notifications.length === 0" class="empty-notif">
+          Sin novedades
+        </div>
+      </div>
+    </mat-menu>
 
     <div class="user-profile">
       <img [src]="userAvatar" alt="Avatar" onerror="this.src='assets/images/default-avatar.png'">

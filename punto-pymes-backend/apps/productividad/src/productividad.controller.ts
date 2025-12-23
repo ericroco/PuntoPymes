@@ -30,6 +30,8 @@ import { CreateReporteDto } from './dto/create-reporte.dto';
 import { CreateItemGastoDto } from './dto/create-item-gasto.dto';
 import { UpdateReporteEstadoDto } from './dto/update-reporte-estado.dto';
 import { DashboardKpiDto } from './dto/dashboard-kpi.dto';
+import { CreateAnuncioDto } from './dto/create-anuncio.dto';
+import { CreateEncuestaDto } from './dto/create-encuesta.dto';
 @Controller()
 export class ProductividadController {
   constructor(
@@ -469,5 +471,63 @@ export class ProductividadController {
   @MessagePattern({ cmd: 'get_mis_cursos' })
   getMisCursos(@Payload() data: { empresaId: string, empleadoId: string }) {
     return this.productividadService.getMisCursos(data.empresaId, data.empleadoId);
+  }
+
+  // --- ANUNCIOS ---
+  @MessagePattern({ cmd: 'create_anuncio' })
+  createAnuncio(@Payload() data: { empresaId: string, dto: CreateAnuncioDto }) {
+    // El DTO ya viene con sucursalId inyectado desde el Gateway
+    return this.productividadService.createAnuncio(data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'get_anuncios' })
+  getAnuncios(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
+    return this.productividadService.getAnuncios(data.empresaId, data.filtroSucursalId);
+  }
+
+  @MessagePattern({ cmd: 'create_encuesta' })
+  async createEncuesta(@Payload() data: { empresaId: string, user: any, dto: CreateEncuestaDto }) {
+
+    console.log('--- 🔍 DEBUG FINAL ---');
+    console.log('1. Rol Nombre:', data.user.role);       // Ej: "Super Admin"
+    console.log('2. Sucursal DTO:', data.dto.sucursalId); // Ej: "UUID..." o null
+    console.log('3. Sucursal User:', data.user.sucursalId); // Ej: null
+
+    let targetSucursalId: string | null = null;
+
+    // 1. Limpiamos el rol (minusculas y sin espacios extra)
+    // Si data.user.role viene undefined, usamos string vacío ''
+    const rolNombre = data.user.role ? data.user.role.toLowerCase() : '';
+
+    // 2. VERIFICACIÓN FLEXIBLE
+    // Si el nombre contiene "admin" (ej: "super admin", "admin ventas") o es "root"
+    const esJefeGlobal = rolNombre.includes('admin') || rolNombre.includes('root');
+
+    if (esJefeGlobal) {
+      console.log('✅ ES ADMIN: Usamos lo que eligió en el diálogo (DTO)');
+      // Si eligió "Todas" (null), se guarda null. Si eligió Sede, se guarda Sede.
+      targetSucursalId = data.dto.sucursalId || null;
+    } else {
+      console.log('🔒 ES MORTAL: Forzamos su sucursal asignada');
+      targetSucursalId = data.user.sucursalId;
+    }
+
+    console.log('🚀 ID FINAL A DB:', targetSucursalId);
+
+    return this.productividadService.createEncuesta(data.empresaId, targetSucursalId, data.dto);
+  }
+  @MessagePattern({ cmd: 'get_encuestas' })
+  getEncuestas(@Payload() data: { empresaId: string, sucursalId: string, empleadoId: string }) {
+    return this.productividadService.getEncuestasActivas(data.empresaId, data.sucursalId, data.empleadoId);
+  }
+
+  @MessagePattern({ cmd: 'registrar_voto' })
+  registrarVoto(@Payload() data: { encuestaId: string, opcionId: string, empleadoId: string }) {
+    return this.productividadService.registrarVoto(data.encuestaId, data.opcionId, data.empleadoId);
+  }
+
+  @MessagePattern({ cmd: 'get_all_encuestas_admin' })
+  getAllEncuestasAdmin(@Payload() data: { empresaId: string }) {
+    return this.productividadService.getAllEncuestasAdmin(data.empresaId);
   }
 }

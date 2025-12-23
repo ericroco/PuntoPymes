@@ -1,0 +1,42 @@
+.dialog-content {
+    padding-top: 10px;
+    min-width: 300px;
+
+    /* En pantallas grandes damos más espacio */
+    @media (min-width: 600px) {
+        min-width: 500px;
+    }
+}
+
+.full-width {
+    width: 100%;
+}
+
+.row-inputs {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    /* Estilos para la primera fila (Titulo grande, Prioridad pequeña) */
+    .col-title {
+        flex: 2;
+        /* Ocupa 2/3 del espacio */
+        min-width: 200px;
+    }
+
+    .col-priority {
+        flex: 1;
+        /* Ocupa 1/3 del espacio */
+        min-width: 120px;
+    }
+
+    /* Estilos para la segunda fila (Mitad y mitad) */
+    .half-width {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+mat-divider {
+    margin: 8px 0;
+}

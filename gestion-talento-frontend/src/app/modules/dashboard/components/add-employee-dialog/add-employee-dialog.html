@@ -123,9 +123,20 @@
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Reporta a (Jefe)</mat-label>
-          <mat-select formControlName="reportsTo" required>
-            <mat-option *ngFor="let manager of availableManagers" [value]="manager.name">{{ manager.name }}</mat-option>
+
+          <mat-select formControlName="reportsTo">
+
+            <mat-option [value]="null">-- Ninguno (Es Gerente General) --</mat-option>
+
+            <mat-option *ngFor="let manager of availableManagers" [value]="manager.id">
+              {{ manager.nombre }} {{ manager.apellido }}
+              <span *ngIf="manager.cargo?.nombre" style="font-size: 0.8em; color: gray;">
+                ({{ manager.cargo?.nombre }})
+              </span>
+            </mat-option>
+
           </mat-select>
+
           <mat-error *ngIf="step2Form.get('reportsTo')?.hasError('required')">
             Debes seleccionar un supervisor.
           </mat-error>

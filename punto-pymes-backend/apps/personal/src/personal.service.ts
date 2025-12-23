@@ -1005,44 +1005,44 @@ export class PersonalService {
   // ==========================================
 
   async createVacante(empresaId: string, dto: CreateVacanteDto): Promise<Vacante> {
+
+    // 🔒 VALIDACIÓN DE ESTADO INICIAL (Caja Negra)
+    // Regla: Una vacante no puede nacer CERRADA.
+    if (dto.estado === EstadoVacante.CERRADA) {
+      throw new BadRequestException('Estado inicial inválido: No se puede crear una vacante directamente como CERRADA.');
+    }
+
     // 1. Validar Departamento (Requerido para crear el Cargo)
     if (dto.departamentoId) {
       const dep = await this.deptoRepository.findOneBy({ id: dto.departamentoId, empresaId });
       if (!dep) throw new BadRequestException('Departamento no válido.');
 
       // --- AUTOMATIZACIÓN: CREAR CARGO SI NO EXISTE ---
-      // Verificamos si ya existe un cargo con este nombre en el departamento
       const cargoExistente = await this.cargoRepository.findOne({
         where: {
-          nombre: dto.titulo, // Usamos el título de la vacante como nombre del cargo
+          nombre: dto.titulo,
           departamentoId: dto.departamentoId
         }
       });
 
       if (!cargoExistente) {
         console.log(`ℹ️ Creando cargo automático: ${dto.titulo}`);
-
         const nuevoCargo = this.cargoRepository.create({
           nombre: dto.titulo,
           departamentoId: dto.departamentoId,
-          // Aprovechamos los rangos salariales de la vacante
           salarioMin: dto.salarioMin || 0,
           salarioMax: dto.salarioMax || 0
         });
-
         await this.cargoRepository.save(nuevoCargo);
-      } else {
-        console.log(`ℹ️ El cargo '${dto.titulo}' ya existía. Se usará el existente.`);
       }
       // ------------------------------------------------
     }
 
-    // 2. Crear la Vacante (Guardando Sucursal)
+    // 2. Crear la Vacante
     const vacante = this.vacanteRepository.create({
       ...dto,
       empresaId,
       estado: dto.estado || EstadoVacante.BORRADOR,
-      // 👇 GUARDAR RELACIÓN SUCURSAL
       sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
     });
 
@@ -1075,6 +1075,20 @@ export class PersonalService {
   async updateVacante(empresaId: string, vacanteId: string, dto: UpdateVacanteDto): Promise<Vacante> {
     const vacante = await this.vacanteRepository.findOneBy({ id: vacanteId, empresaId });
     if (!vacante) throw new NotFoundException('Vacante no encontrada.');
+
+    // 🔒 VALIDACIÓN DE TRANSICIÓN DE ESTADOS (Lo que pide la prueba)
+
+    // CASO 1: Inmutabilidad de CERRADA
+    // Si ya estaba cerrada, no se puede editar ni reabrir.
+    if (vacante.estado === EstadoVacante.CERRADA) {
+      throw new BadRequestException('Operación inválida: La vacante está CERRADA y no admite cambios.');
+    }
+
+    // CASO 2: Flujo Obligatorio (BORRADOR -> PUBLICA -> CERRADA)
+    // No se puede saltar de BORRADOR directo a CERRADA.
+    if (vacante.estado === EstadoVacante.BORRADOR && dto.estado === EstadoVacante.CERRADA) {
+      throw new BadRequestException('Transición inválida: Una vacante en BORRADOR debe ser PUBLICADA antes de poder cerrarse.');
+    }
 
     this.vacanteRepository.merge(vacante, dto);
     return this.vacanteRepository.save(vacante);
@@ -1693,31 +1707,27 @@ export class PersonalService {
 
   async getDocumentosEmpresa(empresaId: string, filtroSucursalId?: string) {
 
-    // CASO 1: VISTA ADMIN / TODAS LAS SEDES (Sin filtro)
-    // Si no me mandas filtro, asumo que quieres ver TODO lo de la empresa.
-    if (!filtroSucursalId) {
-      return this.documentoEmpresaRepository.find({
-        where: { empresaId: empresaId }, // Trae todo lo que coincida con la empresa
-        order: { fechaSubida: 'DESC' },
-        relations: ['sucursal']
+    // 🧠 LOGICA SEGURA (Whitelisting):
+    // 1. Siempre traemos los documentos GLOBALES (públicos para todos)
+    const condiciones: any[] = [
+      { empresaId, sucursalId: IsNull() }
+    ];
+
+    // 2. Si (y solo si) hay un filtro específico, agregamos esa sede a la lista permitida
+    if (filtroSucursalId) {
+      condiciones.push({
+        empresaId,
+        sucursalId: filtroSucursalId
       });
     }
 
-    // CASO 2: VISTA FILTRADA (Ej: "Estoy en Sede Norte")
-    // Quiero ver: (Globales) O (Míos de Sede Norte)
+    // ELIMINAMOS EL "IF" QUE RETORNABA TODO.
+    // Ahora:
+    // - Sin filtro -> Retorna solo Globales.
+    // - Con filtro -> Retorna Globales + Sede X.
+
     return this.documentoEmpresaRepository.find({
-      where: [
-        // Condición A: Documentos Globales (sucursalId ES NULL)
-        {
-          empresaId: empresaId,
-          sucursalId: IsNull() // 👈 Usar IsNull() es más seguro que poner null directo
-        },
-        // Condición B: Documentos de MI sede
-        {
-          empresaId: empresaId,
-          sucursalId: filtroSucursalId
-        }
-      ],
+      where: condiciones,
       order: { fechaSubida: 'DESC' },
       relations: ['sucursal']
     });
@@ -1750,4 +1760,25 @@ export class PersonalService {
       order: { nombre: 'ASC' }
     });
   }
+
+  async getOrganigramaData(empresaId: string) {
+    return this.empleadoRepository.find({
+      where: {
+        empresaId,
+        estado: 'Activo' // Solo empleados activos
+      },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        fotoUrl: true,
+        jefeId: true, // <--- INDISPENSABLE: Esto define la jerarquía
+        cargo: {
+          nombre: true
+        }
+      },
+      relations: ['cargo']
+    });
+  }
+
 }

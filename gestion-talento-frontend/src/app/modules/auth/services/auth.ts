@@ -12,9 +12,12 @@ interface JwtPayload {
   empresaId: string;
   empleadoId: string;
   rol: string;
-  permisos?: Record<string, boolean>; // 👈 AQUÍ ESTÁ LA CLAVE
+  // 👇 CAMBIO 1: Lo cambié a string[] porque tu log mostró ['*']. 
+  // Si lo dejas como Record, .includes('*') da error.
+  permisos?: string[];
   exp: number;
   fotoUrl?: string;
+  sucursalId?: string; // 👈 CAMBIO 2: AGREGADO (Importante)
 }
 
 // Interfaz de Usuario para uso interno de la app
@@ -24,8 +27,10 @@ export interface User {
   empresaId: string;
   empleadoId: string;
   role: string;
-  permisos?: Record<string, boolean>; // Mapa de poderes { 'nomina.leer': true }
+  // 👇 CAMBIO 1: Lo mismo aquí, Array de strings para que funcione el check
+  permisos?: string[];
   fotoUrl?: string;
+  sucursalId?: string; // 👈 CAMBIO 2: AGREGADO (Importante)
 }
 
 interface LoginResponse {
@@ -86,7 +91,6 @@ export class AuthService {
   private saveUserData(token: string) {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
-      console.log('🔑 Token decodificado:', decoded);
 
       const userFromToken: User = {
         id: decoded.sub,
@@ -94,12 +98,15 @@ export class AuthService {
         empresaId: decoded.empresaId,
         empleadoId: decoded.empleadoId,
         role: decoded.rol,
-        permisos: decoded.permisos || {}, // 👈 CAPTURAMOS LOS PERMISOS
-        fotoUrl: decoded.fotoUrl
+
+        // 👇 CAMBIO AQUÍ: Usa [] (array vacío) en lugar de {} (objeto vacío)
+        permisos: decoded.permisos || [],
+
+        fotoUrl: decoded.fotoUrl,
+        sucursalId: decoded.sucursalId // No olvides agregar esto si lo necesitas
       };
 
       localStorage.setItem('user', JSON.stringify(userFromToken));
-      console.log('💾 Usuario guardado con permisos:', userFromToken);
     } catch (error) {
       console.error('Error al decodificar token:', error);
     }
@@ -204,28 +211,49 @@ export class AuthService {
 
   getUser(): User | null {
     const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      // Fallback: Intentar recuperar del token si el localStorage se borró
-      const token = this.getToken();
-      if (token) {
-        try {
-          const decoded = jwtDecode<JwtPayload>(token);
-          return {
-            id: decoded.sub,
-            email: decoded.email,
-            empresaId: decoded.empresaId,
-            empleadoId: decoded.empleadoId,
-            role: decoded.rol,
-            permisos: decoded.permisos || {},
-            fotoUrl: decoded.fotoUrl
-          };
-        } catch { return null; }
-      }
-      return null;
+
+    // CASO 1: Tenemos usuario guardado en LocalStorage
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // Pequeña validación para evitar errores antiguos
+        if (!Array.isArray(user.permisos)) {
+          user.permisos = [];
+        }
+        return user;
+      } catch { return null; }
     }
-    try {
-      return JSON.parse(userStr);
-    } catch { return null; }
+
+    // CASO 2: Fallback (Recuperar desde el Token)
+    const token = this.getToken();
+    if (token) {
+      try {
+        const decoded = jwtDecode<JwtPayload>(token);
+
+        return {
+          id: decoded.sub,
+          email: decoded.email,
+          empresaId: decoded.empresaId,
+          empleadoId: decoded.empleadoId,
+
+          // Revisa si tu token trae 'role' o 'rol'. En tu log anterior decía 'role'.
+          role: decoded.rol || 'Usuario',
+
+          // 👇 CORRECCIÓN IMPORTANTE: Fallback a Array vacío []
+          permisos: Array.isArray(decoded.permisos) ? decoded.permisos : [],
+
+          fotoUrl: decoded.fotoUrl,
+
+          // 👇 AÑADIDO: Mapeamos la sucursal
+          sucursalId: decoded.sucursalId
+        };
+      } catch (e) {
+        console.error('Error decodificando token', e);
+        return null;
+      }
+    }
+
+    return null;
   }
 
   logout() {

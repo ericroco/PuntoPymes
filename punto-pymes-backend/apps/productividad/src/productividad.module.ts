@@ -20,6 +20,10 @@ import {
   ReporteGasto,
   ItemGasto,
   Departamento,
+  Anuncio,
+  Encuesta,
+  Voto,
+  OpcionEncuesta,
 } from 'default/database';
 import { ProductividadController } from './productividad.controller';
 import { ProductividadService } from './productividad.service';
@@ -52,6 +56,10 @@ import { ProductividadService } from './productividad.service';
       ReporteGasto,
       ItemGasto,
       Departamento,
+      Anuncio,
+      Encuesta,
+      Voto,
+      OpcionEncuesta,
     ]),
   ],
   controllers: [ProductividadController],

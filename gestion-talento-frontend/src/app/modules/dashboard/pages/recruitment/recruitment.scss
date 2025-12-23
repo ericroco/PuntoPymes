@@ -170,3 +170,36 @@
     color: var(--color-text-secondary);
   }
 }
+
+/* Estilo para el botón de cerrar (rojo suave) */
+.btn-icon-danger {
+  color: #e74c3c;
+  margin-left: 8px;
+
+  &:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+  }
+}
+
+/* Badge visual para cuando ya está cerrada */
+.closed-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: 10px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Asegúrate de que .actions tenga flex */
+.actions {
+  display: flex;
+  align-items: center;
+}

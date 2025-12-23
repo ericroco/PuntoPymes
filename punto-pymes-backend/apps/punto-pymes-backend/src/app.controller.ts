@@ -78,6 +78,10 @@ import { CreateSolicitudDto } from 'apps/nomina/src/dto/create-solicitud.dto';
 import { CreateSucursalDto } from '../../personal/src/dto/create-sucursal.dto';
 import { UpdateSucursalDto } from '../../personal/src/dto/update-sucursal.dto';
 import { CreateDocumentoEmpresaDto } from 'apps/personal/src/dto/create-documento-empresa.dto';
+import { UpdateVacanteDto } from 'apps/personal/src/dto/update-vacante.dto';
+import { CreateAnuncioDto } from 'apps/productividad/src/dto/create-anuncio.dto';
+import { CreateEncuestaDto } from 'apps/productividad/src/dto/create-encuesta.dto';
+import { VoteDto } from 'apps/productividad/src/dto/vote.dto';
 
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 
@@ -236,7 +240,15 @@ export class AppController {
     );
   }
 
-  // --- 4. ¡NUEVO ENDPOINT PATCH /empleados/:id! (RF-01-03) ---
+  @UseGuards(JwtAuthGuard)
+  @Get('empleados/organigrama')
+  async getOrganigrama(@Request() req) {
+    return this.personalService.send(
+      { cmd: 'get_organigrama_data' },
+      { empresaId: req.user.empresaId }
+    );
+  }
+
   // NUEVO: Obtener un empleado por ID
   @UseGuards(JwtAuthGuard) // Protegido, pero accesible para empleados (si ajustas permisos)
   @Get('empleados/:id')
@@ -1843,6 +1855,29 @@ export class AppController {
     );
   }
 
+  // 2. ACTUALIZAR / CERRAR VACANTE (PATCH)
+  // Este endpoint maneja tanto la edición de datos como el cambio de estado (Cerrar)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('reclutamiento.gestion')
+  @Patch('reclutamiento/vacantes/:id')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true })) // whitelist evita campos basura
+  updateVacante(
+    @Request() req,
+    @Param('id') vacanteId: string,
+    @Body() dto: UpdateVacanteDto
+  ) {
+    const { empresaId } = req.user;
+
+    return this.personalService.send(
+      { cmd: 'update_vacante' },
+      {
+        empresaId,
+        vacanteId,
+        dto
+      }
+    );
+  }
+
   // 2. LISTAR VACANTES (Admin/Interno)
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('reclutamiento.gestion')
@@ -2393,6 +2428,114 @@ export class AppController {
 
     // Devolvemos la URL para que el Frontend la use en el paso 2
     return { url: fileUrl };
+  }
+  // ===================== ANUNCIOS =====================
+
+  @UseGuards(JwtAuthGuard)
+  @Post('anuncios')
+  createAnuncio(
+    @Request() req,
+    @Body() dto: CreateAnuncioDto,
+    @Headers('x-sucursal-id') headerSucursalId: string // 👈 1. Capturamos Header
+  ) {
+    const { empresaId, sucursalId } = req.user;
+
+    // LÓGICA DE ASIGNACIÓN (IGUAL QUE EN DOCUMENTOS):
+
+    // A. Si soy Gerente/Empleado (tengo sucursal en token):
+    if (sucursalId) {
+      dto.sucursalId = sucursalId; // Se fuerza mi sucursal
+    }
+    // B. Si soy Admin (no tengo sucursal, pero quizás mandé header):
+    else if (headerSucursalId) {
+      dto.sucursalId = headerSucursalId; // Uso el filtro del Navbar
+    }
+    // C. Si no soy nada de lo anterior y no mandé header -> Queda undefined (GLOBAL)
+
+    return this.productividadService.send(
+      { cmd: 'create_anuncio' },
+      { empresaId, dto }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('anuncios')
+  getMyAnuncios(
+    @Request() req,
+    @Headers('x-sucursal-id') headerSucursalId: string
+  ) {
+    // req.user viene de tu JwtStrategy
+    const { empresaId, sucursalId, role } = req.user;
+
+    console.log('--- DEBUG ANUNCIOS GATEWAY ---');
+    console.log('Usuario:', req.user.email);
+    console.log('Rol:', role);
+    console.log('Sucursal en Token:', sucursalId); // 👈 ESTO ES CLAVE
+
+    // LÓGICA DE PRIORIDAD:
+    // 1. Si el usuario TIENE sucursal fija (Empleado/Gerente), USAMOS ESA OBLIGATORIAMENTE.
+    // 2. Si es Admin (sucursalId es null), intentamos usar el Header del Navbar.
+    // 3. Si no hay nada, mandamos undefined (y el servicio mostrará solo Globales).
+
+    const filtroFinal = sucursalId ? sucursalId : headerSucursalId;
+
+    return this.productividadService.send(
+      { cmd: 'get_anuncios' },
+      {
+        empresaId,
+        filtroSucursalId: filtroFinal
+      }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('encuestas')
+  createEncuesta(@Request() req, @Body() dto: CreateEncuestaDto) {
+    return this.productividadService.send(
+      { cmd: 'create_encuesta' },
+      {
+        empresaId: req.user.empresaId,
+        user: req.user, // 👈 AGREGA ESTA LÍNEA (Sin esto fallará la validación de rol)
+        dto
+      }
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('encuestas')
+  getMyEncuestas(@Request() req) {
+    return this.productividadService.send(
+      { cmd: 'get_encuestas' },
+      {
+        empresaId: req.user.empresaId,
+        sucursalId: req.user.sucursalId,
+        empleadoId: req.user.sub
+      }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('productividad/admin/encuestas')
+  getAllSurveysAdmin(@Request() req) {
+    return this.productividadService.send(
+      { cmd: 'get_all_encuestas_admin' },
+      { empresaId: req.user.empresaId } // Ahora req.user SÍ existirá
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('encuestas/:id/votar')
+  votarEncuesta(
+    @Request() req,
+    @Param('id') encuestaId: string,
+    @Body() dto: VoteDto
+  ) {
+    return this.productividadService.send(
+      { cmd: 'registrar_voto' },
+      {
+        encuestaId,
+        opcionId: dto.opcionId,
+        empleadoId: req.user.sub
+      }
+    );
   }
 
 

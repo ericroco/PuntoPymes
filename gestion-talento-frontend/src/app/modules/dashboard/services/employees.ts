@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { BulkImportResponse } from '../models/bulk-import.models';
+import { map } from 'rxjs';
 // DTO para crear (Datos que enviamos)
 export interface CreateEmployeeDto {
     nombre: string;
@@ -26,6 +27,13 @@ export interface OnboardingTask {
     description: string;
     link?: string;
     isComplete: boolean;
+}
+
+interface Manager {
+    id: string;
+    nombre: string;
+    apellido: string;
+    cargo?: { nombre: string }; // Opcional, para mostrar el cargo en la lista
 }
 
 export interface DirectorioEmpleado {
@@ -68,6 +76,20 @@ export interface Employee {
         estado: string; // 'Vigente', 'Finalizado'
         fechaInicio: string;
     }[];
+}
+
+export interface OrganigramaNodo {
+    id: string;
+    nombre: string;
+    apellido: string;
+    fotoUrl?: string;
+    jefeId?: string | null; // Puede ser null si es el CEO/Dueño
+    cargo?: {
+        nombre: string;
+    };
+    // Campos opcionales que usaremos más adelante para la lógica visual
+    children?: OrganigramaNodo[];
+    cssClass?: string;
 }
 export interface EmployeeDocument {
     id?: string;
@@ -161,5 +183,41 @@ export class EmployeesService {
 
     getDirectory(): Observable<DirectorioEmpleado[]> {
         return this.http.get<DirectorioEmpleado[]>(`${this.apiUrl}/lista-directorio`);
+    }
+
+    getOrganigramaTree() {
+        return this.http.get<OrganigramaNodo[]>(`${this.apiUrl}/organigrama`)
+            .pipe(
+                // Usamos el operador map de RXJS para transformar la respuesta antes de que llegue al componente
+                map(flatData => this.buildTree(flatData))
+            );
+    }
+
+
+    // --- LÓGICA DE TRANSFORMACIÓN (Algoritmo de 2 Pasos) ---
+    private buildTree(employees: OrganigramaNodo[]): OrganigramaNodo[] {
+        const nodeMap = new Map<string, OrganigramaNodo>();
+        const roots: OrganigramaNodo[] = [];
+
+        // PASO A: Crear un mapa de acceso rápido y preparar el campo 'children'
+        employees.forEach(emp => {
+            // Creamos una copia para no mutar el original y añadimos children vacío
+            nodeMap.set(emp.id, { ...emp, children: [] });
+        });
+
+        // PASO B: Conectar a los hijos con sus padres
+        nodeMap.forEach(node => {
+            // Si tiene jefe Y el jefe existe en el mapa...
+            if (node.jefeId && nodeMap.has(node.jefeId)) {
+                const parent = nodeMap.get(node.jefeId);
+                // ...lo empujamos al array de hijos del jefe
+                parent!.children!.push(node);
+            } else {
+                // Si no tiene jefe (o el jefe no está activo), es una RAIZ (CEO)
+                roots.push(node);
+            }
+        });
+
+        return roots; // Devolvemos solo los nodos principales (que ya contienen a todos los demás dentro)
     }
 }

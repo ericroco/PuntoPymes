@@ -9,6 +9,7 @@ import {
   Empleado,
   Departamento,
   Cargo, Contrato,
+  Sucursal,
 } from 'default/database';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -605,7 +606,7 @@ export class AuthService {
       rolId: membresiaActiva.rolId,
       rol: membresiaActiva.rol?.nombre || 'Sin Rol',
       permisos: membresiaActiva.rol?.permisos || [],
-      // Usamos el operador ?. para evitar crashes si branding viene null
+      sucursalId: membresiaActiva.sucursalId,
       fotoUrl: membresiaActiva.empresa?.branding?.logoUrl
     };
 
@@ -703,7 +704,8 @@ export class AuthService {
       rolId: membresia.rolId,
       rol: membresia.rol.nombre,
       permisos: membresia.rol.permisos,
-      fotoUrl: membresia.fotoUrl
+      fotoUrl: membresia.fotoUrl,
+      sucursalId: membresia.sucursalId
     };
 
     console.log('📝 Payload a firmar:', payload);

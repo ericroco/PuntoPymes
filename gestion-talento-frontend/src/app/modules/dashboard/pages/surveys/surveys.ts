@@ -1,11 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Para feedback
+import { RouterModule } from '@angular/router'; // Para navegar a editar/crear
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
+// 👇 Importamos el servicio y la interfaz
+import { ProductivityService, Encuesta } from '../../services/productivity';
+import { CreateSurveyDialogComponent } from '../../components/create-survey-dialog/create-survey-dialog';
 
 @Component({
   selector: 'app-surveys',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatSnackBarModule, RouterModule, MatDialogModule],
   templateUrl: './surveys.html',
   styleUrls: ['./surveys.scss'],
   animations: [
@@ -21,11 +28,63 @@ import { trigger, transition, query, style, stagger, animate } from '@angular/an
     ])
   ]
 })
-export class Surveys {
-  surveys = [
-    { title: 'Encuesta de Clima Laboral Q3 2025', responses: '82/95', status: 'Cerrada', date: '2025-09-30' },
-    { title: 'Feedback sobre Nuevas Oficinas', responses: '75/95', status: 'Cerrada', date: '2025-08-15' },
-    { title: 'Encuesta de Satisfacción Trimestral Q4 2025', responses: '15/95', status: 'Activa', date: '2025-12-01' },
-    { title: 'Sondeo Rápido: Actividad de Fin de Año', responses: '0/95', status: 'Borrador', date: '2025-11-20' }
-  ];
+export class Surveys implements OnInit {
+  private productivityService = inject(ProductivityService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
+  surveys: Encuesta[] = [];
+  isLoading = true;
+
+  ngOnInit() {
+    this.loadSurveys();
+  }
+
+  loadSurveys() {
+    this.isLoading = true;
+    this.productivityService.getAllSurveys().subscribe({
+      next: (data) => {
+        // Mapeamos los datos si necesitamos calcular algo extra, 
+        // o usamos el helper en el HTML
+        this.surveys = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('Error al cargar encuestas', 'Cerrar');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  deleteSurvey(id: string) {
+    if (!confirm('¿Estás seguro de eliminar esta encuesta? Se perderán los resultados.')) return;
+
+    this.productivityService.deleteSurvey(id).subscribe({
+      next: () => {
+        this.snackBar.open('Encuesta eliminada', 'Cerrar', { duration: 3000 });
+        this.loadSurveys(); // Recargar lista
+      },
+      error: () => this.snackBar.open('Error al eliminar', 'Cerrar')
+    });
+  }
+
+  // Helper para el HTML
+  getTotalVotes(survey: Encuesta): number {
+    return this.productivityService.countVotes(survey);
+  }
+
+  openCreateDialog() {
+    const dialogRef = this.dialog.open(CreateSurveyDialogComponent, {
+      width: '500px',
+      disableClose: true // Obliga a usar cancelar o guardar
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        // Si se creó con éxito (devolvió true), recargamos la lista
+        this.loadSurveys();
+      }
+    });
+  }
 }

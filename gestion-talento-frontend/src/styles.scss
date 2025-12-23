@@ -291,3 +291,79 @@ mat-datepicker-toggle button.mat-mdc-icon-button {
   --mdc-plain-tooltip-supporting-text-color: white; // Texto del tooltip
   font-family: var(--font-family-base) !important; // Asegura la fuente
 }
+
+/* Personalización del Panel de Notificaciones */
+/* OJO: Esto afecta a cualquier menú que tenga la clase 'notification-panel' */
+.notification-panel.mat-mdc-menu-panel {
+  max-width: 320px !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  /* Quitamos padding default de Material */
+  overflow: hidden;
+  /* Para que el header no se salga del borde redondeado */
+}
+
+/* Estilos internos del menú */
+.notification-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  background-color: #fff;
+}
+
+.notification-list {
+  max-height: 400px;
+  /* Scroll si hay muchas */
+  overflow-y: auto;
+}
+
+/* Ajuste para el ítem del menú (el botón individual) */
+.mat-mdc-menu-item.notification-item {
+  height: auto !important;
+  /* Permitir altura variable */
+  padding: 12px 16px !important;
+  line-height: normal !important;
+  border-bottom: 1px solid #f5f5f5;
+
+  .mdc-list-item__primary-text {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    white-space: normal;
+    /* Permitir texto en varias líneas */
+  }
+
+  /* Estado no leído */
+  &.unread {
+    background-color: #e3f2fd;
+    /* Fondo azulito */
+    border-left: 3px solid #2196f3;
+  }
+}
+
+.notif-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notif-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.notif-time {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.empty-notif {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}

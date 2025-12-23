@@ -446,4 +446,10 @@ export class PersonalController {
   getDirectorio(@Payload() data: { empresaId: string }) {
     return this.personalService.getDirectorioPublico(data.empresaId);
   }
+
+  @MessagePattern({ cmd: 'get_organigrama_data' })
+  getOrganigramaData(@Payload() data: { empresaId: string }) {
+    return this.personalService.getOrganigramaData(data.empresaId);
+  }
+
 }

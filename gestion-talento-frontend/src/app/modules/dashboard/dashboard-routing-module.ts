@@ -157,6 +157,11 @@ const routes: Routes = [
       .then(m => m.DirectoryPageComponent)
   },
   {
+    path: 'announcements',
+    loadComponent: () => import('./pages/announcements/announcements')
+      .then(m => m.AnnouncementsPage)
+  },
+  {
     path: '**',
     redirectTo: 'overview'
   }

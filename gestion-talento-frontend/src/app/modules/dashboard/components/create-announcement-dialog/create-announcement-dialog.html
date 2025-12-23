@@ -1,0 +1,67 @@
+<h2 mat-dialog-title>Nuevo Comunicado</h2>
+
+<mat-dialog-content class="dialog-content">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <div class="row-inputs">
+            <mat-form-field appearance="outline" class="col-title">
+                <mat-label>Título del Anuncio</mat-label>
+                <input matInput formControlName="titulo" placeholder="Ej: Mantenimiento de Servidores" required>
+                <mat-error *ngIf="form.get('titulo')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="col-priority">
+                <mat-label>Prioridad</mat-label>
+                <mat-select formControlName="prioridad">
+                    <mat-option *ngFor="let p of prioridades" [value]="p">
+                        <span *ngIf="p==='ALTA'">🔴 Alta</span>
+                        <span *ngIf="p==='MEDIA'">🟡 Media</span>
+                        <span *ngIf="p==='BAJA'">🟢 Baja</span>
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Contenido del mensaje</mat-label>
+            <textarea matInput formControlName="contenido" rows="5" placeholder="Escribe aquí los detalles..."
+                required></textarea>
+            <mat-error *ngIf="form.get('contenido')?.hasError('required')">El contenido es obligatorio</mat-error>
+            <mat-error *ngIf="form.get('contenido')?.hasError('minlength')">Mínimo 10 caracteres</mat-error>
+        </mat-form-field>
+
+        <div class="row-inputs">
+
+            <mat-form-field appearance="outline" class="half-width" *ngIf="showBranchSelector">
+                <mat-label>Alcance (¿Quién lo verá?)</mat-label>
+                <mat-select formControlName="sucursalId">
+                    <mat-option [value]="null">🌐 Toda la Empresa (Global)</mat-option>
+                    <mat-divider></mat-divider>
+                    <mat-option *ngFor="let branch of branches" [value]="branch.id">
+                        📍 {{ branch.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-hint>Si eliges Global, todos recibirán la notificación.</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" [class.half-width]="showBranchSelector"
+                [class.full-width]="!showBranchSelector">
+                <mat-label>Expiración (Opcional)</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fechaExpiracion" [min]="minDate">
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-hint>El anuncio se archivará automáticamente después de esta fecha.</mat-hint>
+            </mat-form-field>
+
+        </div>
+
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="form.invalid || isSubmitting">
+        <mat-icon>send</mat-icon>
+        {{ isSubmitting ? 'Publicando...' : 'Publicar Anuncio' }}
+    </button>
+</mat-dialog-actions>

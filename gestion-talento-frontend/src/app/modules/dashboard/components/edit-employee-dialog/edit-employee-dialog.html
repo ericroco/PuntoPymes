@@ -1,7 +1,9 @@
-<h2 mat-dialog-title>Editar Datos Personales</h2>
+<h2 mat-dialog-title>Editar Datos del Empleado</h2>
 
 <form [formGroup]="editForm" (ngSubmit)="onSave()">
   <mat-dialog-content>
+
+    <h3 style="font-size: 0.9rem; color: gray; margin-bottom: 10px;">Información Personal</h3>
 
     <div class="form-row" style="display: flex; gap: 1rem;">
       <mat-form-field appearance="outline" style="flex: 1;">
@@ -28,6 +30,37 @@
       <mat-label>Teléfono / Celular</mat-label>
       <input matInput type="tel" formControlName="telefono">
       <mat-icon matSuffix>phone</mat-icon>
+    </mat-form-field>
+
+    <mat-divider style="margin: 1rem 0;"></mat-divider>
+    <h3 style="font-size: 0.9rem; color: gray; margin-bottom: 10px;">Asignación y Roles</h3>
+
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>Rol de Usuario</mat-label>
+      <mat-select formControlName="rolId" required>
+        <mat-option *ngFor="let rol of data.roles" [value]="rol.id">
+          {{ rol.nombre }}
+        </mat-option>
+      </mat-select>
+      <mat-error>El rol es requerido</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>Jefe Directo (Supervisor)</mat-label>
+      <mat-select formControlName="jefeId">
+        <mat-option [value]="null">-- Sin Jefe (Nivel Gerencia) --</mat-option>
+
+        <ng-container *ngFor="let boss of data.managers">
+          <mat-option *ngIf="boss.id !== data.employee.id" [value]="boss.id">
+            {{ boss.nombre }} {{ boss.apellido }}
+            <span *ngIf="boss.cargo?.nombre" style="font-size: 0.8em; color: gray;">
+              ({{ boss.cargo?.nombre }})
+            </span>
+          </mat-option>
+        </ng-container>
+
+      </mat-select>
+      <mat-hint>Al asignar un jefe, el empleado pasará a su sucursal.</mat-hint>
     </mat-form-field>
 
   </mat-dialog-content>
