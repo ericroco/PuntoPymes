@@ -1,11 +1,10 @@
-// apps/personal/src/dto/create-rol.dto.ts
 import {
     IsString,
     IsNotEmpty,
     IsOptional,
-    IsObject,
     MaxLength,
     IsBoolean,
+    IsArray, // 👈 Importa esto
 } from 'class-validator';
 
 export class CreateRolDto {
@@ -19,9 +18,11 @@ export class CreateRolDto {
     @MaxLength(500)
     descripcion?: string;
 
-    @IsObject()
+    // 👇 CAMBIO IMPORTANTE: Ahora aceptamos Arrays de Strings
+    @IsArray()
+    @IsString({ each: true }) // Valida que cada item del array sea string
     @IsOptional()
-    permisos?: any;
+    permisos?: string[];
 
     @IsBoolean()
     @IsOptional()

@@ -86,7 +86,7 @@ export class Overview implements OnInit {
 
   // Datos
   adminKPIs: AdminKPI[] = [];
-  pendingApprovals: Approval[] = [];
+  pendingApprovals: any[] = [];
   employeeKPIs: EmployeeKPI[] = [
     { title: 'Progreso de Metas (Q4)', value: 0, unit: '%' },
     { title: 'Cursos Completados', value: 0, unit: 'cursos' },
@@ -291,15 +291,32 @@ export class Overview implements OnInit {
     });
   }
   // Placeholders
-  approveRequest(id: number): void {
-    console.log('Aprobando:', id);
-    // Aquí iría la llamada al servicio para aprobar
-    this.snackBar.open('Solicitud aprobada (simulación)', 'Cerrar', { duration: 2000 });
+  approveRequest(id: string): void {
+    this.vacationService.respondRequest(id, 'APROBADA', 'Aprobado desde Overview').subscribe({
+      next: () => {
+        this.snackBar.open('✅ Solicitud Aprobada', 'Cerrar', { duration: 3000 });
+        this.loadPendingApprovals(); // Recargamos la lista para que desaparezca
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('❌ Error al aprobar', 'Cerrar');
+      }
+    });
   }
 
-  rejectRequest(id: number): void {
-    console.log('Rechazando:', id);
-    this.snackBar.open('Solicitud rechazada (simulación)', 'Cerrar', { duration: 2000 });
+  // ❌ RECHAZAR
+  rejectRequest(id: string): void {
+    // Podrías abrir un dialog aquí para pedir motivo, por ahora mandamos uno genérico
+    this.vacationService.respondRequest(id, 'RECHAZADA', 'Rechazado desde Overview').subscribe({
+      next: () => {
+        this.snackBar.open('🚫 Solicitud Rechazada', 'Cerrar', { duration: 3000 });
+        this.loadPendingApprovals(); // Recargamos la lista
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('❌ Error al rechazar', 'Cerrar');
+      }
+    });
   }
 
   // Función para abrir el modal

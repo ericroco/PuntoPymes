@@ -30,6 +30,13 @@ export class ItemGasto extends BaseEntity {
   })
   concepto: string;
 
+  @Column({
+    type: 'varchar',
+    length: 50,
+    comment: 'Categoría del gasto (Alimentación, Transporte, Hospedaje)',
+  })
+  categoria: string;
+
   /**
    * Monto individual del gasto
    * Mapea: float monto "Monto individual gasto"

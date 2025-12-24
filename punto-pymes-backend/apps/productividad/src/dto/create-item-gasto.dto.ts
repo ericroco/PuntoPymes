@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsNumber, Min, IsDate, IsOptional, IsUrl } from 'class-validator';
+// create-item-gasto.dto.ts
+import { IsString, IsNotEmpty, IsNumber, Min, IsDate, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateItemGastoDto {
@@ -8,14 +9,19 @@ export class CreateItemGastoDto {
 
     @IsString()
     @IsNotEmpty()
-    concepto: string; // Ej: "Taxi Aeropuerto"
+    concepto: string;
 
     @IsNumber()
     @Min(0.01)
     monto: number;
 
+    // --- AGREGAR ESTO ---
+    @IsString()
+    @IsNotEmpty()
+    categoria: string;
+    // --------------------
+
     @IsString()
     @IsOptional()
-    // @IsUrl() // Descomenta si quieres validar formato URL estricto
     facturaUrl?: string;
 }

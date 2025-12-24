@@ -6,13 +6,13 @@ import { environment } from '../../../../environments/environment';
 export interface Rol {
     id: string;
     nombre: string;
-    permisos: Record<string, boolean>; // El JSON de permisos
+    permisos: string[]; // El JSON de permisos
     esDefecto: boolean; // La nueva bandera
 }
 
 export interface CreateRolDto {
     nombre: string;
-    permisos: Record<string, boolean>;
+    permisos: string[];
     esDefecto?: boolean;
 }
 

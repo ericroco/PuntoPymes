@@ -41,4 +41,10 @@ export class SolicitudVacaciones extends BaseEntity {
 
     @Column()
     empleadoId: string;
+
+    @Column({ type: 'text', nullable: true })
+    comentariosRespuesta: string | null;
+
+    @Column({ type: 'timestamp', nullable: true })
+    fechaRespuesta: Date | null;
 }

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-
 const routes: Routes = [
   {
     path: 'overview',
@@ -28,7 +27,7 @@ const routes: Routes = [
     loadComponent: () => import('./pages/employee-profile/employee-profile').then(c => c.EmployeeProfile)
   },
   {
-    path: 'my-profile', // URL: /dashboard/my-profile
+    path: 'my-profile',
     loadComponent: () => import('./pages/employee-profile/employee-profile').then(c => c.EmployeeProfile)
   },
   {
@@ -36,15 +35,15 @@ const routes: Routes = [
     loadComponent: () => import('./pages/recruitment/recruitment').then(c => c.Recruitment)
   },
   {
-    path: 'recruitment/new', // URL: /dashboard/recruitment/new
+    path: 'recruitment/new',
     loadComponent: () => import('./pages/create-vacancy/create-vacancy').then(c => c.CreateVacancy)
   },
   {
-    path: 'recruitment/edit/:id', // Página de EDITAR
+    path: 'recruitment/edit/:id',
     loadComponent: () => import('./pages/create-vacancy/create-vacancy').then(c => c.CreateVacancy)
   },
   {
-    path: 'recruitment/:id', // URL: /dashboard/recruitment/job-id-123
+    path: 'recruitment/:id',
     loadComponent: () => import('./pages/vacancy-pipeline/vacancy-pipeline').then(c => c.VacancyPipeline)
   },
   {
@@ -88,22 +87,21 @@ const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings').then(c => c.Settings)
   },
   {
-    path: 'settings/branding', // Ruta completa
+    path: 'settings/branding',
     loadComponent: () => import('./pages/settings/branding-settings/branding-settings').then(c => c.BrandingSettings)
   },
   {
-    path: 'settings/modules', // Ruta completa
+    path: 'settings/modules',
     loadComponent: () => import('./pages/settings/module-settings/module-settings').then(c => c.ModuleSettings)
   },
   {
-    path: 'settings/users', // Ruta completa
+    path: 'settings/users',
     loadComponent: () => import('./pages/settings/user-settings/user-settings').then(c => c.UserSettings)
   },
   {
-    path: 'settings/roles', // Ruta completa
+    path: 'settings/roles',
     loadComponent: () => import('./pages/settings/role-settings/role-settings').then(c => c.RoleSettings)
   },
-
   {
     path: 'settings/profile-fields',
     loadComponent: () => import('./pages/settings/profile-settings/profile-settings').then(c => c.ProfileSettings)
@@ -121,28 +119,20 @@ const routes: Routes = [
     loadComponent: () => import('./pages/settings/job-settings/job-settings').then(c => c.JobSettings)
   },
   {
-    path: 'onboarding', // URL: /dashboard/onboarding
+    path: 'onboarding',
     loadComponent: () => import('./pages/onboarding-dashboard/onboarding-dashboard').then(c => c.OnboardingDashboard)
   },
   {
-    path: 'assets', // URL: /dashboard/assets
+    path: 'assets',
     loadComponent: () => import('./pages/assets-management/assets-management').then(c => c.AssetsManagement)
   },
   {
     path: 'branches',
     loadComponent: () => import('../organization/pages/branches-list/branches-list')
       .then(m => m.BranchesListComponent),
-
-    // 🔒 Recomendado: Descomenta esto cuando tengas el PermissionGuard listo
-    // canActivate: [PermissionGuard],
-    // data: { permission: 'sucursales.gestion' } 
   },
-
   {
     path: 'documents',
-    // 1. Salimos de dashboard (..)
-    // 2. Entramos a resources/pages/documents-page
-    // 3. Importamos el componente
     loadComponent: () => import('../resources/pages/documents-page/documents-page')
       .then(m => m.DocumentsPageComponent)
   },
@@ -161,6 +151,25 @@ const routes: Routes = [
     loadComponent: () => import('./pages/announcements/announcements')
       .then(m => m.AnnouncementsPage)
   },
+
+  // 👇 NUEVAS RUTAS DE GESTIÓN (Aprobaciones y Gastos) 👇
+  {
+    path: 'approvals', // Centro de Aprobaciones (Para Jefes)
+    loadComponent: () => import('./pages/approvals/approvals')
+      .then(c => c.ApprovalsPage)
+  },
+  {
+    path: 'my-expenses', // Mis Gastos (Para Empleados - Lista)
+    loadComponent: () => import('./pages/my-expenses/my-expenses')
+      .then(c => c.MyExpensesPage)
+  },
+  {
+    path: 'expenses/:id', // Detalle de un Reporte (Para Empleados - Agregar Facturas)
+    loadComponent: () => import('./pages/expenses-detail/expenses-detail')
+      .then(c => c.ExpensesDetailPage)
+  },
+
+  // 👇 SIEMPRE AL FINAL 👇
   {
     path: '**',
     redirectTo: 'overview'

@@ -1,0 +1,147 @@
+<div class="page-container">
+
+    <header class="page-header">
+        <div>
+            <h1>Centro de Aprobaciones</h1>
+            <p class="subtitle">Gestiona las solicitudes de tu equipo en un solo lugar.</p>
+        </div>
+    </header>
+
+    <mat-tab-group animationDuration="0ms" class="approvals-tabs">
+
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <mat-icon class="tab-icon">mark_email_unread</mat-icon>
+                Pendientes
+                <span class="badge-count" *ngIf="pendingRequests.length > 0">{{ pendingRequests.length }}</span>
+            </ng-template>
+
+            <div class="table-container mat-elevation-z2">
+
+                <div class="empty-state" *ngIf="!isLoading && pendingRequests.length === 0">
+                    <mat-icon>done_all</mat-icon>
+                    <h3>¡Estás al día!</h3>
+                    <p>No tienes solicitudes pendientes de revisar.</p>
+                </div>
+
+                <table mat-table [dataSource]="pendingRequests" *ngIf="pendingRequests.length > 0">
+
+                    <ng-container matColumnDef="empleado">
+                        <th mat-header-cell *matHeaderCellDef> Colaborador </th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="user-cell">
+                                <span class="avatar-placeholder">{{ element.empleado?.nombre?.charAt(0) }}</span>
+                                <div class="user-info">
+                                    <span class="name">{{ element.empleado?.nombre }} {{ element.empleado?.apellido
+                                        }}</span>
+                                    <span class="role">{{ element.empleado?.cargo?.nombre || 'Sin Cargo' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="tipo">
+                        <th mat-header-cell *matHeaderCellDef> Solicitud </th>
+                        <td mat-cell *matCellDef="let element">
+                            <mat-chip-set>
+                                <mat-chip *ngIf="element.tipoSolicitud === 'VACACION'" class="chip-vacation">
+                                    <mat-icon matChipAvatar>beach_access</mat-icon> Vacaciones
+                                </mat-chip>
+
+                                <mat-chip *ngIf="element.tipoSolicitud === 'GASTO'" class="chip-expense">
+                                    <mat-icon matChipAvatar>attach_money</mat-icon> Gasto / Viático
+                                </mat-chip>
+                            </mat-chip-set>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="fechas">
+                        <th mat-header-cell *matHeaderCellDef> Fecha/Orden </th>
+                        <td mat-cell *matCellDef="let element">
+                            <span *ngIf="element.tipoSolicitud === 'VACACION'">
+                                {{ element.fechaInicio | date:'dd MMM' }} - {{ element.fechaFin | date:'dd MMM' }}
+                            </span>
+                            <span *ngIf="element.tipoSolicitud === 'GASTO'">
+                                {{ element.fechaOrden | date:'dd MMM yyyy' }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="info">
+                        <th mat-header-cell *matHeaderCellDef> Detalle </th>
+                        <td mat-cell *matCellDef="let element" class="text-center">
+                            <strong>{{ element.infoExtra }}</strong>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="acciones">
+                        <th mat-header-cell *matHeaderCellDef> Decisión </th>
+                        <td mat-cell *matCellDef="let element">
+                            <button mat-icon-button class="btn-approve" (click)="processRequest(element, 'APROBADA')"
+                                matTooltip="Aprobar">
+                                <mat-icon>check_circle</mat-icon>
+                            </button>
+                            <button mat-icon-button class="btn-reject" (click)="processRequest(element, 'RECHAZADA')"
+                                matTooltip="Rechazar">
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </div>
+        </mat-tab>
+
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <mat-icon class="tab-icon">history</mat-icon> Historial
+            </ng-template>
+
+            <div class="table-container mat-elevation-z2">
+                <table mat-table [dataSource]="historyRequests">
+
+                    <ng-container matColumnDef="empleado">
+                        <th mat-header-cell *matHeaderCellDef> Colaborador </th>
+                        <td mat-cell *matCellDef="let element"> {{ element.empleado?.nombre }} {{
+                            element.empleado?.apellido }} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="tipo">
+                        <th mat-header-cell *matHeaderCellDef> Tipo </th>
+                        <td mat-cell *matCellDef="let element">
+                            <span *ngIf="element.tipoSolicitud === 'VACACION'">Vacaciones</span>
+                            <span *ngIf="element.tipoSolicitud === 'GASTO'">Gasto</span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="fechas">
+                        <th mat-header-cell *matHeaderCellDef> Fecha </th>
+                        <td mat-cell *matCellDef="let element"> {{ element.fechaOrden | date:'shortDate' }} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="estado">
+                        <th mat-header-cell *matHeaderCellDef> Estado </th>
+                        <td mat-cell *matCellDef="let element">
+                            <span class="status-badge" [ngClass]="getStatusClass(element.estado)">
+                                {{ element.estado }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="respuesta">
+                        <th mat-header-cell *matHeaderCellDef> Procesado el </th>
+                        <td mat-cell *matCellDef="let element">
+                            <small>{{ (element.fechaRespuesta || element.updatedAt) | date:'medium' }}</small>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+                </table>
+            </div>
+        </mat-tab>
+
+    </mat-tab-group>
+</div>

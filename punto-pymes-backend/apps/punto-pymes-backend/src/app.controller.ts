@@ -82,8 +82,10 @@ import { UpdateVacanteDto } from 'apps/personal/src/dto/update-vacante.dto';
 import { CreateAnuncioDto } from 'apps/productividad/src/dto/create-anuncio.dto';
 import { CreateEncuestaDto } from 'apps/productividad/src/dto/create-encuesta.dto';
 import { VoteDto } from 'apps/productividad/src/dto/vote.dto';
+import { ResponderSolicitudDto, EstadoSolicitud } from 'apps/nomina/src/dto/responder-solicitud.dto';
 
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
+import { lastValueFrom } from 'rxjs';
 
 
 @Controller()
@@ -1725,17 +1727,44 @@ export class AppController {
     );
   }
 
+  // ==========================================
+  // 1. ENDPOINT SOLO PARA SUBIR LA FACTURA 📸
+  // ==========================================
+  @UseGuards(JwtAuthGuard)
+  @Post('gastos/upload-factura') // Endpoint: localhost:3000/gastos/upload-factura
+  @UseInterceptors(
+    // Reutilizamos TU helper, pero cambiamos la carpeta a 'gastos-facturas'
+    FileInterceptor('file', createMulterOptions('gastos-facturas', 5)) // 5MB max
+  )
+  uploadFactura(
+    @Request() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('Factura requerida');
+
+    const { empresaId } = req.user;
+
+    // Construimos la URL pública
+    // Ejemplo: http://localhost:3000/uploads/123/gastos-facturas/factura-xyz.pdf
+    const fileUrl = `http://localhost:3000/uploads/${empresaId}/gastos-facturas/${file.filename}`;
+
+    // Devolvemos la URL para que Angular la guarde temporalmente
+    return { url: fileUrl };
+  }
+
   // 2. AGREGAR ÍTEM (Factura)
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('gastos.reportar')
   @Post('gastos/reportes/:reporteId/items')
-  @UsePipes(new ValidationPipe({ transform: true }))
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   addItemGasto(
     @Request() req,
     @Param('reporteId') reporteId: string,
     @Body() dto: CreateItemGastoDto,
   ) {
     const { empresaId } = req.user;
+
+    // Aquí el DTO ya trae 'facturaUrl' y 'categoria'
     return this.productividadService.send(
       { cmd: 'add_item_gasto' },
       { empresaId, reporteId, dto },
@@ -1758,18 +1787,62 @@ export class AppController {
   }
 
   // 4. CAMBIAR ESTADO (Aprobar/Rechazar)
+  // 4. CAMBIAR ESTADO (Aprobar/Rechazar)
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission('gastos.aprobar')
+  @RequirePermission('gastos.aprobar') // Usamos el permiso que ya tienes
   @Patch('gastos/reportes/:id/estado')
   updateReporteEstado(
     @Request() req,
     @Param('id') reporteId: string,
     @Body() dto: UpdateReporteEstadoDto,
   ) {
-    const { empresaId } = req.user;
+    // 👇 EXTRAEMOS DATOS DEL USUARIO (Igual que en vacaciones)
+    const { empresaId, sucursalId, role } = req.user;
+
     return this.productividadService.send(
       { cmd: 'update_reporte_estado' },
-      { empresaId, reporteId, dto },
+      {
+        empresaId,
+        reporteId,
+        dto,
+        // 👇 ENVIAMOS EL CONTEXTO DE QUIEN APRUEBA
+        usuario: { role, sucursalId }
+      },
+    );
+  }
+
+  // 5. OBTENER UN REPORTE (Detalle)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('gastos.ver') // O gastos.reportar si es el propio empleado
+  @Get('gastos/reportes/:id')
+  getReporteById(
+    @Request() req,
+    @Param('id') reporteId: string,
+  ) {
+    const { empresaId, sucursalId, role } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_reporte_by_id' },
+      {
+        empresaId,
+        reporteId,
+        usuario: { role, sucursalId } // Enviamos usuario para validar seguridad (que no vea reporte de otra sucursal)
+      },
+    );
+  }
+
+  // 6. ELIMINAR ÍTEM
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('gastos.reportar')
+  @Delete('gastos/reportes/:reporteId/items/:itemId')
+  deleteItemGasto(
+    @Request() req,
+    @Param('reporteId') reporteId: string,
+    @Param('itemId') itemId: string,
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_item_gasto' },
+      { empresaId, reporteId, itemId },
     );
   }
   // ==========================================
@@ -2538,5 +2611,29 @@ export class AppController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch('nomina/vacaciones/:id/responder')
+  async responderSolicitudVacaciones(
+    @Request() req,
+    @Param('id') solicitudId: string,
+    @Body() dto: ResponderSolicitudDto
+  ) {
+    const { empresaId, sucursalId, role } = req.user;
 
+    // 1. Llamar a NÓMINA para aprobar/rechazar
+    // El Gateway solo actúa de intermediario, que es su función correcta.
+    const solicitud = await lastValueFrom(
+      this.nominaService.send(
+        { cmd: 'responder_solicitud_vacaciones' },
+        {
+          empresaId,
+          solicitudId,
+          dto,
+          usuario: { role, sucursalId }
+        }
+      )
+    );
+
+    return solicitud;
+  }
 }

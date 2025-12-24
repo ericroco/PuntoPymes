@@ -428,14 +428,32 @@ export class ProductividadController {
     return this.productividadService.addItemToReporte(data.empresaId, data.reporteId, data.dto);
   }
 
+  // 👇 ACTUALIZADO: Recibe sucursalId
   @MessagePattern({ cmd: 'get_reportes' })
-  getReportes(@Payload() data: { empresaId: string; empleadoId?: string }) {
-    return this.productividadService.getReportes(data.empresaId, data.empleadoId);
+  getReportes(@Payload() data: { empresaId: string; empleadoId?: string, sucursalId?: string }) {
+    return this.productividadService.getReportes(
+      data.empresaId,
+      {
+        empleadoId: data.empleadoId, // Puede ser undefined (si es Admin viendo todo)
+        sucursalId: data.sucursalId  // Puede ser undefined (si es Super Admin)
+      }
+    );
   }
 
+  // 👇 ACTUALIZADO: Recibe usuario para validar permisos
   @MessagePattern({ cmd: 'update_reporte_estado' })
-  updateReporteEstado(@Payload() data: { empresaId: string; reporteId: string; dto: UpdateReporteEstadoDto }) {
-    return this.productividadService.updateEstadoReporte(data.empresaId, data.reporteId, data.dto);
+  updateReporteEstado(@Payload() data: {
+    empresaId: string;
+    reporteId: string;
+    dto: UpdateReporteEstadoDto;
+    usuario: any // 👈 Recibimos el objeto { role, sucursalId }
+  }) {
+    return this.productividadService.updateEstadoReporte(
+      data.empresaId,
+      data.reporteId,
+      data.dto,
+      data.usuario
+    );
   }
   @MessagePattern({ cmd: 'get_dashboard_kpis' })
   getDashboardKpis(@Payload() data: { empresaId: string, filtroSucursalId?: string }) {
@@ -529,5 +547,16 @@ export class ProductividadController {
   @MessagePattern({ cmd: 'get_all_encuestas_admin' })
   getAllEncuestasAdmin(@Payload() data: { empresaId: string }) {
     return this.productividadService.getAllEncuestasAdmin(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'get_reporte_by_id' })
+  getReporteById(@Payload() data: { empresaId: string, reporteId: string, usuario: any }) {
+    return this.productividadService.getReporteById(data.empresaId, data.reporteId, data.usuario);
+  }
+
+  @MessagePattern({ cmd: 'delete_item_gasto' })
+  deleteItemGasto(@Payload() data: { empresaId: string, itemId: string }) {
+    // Nota: El servicio que hicimos antes ya tenía removeItemFromReporte
+    return this.productividadService.removeItemFromReporte(data.empresaId, data.itemId);
   }
 }

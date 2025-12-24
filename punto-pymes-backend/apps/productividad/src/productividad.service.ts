@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -1452,41 +1453,116 @@ export class ProductividadService {
   /**
    * 4. Obtener Reportes de un Empleado (o todos si es Admin)
    */
-  async getReportes(empresaId: string, empleadoId?: string): Promise<ReporteGasto[]> {
-    const where: any = { empleado: { empresaId } };
-    if (empleadoId) where.empleadoId = empleadoId;
+  async getReportes(
+    empresaId: string,
+    filtro: { empleadoId?: string, sucursalId?: string } // 👈 Ahora recibimos un objeto filtro
+  ): Promise<ReporteGasto[]> {
 
+    // Configuración base del WHERE apuntando a la relación 'empleado'
+    const whereCondition: any = {
+      empresaId: empresaId
+    };
+
+    // A. Si piden historial de un empleado específico
+    if (filtro.empleadoId) {
+      whereCondition.id = filtro.empleadoId;
+    }
+
+    // B. Si es un Gerente viendo su "Bandeja de Entrada", filtramos por sucursal
+    if (filtro.sucursalId) {
+      whereCondition.sucursalId = filtro.sucursalId;
+    }
+
+    // NOTA: TypeORM aplica esto sobre la relación 'empleado' gracias a la estructura de abajo
     return this.reporteRepository.find({
-      where,
-      relations: ['items', 'empleado'],
+      where: {
+        empleado: whereCondition // 👈 Filtramos dentro de la relación
+      },
+      relations: ['items', 'empleado'], // Traemos items y empleado
       order: { fechaReporte: 'DESC' },
     });
   }
 
   /**
-   * 5. Aprobar/Rechazar Reporte (Admin)
-   */
+    * 5. Aprobar/Rechazar Reporte (Con Validación de Sucursal)
+    */
   async updateEstadoReporte(
     empresaId: string,
     reporteId: string,
     dto: UpdateReporteEstadoDto,
+    usuario?: { role: string, sucursalId: string } // 👈 Recibimos quién aprueba
   ): Promise<ReporteGasto> {
+
+    // 1. Buscamos el reporte y su empleado
     const reporte = await this.reporteRepository.findOne({
       where: { id: reporteId },
-      relations: ['empleado'],
+      relations: ['empleado'], // Vital para saber de qué sucursal es
     });
 
+    // Validamos existencia y pertenencia a la empresa
     if (!reporte || reporte.empleado.empresaId !== empresaId) {
       throw new NotFoundException('Reporte no encontrado.');
     }
 
-    // Aquí podrías añadir lógica: Si pasa a PAGADO, generar asiento contable, etc.
+    // 2. 🛡️ SEGURIDAD DE SUCURSALES (Igual que en Vacaciones)
+    if (usuario) {
+      const rol = usuario.role ? usuario.role.toLowerCase() : '';
+      const esSuperAdmin = rol.includes('admin') || rol.includes('root');
 
+      // Si NO es Super Admin, validamos cerco de sucursal
+      if (!esSuperAdmin) {
+        // Si el aprobador tiene sucursal, debe coincidir con la del dueño del reporte
+        if (usuario.sucursalId && reporte.empleado.sucursalId) {
+          if (usuario.sucursalId !== reporte.empleado.sucursalId) {
+            throw new UnauthorizedException('No tienes permiso para gestionar gastos de otra sucursal.');
+          }
+        }
+      }
+    }
+
+    // 3. Actualizar
     reporte.estado = dto.estado;
-    // No tenemos campo comentarios en tu entidad actual, 
-    // pero si lo agregaras, iría aquí: reporte.comentarios = dto.comentarios;
+    // Si agregas comentarios en el futuro: reporte.comentariosRespuesta = dto.comentarios;
 
     return this.reporteRepository.save(reporte);
+  }
+
+  async getReporteById(
+    empresaId: string,
+    reporteId: string,
+    usuario?: { role: string, sucursalId: string }
+  ) {
+    const reporte = await this.reporteRepository.findOne({
+      where: {
+        id: reporteId,
+        // 👇 SOLUCIÓN: Anidamos el filtro dentro de la relación 'empleado'
+        empleado: {
+          empresaId: empresaId
+        }
+      },
+      relations: ['empleado', 'items'], // 'empleado' es necesario para que funcione el filtro de arriba y tu validación de abajo
+    });
+
+    if (!reporte) throw new NotFoundException('Reporte no encontrado');
+
+    // SEGURIDAD DE SUCURSAL 🛡️
+    if (usuario) {
+      const rol = usuario.role ? usuario.role.toLowerCase() : '';
+      const esSuperAdmin = rol.includes('admin') || rol.includes('root');
+
+      // Si no es admin, verificamos si es el dueño O el gerente de esa sucursal
+      if (!esSuperAdmin) {
+        // ¿Es el gerente de la sucursal correcta?
+        if (usuario.sucursalId && reporte.empleado.sucursalId) {
+          if (usuario.sucursalId !== reporte.empleado.sucursalId) {
+            // Validación estricta: Gerente de Sede A no ve reportes de Sede B
+            throw new UnauthorizedException('No puedes ver detalles de otra sucursal');
+          }
+        }
+      }
+    }
+
+    return reporte;
   }
   async getDashboardKPIs(empresaId: string, filtroSucursalId?: string): Promise<DashboardKpiDto> {
 

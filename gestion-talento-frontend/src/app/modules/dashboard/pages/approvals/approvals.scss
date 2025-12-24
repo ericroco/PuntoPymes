@@ -1,0 +1,137 @@
+.page-container {
+    padding: 24px;
+}
+
+.page-header {
+    margin-bottom: 24px;
+
+    h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 500;
+    }
+
+    .subtitle {
+        margin: 5px 0 0;
+        color: #666;
+    }
+}
+
+/* Estilos de Tabs */
+.tab-icon {
+    margin-right: 8px;
+}
+
+.badge-count {
+    background: #f44336;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Tabla */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+}
+
+/* Celda de Usuario con Avatar */
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+
+    .avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        background: #e0e0e0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+
+        .name {
+            font-weight: 500;
+        }
+
+        .role {
+            font-size: 11px;
+            color: #888;
+        }
+    }
+}
+
+/* Botones de Acción */
+.btn-approve {
+    color: #2e7d32;
+}
+
+.btn-reject {
+    color: #c62828;
+}
+
+/* Badges de Estado */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+
+    &.status-approved {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    &.status-rejected {
+        background: #ffebee;
+        color: #c62828;
+    }
+
+    &.status-pending {
+        background: #fff3e0;
+        color: #ef6c00;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+
+    mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+        opacity: 0.2;
+    }
+
+
+}
+
+/* approvals.page.scss */
+.chip-vacation {
+    --mdc-chip-elevated-container-color: #e3f2fd; // Azulito
+    --mdc-chip-label-text-color: #1565c0;
+}
+
+.chip-expense {
+    --mdc-chip-elevated-container-color: #e8f5e9; // Verdecito
+    --mdc-chip-label-text-color: #2e7d32;
+}

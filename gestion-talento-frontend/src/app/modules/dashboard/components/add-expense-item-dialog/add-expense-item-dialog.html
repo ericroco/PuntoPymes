@@ -1,0 +1,51 @@
+<h2 mat-dialog-title>Registrar Gasto</h2>
+<mat-dialog-content>
+    <form [formGroup]="form">
+
+        <div style="display: flex; gap: 10px;">
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Fecha</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fecha">
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="flex: 1;">
+                <mat-label>Monto ($)</mat-label>
+                <input matInput type="number" formControlName="monto" placeholder="0.00">
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Categoría</mat-label>
+            <mat-select formControlName="categoria">
+                <mat-option *ngFor="let cat of categorias" [value]="cat">{{cat}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Concepto / Detalle</mat-label>
+            <input matInput formControlName="concepto" placeholder="Ej: Taxi al aeropuerto">
+        </mat-form-field>
+
+        <div class="file-upload-box" (click)="fileInput.click()"
+            style="border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 8px; color: #777; margin-bottom: 10px;">
+
+            <mat-icon [style.color]="selectedFile ? 'green' : 'inherit'">
+                {{ selectedFile ? 'check_circle' : 'cloud_upload' }}
+            </mat-icon>
+
+            <p style="margin:0; font-size: 12px; font-weight: 500;">
+                {{ selectedFile ? selectedFile.name : 'Click aquí para adjuntar factura' }}
+            </p>
+
+            <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none;"
+                accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="form.invalid">Guardar</button>
+</mat-dialog-actions>

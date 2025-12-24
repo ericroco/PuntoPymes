@@ -283,4 +283,9 @@ export class NominaController {
   async updateBeneficioAssignments(@Payload() data: { beneficioId: string, empresaId: string, employeeIds: string[] }) {
     return this.nominaService.updateAssignments(data.empresaId, data.beneficioId, data.employeeIds);
   }
+
+  @MessagePattern({ cmd: 'responder_solicitud_vacaciones' })
+  responderSolicitud(@Payload() data: any) {
+    return this.nominaService.responderSolicitud(data);
+  }
 }

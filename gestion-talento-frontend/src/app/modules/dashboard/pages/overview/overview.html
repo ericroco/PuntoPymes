@@ -31,28 +31,44 @@
     <mat-divider></mat-divider>
 
     <div class="overview-grid">
-      <mat-card class="overview-widget">
-        <mat-card-header>
-          <mat-card-title>Aprobaciones Pendientes</mat-card-title>
+      <mat-card class="overview-widget"> <mat-card-header>
+          <mat-card-title>
+            <mat-icon class="header-icon">checklist_rtl</mat-icon>
+            Aprobaciones Pendientes
+          </mat-card-title>
         </mat-card-header>
+
         <mat-card-content>
           <mat-list *ngIf="pendingApprovals.length > 0; else noApprovals">
+
             <mat-list-item *ngFor="let req of pendingApprovals">
-              <mat-icon matListItemIcon>{{ req.type === 'Vacaciones' ? 'beach_access' : 'receipt_long' }}</mat-icon>
-              <div matListItemTitle>{{ req.type }}</div>
-              <div matListItemLine>{{ req.description }}</div>
+              <mat-icon matListItemIcon class="request-icon">
+                {{ req.type === 'Vacaciones' ? 'beach_access' : 'receipt_long' }}
+              </mat-icon>
+
+              <div matListItemTitle class="item-title">{{ req.type }}</div>
+              <div matListItemLine class="item-desc">{{ req.description }}</div>
+
               <div matListItemMeta class="approval-actions">
-                <button mat-icon-button color="primary" (click)="approveRequest(req.id)" matTooltip="Aprobar">
-                  <mat-icon>check_circle_outline</mat-icon>
+                <button mat-icon-button class="btn-approve" (click)="approveRequest(req.id)"
+                  matTooltip="Aprobar Solicitud">
+                  <mat-icon>check_circle</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="rejectRequest(req.id)" matTooltip="Rechazar">
-                  <mat-icon>highlight_off</mat-icon>
+
+                <button mat-icon-button class="btn-reject" (click)="rejectRequest(req.id)"
+                  matTooltip="Rechazar Solicitud">
+                  <mat-icon>cancel</mat-icon>
                 </button>
               </div>
             </mat-list-item>
+
           </mat-list>
+
           <ng-template #noApprovals>
-            <p class="no-data-placeholder">¡No hay solicitudes pendientes!</p>
+            <div class="empty-state">
+              <mat-icon>inbox</mat-icon>
+              <p class="no-data-placeholder">¡Todo limpio! No hay solicitudes pendientes.</p>
+            </div>
           </ng-template>
         </mat-card-content>
       </mat-card>

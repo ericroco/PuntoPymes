@@ -12,9 +12,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-// Importamos las constantes y la interfaz
-import { PERMISSION_GROUPS } from '../../../../shared/constants/permissions'; // Ajusta la ruta si es necesario
-import { Rol } from '../../services/roles';
+// Importamos constantes e interfaces
+import { PERMISSION_GROUPS } from '../../../../shared/constants/permissions';
+import { Rol } from '../../services/roles'; // 👈 Asegúrate que la ruta sea correcta (roles.service)
 
 @Component({
   selector: 'app-add-role-dialog',
@@ -30,6 +30,8 @@ import { Rol } from '../../services/roles';
 export class AddRoleDialog implements OnInit {
   roleForm: FormGroup;
   permissionGroups = PERMISSION_GROUPS;
+
+  // Mapa visual para los checkboxes: { 'gastos.reportar': true, 'rrhh.ver': false }
   permissionsMap: Record<string, boolean> = {};
 
   constructor(
@@ -39,48 +41,81 @@ export class AddRoleDialog implements OnInit {
   ) {
     const rol = data?.role;
 
-    // 1. 🛠️ CORRECCIÓN EN LA CARGA DE DATOS
-    if (rol && rol.permisos) {
-      if (Array.isArray(rol.permisos)) {
-        // CONVERSIÓN: Array ['A', 'B'] -> Objeto { 'A': true, 'B': true }
-        rol.permisos.forEach((perm: string) => {
-          if (perm === '*') {
-            // Si es Super Admin, marcamos TODO visualmente (o manejamos lógica especial)
-            this.markAllAsTrue();
-          } else {
-            this.permissionsMap[perm] = true;
-          }
-        });
-      } else {
-        // Si ya viene como objeto (legacy), lo usamos directo
-        this.permissionsMap = { ...rol.permisos };
-      }
-    }
+    // 1. Inicializar el Mapa de Permisos
+    this.initializePermissions(rol);
 
+    // 2. Crear el Formulario
     this.roleForm = this.fb.group({
-      name: [rol?.nombre || '', Validators.required],
-      description: [''],
+      name: [rol?.nombre || '', [Validators.required, Validators.maxLength(100)]],
+      // 👇 AGREGADO: El campo descripción faltaba en tu definició
       esDefecto: [rol?.esDefecto || false]
     });
   }
 
   ngOnInit(): void { }
 
+  /**
+   * Convierte el Array de permisos del Backend a un Mapa Booleano para la UI
+   */
+  private initializePermissions(rol?: Rol) {
+    // Primero limpiamos/iniciamos en falso
+    this.permissionsMap = {};
+
+    if (rol && rol.permisos) {
+      // Caso A: El backend envía un Array de strings (Lo estándar ahora)
+      if (Array.isArray(rol.permisos)) {
+
+        // Si tiene el comodín '*', marcamos TODO
+        if (rol.permisos.includes('*')) {
+          this.markAllAsTrue();
+        } else {
+          // Marcamos solo los que vienen en la lista
+          rol.permisos.forEach((perm: string) => {
+            this.permissionsMap[perm] = true;
+          });
+        }
+      }
+      // Caso B: Compatibilidad si por alguna razón llega un objeto (Legacy)
+      else if (typeof rol.permisos === 'object') {
+        this.permissionsMap = { ...rol.permisos as any };
+      }
+    }
+  }
 
   private markAllAsTrue() {
     this.permissionGroups.forEach(group => {
       group.permissions.forEach(p => this.permissionsMap[p.key] = true);
     });
   }
-  // Se ejecuta al hacer clic en un permiso
+
+  // --- LÓGICA DE CHECKBOXES ---
+
+  // 1. Clic en un permiso individual
   togglePermission(key: string, isChecked: boolean) {
     this.permissionsMap[key] = isChecked;
   }
 
-  // Helper para saber si un grupo entero está marcado (Opcional visualmente)
+  // 2. Clic en "Seleccionar todos" del grupo (UX Friendly)
+  toggleGroup(groupIndex: number, isChecked: boolean) {
+    const group = this.permissionGroups[groupIndex];
+    group.permissions.forEach(p => {
+      this.permissionsMap[p.key] = isChecked;
+    });
+  }
+
+  // 3. Helper para saber si un grupo entero está marcado
   isGroupChecked(groupPermissions: any[]): boolean {
+    if (!groupPermissions || groupPermissions.length === 0) return false;
     return groupPermissions.every(p => this.permissionsMap[p.key]);
   }
+
+  isGroupIndeterminate(groupPermissions: any[]): boolean {
+    if (!groupPermissions || groupPermissions.length === 0) return false;
+    const checkedCount = groupPermissions.filter(p => this.permissionsMap[p.key]).length;
+    return checkedCount > 0 && checkedCount < groupPermissions.length;
+  }
+
+  // --- ACCIONES ---
 
   onCancel(): void {
     this.dialogRef.close();
@@ -89,15 +124,18 @@ export class AddRoleDialog implements OnInit {
   onSave(): void {
     if (this.roleForm.valid) {
 
-      // Convertimos el mapa { 'permiso': true, 'otro': false } 
-      // A un array limpio ['permiso'] para el Backend
-      const permissionsArray = Object.keys(this.permissionsMap).filter(key => this.permissionsMap[key] === true);
+      // PASO 1: Filtrar solo las llaves que están en 'true' para enviar un Array limpio
+      const permissionsArray = Object.keys(this.permissionsMap)
+        .filter(key => this.permissionsMap[key] === true);
 
+      // PASO 2: Construir objeto LIMPIO (DTO Compatible)
+      // ⚠️ IMPORTANTE: No usamos spread operator (...this.data.role) aquí.
+      // Evitamos enviar ID, fechas o campos basura que provoquen error 400.
       const result = {
         nombre: this.roleForm.value.name,
+        descripcion: this.roleForm.value.description, // Ahora sí lo lee del form
         esDefecto: this.roleForm.value.esDefecto,
-        // Enviamos ARRAY al backend para mantener consistencia
-        permisos: permissionsArray
+        permisos: permissionsArray // Array de strings []
       };
 
       this.dialogRef.close(result);

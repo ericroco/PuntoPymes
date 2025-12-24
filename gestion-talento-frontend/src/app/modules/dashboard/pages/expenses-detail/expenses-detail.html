@@ -1,0 +1,96 @@
+<div class="page-container" *ngIf="report">
+
+    <header class="detail-header">
+        <button mat-icon-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <div class="header-info">
+            <h1>{{ report.titulo }}</h1>
+            <p>{{ report.descripcion }}</p>
+        </div>
+
+        <div class="header-actions">
+            <mat-chip-set>
+                <mat-chip [ngClass]="'status-' + report.estado.toLowerCase()">
+                    {{ report.estado }}
+                </mat-chip>
+            </mat-chip-set>
+        </div>
+    </header>
+
+    <div class="summary-card mat-elevation-z1">
+        <div class="total-section">
+            <span class="label">Total del Reporte</span>
+            <span class="amount">{{ report.total | currency }}</span>
+        </div>
+
+        <button *ngIf="canEdit && report.items?.length > 0" mat-flat-button color="primary" class="btn-submit"
+            (click)="submitReport()">
+            <mat-icon>send</mat-icon> ENVIAR A APROBACIÓN
+        </button>
+    </div>
+
+    <div *ngIf="isLoading" style="text-align: center; padding: 20px; color: #666;">
+        <mat-icon class="spin">sync</mat-icon> Procesando...
+    </div>
+
+    <div class="items-container mat-elevation-z2" [class.disabled-table]="isLoading">
+
+        <div class="table-toolbar" *ngIf="canEdit">
+            <h3>Detalle de Gastos</h3>
+            <button mat-stroked-button color="primary" (click)="openAddItemDialog()" [disabled]="isLoading">
+                <mat-icon>add</mat-icon> Agregar Gasto
+            </button>
+        </div>
+
+        <table mat-table [dataSource]="report.items || []">
+
+            <ng-container matColumnDef="fecha">
+                <th mat-header-cell *matHeaderCellDef> Fecha </th>
+                <td mat-cell *matCellDef="let item"> {{ item.fecha | date:'shortDate' }} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="categoria">
+                <th mat-header-cell *matHeaderCellDef> Categoría </th>
+                <td mat-cell *matCellDef="let item"> {{ item.categoria }} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="concepto">
+                <th mat-header-cell *matHeaderCellDef> Concepto </th>
+                <td mat-cell *matCellDef="let item">
+                    {{ item.concepto }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="monto">
+                <th mat-header-cell *matHeaderCellDef> Monto </th>
+                <td mat-cell *matCellDef="let item"> <strong>{{ item.monto | currency }}</strong> </td>
+            </ng-container>
+
+            <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef> </th>
+                <td mat-cell *matCellDef="let item" style="text-align: right;">
+
+                    <a *ngIf="item.facturaUrl" [href]="item.facturaUrl" target="_blank" mat-icon-button color="primary"
+                        matTooltip="Ver Comprobante">
+                        <mat-icon>receipt</mat-icon>
+                    </a>
+
+                    <button *ngIf="canEdit" mat-icon-button color="warn" (click)="deleteItem(item.id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <div class="empty-items" *ngIf="(!report.items || report.items.length === 0)">
+            <p>Aún no has agregado facturas a este reporte.</p>
+        </div>
+
+    </div>
+
+</div>

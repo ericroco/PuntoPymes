@@ -522,6 +522,53 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/nomina/src/dto/responder-solicitud.dto.ts":
+/*!********************************************************!*\
+  !*** ./apps/nomina/src/dto/responder-solicitud.dto.ts ***!
+  \********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ResponderSolicitudDto = exports.EstadoSolicitud = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var EstadoSolicitud;
+(function (EstadoSolicitud) {
+    EstadoSolicitud["PENDIENTE"] = "PENDIENTE";
+    EstadoSolicitud["APROBADA"] = "APROBADA";
+    EstadoSolicitud["RECHAZADA"] = "RECHAZADA";
+})(EstadoSolicitud || (exports.EstadoSolicitud = EstadoSolicitud = {}));
+class ResponderSolicitudDto {
+    estado;
+    comentarios;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { estado: { required: true, enum: (__webpack_require__(/*! ./responder-solicitud.dto */ "./apps/nomina/src/dto/responder-solicitud.dto.ts").EstadoSolicitud) }, comentarios: { required: false, type: () => String } };
+    }
+}
+exports.ResponderSolicitudDto = ResponderSolicitudDto;
+__decorate([
+    (0, class_validator_1.IsEnum)(EstadoSolicitud),
+    __metadata("design:type", String)
+], ResponderSolicitudDto.prototype, "estado", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], ResponderSolicitudDto.prototype, "comentarios", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/nomina/src/dto/update-beneficio.dto.ts":
 /*!*****************************************************!*\
   !*** ./apps/nomina/src/dto/update-beneficio.dto.ts ***!
@@ -931,7 +978,7 @@ class CreateRolDto {
     permisos;
     esDefecto;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, maxLength: 100 }, descripcion: { required: false, type: () => String, maxLength: 500 }, permisos: { required: false, type: () => Object }, esDefecto: { required: false, type: () => Boolean } };
+        return { nombre: { required: true, type: () => String, maxLength: 100 }, descripcion: { required: false, type: () => String, maxLength: 500 }, permisos: { required: false, type: () => [String] }, esDefecto: { required: false, type: () => Boolean } };
     }
 }
 exports.CreateRolDto = CreateRolDto;
@@ -948,9 +995,10 @@ __decorate([
     __metadata("design:type", String)
 ], CreateRolDto.prototype, "descripcion", void 0);
 __decorate([
-    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
+    __metadata("design:type", Array)
 ], CreateRolDto.prototype, "permisos", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
@@ -1931,9 +1979,10 @@ class CreateItemGastoDto {
     fecha;
     concepto;
     monto;
+    categoria;
     facturaUrl;
     static _OPENAPI_METADATA_FACTORY() {
-        return { fecha: { required: true, type: () => Date }, concepto: { required: true, type: () => String }, monto: { required: true, type: () => Number, minimum: 0.01 }, facturaUrl: { required: false, type: () => String } };
+        return { fecha: { required: true, type: () => Date }, concepto: { required: true, type: () => String }, monto: { required: true, type: () => Number, minimum: 0.01 }, categoria: { required: true, type: () => String }, facturaUrl: { required: false, type: () => String } };
     }
 }
 exports.CreateItemGastoDto = CreateItemGastoDto;
@@ -1952,6 +2001,11 @@ __decorate([
     (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
 ], CreateItemGastoDto.prototype, "monto", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateItemGastoDto.prototype, "categoria", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
@@ -2130,10 +2184,10 @@ exports.CreateReporteDto = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class CreateReporteDto {
-    nombre;
+    titulo;
     descripcion;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, descripcion: { required: false, type: () => String } };
+        return { titulo: { required: true, type: () => String }, descripcion: { required: false, type: () => String } };
     }
 }
 exports.CreateReporteDto = CreateReporteDto;
@@ -2141,7 +2195,7 @@ __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
-], CreateReporteDto.prototype, "nombre", void 0);
+], CreateReporteDto.prototype, "titulo", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
@@ -2746,7 +2800,9 @@ const update_vacante_dto_1 = __webpack_require__(/*! apps/personal/src/dto/updat
 const create_anuncio_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-anuncio.dto */ "./apps/productividad/src/dto/create-anuncio.dto.ts");
 const create_encuesta_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-encuesta.dto */ "./apps/productividad/src/dto/create-encuesta.dto.ts");
 const vote_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/vote.dto */ "./apps/productividad/src/dto/vote.dto.ts");
+const responder_solicitud_dto_1 = __webpack_require__(/*! apps/nomina/src/dto/responder-solicitud.dto */ "./apps/nomina/src/dto/responder-solicitud.dto.ts");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
+const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
 let AppController = class AppController {
     appService;
     authService;
@@ -3250,6 +3306,13 @@ let AppController = class AppController {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'create_reporte' }, { empresaId, empleadoId, dto });
     }
+    uploadFactura(req, file) {
+        if (!file)
+            throw new common_1.BadRequestException('Factura requerida');
+        const { empresaId } = req.user;
+        const fileUrl = `http://localhost:3000/uploads/${empresaId}/gastos-facturas/${file.filename}`;
+        return { url: fileUrl };
+    }
     addItemGasto(req, reporteId, dto) {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'add_item_gasto' }, { empresaId, reporteId, dto });
@@ -3259,8 +3322,25 @@ let AppController = class AppController {
         return this.productividadService.send({ cmd: 'get_reportes' }, { empresaId, empleadoId });
     }
     updateReporteEstado(req, reporteId, dto) {
+        const { empresaId, sucursalId, role } = req.user;
+        return this.productividadService.send({ cmd: 'update_reporte_estado' }, {
+            empresaId,
+            reporteId,
+            dto,
+            usuario: { role, sucursalId }
+        });
+    }
+    getReporteById(req, reporteId) {
+        const { empresaId, sucursalId, role } = req.user;
+        return this.productividadService.send({ cmd: 'get_reporte_by_id' }, {
+            empresaId,
+            reporteId,
+            usuario: { role, sucursalId }
+        });
+    }
+    deleteItemGasto(req, reporteId, itemId) {
         const { empresaId } = req.user;
-        return this.productividadService.send({ cmd: 'update_reporte_estado' }, { empresaId, reporteId, dto });
+        return this.productividadService.send({ cmd: 'delete_item_gasto' }, { empresaId, reporteId, itemId });
     }
     getDashboard(req, headerSucursalId) {
         const { empresaId, sucursalId } = req.user;
@@ -3539,6 +3619,16 @@ let AppController = class AppController {
             opcionId: dto.opcionId,
             empleadoId: req.user.sub
         });
+    }
+    async responderSolicitudVacaciones(req, solicitudId, dto) {
+        const { empresaId, sucursalId, role } = req.user;
+        const solicitud = await (0, rxjs_1.lastValueFrom)(this.nominaService.send({ cmd: 'responder_solicitud_vacaciones' }, {
+            empresaId,
+            solicitudId,
+            dto,
+            usuario: { role, sucursalId }
+        }));
+        return solicitud;
     }
 };
 exports.AppController = AppController;
@@ -4648,10 +4738,21 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "createReporte", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('gastos/upload-factura'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', (0, multer_config_util_1.createMulterOptions)('gastos-facturas', 5))),
+    openapi.ApiResponse({ status: 201 }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "uploadFactura", null);
+__decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('gastos.reportar'),
     (0, common_1.Post)('gastos/reportes/:reporteId/items'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe({ transform: true })),
+    (0, common_1.UsePipes)(new common_1.ValidationPipe({ transform: true, whitelist: true })),
     openapi.ApiResponse({ status: 201, type: Object }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('reporteId')),
@@ -4683,6 +4784,29 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, update_reporte_estado_dto_1.UpdateReporteEstadoDto]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "updateReporteEstado", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('gastos.ver'),
+    (0, common_1.Get)('gastos/reportes/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "getReporteById", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('gastos.reportar'),
+    (0, common_1.Delete)('gastos/reportes/:reporteId/items/:itemId'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('reporteId')),
+    __param(2, (0, common_1.Param)('itemId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "deleteItemGasto", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
     (0, permission_decorator_1.RequirePermission)('analiticas.ver'),
@@ -5188,6 +5312,17 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, vote_dto_1.VoteDto]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "votarEncuesta", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('nomina/vacaciones/:id/responder'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, responder_solicitud_dto_1.ResponderSolicitudDto]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "responderSolicitudVacaciones", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -5611,6 +5746,7 @@ exports.PERMISSIONS = {
     LOANS_REQUEST: 'prestamos.solicitar',
     ONBOARDING_MY_PROGRESS: 'onboarding.mi_progreso',
     TASKS_MY_READ: 'tareas.leer_propias',
+    EXPENSES_REPORT: 'gastos.reportar',
     EMPLOYEES_READ_BASIC: 'empleados.leer_basico',
     EMPLOYEES_READ_SENSITIVE: 'empleados.leer_sensible',
     EMPLOYEES_READ: 'empleados.leer',
@@ -5663,6 +5799,7 @@ exports.PERMISSION_GROUPS = [
             { key: exports.PERMISSIONS.VACATIONS_REQUEST, label: 'Solicitar Vacaciones' },
             { key: exports.PERMISSIONS.LOANS_REQUEST, label: 'Solicitar Préstamos' },
             { key: exports.PERMISSIONS.TASKS_MY_READ, label: 'Ver mis Tareas (Proyectos)' },
+            { key: exports.PERMISSIONS.EXPENSES_REPORT, label: 'Reportar Gastos' },
         ]
     },
     {
@@ -8259,13 +8396,14 @@ const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/
 const reporteGasto_entity_1 = __webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts");
 let ItemGasto = class ItemGasto extends base_entity_1.BaseEntity {
     concepto;
+    categoria;
     monto;
     fecha;
     facturaUrl;
     reporte;
     reporteId;
     static _OPENAPI_METADATA_FACTORY() {
-        return { concepto: { required: true, type: () => String, description: "Concepto o descripci\u00F3n del gasto\nMapea: string concepto \"Concepto descripcion gasto\"" }, monto: { required: true, type: () => Number, description: "Monto individual del gasto\nMapea: float monto \"Monto individual gasto\"" }, fecha: { required: true, type: () => Date, description: "Fecha en que se realiz\u00F3 el gasto\nMapea: date fecha \"Fecha gasto realizado\"" }, facturaUrl: { required: true, type: () => String, description: "URL del comprobante o factura (alojado en S3/Mongo)\nMapea: string facturaUrl \"URL comprobante factura\"\n\n@fulfills RNF13 (Almacenamiento Seguro de Archivos)\n@logic Esta columna no guarda el archivo, solo el enlace a \u00E9l." }, reporte: { required: true, type: () => (__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").ReporteGasto) }, reporteId: { required: true, type: () => String, description: "Mapea: string reporteId FK \"Reporte padre contiene\"" } };
+        return { concepto: { required: true, type: () => String, description: "Concepto o descripci\u00F3n del gasto\nMapea: string concepto \"Concepto descripcion gasto\"" }, categoria: { required: true, type: () => String }, monto: { required: true, type: () => Number, description: "Monto individual del gasto\nMapea: float monto \"Monto individual gasto\"" }, fecha: { required: true, type: () => Date, description: "Fecha en que se realiz\u00F3 el gasto\nMapea: date fecha \"Fecha gasto realizado\"" }, facturaUrl: { required: true, type: () => String, description: "URL del comprobante o factura (alojado en S3/Mongo)\nMapea: string facturaUrl \"URL comprobante factura\"\n\n@fulfills RNF13 (Almacenamiento Seguro de Archivos)\n@logic Esta columna no guarda el archivo, solo el enlace a \u00E9l." }, reporte: { required: true, type: () => (__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").ReporteGasto) }, reporteId: { required: true, type: () => String, description: "Mapea: string reporteId FK \"Reporte padre contiene\"" } };
     }
 };
 exports.ItemGasto = ItemGasto;
@@ -8277,6 +8415,14 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], ItemGasto.prototype, "concepto", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        comment: 'Categoría del gasto (Alimentación, Transporte, Hospedaje)',
+    }),
+    __metadata("design:type", String)
+], ItemGasto.prototype, "categoria", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'float',
@@ -9028,7 +9174,7 @@ var EstadoReporte;
     EstadoReporte["PAGADO"] = "PAGADO";
 })(EstadoReporte || (exports.EstadoReporte = EstadoReporte = {}));
 let ReporteGasto = class ReporteGasto extends base_entity_1.BaseEntity {
-    nombre;
+    titulo;
     descripcion;
     estado;
     total;
@@ -9037,7 +9183,7 @@ let ReporteGasto = class ReporteGasto extends base_entity_1.BaseEntity {
     empleadoId;
     items;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, estado: { required: true, description: "Estado del reporte.", enum: (__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").EstadoReporte) }, total: { required: true, type: () => Number, description: "Monto total calculado autom\u00E1ticamente." }, fechaReporte: { required: true, type: () => Date }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, items: { required: true, type: () => [(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/entities/itemGasto.entity.ts").ItemGasto)] } };
+        return { titulo: { required: true, type: () => String }, descripcion: { required: true, type: () => String }, estado: { required: true, description: "Estado del reporte.", enum: (__webpack_require__(/*! ./reporteGasto.entity */ "./libs/database/src/entities/reporteGasto.entity.ts").EstadoReporte) }, total: { required: true, type: () => Number, description: "Monto total calculado autom\u00E1ticamente." }, fechaReporte: { required: true, type: () => Date }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, items: { required: true, type: () => [(__webpack_require__(/*! ./itemGasto.entity */ "./libs/database/src/entities/itemGasto.entity.ts").ItemGasto)] } };
     }
 };
 exports.ReporteGasto = ReporteGasto;
@@ -9048,7 +9194,7 @@ __decorate([
         comment: 'Nombre o título del reporte (Ej: Viaje a Quito)',
     }),
     __metadata("design:type", String)
-], ReporteGasto.prototype, "nombre", void 0);
+], ReporteGasto.prototype, "titulo", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'text',
@@ -9133,13 +9279,14 @@ const empresa_entity_1 = __webpack_require__(/*! ./empresa.entity */ "./libs/dat
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
 let Rol = class Rol extends base_entity_1.BaseEntity {
     nombre;
+    descripcion;
     permisos;
     esDefecto;
     empresa;
     empresaId;
     empleados;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre del rol\nMapea: string nombre \"Nombre rol sistema\"" }, esDefecto: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria rol\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { nombre: { required: true, type: () => String, description: "Nombre del rol\nMapea: string nombre \"Nombre rol sistema\"" }, descripcion: { required: true, type: () => String }, permisos: { required: true, type: () => [String], description: "Mapa de permisos (Role-Based Access Control - RBAC).\nAHORA ES UN ARRAY DE STRINGS" }, esDefecto: { required: true, type: () => Boolean }, empresa: { required: true, type: () => (__webpack_require__(/*! ./empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }, empresaId: { required: true, type: () => String, description: "Mapea: string empresaId FK \"Empresa propietaria rol\"" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Rol = Rol;
@@ -9153,11 +9300,20 @@ __decorate([
 ], Rol.prototype, "nombre", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'jsonb',
-        comment: 'Mapa de permisos RBAC (RNF7)',
-        default: {}
+        type: 'varchar',
+        length: 500,
+        nullable: true,
+        comment: 'Descripción del rol',
     }),
-    __metadata("design:type", Object)
+    __metadata("design:type", String)
+], Rol.prototype, "descripcion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'jsonb',
+        comment: 'Lista de permisos activos (Array de strings)',
+        default: []
+    }),
+    __metadata("design:type", Array)
 ], Rol.prototype, "permisos", void 0);
 __decorate([
     (0, typeorm_1.Column)({
@@ -9304,8 +9460,10 @@ let SolicitudVacaciones = class SolicitudVacaciones extends base_entity_1.BaseEn
     respuestaAdmin;
     empleado;
     empleadoId;
+    comentariosRespuesta;
+    fechaRespuesta;
     static _OPENAPI_METADATA_FACTORY() {
-        return { fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String } };
+        return { fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, comentariosRespuesta: { required: true, type: () => String, nullable: true }, fechaRespuesta: { required: true, type: () => Date, nullable: true } };
     }
 };
 exports.SolicitudVacaciones = SolicitudVacaciones;
@@ -9346,6 +9504,14 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], SolicitudVacaciones.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", Object)
+], SolicitudVacaciones.prototype, "comentariosRespuesta", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Object)
+], SolicitudVacaciones.prototype, "fechaRespuesta", void 0);
 exports.SolicitudVacaciones = SolicitudVacaciones = __decorate([
     (0, typeorm_1.Entity)({ name: 'solicitudes_vacaciones' }),
     (0, typeorm_1.Index)(['empleadoId'])
@@ -10384,6 +10550,16 @@ module.exports = require("passport-jwt");
 /***/ ((module) => {
 
 module.exports = require("path");
+
+/***/ }),
+
+/***/ "rxjs":
+/*!***********************!*\
+  !*** external "rxjs" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("rxjs");
 
 /***/ }),
 

@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -29,6 +30,8 @@ import { UpdateConceptoNominaDto } from './dto/update-concepto-nomina.dto';
 import { ProcesarNominaDto } from './dto/procesar-nomina.dto';
 import { TipoRubro } from '../../../libs/database/src/entities/conceptoNomina.entity';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { ResponderSolicitudDto, } from './dto/responder-solicitud.dto';
+import { LessThan } from 'typeorm';
 
 
 
@@ -1094,5 +1097,46 @@ export class NominaService {
 
       return { success: true, count: employeeIds.length };
     });
+  }
+
+  // 👇 NUEVO MÉTODO PARA APROBAR/RECHAZAR 👇
+  async responderSolicitud(data: {
+    empresaId: string,
+    solicitudId: string,
+    dto: ResponderSolicitudDto,
+    usuario: { role: string, sucursalId: string }
+  }): Promise<SolicitudVacaciones> {
+
+    const { empresaId, solicitudId, dto, usuario } = data;
+
+    // 1. Buscar la solicitud
+    // Es vital el relations: ['empleado'] para poder validar la sucursal del empleado
+    const solicitud = await this.solicitudRepo.findOne({
+      where: { id: solicitudId, empleado: { empresaId } },
+      relations: ['empleado']
+    });
+
+    if (!solicitud) throw new NotFoundException('Solicitud no encontrada.');
+
+    // 2. SEGURIDAD: ¿Quién está intentando aprobar esto?
+    const rol = usuario.role ? usuario.role.toLowerCase() : '';
+    const esSuperAdmin = rol.includes('admin') || rol.includes('root');
+
+    // Si NO es Super Admin, validamos que sea el jefe de la MISMA sucursal
+    if (!esSuperAdmin) {
+      // Si el empleado tiene sucursal y el jefe tiene sucursal, deben coincidir
+      if (usuario.sucursalId && solicitud.empleado.sucursalId) {
+        if (usuario.sucursalId !== solicitud.empleado.sucursalId) {
+          throw new UnauthorizedException('No puedes gestionar solicitudes de otra sucursal.');
+        }
+      }
+    }
+
+    // 3. Actualizar Datos
+    solicitud.estado = dto.estado;
+    solicitud.comentariosRespuesta = dto.comentarios || null;
+    solicitud.fechaRespuesta = new Date();
+
+    return this.solicitudRepo.save(solicitud);
   }
 }

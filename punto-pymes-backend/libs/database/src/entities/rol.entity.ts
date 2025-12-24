@@ -32,19 +32,25 @@ export class Rol extends BaseEntity {
   })
   nombre: string;
 
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true, // 👇 Agregamos esto porque tu DTO ahora tiene descripción
+    comment: 'Descripción del rol',
+  })
+  descripcion: string;
+
   /**
    * Mapa de permisos (Role-Based Access Control - RBAC).
-   * Mapea: json permisos "Mapa permisos RBAC"
-   *
-   * @example { "puedeCrearEmpleado": true, "puedeVerNomina": false }
-   * @fulfills RNF7
+   * AHORA ES UN ARRAY DE STRINGS
    */
   @Column({
     type: 'jsonb',
-    comment: 'Mapa de permisos RBAC (RNF7)',
-    default: {}
+    comment: 'Lista de permisos activos (Array de strings)',
+    default: [] // 👇 CAMBIO: Default es un array vacío, no un objeto
   })
-  permisos: Record<string, boolean>;
+  // 👇 CAMBIO CRÍTICO: De Record<string, boolean> a string[]
+  permisos: string[];
 
   @Column({
     type: 'boolean',

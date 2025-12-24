@@ -12,6 +12,7 @@ export const PERMISSIONS = {
     LOANS_REQUEST: 'prestamos.solicitar',    // Solicitar anticipos
     ONBOARDING_MY_PROGRESS: 'onboarding.mi_progreso', // Ver mi inducción
     TASKS_MY_READ: 'tareas.leer_propias',    // Ver tareas asignadas a mí
+    EXPENSES_REPORT: 'gastos.reportar',
 
     // -------------------------------------------------------------------------
     // 2. TALENTO HUMANO (Gestión de Personas)
@@ -108,6 +109,7 @@ export const PERMISSION_GROUPS = [
             { key: PERMISSIONS.VACATIONS_REQUEST, label: 'Solicitar Vacaciones' },
             { key: PERMISSIONS.LOANS_REQUEST, label: 'Solicitar Préstamos' },
             { key: PERMISSIONS.TASKS_MY_READ, label: 'Ver mis Tareas (Proyectos)' },
+            { key: PERMISSIONS.EXPENSES_REPORT, label: 'Reportar Gastos' },
         ]
     },
     {

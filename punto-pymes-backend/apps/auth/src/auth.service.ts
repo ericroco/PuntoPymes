@@ -741,7 +741,8 @@ export class AuthService {
       const rolAdmin = manager.create(Rol, {
         empresaId: nuevaEmpresa.id,
         nombre: 'Administrador',
-        permisos: { esAdmin: true, puedeVerTodo: true },
+        descripcion: 'Rol administrador',
+        permisos: ['*'],
       });
       await manager.save(rolAdmin);
 

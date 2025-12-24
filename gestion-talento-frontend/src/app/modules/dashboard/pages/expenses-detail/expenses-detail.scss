@@ -1,0 +1,94 @@
+.page-container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .header-info {
+        flex: 1;
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        p {
+            margin: 0;
+            color: #666;
+        }
+    }
+}
+
+.summary-card {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-left: 5px solid #2196f3;
+
+    .total-section {
+        display: flex;
+        flex-direction: column;
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+    }
+}
+
+.table-toolbar {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+        margin: 0;
+    }
+}
+
+.items-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.empty-items {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.status-borrador {
+    background-color: #eee;
+    color: #555;
+}
+
+.status-pendiente {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-aprobado {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}

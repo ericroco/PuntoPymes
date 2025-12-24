@@ -41,6 +41,7 @@ import { BulkImportResponseDto } from './dto/bulk-import-response.dto';
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 import { IsNull } from 'typeorm';
 import { CreateDocumentoEmpresaDto } from './dto/create-documento-empresa.dto';
+import { DeepPartial } from 'typeorm';
 
 
 @Injectable()
@@ -95,7 +96,7 @@ export class PersonalService {
     // 1. Construimos el objeto WHERE base
     const whereClause: any = {
       empresaId,
-      estado: 'Activo' // Asumo que solo quieres los activos en la lista general
+      estado: Not('Inactivo') // Asumo que solo quieres los activos en la lista general
     };
 
     // 2. Si hay filtro de sucursal, lo agregamos al objeto
@@ -772,7 +773,7 @@ export class PersonalService {
       const nuevoRol = manager.create(Rol, {
         ...dto,
         empresaId: empresaId,
-        permisos: dto.permisos || {},
+        permisos: dto.permisos || [],
       });
 
       return manager.save(nuevoRol);
@@ -932,7 +933,7 @@ export class PersonalService {
 
       if (!rol) throw new NotFoundException('Rol no encontrado.');
 
-      // 2. Validar duplicados de nombre (Tu lógica original)
+      // 2. Validar duplicados de nombre
       if (dto.nombre && dto.nombre !== rol.nombre) {
         const duplicado = await manager.findOne(Rol, {
           where: { nombre: dto.nombre, empresaId, id: Not(rolId) },
@@ -940,15 +941,23 @@ export class PersonalService {
         if (duplicado) throw new ConflictException('Ya existe un rol con ese nombre.');
       }
 
-      // 3. 👇 LÓGICA NUEVA: El Único Default
-      // Si estamos actualizando y ahora decimos que ESTE es el defecto...
+      // 3. Lógica de Default
       if (dto.esDefecto === true) {
-        // ...apagamos el defecto a todos los demás primero
         await manager.update(Rol, { empresaId }, { esDefecto: false });
       }
 
-      // 4. Guardar cambios
-      const rolActualizado = manager.merge(Rol, rol, dto);
+      // 4. Guardar cambios (AQUÍ ESTÁ LA CORRECCIÓN) 🛠️
+      // TypeORM se queja porque el DTO no es exactamente una Entidad.
+      // Lo convertimos a un objeto plano limpio y forzamos el tipo DeepPartial.
+
+      const updates: DeepPartial<Rol> = {
+        ...dto,
+        // Si permisos viene undefined, no lo incluimos para no sobrescribir con null
+        ...(dto.permisos ? { permisos: dto.permisos } : {})
+      } as DeepPartial<Rol>;
+
+      const rolActualizado = manager.merge(Rol, rol, updates);
+
       return manager.save(rolActualizado);
     });
   }

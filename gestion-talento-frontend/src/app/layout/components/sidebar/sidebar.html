@@ -151,6 +151,24 @@
       <span>Mi Perfil</span>
     </a>
 
+    <div class="nav-section">
+      <span class="nav-title">Mi Portal</span>
+      <div class="nav-submenu">
+
+        <a routerLink="/dashboard/my-profile" routerLinkActive="active" class="nav-item">
+          <mat-icon>person</mat-icon>
+          <span>Mi Perfil</span>
+        </a>
+
+        <a routerLink="/dashboard/my-expenses" routerLinkActive="active" class="nav-item"
+          *ngIf="can(P.EXPENSES_REPORT)">
+          <mat-icon>receipt_long</mat-icon>
+          <span>Mis Gastos</span>
+        </a>
+
+      </div>
+    </div>
+
     <div class="nav-section" *ngIf="can(P.EMPLOYEES_READ_BASIC)">
       <span class="nav-title">
         <mat-icon class="section-icon">domain</mat-icon> Empresa
@@ -192,6 +210,20 @@
         <a routerLink="/dashboard/surveys" routerLinkActive="active" class="nav-item">
           <mat-icon>poll</mat-icon>
           <span>Clima & Encuestas</span>
+        </a>
+
+      </div>
+    </div>
+
+    <div class="nav-section" *ngIf="can(P.VACATIONS_APPROVE) || can(P.LOANS_APPROVE) || can(P.ATTENDANCE_APPROVE)">
+      <span class="nav-title">
+        <mat-icon class="section-icon">verified_user</mat-icon> Gestión
+      </span>
+      <div class="nav-submenu">
+
+        <a routerLink="/dashboard/approvals" routerLinkActive="active" class="nav-item">
+          <mat-icon>inbox</mat-icon>
+          <span>Centro de Aprobaciones</span>
         </a>
 
       </div>

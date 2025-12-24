@@ -28,7 +28,7 @@ export class ReporteGasto extends BaseEntity {
     length: 255,
     comment: 'Nombre o título del reporte (Ej: Viaje a Quito)',
   })
-  nombre: string;
+  titulo: string;
 
   @Column({
     type: 'text',
