@@ -125,6 +125,54 @@ export class AppController {
     return this.authService.send({ cmd: 'login' }, loginDto);
   }
 
+  // =======================================================
+  // 1. SUBIR LOGO (Solo guarda el archivo y devuelve URL) 📸
+  // =======================================================
+  @UseGuards(JwtAuthGuard)
+  @Post('empresa/upload-logo')
+  @UseInterceptors(
+    FileInterceptor('file', createMulterOptions('logos-empresa', 2)) // 2MB max
+  )
+  uploadLogo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    // Asumiendo que req.user tiene el empresaId, o usamos 'temp' si es nuevo
+    // Generamos la URL pública
+    const url = `http://localhost:3000/uploads/logos-empresa/${file.filename}`;
+    return { url };
+  }
+
+  // =======================================================
+  // 2. OBTENER MI EMPRESA (Para cargar la configuración actual) 🔍
+  // =======================================================
+  @UseGuards(JwtAuthGuard)
+  @Get('empresa/me')
+  async getMyCompany(@Request() req) {
+    const { empresaId, userId } = req.user; // Asegúrate de que tu JWT strategy devuelva esto
+
+    return this.authService.send(
+      { cmd: 'get_company_detail' },
+      { empresaId, userId }
+    );
+  }
+
+  // =======================================================
+  // 3. ACTUALIZAR BRANDING (Guarda URL y Color en BD) 💾
+  // =======================================================
+  @UseGuards(JwtAuthGuard)
+  @Patch('empresa/me/branding')
+  async updateBranding(@Request() req, @Body() body: { branding: any }) {
+    const { empresaId } = req.user;
+
+    return this.authService.send(
+      { cmd: 'update_company_branding' },
+      {
+        empresaId,
+        branding: body.branding // { logoUrl: '...', primaryColor: '...' }
+      }
+    );
+  }
+
   // --- Endpoints de Perfil (Protegidos) ---
 
   @UseGuards(JwtAuthGuard)

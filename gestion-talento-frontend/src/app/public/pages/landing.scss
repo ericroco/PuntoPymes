@@ -1,20 +1,20 @@
 // ============================================
-// VARIABLES - Usando tu paleta exacta
+// 1. VARIABLES SASS (Estáticas para compilación)
 // ============================================
-$primary: #E74C3C; // Tu Rojo específico
+$primary: #E74C3C; // Tu Rojo original
 $primary-dark: #C0392B;
 $primary-light: #FADBD8;
-$secondary: #555555; // Gris Principal
-$secondary-light: #BBBBBB; // Gris Claro
-$accent: #3498DB; // Tu Azul específico
+$secondary: #555555;
+$secondary-light: #BBBBBB;
+$accent: #3498DB;
 $accent-dark: #2980B9;
 $accent-light: #D6EAF8;
 
-$text-primary: #333333; // Texto Oscuro
-$text-secondary: #7F8C8D; // Texto Secundario Gris
-$background: #F8F9FA; // Fondo Página
-$surface: #ffffff; // Fondo Tarjetas/Modales
-$border: #EBEBEB; // Bordes/Divisores
+$text-primary: #333333;
+$text-secondary: #7F8C8D;
+$background: #F8F9FA;
+$surface: #ffffff;
+$border: #EBEBEB;
 
 $success: #2ECC71;
 $success-dark: #27AE60;
@@ -27,10 +27,29 @@ $box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
 $box-shadow-md: 0 8px 16px rgba(0, 0, 0, 0.1);
 $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
 
+// ============================================
+// 2. ESCUDO DE AISLAMIENTO (:host)
+// ============================================
 :host {
     display: block;
     width: 100%;
     overflow-x: hidden;
+
+    // 🔥 AQUÍ ESTÁ EL TRUCO:
+    // Forzamos a las variables CSS a volver a ser ROJAS dentro de este componente.
+    // Esto sobrescribe lo que haya puesto el ThemeService globalmente.
+
+    --primary-color: #{$primary};
+    --color-primary: #{$primary};
+    --color-primary-dark: #{$primary-dark};
+    --color-primary-light: #{$primary-light};
+
+    // Forzamos a Material Design a usar el rojo AQUÍ, ignorando el branding
+    --mat-sys-primary: #{$primary};
+    --mat-sys-on-primary: #ffffff;
+    --mdc-protected-button-container-color: #{$primary};
+    --mdc-outlined-button-label-text-color: #{$primary};
+    --mdc-text-button-label-text-color: #{$primary};
 }
 
 .landing-container {
@@ -67,6 +86,7 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
         font-weight: 700;
         font-size: 1.4rem;
         color: $text-primary;
+        text-decoration: none; // Fix para enlaces
 
         .logo-icon {
             color: $primary;
@@ -76,6 +96,8 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
                 font-size: 32px;
                 width: 32px;
                 height: 32px;
+                // Forzamos el color por si el global intenta cambiarlo
+                color: $primary !important;
             }
         }
 
@@ -88,6 +110,10 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
         display: flex;
         align-items: center;
         gap: 2rem;
+
+        @media (max-width: 768px) {
+            display: none; // Ocultar en móvil
+        }
 
         .nav-item {
             text-decoration: none;
@@ -122,6 +148,10 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
         display: flex;
         gap: 1rem;
         align-items: center;
+
+        @media (max-width: 768px) {
+            display: none; // Ocultar en móvil
+        }
     }
 
     .login-link {
@@ -140,15 +170,27 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
     .register-btn {
         box-shadow: $box-shadow;
         transition: all 0.2s ease !important;
+        // Aseguramos que use el rojo local
+        background-color: $primary !important;
+        color: white !important;
 
         &:hover {
             box-shadow: $box-shadow-md;
             transform: translateY(-1px);
+            background-color: $primary-dark !important;
         }
     }
 
     .mobile-toggle {
         display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: $text-primary;
+
+        @media (max-width: 768px) {
+            display: block;
+        }
     }
 }
 
@@ -275,6 +317,8 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
 
             .cta-primary {
                 box-shadow: $box-shadow;
+                background-color: $primary !important;
+                color: white !important;
 
                 &:hover {
                     box-shadow: $box-shadow-md;
@@ -337,6 +381,7 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
     .hero-visual {
         flex: 1;
         position: relative;
+        width: 100%; // Asegurar ancho en móvil
 
         .ui-window {
             background: $surface;
@@ -428,21 +473,19 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
                         }
                     }
 
-                    .list-mock {
-                        .row-mock {
-                            height: 10px;
-                            background: $border;
-                            margin-bottom: 10px;
-                            border-radius: 4px;
-                            width: 80%;
+                    .list-mock .row-mock {
+                        height: 10px;
+                        background: $border;
+                        margin-bottom: 10px;
+                        border-radius: 4px;
+                        width: 80%;
 
-                            &:nth-child(2) {
-                                width: 65%;
-                            }
+                        &:nth-child(2) {
+                            width: 65%;
+                        }
 
-                            &:nth-child(3) {
-                                width: 90%;
-                            }
+                        &:nth-child(3) {
+                            width: 90%;
                         }
                     }
                 }
@@ -489,6 +532,61 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
                     font-size: 0.8rem;
                 }
             }
+        }
+    }
+}
+
+/* ============================================
+   STATS BANNER (Nuevo)
+   ============================================ */
+.stats-banner {
+    background: $primary;
+    padding: 3rem 5%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+    color: #ffffff;
+    margin-top: -2rem;
+    position: relative;
+    z-index: 2;
+    border-radius: 0 0 16px 16px;
+    box-shadow: $box-shadow-md;
+
+    @media (max-width: 900px) {
+        flex-direction: column;
+        gap: 2rem;
+        margin-top: 0;
+        border-radius: 0;
+    }
+
+    .stat-item {
+        text-align: center;
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    .stat-divider {
+        width: 1px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.3);
+
+        @media (max-width: 900px) {
+            width: 50px;
+            height: 1px;
         }
     }
 }
@@ -610,292 +708,11 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* ============================================
-   TESTIMONIALS SECTION
-   ============================================ */
-.testimonials-section {
-    padding: 6rem 5%;
-    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
-    position: relative;
-
-    .testimonial-container {
-        max-width: 900px;
-        margin: 0 auto;
-        text-align: center;
-        color: $surface;
-
-        .quote-icon {
-            font-size: 64px;
-            width: 64px;
-            height: 64px;
-            opacity: 0.3;
-            margin-bottom: 1.5rem;
-        }
-
-        h2 {
-            font-size: 2rem;
-            font-weight: 500;
-            line-height: 1.5;
-            margin-bottom: 2rem;
-            font-style: italic;
-
-            @media (max-width: 768px) {
-                font-size: 1.5rem;
-            }
-        }
-
-        .author {
-            strong {
-                display: block;
-                font-size: 1.1rem;
-                font-weight: 600;
-                margin-bottom: 0.5rem;
-            }
-
-            span {
-                opacity: 0.9;
-                font-size: 0.95rem;
-            }
-        }
-    }
-}
-
-/* ============================================
-   CTA SECTION
-   ============================================ */
-.cta-section {
-    padding: 6rem 5%;
-    background: $background;
-
-    .cta-box {
-        background: linear-gradient(135deg, $text-primary 0%, $secondary 100%);
-        color: $surface;
-        padding: 4rem 2rem;
-        border-radius: 8px;
-        max-width: 900px;
-        margin: 0 auto;
-        text-align: center;
-        box-shadow: $box-shadow-lg;
-
-        h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-
-            @media (max-width: 768px) {
-                font-size: 2rem;
-            }
-        }
-
-        p {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 2rem;
-        }
-
-        button {
-            padding: 1.4rem 3rem !important;
-            font-size: 1.1rem !important;
-            border-radius: 50px !important;
-            font-weight: 600 !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s ease;
-
-            &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            }
-        }
-    }
-}
-
-/* ============================================
-   FOOTER
-   ============================================ */
-.landing-footer {
-    padding: 4rem 5% 2rem;
-    background: $surface;
-    border-top: 1px solid $border;
-
-    .footer-content {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr;
-        gap: 2rem;
-        margin-bottom: 3rem;
-
-        @media (max-width: 768px) {
-            grid-template-columns: 1fr;
-        }
-
-        .footer-col {
-            h4 {
-                font-weight: 600;
-                margin-bottom: 1rem;
-                color: $text-primary;
-            }
-
-            p {
-                color: $text-secondary;
-                max-width: 300px;
-                line-height: 1.6;
-            }
-
-            a {
-                display: block;
-                color: $text-secondary;
-                text-decoration: none;
-                margin-bottom: 0.5rem;
-                transition: color 0.2s;
-
-                &:hover {
-                    color: $primary;
-                }
-            }
-        }
-    }
-
-    .footer-bottom {
-        text-align: center;
-        border-top: 1px solid $border;
-        padding-top: 2rem;
-        color: $text-secondary;
-        font-size: 0.9rem;
-    }
-}
-
-/* ============================================
-   UTILIDADES RESPONSIVE
-   ============================================ */
-.mobile-only {
-    display: none;
-
-    @media (max-width: 768px) {
-        display: block;
-    }
-}
-
-.desktop-only {
-    @media (max-width: 768px) {
-        display: none !important;
-    }
-}
-
-/* ============================================
-   ANIMACIONES
-   ============================================ */
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-/* ============================================
-   MEJORAS MOBILE
-   ============================================ */
-@media (max-width: 480px) {
-    .hero-section {
-        padding: 3rem 5% 2rem;
-
-        .hero-content {
-            h1 {
-                font-size: 2rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-
-            .hero-actions button {
-                width: 100%;
-                padding: 1rem 1.5rem !important;
-            }
-        }
-    }
-
-    .features-section,
-    .cta-section {
-        padding: 4rem 5%;
-    }
-
-    .cta-section .cta-box {
-        padding: 3rem 1.5rem;
-
-        h2 {
-            font-size: 1.75rem;
-        }
-    }
-}
-
-/* ============================================
-   AGREGAR AL FINAL DE TU ARCHIVO SCSS
-   ============================================ */
-
-/* ============================================
-   STATS BANNER (Nueva Sección)
-   ============================================ */
-.stats-banner {
-    background: $primary; // Tu rojo corporativo
-    padding: 3rem 5%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4rem;
-    color: #ffffff;
-    margin-top: -2rem; // Efecto de superposición sutil sobre el Hero
-    position: relative;
-    z-index: 2;
-    border-radius: 0 0 16px 16px; // Un toque moderno en las esquinas inferiores
-    box-shadow: $box-shadow-md;
-
-    @media (max-width: 900px) {
-        flex-direction: column;
-        gap: 2rem;
-        margin-top: 0;
-        border-radius: 0;
-    }
-
-    .stat-item {
-        text-align: center;
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-    }
-
-    .stat-divider {
-        width: 1px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.3);
-
-        @media (max-width: 900px) {
-            width: 50px;
-            height: 1px;
-        }
-    }
-}
-
-/* ============================================
-   BENEFITS SECTION (Nueva Sección)
+   BENEFITS SECTION
    ============================================ */
 .benefits-section {
     padding: 6rem 5%;
-    background: $background; // Gris muy claro
+    background: $background;
 
     .benefits-container {
         display: grid;
@@ -977,51 +794,199 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
         }
     }
 
-    .benefits-visual {
-        .visual-card {
-            background: $surface;
-            padding: 3rem;
-            border-radius: 16px;
-            box-shadow: $box-shadow-lg;
-            text-align: center;
-            border: 1px solid $border;
-            position: relative;
-            overflow: hidden;
+    .benefits-visual .visual-card {
+        background: $surface;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: $box-shadow-lg;
+        text-align: center;
+        border: 1px solid $border;
+        position: relative;
+        overflow: hidden;
 
-            &::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 6px;
-                background: linear-gradient(90deg, $primary, $accent);
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, $primary, $accent);
+        }
+
+        .visual-icon {
+            font-size: 64px;
+            width: 64px;
+            height: 64px;
+            color: $accent;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: $text-primary;
+        }
+
+        p {
+            color: $text-secondary;
+        }
+    }
+}
+
+/* ============================================
+   TESTIMONIALS SECTION (Glassmorphism)
+   ============================================ */
+.testimonials-section {
+    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+    padding: 6rem 5%;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 20%);
+        pointer-events: none;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        position: relative;
+        z-index: 2;
+
+        .section-badge.light {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: #ffffff;
+        }
+    }
+
+    .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .testimonial-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .testimonial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+
+            .quote-icon {
+                font-size: 48px;
+                width: 48px;
+                height: 48px;
+                color: rgba(255, 255, 255, 0.3);
+                transform: scaleX(-1);
             }
 
-            .visual-icon {
-                font-size: 64px;
-                width: 64px;
-                height: 64px;
-                color: $accent; // Usamos el azul para contraste
-                margin-bottom: 1.5rem;
+            .rating mat-icon {
+                color: #F1C40F;
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .testimonial-text {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-style: italic;
+            flex-grow: 1;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+
+            .author-avatar {
+                width: 48px;
+                height: 48px;
+                background: #ffffff;
+                color: $primary;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 1.2rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
-            h3 {
-                font-size: 1.5rem;
-                font-weight: 600;
-                margin-bottom: 0.5rem;
-                color: $text-primary;
-            }
+            .author-info {
+                display: flex;
+                flex-direction: column;
 
-            p {
-                color: $text-secondary;
+                strong {
+                    display: block;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #ffffff;
+                }
+
+                span {
+                    font-size: 0.85rem;
+                    color: rgba(255, 255, 255, 0.7);
+                }
             }
         }
     }
 }
 
 /* ============================================
-   PRICING SECTION (Nueva Sección)
+   PRICING SECTION
    ============================================ */
 .pricing-section {
     padding: 6rem 5%;
@@ -1082,7 +1047,7 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
         &.featured {
             border-color: $primary;
             box-shadow: $box-shadow-md;
-            background: linear-gradient(to bottom, #fff, #fff5f5); // Sutil tinte rojo al fondo
+            background: linear-gradient(to bottom, #fff, #fff5f5);
 
             .plan-badge {
                 position: absolute;
@@ -1146,7 +1111,7 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
             padding: 0;
             margin: 0 0 2.5rem;
             text-align: left;
-            flex-grow: 1; // Empuja el botón hacia abajo para alinearlos
+            flex-grow: 1;
 
             li {
                 display: flex;
@@ -1186,165 +1151,145 @@ $box-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
                 }
             }
 
-            // Si es featured, el botón usará el color primary por defecto de Angular Material
+            // Override para asegurar que el botón featured sea rojo
+            &.mat-primary {
+                background-color: $primary !important;
+                color: white !important;
+            }
         }
     }
 }
 
 /* ============================================
-   TESTIMONIOS (Estilo Glassmorphism Profesional)
+   CTA SECTION
    ============================================ */
-.testimonials-section {
-    // Fondo degradado usando tu paleta roja
-    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+.cta-section {
     padding: 6rem 5%;
-    color: #ffffff;
-    position: relative;
-    overflow: hidden;
+    background: $background;
 
-    // Decoración de fondo sutil (opcional)
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
-            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 20%);
-        pointer-events: none;
-    }
-
-    .section-header {
+    .cta-box {
+        background: linear-gradient(135deg, $text-primary 0%, $secondary 100%);
+        color: $surface;
+        padding: 4rem 2rem;
+        border-radius: 8px;
+        max-width: 900px;
+        margin: 0 auto;
         text-align: center;
-        margin-bottom: 4rem;
-        position: relative;
-        z-index: 2;
-
-        .section-badge.light {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
-        }
+        box-shadow: $box-shadow-lg;
 
         h2 {
             font-size: 2.5rem;
+            margin-bottom: 1rem;
             font-weight: 700;
-            margin: 0;
-            color: #ffffff;
-        }
-    }
 
-    .testimonials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 2;
-    }
-
-    .testimonial-card {
-        // Efecto Vidrio (Glassmorphism)
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding: 2.5rem;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .testimonial-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-
-            .quote-icon {
-                font-size: 48px;
-                width: 48px;
-                height: 48px;
-                color: rgba(255, 255, 255, 0.3);
-                transform: scaleX(-1); // Voltea las comillas para estilo
-            }
-
-            .rating {
-                display: flex;
-                gap: 2px;
-
-                mat-icon {
-                    color: #F1C40F; // Color dorado/amarillo para estrellas
-                    font-size: 20px;
-                    width: 20px;
-                    height: 20px;
-                }
+            @media (max-width: 768px) {
+                font-size: 2rem;
             }
         }
 
-        .testimonial-text {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
+        p {
+            font-size: 1.2rem;
             color: rgba(255, 255, 255, 0.9);
-            font-style: italic;
-            flex-grow: 1;
+            margin-bottom: 2rem;
         }
 
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 1.5rem;
+        button {
+            padding: 1.4rem 3rem !important;
+            font-size: 1.1rem !important;
+            border-radius: 50px !important;
+            font-weight: 600 !important;
+            background-color: $primary !important; // Fuerza el rojo
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
 
-            .author-avatar {
-                width: 48px;
-                height: 48px;
-                background: #ffffff;
-                color: $primary; // Letra roja dentro del círculo blanco
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 800;
-                font-size: 1.2rem;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            }
+        }
+    }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.landing-footer {
+    padding: 4rem 5% 2rem;
+    background: $surface;
+    border-top: 1px solid $border;
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+        }
+
+        .footer-col {
+            h4 {
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: $text-primary;
             }
 
-            .author-info {
-                display: flex;
-                flex-direction: column;
+            p {
+                color: $text-secondary;
+                max-width: 300px;
+                line-height: 1.6;
+            }
 
-                strong {
-                    display: block;
-                    font-size: 1rem;
-                    font-weight: 600;
-                    color: #ffffff;
-                }
+            a {
+                display: block;
+                color: $text-secondary;
+                text-decoration: none;
+                margin-bottom: 0.5rem;
+                transition: color 0.2s;
 
-                span {
-                    font-size: 0.85rem;
-                    color: rgba(255, 255, 255, 0.7);
+                &:hover {
+                    color: $primary;
                 }
             }
         }
+    }
+
+    .footer-bottom {
+        text-align: center;
+        border-top: 1px solid $border;
+        padding-top: 2rem;
+        color: $text-secondary;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   ANIMACIONES & HELPERS
+   ============================================ */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.mobile-only {
+    display: none;
+
+    @media (max-width: 768px) {
+        display: block;
+    }
+}
+
+.desktop-only {
+    @media (max-width: 768px) {
+        display: none !important;
     }
 }

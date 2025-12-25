@@ -68,6 +68,12 @@ let AuthController = class AuthController {
     createCompanyUser(data) {
         return this.authService.createCompanyForUser(data.usuarioId, data);
     }
+    async getCompanyDetail(data) {
+        return this.authService.getCompanyDetail(data.empresaId, data.userId);
+    }
+    async updateBranding(data) {
+        return this.authService.updateCompanyBranding(data.empresaId, data.branding);
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -128,6 +134,22 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "createCompanyUser", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_company_detail' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getCompanyDetail", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_company_branding' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empresa.entity */ "./libs/database/src/entities/empresa.entity.ts").Empresa) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "updateBranding", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
@@ -259,6 +281,7 @@ const database_1 = __webpack_require__(/*! default/database */ "./libs/database/
 const bcrypt = __importStar(__webpack_require__(/*! bcrypt */ "bcrypt"));
 const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 let AuthService = class AuthService {
     usuarioRepository;
     empresaRepository;
@@ -822,6 +845,36 @@ let AuthService = class AuthService {
             await manager.save(contrato);
             return nuevaEmpresa;
         });
+    }
+    async getCompanyDetail(empresaId, userId) {
+        let empresa = null;
+        if (empresaId) {
+            empresa = await this.empresaRepository.findOne({
+                where: { id: empresaId }
+            });
+        }
+        else if (userId) {
+            empresa = await this.empresaRepository.createQueryBuilder('empresa')
+                .innerJoin('empresa.empleados', 'empleado')
+                .innerJoin('empleado.usuario', 'usuario')
+                .where('usuario.id = :userId', { userId })
+                .getOne();
+        }
+        if (!empresa) {
+            throw new microservices_1.RpcException(new common_1.NotFoundException('Empresa no encontrada para este usuario'));
+        }
+        return empresa;
+    }
+    async updateCompanyBranding(empresaId, brandingData) {
+        const empresa = await this.empresaRepository.findOne({ where: { id: empresaId } });
+        if (!empresa)
+            throw new microservices_1.RpcException('Empresa no encontrada');
+        empresa.branding = {
+            ...empresa.branding,
+            logoUrl: brandingData.logoUrl,
+            primaryColor: brandingData.primaryColor
+        };
+        return this.empresaRepository.save(empresa);
     }
 };
 exports.AuthService = AuthService;

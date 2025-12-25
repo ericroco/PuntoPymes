@@ -2831,6 +2831,23 @@ let AppController = class AppController {
         console.log('API Gateway recibió solicitud de login');
         return this.authService.send({ cmd: 'login' }, loginDto);
     }
+    uploadLogo(file) {
+        if (!file)
+            throw new common_1.BadRequestException('Archivo requerido');
+        const url = `http://localhost:3000/uploads/logos-empresa/${file.filename}`;
+        return { url };
+    }
+    async getMyCompany(req) {
+        const { empresaId, userId } = req.user;
+        return this.authService.send({ cmd: 'get_company_detail' }, { empresaId, userId });
+    }
+    async updateBranding(req, body) {
+        const { empresaId } = req.user;
+        return this.authService.send({ cmd: 'update_company_branding' }, {
+            empresaId,
+            branding: body.branding
+        });
+    }
     getProfile(req) {
         console.log('Petición exitosa a ruta protegida /profile');
         return {
@@ -3664,6 +3681,35 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "login", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('empresa/upload-logo'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', (0, multer_config_util_1.createMulterOptions)('logos-empresa', 2))),
+    openapi.ApiResponse({ status: 201 }),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "uploadLogo", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('empresa/me'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getMyCompany", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('empresa/me/branding'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "updateBranding", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('profile'),

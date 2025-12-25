@@ -1,22 +1,36 @@
 <aside class="sidebar-container">
+
+  <!-- ============================================ -->
+  <!-- HEADER CON LOGO -->
+  <!-- ============================================ -->
   <div class="sidebar-header">
     <img [src]="companyLogo" alt="Logo Empresa" class="logo">
     <span class="logo-text">{{ companyName }}</span>
   </div>
 
+  <!-- ============================================ -->
+  <!-- NAVEGACIÓN PRINCIPAL -->
+  <!-- ============================================ -->
   <nav class="sidebar-nav">
 
+    <!-- Dashboard Principal -->
     <a routerLink="/dashboard/overview" routerLinkActive="active" class="nav-item">
       <mat-icon>dashboard</mat-icon>
       <span>Dashboard</span>
     </a>
 
+    <div class="nav-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- SECCIÓN: TALENTO HUMANO -->
+    <!-- ============================================ -->
     <div class="nav-section"
       *ngIf="can(P.EMPLOYEES_READ_BASIC) || can(P.RECRUITMENT_MANAGE) || can(P.ONBOARDING_MANAGE) || can(P.PERFORMANCE_MANAGE)">
 
-      <span class="nav-title">
-        <mat-icon class="section-icon">people</mat-icon> Talento Humano
-      </span>
+      <div class="nav-title">
+        <mat-icon class="section-icon">people</mat-icon>
+        <span>Talento Humano</span>
+      </div>
 
       <div class="nav-submenu">
         <a *ngIf="can(P.EMPLOYEES_READ_BASIC)" routerLink="/dashboard/employees" routerLinkActive="active"
@@ -45,15 +59,18 @@
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: OPERACIONES -->
+    <!-- ============================================ -->
     <div class="nav-section"
       *ngIf="can(P.PROJECTS_READ) || can(P.TASKS_MY_READ) || can(P.ATTENDANCE_READ_ALL) || can(P.ATTENDANCE_MY_READ)">
 
-      <span class="nav-title">
-        <mat-icon class="section-icon">business_center</mat-icon> Operaciones
-      </span>
+      <div class="nav-title">
+        <mat-icon class="section-icon">business_center</mat-icon>
+        <span>Operaciones</span>
+      </div>
 
       <div class="nav-submenu">
-
         <a *ngIf="can(P.PROJECTS_READ) || can(P.TASKS_MY_READ)" routerLink="/dashboard/sprints"
           routerLinkActive="active" class="nav-item">
           <mat-icon>view_kanban</mat-icon>
@@ -78,12 +95,17 @@
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: COMPENSACIÓN -->
+    <!-- ============================================ -->
     <div class="nav-section" *ngIf="can(P.PAYROLL_READ) || can(P.PAYROLL_MY_READ) || can(P.BENEFITS_MANAGE)">
-      <span class="nav-title">
-        <mat-icon class="section-icon">payments</mat-icon> Compensación
-      </span>
-      <div class="nav-submenu">
 
+      <div class="nav-title">
+        <mat-icon class="section-icon">payments</mat-icon>
+        <span>Compensación</span>
+      </div>
+
+      <div class="nav-submenu">
         <a *ngIf="can(P.PAYROLL_READ) || can(P.PAYROLL_MY_READ)" routerLink="/dashboard/payroll"
           routerLinkActive="active" class="nav-item">
           <mat-icon>receipt_long</mat-icon>
@@ -103,10 +125,16 @@
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: DESARROLLO -->
+    <!-- ============================================ -->
     <div class="nav-section" *ngIf="can(P.TRAINING_MANAGE) || can(P.PERFIL_ME)">
-      <span class="nav-title">
-        <mat-icon class="section-icon">trending_up</mat-icon> Desarrollo
-      </span>
+
+      <div class="nav-title">
+        <mat-icon class="section-icon">trending_up</mat-icon>
+        <span>Desarrollo</span>
+      </div>
+
       <div class="nav-submenu">
         <a routerLink="/dashboard/courses" routerLinkActive="active" class="nav-item">
           <mat-icon>school</mat-icon>
@@ -115,10 +143,16 @@
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: RECURSOS -->
+    <!-- ============================================ -->
     <div class="nav-section" *ngIf="can(P.DOCUMENTS_MANAGE) || can(P.ASSETS_MANAGE) || can(P.PERFIL_ME)">
-      <span class="nav-title">
-        <mat-icon class="section-icon">inventory_2</mat-icon> Recursos
-      </span>
+
+      <div class="nav-title">
+        <mat-icon class="section-icon">inventory_2</mat-icon>
+        <span>Recursos</span>
+      </div>
+
       <div class="nav-submenu">
         <a routerLink="/dashboard/documents" routerLinkActive="active" class="nav-item">
           <mat-icon>folder</mat-icon>
@@ -132,10 +166,16 @@
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: ANÁLISIS -->
+    <!-- ============================================ -->
     <div class="nav-section" *ngIf="can(P.REPORTS_VIEW)">
-      <span class="nav-title">
-        <mat-icon class="section-icon">analytics</mat-icon> Análisis
-      </span>
+
+      <div class="nav-title">
+        <mat-icon class="section-icon">analytics</mat-icon>
+        <span>Análisis</span>
+      </div>
+
       <div class="nav-submenu">
         <a routerLink="/dashboard/reports" routerLinkActive="active" class="nav-item">
           <mat-icon>bar_chart</mat-icon>
@@ -146,17 +186,18 @@
 
     <div class="nav-divider"></div>
 
-    <a routerLink="/dashboard/my-profile" routerLinkActive="active" class="nav-item">
-      <mat-icon>person</mat-icon>
-      <span>Mi Perfil</span>
-    </a>
-
+    <!-- ============================================ -->
+    <!-- SECCIÓN: MI PORTAL -->
+    <!-- ============================================ -->
     <div class="nav-section">
-      <span class="nav-title">Mi Portal</span>
-      <div class="nav-submenu">
+      <div class="nav-title">
+        <mat-icon class="section-icon">person</mat-icon>
+        <span>Mi Portal</span>
+      </div>
 
+      <div class="nav-submenu">
         <a routerLink="/dashboard/my-profile" routerLinkActive="active" class="nav-item">
-          <mat-icon>person</mat-icon>
+          <mat-icon>account_circle</mat-icon>
           <span>Mi Perfil</span>
         </a>
 
@@ -165,20 +206,25 @@
           <mat-icon>receipt_long</mat-icon>
           <span>Mis Gastos</span>
         </a>
-
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: EMPRESA -->
+    <!-- ============================================ -->
     <div class="nav-section" *ngIf="can(P.EMPLOYEES_READ_BASIC)">
-      <span class="nav-title">
-        <mat-icon class="section-icon">domain</mat-icon> Empresa
-      </span>
-      <div class="nav-submenu">
 
+      <div class="nav-title">
+        <mat-icon class="section-icon">domain</mat-icon>
+        <span>Empresa</span>
+      </div>
+
+      <div class="nav-submenu">
         <a *ngIf="can(P.BRANCHES_MANAGE)" routerLink="/dashboard/branches" routerLinkActive="active" class="nav-item">
           <mat-icon>store</mat-icon>
           <span>Sucursales / Sedes</span>
         </a>
+
         <a routerLink="/dashboard/organization-chart" routerLinkActive="active" class="nav-item">
           <mat-icon>account_tree</mat-icon>
           <span>Organigrama</span>
@@ -188,20 +234,24 @@
           <mat-icon>gavel</mat-icon>
           <span>Políticas y Normas</span>
         </a>
+
         <a routerLink="/dashboard/company-directory" routerLinkActive="active" class="nav-item">
           <mat-icon>contact_page</mat-icon>
-          <span>Directorio</span>
+          <span>Directorio Empresarial</span>
         </a>
-
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: COMUNICACIÓN -->
+    <!-- ============================================ -->
     <div class="nav-section">
-      <span class="nav-title">
-        <mat-icon class="section-icon">forum</mat-icon> Comunicación
-      </span>
-      <div class="nav-submenu">
+      <div class="nav-title">
+        <mat-icon class="section-icon">forum</mat-icon>
+        <span>Comunicación</span>
+      </div>
 
+      <div class="nav-submenu">
         <a routerLink="/dashboard/announcements" routerLinkActive="active" class="nav-item">
           <mat-icon>campaign</mat-icon>
           <span>Comunicados</span>
@@ -209,37 +259,50 @@
 
         <a routerLink="/dashboard/surveys" routerLinkActive="active" class="nav-item">
           <mat-icon>poll</mat-icon>
-          <span>Clima & Encuestas</span>
+          <span>Clima y Encuestas</span>
         </a>
-
       </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- SECCIÓN: GESTIÓN (Aprobaciones) -->
+    <!-- ============================================ -->
     <div class="nav-section" *ngIf="can(P.VACATIONS_APPROVE) || can(P.LOANS_APPROVE) || can(P.ATTENDANCE_APPROVE)">
-      <span class="nav-title">
-        <mat-icon class="section-icon">verified_user</mat-icon> Gestión
-      </span>
-      <div class="nav-submenu">
 
+      <div class="nav-title">
+        <mat-icon class="section-icon">verified_user</mat-icon>
+        <span>Gestión</span>
+      </div>
+
+      <div class="nav-submenu">
         <a routerLink="/dashboard/approvals" routerLinkActive="active" class="nav-item">
           <mat-icon>inbox</mat-icon>
           <span>Centro de Aprobaciones</span>
         </a>
-
       </div>
     </div>
 
+    <div class="nav-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- CONFIGURACIÓN (Fuera de sección) -->
+    <!-- ============================================ -->
     <a *ngIf="can(P.ROLES_MANAGE) || can(P.USERS_MANAGE) || can(P.COMPANY_CONFIG)" routerLink="/dashboard/settings"
       routerLinkActive="active" class="nav-item">
       <mat-icon>settings</mat-icon>
       <span>Configuración</span>
     </a>
+
   </nav>
 
+  <!-- ============================================ -->
+  <!-- FOOTER CON LOGOUT -->
+  <!-- ============================================ -->
   <div class="sidebar-footer">
     <button class="logout-btn" (click)="authService.logout()">
       <mat-icon>logout</mat-icon>
       <span>Cerrar Sesión</span>
     </button>
   </div>
+
 </aside>

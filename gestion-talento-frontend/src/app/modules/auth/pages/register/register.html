@@ -1,99 +1,218 @@
 <div class="auth-container">
 
+    <!-- ============================================ -->
+    <!-- LADO IZQUIERDO: VISUAL BRAND -->
+    <!-- ============================================ -->
     <div class="auth-visual">
+        <div class="texture-overlay"></div>
+
         <div class="visual-content">
-            <div class="logo-white">
-                <mat-icon>all_inclusive</mat-icon>
-                <span>TALEN<strong>TRACK</strong></span>
+
+            <!-- Logo y Tagline -->
+            <div class="logo-section">
+                <div class="logo-white">
+                    <mat-icon>all_inclusive</mat-icon>
+                    <span>TALEN<strong>TRACK</strong></span>
+                </div>
+                <p class="tagline">Recursos Humanos Inteligentes</p>
             </div>
-            <h2>Digitaliza tu gestión de talento hoy.</h2>
-            <ul class="benefits-list">
-                <li><mat-icon>check_circle</mat-icon> Gestión de nómina automatizada</li>
-                <li><mat-icon>check_circle</mat-icon> Reclutamiento con IA</li>
-                <li><mat-icon>check_circle</mat-icon> Sin tarjeta de crédito requerida</li>
-            </ul>
+
+            <!-- Título Principal -->
+            <h2>
+                Digitaliza tu<br>
+                Gestión de Talento
+            </h2>
+
+            <!-- Descripción -->
+            <p class="visual-text">
+                Únete a más de 500 empresas que ya transformaron su área de
+                recursos humanos con nuestra plataforma integral.
+            </p>
+
+            <!-- Grid de Características -->
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="icon-box">
+                        <mat-icon>auto_awesome</mat-icon>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-title">IA Integrada</span>
+                        <span class="feature-desc">Reclutamiento inteligente</span>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="icon-box">
+                        <mat-icon>receipt_long</mat-icon>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-title">Nómina Automática</span>
+                        <span class="feature-desc">Cálculo en segundos</span>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="icon-box">
+                        <mat-icon>credit_card_off</mat-icon>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-title">Sin Compromiso</span>
+                        <span class="feature-desc">No requiere tarjeta</span>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="icon-box">
+                        <mat-icon>workspace_premium</mat-icon>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-title">Prueba Gratis</span>
+                        <span class="feature-desc">30 días sin costo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Flotante (Mockup) -->
+            <div class="glass-card-mockup">
+                <div class="card-icon">
+                    <mat-icon>people</mat-icon>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">+500 Empresas Activas</span>
+                    <span class="card-subtitle">Confían en nosotros</span>
+                </div>
+                <div class="card-status">
+                    <mat-icon>trending_up</mat-icon>
+                </div>
+            </div>
+
         </div>
+
+        <!-- Elementos Decorativos -->
         <div class="circle c1"></div>
         <div class="circle c2"></div>
+        <div class="circle c3"></div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- LADO DERECHO: FORMULARIO DE REGISTRO -->
+    <!-- ============================================ -->
     <div class="auth-form-wrapper">
         <div class="auth-form-content">
 
+            <!-- Header del Formulario -->
             <div class="form-header">
+                <!-- Logo visible solo en móvil -->
+                <div class="logo-mobile">
+                    <mat-icon>all_inclusive</mat-icon>
+                    <span>TALEN<strong>TRACK</strong></span>
+                </div>
+
                 <h1>Crear Cuenta</h1>
-                <p>Únete a las más de 500 empresas que confían en nosotros.</p>
+                <p>Únete a las más de 500 empresas que confían en nosotros</p>
             </div>
 
+            <!-- Formulario -->
             <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
 
-                <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Correo Electrónico</mat-label>
-                    <input matInput formControlName="email" placeholder="ejemplo@empresa.com">
-                    <mat-icon matSuffix>email</mat-icon>
-                    <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
-                        Ingresa un correo válido
-                    </mat-error>
-                    <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
-                        El correo es obligatorio
-                    </mat-error>
-                </mat-form-field>
+                <!-- Campo Email -->
+                <div class="form-group">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Correo Electrónico</mat-label>
+                        <input matInput type="email" formControlName="email" placeholder="tu-email@empresa.com"
+                            autocomplete="email">
+                        <mat-icon matPrefix>email</mat-icon>
+                        <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+                            Por favor ingresa un correo válido
+                        </mat-error>
+                        <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+                            El correo es obligatorio
+                        </mat-error>
+                    </mat-form-field>
+                </div>
 
-                <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Contraseña</mat-label>
-                    <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-                    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-                        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                    <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
-                        Mínimo 8 caracteres
-                    </mat-error>
-                </mat-form-field>
+                <!-- Campo Contraseña -->
+                <div class="form-group">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Contraseña</mat-label>
+                        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+                            autocomplete="new-password">
+                        <mat-icon matPrefix>lock</mat-icon>
+                        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button"
+                            tabindex="-1" [attr.aria-label]="'Mostrar contraseña'">
+                            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                        </button>
+                        <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+                            La contraseña es requerida
+                        </mat-error>
+                        <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
+                            Mínimo 8 caracteres requeridos
+                        </mat-error>
+                    </mat-form-field>
+                </div>
 
-                <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Confirmar Contraseña</mat-label>
-                    <input matInput [type]="hideConfirmPassword ? 'password' : 'text'"
-                        formControlName="confirmPassword">
-                    <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword"
-                        type="button">
-                        <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                    <mat-error *ngIf="registerForm.hasError('mismatch')">
-                        Las contraseñas no coinciden
-                    </mat-error>
-                </mat-form-field>
+                <!-- Campo Confirmar Contraseña -->
+                <div class="form-group">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Confirmar Contraseña</mat-label>
+                        <input matInput [type]="hideConfirmPassword ? 'password' : 'text'"
+                            formControlName="confirmPassword" autocomplete="new-password">
+                        <mat-icon matPrefix>lock_outline</mat-icon>
+                        <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword"
+                            type="button" tabindex="-1" [attr.aria-label]="'Mostrar confirmar contraseña'">
+                            <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                        </button>
+                        <mat-error
+                            *ngIf="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched">
+                            Las contraseñas no coinciden
+                        </mat-error>
+                    </mat-form-field>
+                </div>
 
-                <div class="terms-check">
+                <!-- Checkbox Términos y Condiciones -->
+                <div class="form-group terms-group">
                     <mat-checkbox formControlName="terms" color="primary">
-                        Acepto los <a href="#" class="link">Términos y Condiciones</a> y la <a href="#"
-                            class="link">Política de Privacidad</a>.
+                        <span class="terms-text">
+                            Acepto los
+                            <a href="#" class="link" (click)="$event.preventDefault()">Términos y Condiciones</a>
+                            y la
+                            <a href="#" class="link" (click)="$event.preventDefault()">Política de Privacidad</a>
+                        </span>
                     </mat-checkbox>
                     <mat-error *ngIf="registerForm.get('terms')?.touched && registerForm.get('terms')?.invalid"
                         class="checkbox-error">
-                        Debes aceptar los términos
+                        Debes aceptar los términos para continuar
                     </mat-error>
                 </div>
 
-                <button mat-flat-button color="primary" class="submit-btn" [disabled]="registerForm.invalid">
-                    Registrarse
+                <!-- Botón Submit Principal -->
+                <button mat-flat-button type="submit" class="submit-btn" [disabled]="registerForm.invalid">
+                    Crear mi Cuenta
                 </button>
 
+                <!-- Divisor -->
                 <div class="divider">
                     <span>O regístrate con</span>
                 </div>
 
+                <!-- Botones Social Login -->
                 <div class="social-buttons">
-                    <button type="button" class="social-btn google">
-                        <img src="assets/google-icon.svg" alt="Google" onerror="this.style.display='none'">
-                        <span *ngIf="true">G</span> Google
+                    <button type="button" class="social-btn">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo" width="22"
+                            height="22">
+                        <span>Continuar con Google</span>
                     </button>
                 </div>
 
-                <div class="login-redirect">
-                    ¿Ya tienes una cuenta? <a routerLink="/auth/login" class="link">Inicia Sesión</a>
+                <!-- Redirect a Login -->
+                <div class="register-redirect">
+                    ¿Ya tienes una cuenta?
+                    <a routerLink="/auth/login" class="link">Inicia Sesión</a>
                 </div>
 
             </form>
+
         </div>
     </div>
+
 </div>

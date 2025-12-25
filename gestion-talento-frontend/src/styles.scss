@@ -1,369 +1,948 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+/* ==========================================================================
+   TALENTRACK - SISTEMA DE ESTILOS GLOBAL CON BRANDING DINÁMICO
+   ========================================================================== */
+
+/* ==========================================================================
+   1. CONFIGURACIÓN E IMPORTACIONES
+   ========================================================================== */
 @use '@angular/material' as mat;
 
+// Fuente Poppins (Identidad Visual)
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+// Tema Base de Material (Estructura interna)
 html {
-  @include mat.theme((color: (primary: mat.$cyan-palette,
+  @include mat.theme((color: (primary: mat.$red-palette,
         tertiary: mat.$orange-palette,
       ),
-      typography: Roboto,
+      typography: Roboto, // Se sobrescribe con Poppins abajo
       density: 0,
     ));
 }
 
-body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
-  margin: 0;
-}
-
 /* ==========================================================================
-   ESTILOS GLOBALES Y VARIABLES DE DISEÑO
+   2. SISTEMA DE VARIABLES CSS - BRANDING DINÁMICO
    ========================================================================== */
-
-
 :root {
-  // --- Core Palette ---
-  --color-primary: #E74C3C; // Tu Rojo específico
-  --color-primary-dark: #C0392B;
-  --color-primary-light: #FADBD8;
-  --color-secondary: #555555; // Gris Principal
-  --color-secondary-light: #BBBBBB; // Gris Claro
+  /* ====================================
+     COLOR PRIMARIO BASE
+     Este valor será SOBRESCRITO por ThemeService
+     cuando el usuario tenga branding personalizado
+     ==================================== */
+  --primary-color: #E74C3C; // Rojo TalenTrack (default)
 
-  // --- Accent & UI Colors ---
-  --color-accent: #3498DB; // Tu Azul específico
-  --color-text-primary: #333333; // Texto Oscuro
-  --color-text-secondary: #7F8C8D; // Texto Secundario Gris
-  --color-background: #F8F9FA; // Fondo Página
-  --color-surface: #ffffff; // Fondo Tarjetas/Modales
-  --color-border: #EBEBEB; // Bordes/Divisores
+  /* ====================================
+     PALETA DINÁMICA CALCULADA
+     Se genera automáticamente desde --primary-color
+     usando color-mix() CSS nativo
+     ==================================== */
+  --color-primary: var(--primary-color);
+  --color-primary-dark: color-mix(in srgb, var(--primary-color), black 18%);
+  --color-primary-light: color-mix(in srgb, var(--primary-color), white 88%);
+  --color-primary-hover: color-mix(in srgb, var(--primary-color), white 10%);
+  --color-primary-subtle: color-mix(in srgb, var(--primary-color), transparent 94%);
 
-  // --- Semantic State Colors ---
-  --color-success: #2ECC71;
-  --color-success-dark: #27AE60;
-  --color-success-light: #D5F5E3;
-  --color-warning: #F39C12;
-  --color-warning-dark: #D35400;
-  --color-warning-light: #FAE5D3;
-  --color-info: var(--color-accent); // Reusa Azul Acento
-  --color-info-dark: #2980B9;
-  --color-info-light: #D6EAF8;
-  --color-danger: var(--color-primary); // Reusa Rojo Primario
-  --color-danger-dark: var(--color-primary-dark);
-  --color-danger-light: var(--color-primary-light);
+  // Variante RGB para usar con rgba()
+  --color-primary-rgb: 231, 76, 60; // Se actualizará vía JS
 
-  // --- Design Tokens ---
-  --font-family-base: 'Poppins', sans-serif; // Tu fuente principal
-  --border-radius: 8px;
-  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  /* ====================================
+     COLORES DE SUPERFICIE Y FONDOS
+     ==================================== */
+  --color-background: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-surface-variant: #FAFBFC;
+  --color-surface-elevated: #FFFFFF;
 
-  // Opcional: Variable RGB para opacidad (calculada de #E74C3C)
-  --color-primary-rgb: 231, 76, 60;
-  --mat-sys-primary: #E74C3C !important; // Tu rojo
-  --mat-sys-on-primary: white !important;
+  /* ====================================
+     TEXTOS
+     ==================================== */
+  --color-text-primary: #2C3E50;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-text-disabled: #CBD5E1;
 
+  /* ====================================
+     BORDES Y DIVISORES
+     ==================================== */
+  --color-border: #E5E7EB;
+  --color-border-light: #F1F3F5;
+  --color-border-dark: #D1D5DB;
+
+  /* ====================================
+     ESTADOS SEMÁNTICOS (Fijos)
+     ==================================== */
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #EF4444;
+  --color-danger-light: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-light: #DBEAFE;
+
+  /* ====================================
+     SISTEMA DE DISEÑO
+     ==================================== */
+  --font-family-base: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'Consolas', 'Monaco', monospace;
+
+  --border-radius-sm: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
+
+  --spacing-xs: 0.25rem; // 4px
+  --spacing-sm: 0.5rem; // 8px
+  --spacing-md: 1rem; // 16px
+  --spacing-lg: 1.5rem; // 24px
+  --spacing-xl: 2rem; // 32px
+  --spacing-2xl: 3rem; // 48px
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  --sidebar-width: 280px;
+  --header-height: 64px;
+
+  --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease;
+
+  /* ====================================
+     BRIDGE A ANGULAR MATERIAL
+     Fuerza Material a usar nuestras variables
+     ==================================== */
+  --mdc-theme-primary: var(--color-primary) !important;
+  --mdc-theme-on-primary: #ffffff !important;
+  --mat-sys-primary: var(--color-primary) !important;
+  --mat-sys-on-primary: #ffffff !important;
+  --mat-app-primary: var(--color-primary) !important;
+
+  // Form Fields
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;
+  --mdc-outlined-text-field-caret-color: var(--color-primary) !important;
+  --mat-form-field-focus-typography-color: var(--color-primary) !important;
+
+  // Buttons
+  --mdc-protected-button-container-color: var(--color-primary) !important;
+  --mdc-text-button-label-text-color: var(--color-primary) !important;
+
+  // Selection Controls
+  --mdc-checkbox-selected-icon-color: var(--color-primary) !important;
+  --mdc-radio-selected-icon-color: var(--color-primary) !important;
+  --mdc-switch-selected-handle-color: var(--color-primary) !important;
 }
 
 /* ==========================================================================
-   BASE & RESET STYLES
+   3. RESET GLOBAL Y BASE
    ========================================================================== */
-
-*,
-*::before,
-*::after {
+* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html,
-body {
-  height: 100%;
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: var(--font-family-base); // Aplica tu fuente Poppins
+  font-family: var(--font-family-base) !important;
   background-color: var(--color-background);
   color: var(--color-text-primary);
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
+
+  // Scrollbar personalizado
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-background);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border-dark);
+    border-radius: 5px;
+
+    &:hover {
+      background: var(--color-primary);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-dark) var(--color-background);
 }
 
-// Base heading styles
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--color-text-primary);
-  line-height: 1.3;
-}
-
-// Estilo global para divisores de Material
-mat-divider {
-  border-top-color: var(--color-border) !important; // Usa !important si es necesario
-}
-
-// Intento de aplicar fuente global
-body,
+// Normalización de fuentes en todos los elementos
 button,
 input,
 select,
 textarea,
 mat-label,
-mat-option,
-.mdc-list-item__primary-text,
-.mdc-list-item__secondary-text {
-  font-family: var(--font-family-base) !important; // Usar !important con cuidado aquí
+.mat-mdc-button-base,
+.mat-mdc-form-field,
+.mat-mdc-menu-item,
+.mat-mdc-list-item,
+.mat-mdc-tab,
+.mat-mdc-dialog-title,
+.mat-mdc-dialog-content {
+  font-family: var(--font-family-base) !important;
 }
-
 
 /* ==========================================================================
-   SOBRESCRITURAS GLOBALES PARA COMPONENTES MATERIAL (Usando Variables CSS)
+   4. ANGULAR MATERIAL - PERSONALIZACIÓN CON BRANDING
    ========================================================================== */
 
-// --- Botones Primarios (mat-flat-button color="primary") ---
-.mat-mdc-button.mat-primary,
-.mat-mdc-raised-button.mat-primary,
-.mat-mdc-flat-button.mat-primary {
-  --mdc-protected-button-container-color: var(--color-primary);
-  --mdc-protected-button-label-text-color: white;
+/* ====================================
+   BOTONES
+   ==================================== */
+.mat-mdc-raised-button,
+.mat-mdc-flat-button,
+.mat-mdc-fab,
+.mat-mdc-mini-fab {
+
+  &.mat-primary,
+  &[color="primary"] {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.25);
+    --mat-ripple-color: rgba(255, 255, 255, 0.2) !important;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+
+    &:not(:disabled):hover {
+      background-color: var(--color-primary-dark) !important;
+      box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.35);
+      transform: translateY(-2px);
+    }
+
+    &:not(:disabled):active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.mat-mdc-outlined-button,
+.mat-mdc-button,
+.mat-mdc-icon-button {
+
+  &.mat-primary,
+  &[color="primary"] {
+    color: var(--color-primary) !important;
+    --mdc-outlined-button-outline-color: var(--color-primary) !important;
+    --mdc-icon-button-icon-color: var(--color-primary) !important;
+    --mat-ripple-color: var(--color-primary-subtle) !important;
+
+    &:not(:disabled):hover {
+      background-color: var(--color-primary-light) !important;
+    }
+  }
+}
+
+/* ====================================
+   FORM FIELDS & INPUTS
+   ==================================== */
+.mat-mdc-form-field {
+  &.mat-focused {
+
+    .mat-mdc-form-field-label,
+    .mat-mdc-floating-label {
+      color: var(--color-primary) !important;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--color-primary) !important;
+      border-width: 2px !important;
+    }
+  }
+
+  .mat-mdc-input-element {
+    caret-color: var(--color-primary) !important;
+    color: var(--color-text-primary);
+  }
+
+  // Error states
+  &.mat-form-field-invalid {
+    .mat-mdc-form-field-label {
+      color: var(--color-danger) !important;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--color-danger) !important;
+    }
+  }
+}
+
+/* ====================================
+   SELECTION CONTROLS
+   ==================================== */
+.mat-mdc-checkbox {
+
+  &.mat-primary,
+  &[color="primary"] {
+    --mdc-checkbox-selected-icon-color: var(--color-primary) !important;
+    --mdc-checkbox-selected-focus-icon-color: var(--color-primary-dark) !important;
+    --mdc-checkbox-selected-hover-icon-color: var(--color-primary-dark) !important;
+    --mdc-checkbox-selected-pressed-icon-color: var(--color-primary-dark) !important;
+  }
+}
+
+.mat-mdc-radio-button {
+
+  &.mat-primary,
+  &[color="primary"] {
+    --mdc-radio-selected-icon-color: var(--color-primary) !important;
+    --mdc-radio-selected-focus-icon-color: var(--color-primary-dark) !important;
+    --mdc-radio-selected-hover-icon-color: var(--color-primary-dark) !important;
+  }
+}
+
+.mat-mdc-slide-toggle {
+
+  &.mat-primary,
+  &[color="primary"] {
+    --mdc-switch-selected-handle-color: var(--color-primary) !important;
+    --mdc-switch-selected-track-color: var(--color-primary-light) !important;
+    --mdc-switch-selected-focus-handle-color: var(--color-primary-dark) !important;
+  }
+}
+
+/* ====================================
+   CHIPS
+   ==================================== */
+.mat-mdc-standard-chip,
+.mat-mdc-chip {
+
+  &.mat-primary,
+  &[color="primary"] {
+
+    &.mat-mdc-chip-selected,
+    &.mdc-evolution-chip--selected {
+      --mdc-chip-elevated-container-color: var(--color-primary) !important;
+      --mdc-chip-label-text-color: white !important;
+    }
+  }
+}
+
+/* ====================================
+   TABS
+   ==================================== */
+.mat-mdc-tab-group {
+  &.mat-primary {
+    --mdc-tab-indicator-active-indicator-color: var(--color-primary) !important;
+    --mat-tab-header-active-label-text-color: var(--color-primary) !important;
+    --mat-tab-header-active-focus-label-text-color: var(--color-primary-dark) !important;
+  }
+}
+
+/* ====================================
+   PROGRESS (Bars & Spinners)
+   ==================================== */
+mat-progress-bar {
+
+  &.mat-primary,
+  &[color="primary"] {
+    --mdc-linear-progress-active-indicator-color: var(--color-primary) !important;
+    --mdc-linear-progress-track-color: var(--color-primary-light) !important;
+  }
+}
+
+mat-progress-spinner {
+
+  &.mat-primary,
+  &[color="primary"] {
+    --mdc-circular-progress-active-indicator-color: var(--color-primary) !important;
+
+    circle {
+      stroke: var(--color-primary) !important;
+    }
+  }
+}
+
+/* ====================================
+   DATEPICKER
+   ==================================== */
+.mat-datepicker-content {
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--color-primary) !important;
+  --mat-datepicker-calendar-date-selected-state-text-color: white !important;
+
+  .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+    border-color: var(--color-primary) !important;
+  }
+
+  .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+    background-color: var(--color-primary-light) !important;
+  }
+}
+
+/* ====================================
+   MENU & SELECT DROPDOWN
+   ==================================== */
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel {
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow-lg) !important;
+
+  .mat-mdc-menu-item,
+  .mat-mdc-option {
+    &:hover {
+      background-color: var(--color-primary-light) !important;
+    }
+
+    &.mat-mdc-option-active,
+    &.mat-selected {
+      background-color: var(--color-primary-light) !important;
+      color: var(--color-primary-dark) !important;
+      font-weight: 600;
+    }
+  }
+}
+
+/* ====================================
+   TOOLTIP
+   ==================================== */
+.mat-mdc-tooltip {
+  --mdc-plain-tooltip-container-color: var(--color-text-primary) !important;
+  --mdc-plain-tooltip-supporting-text-color: white !important;
+  border-radius: var(--border-radius-sm);
+}
+
+/* ====================================
+   BADGE
+   ==================================== */
+.mat-badge-content {
+  &.mat-badge-primary {
+    background: var(--color-primary) !important;
+    color: white !important;
+  }
+
+  &.mat-badge-warn {
+    background: var(--color-danger) !important;
+  }
+}
+
+/* ====================================
+   SNACKBAR
+   ==================================== */
+.mat-mdc-snack-bar-container {
+  --mat-snack-bar-button-color: var(--color-primary) !important;
+  --mdc-snackbar-container-color: var(--color-text-primary) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+/* ====================================
+   DIALOG
+   ==================================== */
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl) !important;
+}
+
+/* ==========================================================================
+   5. COMPONENTES GLOBALES PERSONALIZADOS
+   ========================================================================== */
+
+/* ====================================
+   CARDS
+   ==================================== */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  transition: var(--transition-base);
 
   &:hover {
-    --mdc-protected-button-container-color: var(--color-primary-dark);
+    box-shadow: var(--shadow-md);
+  }
+
+  &.card-elevated {
+    box-shadow: var(--shadow-md);
   }
 }
 
-// --- Botones Stroked Primarios (mat-stroked-button color="primary") ---
-.mat-mdc-outlined-button.mat-primary {
-  --mdc-outlined-button-label-text-color: var(--color-primary);
-  --mdc-outlined-button-outline-color: var(--color-primary);
-
-  &:hover:not(:disabled) {
-    // Evita hover en disabled
-    background-color: var(--color-primary-light);
-  }
-}
-
-// --- Botones Icono Primarios (mat-icon-button color="primary") ---
-.mat-mdc-icon-button.mat-primary {
-  --mdc-icon-button-icon-color: var(--color-primary);
-  // Override ripple color for primary icon buttons if needed
-  --mat-mdc-button-persistent-ripple-color: var(--color-primary);
-
-  &:hover:not(:disabled) {
-    background-color: var(--color-primary-light);
-  }
-}
-
-// --- Botones Icono Warn (mat-icon-button color="warn") ---
-// Asegura que use tu color primario/danger
-.mat-mdc-icon-button.mat-warn {
-  --mdc-icon-button-icon-color: var(--color-danger);
-  --mat-mdc-button-persistent-ripple-color: var(--color-danger);
-
-  &:hover:not(:disabled) {
-    background-color: var(--color-danger-light);
-  }
-}
-
-// --- Barra de Progreso ---
-mat-progress-bar {
-  --mdc-linear-progress-active-indicator-color: var(--color-primary);
-  --mdc-linear-progress-track-color: var(--color-primary-light);
-}
-
-// --- Calendario / Datepicker ---
-.mat-datepicker-content {
-  .mat-calendar-body-selected {
-    background-color: var(--color-primary);
-    color: white;
-  }
-
-  .mat-calendar-body-cell.mat-calendar-body-in-range::before {
-    background: var(--color-primary-light);
-  }
-
-  .mat-calendar-body-cell.mat-calendar-body-range-start:not(.mat-calendar-body-range-end)::after,
-  .mat-calendar-body-cell.mat-calendar-body-range-end:not(.mat-calendar-body-range-start)::after {
-    background: var(--color-primary);
-  }
-
-  .mat-calendar-body-today {
-    border-color: var(--color-primary);
-  }
-}
-
-mat-datepicker-toggle button.mat-mdc-icon-button {
-  --mdc-icon-button-icon-color: var(--color-primary);
-}
-
-.mat-mdc-date-range-input-separator {
-  color: var(--color-primary);
-}
-
-// --- Slide Toggle (mat-slide-toggle color="primary") ---
-.mat-mdc-slide-toggle.mat-primary {
-  --mdc-switch-selected-handle-color: var(--color-primary);
-  --mdc-switch-selected-track-color: var(--color-primary); // Controla el track en estado ON
-  --mat-switch-selected-track-opacity: 0.5; // Ajusta la opacidad del track en ON
-  // Colores de hover/focus/pressed (opcional, puedes dejarlos por defecto o ajustarlos)
-  --mdc-switch-selected-focus-handle-color: var(--color-primary);
-  --mdc-switch-selected-hover-handle-color: var(--color-primary);
-  --mdc-switch-selected-pressed-handle-color: var(--color-primary);
-  // También puedes definir los colores del estado "unselected" si quieres
-  // --mdc-switch-unselected-track-color: var(--color-secondary-light);
-}
-
-// --- Checkbox (mat-checkbox color="primary") ---
-.mat-mdc-checkbox.mat-primary {
-  --mdc-checkbox-selected-icon-color: var(--color-primary); // Color del check
-  --mdc-checkbox-selected-focus-icon-color: var(--color-primary);
-  --mdc-checkbox-selected-hover-icon-color: var(--color-primary);
-  --mdc-checkbox-selected-pressed-icon-color: var(--color-primary);
-  // Color cuando está seleccionado y deshabilitado
-  --mdc-checkbox-disabled-selected-icon-color: rgba(var(--color-primary-rgb, 231, 76, 60), 0.4); // Usa tu variable RGB
-}
-
-// --- Radio Button (mat-radio-button color="primary") ---
-.mat-mdc-radio-button.mat-primary {
-  --mdc-radio-selected-icon-color: var(--color-primary); // Color del círculo interior
-  // Colores de hover/focus/pressed
-  --mdc-radio-selected-focus-icon-color: var(--color-primary);
-  --mdc-radio-selected-hover-icon-color: var(--color-primary);
-  --mdc-radio-selected-pressed-icon-color: var(--color-primary);
-  // Color del círculo exterior (outline)
-  // --mdc-radio-unselected-focus-icon-color: var(--color-primary); // Ejemplo
-}
-
-// --- Tabs (mat-tab-group color="primary") ---
-.mat-mdc-tab-group.mat-primary,
-.mat-mdc-tab-nav-bar.mat-primary {
-  --mdc-tab-indicator-active-indicator-color: var(--color-primary); // Underline color
-  --mat-tab-header-active-label-text-color: var(--color-primary); // Active tab text
-  --mat-tab-header-inactive-label-text-color: var(--color-text-secondary); // Inactive tab text
-  --mat-tab-header-active-ripple-color: var(--color-primary-light);
-  --mat-tab-header-active-focus-indicator-color: var(--color-primary);
-  --mat-tab-header-active-hover-indicator-color: var(--color-primary);
-}
-
-// --- Form Field Focus Color ---
-.mat-mdc-form-field.mat-focused {
-  // Color de la etiqueta flotante y el borde/subrayado en focus
-  --mdc-text-field-focus-input-control-outline-color: var(--color-primary); // Outline border
-  --mdc-text-field-focus-active-indicator-color: var(--color-primary); // Standard/Fill underline
-  --mat-mdc-form-field-label-color: var(--color-primary); // Floating label
-  --mdc-text-field-caret-color: var(--color-primary); // Input cursor
-}
-
-.mat-mdc-select.mat-focused:not(.mat-form-field-invalid) .mdc-line-ripple::after {
-  border-bottom-color: var(--color-primary); // Underline for select
-}
-
-.mat-mdc-select.mat-focused .mat-mdc-select-arrow {
-  color: var(--color-primary); // Arrow color for select
-}
-
-// --- Tooltip Background ---
-// (Requiere ::ng-deep o ponerlo en styles.scss global fuera de :root)
-// Si este archivo ES styles.scss, puedes ponerlo aquí:
-.mat-mdc-tooltip {
-  --mdc-plain-tooltip-container-color: var(--color-secondary); // Fondo del tooltip (Gris oscuro)
-  --mdc-plain-tooltip-supporting-text-color: white; // Texto del tooltip
-  font-family: var(--font-family-base) !important; // Asegura la fuente
-}
-
-/* Personalización del Panel de Notificaciones */
-/* OJO: Esto afecta a cualquier menú que tenga la clase 'notification-panel' */
-.notification-panel.mat-mdc-menu-panel {
-  max-width: 320px !important;
-  border-radius: 12px !important;
-  padding: 0 !important;
-  /* Quitamos padding default de Material */
-  overflow: hidden;
-  /* Para que el header no se salga del borde redondeado */
-}
-
-/* Estilos internos del menú */
-.notification-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  background-color: #fff;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+
+  h2,
+  h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-weight: 700;
+  }
 }
 
-.notification-list {
-  max-height: 400px;
-  /* Scroll si hay muchas */
-  overflow-y: auto;
-}
+/* ====================================
+   NOTIFICATION PANEL
+   ==================================== */
+.notification-panel {
+  &.mat-mdc-menu-panel {
+    max-width: 380px !important;
+    border-radius: var(--border-radius-lg) !important;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl) !important;
+  }
 
-/* Ajuste para el ítem del menú (el botón individual) */
-.mat-mdc-menu-item.notification-item {
-  height: auto !important;
-  /* Permitir altura variable */
-  padding: 12px 16px !important;
-  line-height: normal !important;
-  border-bottom: 1px solid #f5f5f5;
-
-  .mdc-list-item__primary-text {
+  .notification-header {
+    background: var(--color-surface);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    white-space: normal;
-    /* Permitir texto en varias líneas */
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+
+    button {
+      color: var(--color-primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-sm);
+      transition: var(--transition-fast);
+
+      &:hover {
+        background: var(--color-primary-light);
+      }
+    }
   }
 
-  /* Estado no leído */
-  &.unread {
-    background-color: #e3f2fd;
-    /* Fondo azulito */
-    border-left: 3px solid #2196f3;
+  .notification-list {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .mat-mdc-menu-item.notification-item {
+    height: auto !important;
+    padding: var(--spacing-md) var(--spacing-lg) !important;
+    border-bottom: 1px solid var(--color-border-light);
+    white-space: normal !important;
+    line-height: 1.5 !important;
+
+    &.unread {
+      background-color: var(--color-primary-subtle);
+      border-left: 3px solid var(--color-primary);
+    }
+
+    &:hover {
+      background-color: var(--color-surface-variant) !important;
+    }
+
+    .notif-title {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: var(--spacing-xs);
+      color: var(--color-text-primary);
+    }
+
+    .notif-desc {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .notif-time {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
   }
 }
 
-.notif-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* ==========================================================================
+   6. UTILIDADES Y HELPERS
+   ========================================================================== */
+
+/* ====================================
+   COLORES
+   ==================================== */
+.text-primary {
+  color: var(--color-primary) !important;
 }
 
-.notif-title {
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: #333;
+.text-secondary {
+  color: var(--color-text-secondary) !important;
 }
 
-.notif-time {
+.text-muted {
+  color: var(--color-text-muted) !important;
+}
+
+.text-success {
+  color: var(--color-success) !important;
+}
+
+.text-warning {
+  color: var(--color-warning) !important;
+}
+
+.text-danger {
+  color: var(--color-danger) !important;
+}
+
+.text-info {
+  color: var(--color-info) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+
+.bg-success {
+  background-color: var(--color-success) !important;
+  color: white !important;
+}
+
+.bg-warning {
+  background-color: var(--color-warning) !important;
+  color: white !important;
+}
+
+.bg-danger {
+  background-color: var(--color-danger) !important;
+  color: white !important;
+}
+
+/* ====================================
+   BADGES & CHIPS
+   ==================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
   font-size: 0.75rem;
-  color: #888;
+  font-weight: 600;
+  line-height: 1;
+
+  &.badge-primary {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+  }
+
+  &.badge-success {
+    background: var(--color-success-light);
+    color: var(--color-success);
+  }
+
+  &.badge-warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning);
+  }
+
+  &.badge-danger {
+    background: var(--color-danger-light);
+    color: var(--color-danger);
+  }
 }
 
-.empty-notif {
-  padding: 20px;
-  text-align: center;
-  color: #999;
-  font-style: italic;
+/* ====================================
+   RESPONSIVE UTILITIES
+   ==================================== */
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .page-container {
+    padding: var(--spacing-md) !important;
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (min-width: 769px) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+
+  .show-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hide-on-tablet {
+    display: none !important;
+  }
+}
+
+/* ====================================
+   LAYOUT CONTAINERS
+   ==================================== */
+.container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: var(--spacing-lg);
+  padding-left: var(--spacing-lg);
+
+  &.container-fluid {
+    max-width: 100%;
+  }
+
+  &.container-lg {
+    max-width: 1400px;
+  }
+
+  &.container-md {
+    max-width: 1140px;
+  }
+
+  &.container-sm {
+    max-width: 960px;
+  }
+}
+
+/* ====================================
+   TABLES RESPONSIVE
+   ==================================== */
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: var(--spacing-md);
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--color-text-primary);
+      background: var(--color-surface-variant);
+    }
+
+    tr:hover {
+      background: var(--color-surface-variant);
+    }
+  }
+}
+
+/* ====================================
+   SPACING UTILITIES
+   ==================================== */
+.mt-0 {
+  margin-top: 0 !important;
+}
+
+.mt-1 {
+  margin-top: var(--spacing-sm) !important;
+}
+
+.mt-2 {
+  margin-top: var(--spacing-md) !important;
+}
+
+.mt-3 {
+  margin-top: var(--spacing-lg) !important;
+}
+
+.mt-4 {
+  margin-top: var(--spacing-xl) !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mb-1 {
+  margin-bottom: var(--spacing-sm) !important;
+}
+
+.mb-2 {
+  margin-bottom: var(--spacing-md) !important;
+}
+
+.mb-3 {
+  margin-bottom: var(--spacing-lg) !important;
+}
+
+.mb-4 {
+  margin-bottom: var(--spacing-xl) !important;
+}
+
+.pt-0 {
+  padding-top: 0 !important;
+}
+
+.pt-1 {
+  padding-top: var(--spacing-sm) !important;
+}
+
+.pt-2 {
+  padding-top: var(--spacing-md) !important;
+}
+
+.pt-3 {
+  padding-top: var(--spacing-lg) !important;
+}
+
+.pb-0 {
+  padding-bottom: 0 !important;
+}
+
+.pb-1 {
+  padding-bottom: var(--spacing-sm) !important;
+}
+
+.pb-2 {
+  padding-bottom: var(--spacing-md) !important;
+}
+
+.pb-3 {
+  padding-bottom: var(--spacing-lg) !important;
+}
+
+/* ====================================
+   COLOR PREVIEW (Para configuración)
+   ==================================== */
+.color-preview-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* ==========================================================================
+   7. ANIMACIONES GLOBALES
+   ========================================================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+/* ==========================================================================
+   8. PRINT STYLES
+   ========================================================================== */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+// ==========================================================================
+// 9. FIX GLOBAL: ELIMINAR TINTE ROJO DE FONDO (Elevation Tint Removal)
+// ==========================================================================
+
+// 1. Forzar variables del sistema para que los paneles sean BLANCOS
+:root {
+  // Fondo del Select (Dropdown)
+  --mat-select-panel-background-color: var(--color-surface) !important;
+
+  // Fondo de Menús (Como el de notificaciones)
+  --mat-menu-container-color: var(--color-surface) !important;
+
+  // Fondo de Autocompletado (Si usas buscador predictivo)
+  --mat-autocomplete-background-color: var(--color-surface) !important;
+}
+
+// 2. Refuerzo con clases específicas (El "Martillazo")
+// Esto asegura que NINGÚN componente flotante tenga ese fondo rosado
+.mat-mdc-select-panel,
+.mat-mdc-menu-panel,
+.mat-mdc-autocomplete-panel,
+.cdk-overlay-pane .mat-mdc-dialog-surface {
+  background-color: var(--color-surface) !important;
+
+  // Opcional: Si quieres asegurarte que no haya mezclas de color extrañas
+  background-image: none !important;
 }

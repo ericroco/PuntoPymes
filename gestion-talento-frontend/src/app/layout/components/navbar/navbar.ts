@@ -185,4 +185,10 @@ export class Navbar implements OnInit {
       this.currentUser?.fotoUrl ||
       'assets/images/default-avatar.png';
   }
+
+  getBranchName(branchId: string | null): string {
+    if (!branchId) return '';
+    const branch = this.branches.find(b => b.id === branchId);
+    return branch ? branch.nombre : '';
+  }
 } 

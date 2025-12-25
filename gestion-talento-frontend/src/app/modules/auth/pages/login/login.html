@@ -1,82 +1,192 @@
 <div class="auth-container">
 
+  <!-- ============================================ -->
+  <!-- LADO IZQUIERDO: VISUAL BRAND -->
+  <!-- ============================================ -->
   <div class="auth-visual">
+    <div class="texture-overlay"></div>
+
     <div class="visual-content">
-      <div class="logo-white">
-        <mat-icon>all_inclusive</mat-icon>
-        <span>TALEN<strong>TRACK</strong></span>
+
+      <!-- Logo y Tagline -->
+      <div class="logo-section">
+        <div class="logo-white">
+          <mat-icon>all_inclusive</mat-icon>
+          <span>TALEN<strong>TRACK</strong></span>
+        </div>
+        <p class="tagline">Recursos Humanos Inteligentes</p>
       </div>
-      <h2>Bienvenido de nuevo.</h2>
+
+      <!-- Título Principal -->
+      <h2>
+        Potencia tu<br>
+        Capital Humano
+      </h2>
+
+      <!-- Descripción -->
       <p class="visual-text">
-        Continúa gestionando tu equipo y optimizando procesos desde tu panel de control.
+        Gestión integral de nómina, asistencia y desarrollo de talento
+        en una única plataforma diseñada para impulsar tu organización.
       </p>
-      <ul class="benefits-list">
-        <li><mat-icon>dashboard</mat-icon> Acceso rápido a KPIs</li>
-        <li><mat-icon>notifications</mat-icon> Alertas en tiempo real</li>
-        <li><mat-icon>security</mat-icon> Entorno seguro</li>
-      </ul>
+
+      <!-- Grid de Características -->
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="icon-box">
+            <mat-icon>insights</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">Analítica Avanzada</span>
+            <span class="feature-desc">KPIs en tiempo real</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="icon-box">
+            <mat-icon>verified_user</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">Alta Seguridad</span>
+            <span class="feature-desc">Estándares bancarios</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="icon-box">
+            <mat-icon>speed</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">Automatización</span>
+            <span class="feature-desc">Ahorra 80% de tiempo</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="icon-box">
+            <mat-icon>cloud_done</mat-icon>
+          </div>
+          <div class="feature-text">
+            <span class="feature-title">100% Cloud</span>
+            <span class="feature-desc">Acceso desde cualquier lugar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta Flotante (Mockup) -->
+      <div class="glass-card-mockup">
+        <div class="card-icon">
+          <mat-icon>notifications_active</mat-icon>
+        </div>
+        <div class="card-info">
+          <span class="card-title">Nómina Procesada</span>
+          <span class="card-subtitle">Justo ahora • Éxito</span>
+        </div>
+        <div class="card-status">
+          <mat-icon>check</mat-icon>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Elementos Decorativos -->
     <div class="circle c1"></div>
     <div class="circle c2"></div>
+    <div class="circle c3"></div>
   </div>
 
+  <!-- ============================================ -->
+  <!-- LADO DERECHO: FORMULARIO DE LOGIN -->
+  <!-- ============================================ -->
   <div class="auth-form-wrapper">
     <div class="auth-form-content">
 
+      <!-- Header del Formulario -->
       <div class="form-header">
+        <!-- Logo visible solo en móvil -->
+        <div class="logo-mobile">
+          <mat-icon>all_inclusive</mat-icon>
+          <span>TALEN<strong>TRACK</strong></span>
+        </div>
+
         <h1>Iniciar Sesión</h1>
-        <p>Ingresa tus credenciales para acceder.</p>
+        <p>Ingresa tus credenciales para acceder a tu panel de control</p>
       </div>
 
+      <!-- Formulario -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Correo Electrónico</mat-label>
-          <input matInput formControlName="email" placeholder="ejemplo@empresa.com">
-          <mat-icon matSuffix>email</mat-icon>
-          <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
-            Correo inválido
-          </mat-error>
-          <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
-            Requerido
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Contraseña</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-          </button>
-          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-            Requerido
-          </mat-error>
-        </mat-form-field>
-
-        <div class="forgot-password">
-          <a href="#" class="link">¿Olvidaste tu contraseña?</a>
+        <!-- Campo Email -->
+        <div class="form-group">
+          <mat-form-field appearance="outline">
+            <mat-label>Correo Electrónico</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="tu-email@empresa.com"
+              autocomplete="email">
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+              Por favor ingresa un correo válido
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+              El correo es requerido
+            </mat-error>
+          </mat-form-field>
         </div>
 
-        <button mat-flat-button color="primary" class="submit-btn" [disabled]="loginForm.invalid || isLoading">
-          <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-          <span *ngIf="!isLoading">Ingresar</span>
+        <!-- Campo Contraseña -->
+        <div class="form-group">
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+              autocomplete="current-password">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button" tabindex="-1"
+              [attr.aria-label]="'Mostrar contraseña'">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+              La contraseña es requerida
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Mínimo 6 caracteres
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Link Olvidé Contraseña -->
+        <div class="forgot-password">
+          <a routerLink="/auth/forgot-password" class="link">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+
+        <!-- Botón Submit Principal -->
+        <button mat-flat-button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading">
+          <span *ngIf="!isLoading">Iniciar Sesión</span>
+          <mat-spinner diameter="24" *ngIf="isLoading">
+          </mat-spinner>
         </button>
 
+        <!-- Divisor -->
         <div class="divider">
-          <span>O ingresa con</span>
+          <span>O continúa con</span>
         </div>
 
+        <!-- Botones Social Login -->
         <div class="social-buttons">
-          <button type="button" class="social-btn google">
-            <span>G</span> Google
+          <button type="button" class="social-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo" width="22" height="22">
+            <span>Continuar con Google</span>
           </button>
         </div>
 
-        <div class="login-redirect">
-          ¿No tienes cuenta? <a routerLink="/auth/register" class="link">Regístrate aquí</a>
+        <!-- Redirect a Registro -->
+        <div class="register-redirect">
+          ¿No tienes una cuenta?
+          <a routerLink="/auth/register" class="link">Regístrate gratis</a>
         </div>
 
       </form>
+
     </div>
   </div>
+
 </div>

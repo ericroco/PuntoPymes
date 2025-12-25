@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict SQ7hbfwTsPMfT1ACjQK4zhSml9mISmgqFqCGvta1m0pNRhXm7Ozq6oStfUc2l1q
+\restrict muevZti0fkb0gFT3Eb69CAhuwYwcau63veD0mDO7jTu1LGyPTtHzMMNaaXVgySu
 
 -- Dumped from database version 15.15
 -- Dumped by pg_dump version 15.15
@@ -47,6 +47,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
 
+
+--
+-- Name: anuncios_prioridad_enum; Type: TYPE; Schema: public; Owner: puntopymes
+--
+
+CREATE TYPE public.anuncios_prioridad_enum AS ENUM (
+    'BAJA',
+    'MEDIA',
+    'ALTA'
+);
+
+
+ALTER TYPE public.anuncios_prioridad_enum OWNER TO puntopymes;
 
 --
 -- Name: beneficios_indicador_enum; Type: TYPE; Schema: public; Owner: puntopymes
@@ -110,14 +123,17 @@ CREATE TABLE public.activos (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
     nombre character varying(255) NOT NULL,
+    descripcion text,
     serial character varying(255),
     tipo character varying(100) NOT NULL,
     estado character varying(50) DEFAULT 'DISPONIBLE'::character varying NOT NULL,
-    "empresaId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone,
     valor double precision,
-    "fechaAdquisicion" date
+    "imageUrl" text,
+    "fechaAdquisicion" date,
+    "empresaId" uuid NOT NULL,
+    "sucursalId" uuid
 );
 
 
@@ -138,10 +154,24 @@ COMMENT ON COLUMN public.activos."updatedAt" IS 'Fecha de última actualización
 
 
 --
+-- Name: COLUMN activos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.activos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: COLUMN activos.nombre; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.activos.nombre IS 'Nombre o descripción del activo (Laptop Dell XPS, Silla)';
+COMMENT ON COLUMN public.activos.nombre IS 'Nombre del activo (Laptop Dell XPS)';
+
+
+--
+-- Name: COLUMN activos.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.activos.descripcion IS 'Descripción detallada o notas';
 
 
 --
@@ -155,42 +185,21 @@ COMMENT ON COLUMN public.activos.serial IS 'Número de serial único (si aplica)
 -- Name: COLUMN activos.tipo; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.activos.tipo IS 'Categoría o tipo (Computación, Mobiliario, Vehículo)';
-
-
---
--- Name: COLUMN activos.estado; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.activos.estado IS 'Estado actual (DISPONIBLE, ASIGNADO...)';
-
-
---
--- Name: COLUMN activos."empresaId"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.activos."empresaId" IS 'ID de la Empresa propietaria';
-
-
---
--- Name: COLUMN activos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.activos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+COMMENT ON COLUMN public.activos.tipo IS 'Categoría (Computación, Mobiliario)';
 
 
 --
 -- Name: COLUMN activos.valor; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.activos.valor IS 'Valor monetario del activo';
+COMMENT ON COLUMN public.activos.valor IS 'Costo de compra';
 
 
 --
--- Name: COLUMN activos."fechaAdquisicion"; Type: COMMENT; Schema: public; Owner: puntopymes
+-- Name: COLUMN activos."imageUrl"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.activos."fechaAdquisicion" IS 'Fecha de compra o adquisición';
+COMMENT ON COLUMN public.activos."imageUrl" IS 'URL de la foto del activo';
 
 
 --
@@ -201,13 +210,13 @@ CREATE TABLE public.activos_asignados (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
     "fechaAsignacion" date DEFAULT ('now'::text)::date NOT NULL,
     "fechaDevolucion" date,
     estado character varying(50) DEFAULT 'VIGENTE'::character varying NOT NULL,
+    observaciones text,
     "activoId" uuid NOT NULL,
-    "empleadoId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone,
-    observaciones text
+    "empleadoId" uuid NOT NULL
 );
 
 
@@ -225,6 +234,13 @@ COMMENT ON COLUMN public.activos_asignados."createdAt" IS 'Fecha de creación de
 --
 
 COMMENT ON COLUMN public.activos_asignados."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN activos_asignados."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.activos_asignados."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
 
 
 --
@@ -249,6 +265,13 @@ COMMENT ON COLUMN public.activos_asignados.estado IS 'Estado de la asignación (
 
 
 --
+-- Name: COLUMN activos_asignados.observaciones; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.activos_asignados.observaciones IS 'Observaciones de entrega o devolución';
+
+
+--
 -- Name: COLUMN activos_asignados."activoId"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
@@ -263,17 +286,44 @@ COMMENT ON COLUMN public.activos_asignados."empleadoId" IS 'ID del Empleado que 
 
 
 --
--- Name: COLUMN activos_asignados."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+-- Name: anuncios; Type: TABLE; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.activos_asignados."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+CREATE TABLE public.anuncios (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    titulo character varying NOT NULL,
+    contenido text NOT NULL,
+    prioridad public.anuncios_prioridad_enum DEFAULT 'MEDIA'::public.anuncios_prioridad_enum NOT NULL,
+    "fechaExpiracion" timestamp without time zone,
+    "empresaId" character varying NOT NULL,
+    "sucursalId" uuid
+);
+
+
+ALTER TABLE public.anuncios OWNER TO puntopymes;
+
+--
+-- Name: COLUMN anuncios."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.anuncios."createdAt" IS 'Fecha de creación del registro';
 
 
 --
--- Name: COLUMN activos_asignados.observaciones; Type: COMMENT; Schema: public; Owner: puntopymes
+-- Name: COLUMN anuncios."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.activos_asignados.observaciones IS 'Observaciones de entrega o devolución';
+COMMENT ON COLUMN public.anuncios."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN anuncios."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.anuncios."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
 
 
 --
@@ -567,7 +617,9 @@ CREATE TABLE public.cargos (
     "departamentoId" uuid NOT NULL,
     "deletedAt" timestamp with time zone,
     "salarioMin" double precision DEFAULT '0'::double precision,
-    "salarioMax" double precision DEFAULT '0'::double precision
+    "salarioMax" double precision DEFAULT '0'::double precision,
+    descripcion text,
+    "empresaId" uuid
 );
 
 
@@ -620,6 +672,20 @@ COMMENT ON COLUMN public.cargos."salarioMin" IS 'Salario mínimo de la banda sal
 --
 
 COMMENT ON COLUMN public.cargos."salarioMax" IS 'Salario máximo de la banda salarial';
+
+
+--
+-- Name: COLUMN cargos.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.cargos.descripcion IS 'Descripción de las funciones del cargo';
+
+
+--
+-- Name: COLUMN cargos."empresaId"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.cargos."empresaId" IS 'ID de la empresa (desnormalizado para optimizar)';
 
 
 --
@@ -974,7 +1040,8 @@ CREATE TABLE public.departamentos (
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
     nombre character varying(255) NOT NULL,
     "empresaId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone
+    "deletedAt" timestamp with time zone,
+    "sucursalId" uuid
 );
 
 
@@ -1016,6 +1083,13 @@ COMMENT ON COLUMN public.departamentos."deletedAt" IS 'Fecha de borrado lógico 
 
 
 --
+-- Name: COLUMN departamentos."sucursalId"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.departamentos."sucursalId" IS 'ID de la Sucursal a la que pertenece';
+
+
+--
 -- Name: documentos_empleados; Type: TABLE; Schema: public; Owner: puntopymes
 --
 
@@ -1053,6 +1127,62 @@ COMMENT ON COLUMN public.documentos_empleados."updatedAt" IS 'Fecha de última a
 --
 
 COMMENT ON COLUMN public.documentos_empleados."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: documentos_empresa; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.documentos_empresa (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    nombre character varying(255) NOT NULL,
+    descripcion text,
+    url text NOT NULL,
+    categoria character varying(50),
+    "fechaSubida" date DEFAULT ('now'::text)::date NOT NULL,
+    "empresaId" uuid NOT NULL,
+    "sucursalId" uuid
+);
+
+
+ALTER TABLE public.documentos_empresa OWNER TO puntopymes;
+
+--
+-- Name: COLUMN documentos_empresa."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.documentos_empresa."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN documentos_empresa."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.documentos_empresa."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN documentos_empresa."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.documentos_empresa."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: COLUMN documentos_empresa.url; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.documentos_empresa.url IS 'URL del archivo en S3/Cloudinary/Local';
+
+
+--
+-- Name: COLUMN documentos_empresa.categoria; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.documentos_empresa.categoria IS 'Ej: LEGAL, MANUALES, FORMATOS';
 
 
 --
@@ -1294,6 +1424,86 @@ COMMENT ON COLUMN public.empresas.configuracion IS 'Configuraciones globales de 
 
 
 --
+-- Name: encuesta_opciones; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.encuesta_opciones (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    texto character varying NOT NULL,
+    votos integer DEFAULT 0 NOT NULL,
+    "encuestaId" uuid NOT NULL
+);
+
+
+ALTER TABLE public.encuesta_opciones OWNER TO puntopymes;
+
+--
+-- Name: COLUMN encuesta_opciones."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.encuesta_opciones."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN encuesta_opciones."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.encuesta_opciones."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN encuesta_opciones."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.encuesta_opciones."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: encuestas; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.encuestas (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    titulo character varying NOT NULL,
+    descripcion text,
+    "fechaFin" timestamp without time zone NOT NULL,
+    "esAnonima" boolean DEFAULT false NOT NULL,
+    activa boolean DEFAULT true NOT NULL,
+    "empresaId" character varying NOT NULL,
+    "sucursalId" uuid
+);
+
+
+ALTER TABLE public.encuestas OWNER TO puntopymes;
+
+--
+-- Name: COLUMN encuestas."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.encuestas."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN encuestas."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.encuestas."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN encuestas."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.encuestas."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: evaluaciones; Type: TABLE; Schema: public; Owner: puntopymes
 --
 
@@ -1461,12 +1671,13 @@ CREATE TABLE public.items_gasto (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
     concepto character varying(255) NOT NULL,
+    categoria character varying(50) NOT NULL,
     monto double precision NOT NULL,
     fecha date NOT NULL,
     "facturaUrl" character varying(1024),
-    "reporteId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone
+    "reporteId" uuid NOT NULL
 );
 
 
@@ -1487,10 +1698,24 @@ COMMENT ON COLUMN public.items_gasto."updatedAt" IS 'Fecha de última actualizac
 
 
 --
+-- Name: COLUMN items_gasto."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.items_gasto."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: COLUMN items_gasto.concepto; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
 COMMENT ON COLUMN public.items_gasto.concepto IS 'Concepto o descripción del gasto (Factura Hotel, Taxi)';
+
+
+--
+-- Name: COLUMN items_gasto.categoria; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.items_gasto.categoria IS 'Categoría del gasto (Alimentación, Transporte, Hospedaje)';
 
 
 --
@@ -1519,13 +1744,6 @@ COMMENT ON COLUMN public.items_gasto."facturaUrl" IS 'URL del comprobante (Mongo
 --
 
 COMMENT ON COLUMN public.items_gasto."reporteId" IS 'ID del Reporte padre al que pertenece';
-
-
---
--- Name: COLUMN items_gasto."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.items_gasto."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
 
 
 --
@@ -1818,6 +2036,43 @@ COMMENT ON COLUMN public.periodos_nomina."deletedAt" IS 'Fecha de borrado lógic
 
 
 --
+-- Name: plantillas_onboarding; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.plantillas_onboarding (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    nombre character varying NOT NULL,
+    "empresaId" uuid NOT NULL
+);
+
+
+ALTER TABLE public.plantillas_onboarding OWNER TO puntopymes;
+
+--
+-- Name: COLUMN plantillas_onboarding."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.plantillas_onboarding."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN plantillas_onboarding."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.plantillas_onboarding."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN plantillas_onboarding."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.plantillas_onboarding."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Name: proyectos; Type: TABLE; Schema: public; Owner: puntopymes
 --
 
@@ -1830,7 +2085,8 @@ CREATE TABLE public.proyectos (
     "empresaId" uuid NOT NULL,
     "deletedAt" timestamp with time zone,
     estado character varying(50) DEFAULT 'ACTIVO'::character varying NOT NULL,
-    "liderId" uuid
+    "liderId" uuid,
+    "sucursalId" uuid
 );
 
 
@@ -1890,6 +2146,13 @@ COMMENT ON COLUMN public.proyectos.estado IS 'Estado actual del proyecto';
 --
 
 COMMENT ON COLUMN public.proyectos."liderId" IS 'ID del Empleado (opcional) que lidera el proyecto';
+
+
+--
+-- Name: COLUMN proyectos."sucursalId"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.proyectos."sucursalId" IS 'ID de la Sucursal a la que pertenece este proyecto';
 
 
 --
@@ -1977,13 +2240,13 @@ CREATE TABLE public.reportes_gasto (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
-    nombre character varying(255) NOT NULL,
+    "deletedAt" timestamp with time zone,
+    titulo character varying(255) NOT NULL,
+    descripcion text,
     estado character varying(50) DEFAULT 'BORRADOR'::character varying NOT NULL,
     total double precision DEFAULT '0'::double precision NOT NULL,
     "fechaReporte" date DEFAULT ('now'::text)::date NOT NULL,
-    "empleadoId" uuid NOT NULL,
-    "deletedAt" timestamp with time zone,
-    descripcion text
+    "empleadoId" uuid NOT NULL
 );
 
 
@@ -2004,10 +2267,24 @@ COMMENT ON COLUMN public.reportes_gasto."updatedAt" IS 'Fecha de última actuali
 
 
 --
--- Name: COLUMN reportes_gasto.nombre; Type: COMMENT; Schema: public; Owner: puntopymes
+-- Name: COLUMN reportes_gasto."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.reportes_gasto.nombre IS 'Nombre o título del reporte (Ej: Viaje a Quito)';
+COMMENT ON COLUMN public.reportes_gasto."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: COLUMN reportes_gasto.titulo; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.reportes_gasto.titulo IS 'Nombre o título del reporte (Ej: Viaje a Quito)';
+
+
+--
+-- Name: COLUMN reportes_gasto.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.reportes_gasto.descripcion IS 'Descripción general del motivo del gasto';
 
 
 --
@@ -2039,20 +2316,6 @@ COMMENT ON COLUMN public.reportes_gasto."empleadoId" IS 'ID del Empleado que gen
 
 
 --
--- Name: COLUMN reportes_gasto."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.reportes_gasto."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
-
-
---
--- Name: COLUMN reportes_gasto.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
---
-
-COMMENT ON COLUMN public.reportes_gasto.descripcion IS 'Descripción general del motivo del gasto';
-
-
---
 -- Name: roles; Type: TABLE; Schema: public; Owner: puntopymes
 --
 
@@ -2061,10 +2324,11 @@ CREATE TABLE public.roles (
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
     nombre character varying(100) NOT NULL,
-    permisos jsonb DEFAULT '{}'::jsonb NOT NULL,
+    permisos jsonb DEFAULT '[]'::jsonb NOT NULL,
     "empresaId" uuid NOT NULL,
     "deletedAt" timestamp with time zone,
-    "esDefecto" boolean DEFAULT false NOT NULL
+    "esDefecto" boolean DEFAULT false NOT NULL,
+    descripcion character varying(500)
 );
 
 
@@ -2095,7 +2359,7 @@ COMMENT ON COLUMN public.roles.nombre IS 'Nombre del rol (Admin, Empleado, Manag
 -- Name: COLUMN roles.permisos; Type: COMMENT; Schema: public; Owner: puntopymes
 --
 
-COMMENT ON COLUMN public.roles.permisos IS 'Mapa de permisos RBAC (RNF7)';
+COMMENT ON COLUMN public.roles.permisos IS 'Lista de permisos activos (Array de strings)';
 
 
 --
@@ -2117,6 +2381,13 @@ COMMENT ON COLUMN public.roles."deletedAt" IS 'Fecha de borrado lógico (soft de
 --
 
 COMMENT ON COLUMN public.roles."esDefecto" IS 'Si es true, este rol se asigna automáticamente a nuevos empleados';
+
+
+--
+-- Name: COLUMN roles.descripcion; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.roles.descripcion IS 'Descripción del rol';
 
 
 --
@@ -2201,7 +2472,9 @@ CREATE TABLE public.solicitudes_vacaciones (
     estado character varying(50) DEFAULT 'PENDIENTE'::character varying NOT NULL,
     comentario text,
     "respuestaAdmin" text,
-    "empleadoId" uuid NOT NULL
+    "empleadoId" uuid NOT NULL,
+    "comentariosRespuesta" text,
+    "fechaRespuesta" timestamp without time zone
 );
 
 
@@ -2343,7 +2616,8 @@ CREATE TABLE public.sucursales (
     direccion character varying(500),
     telefono character varying(50),
     activa boolean DEFAULT true NOT NULL,
-    "empresaId" uuid NOT NULL
+    "empresaId" uuid NOT NULL,
+    "jefeId" uuid
 );
 
 
@@ -2474,6 +2748,86 @@ COMMENT ON COLUMN public.tareas."sprintId" IS 'ID del Sprint al que pertenece (o
 --
 
 COMMENT ON COLUMN public.tareas."objetivoId" IS 'Objetivo estratégico vinculado';
+
+
+--
+-- Name: tareas_empleado; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.tareas_empleado (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    "empleadoId" uuid NOT NULL,
+    titulo character varying NOT NULL,
+    descripcion text NOT NULL,
+    enlace character varying,
+    completado boolean DEFAULT false NOT NULL,
+    "plantillaOrigenId" uuid
+);
+
+
+ALTER TABLE public.tareas_empleado OWNER TO puntopymes;
+
+--
+-- Name: COLUMN tareas_empleado."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.tareas_empleado."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN tareas_empleado."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.tareas_empleado."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN tareas_empleado."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.tareas_empleado."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
+-- Name: tareas_plantilla; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.tareas_plantilla (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    titulo character varying NOT NULL,
+    descripcion text NOT NULL,
+    enlace character varying,
+    "plantillaId" uuid
+);
+
+
+ALTER TABLE public.tareas_plantilla OWNER TO puntopymes;
+
+--
+-- Name: COLUMN tareas_plantilla."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.tareas_plantilla."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN tareas_plantilla."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.tareas_plantilla."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN tareas_plantilla."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.tareas_plantilla."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
 
 
 --
@@ -2628,7 +2982,8 @@ CREATE TABLE public.vacantes (
     "salarioMax" double precision,
     "fechaCierre" date,
     "empresaId" uuid NOT NULL,
-    "departamentoId" uuid
+    "departamentoId" uuid,
+    "sucursalId" uuid
 );
 
 
@@ -2726,11 +3081,52 @@ COMMENT ON COLUMN public.vacantes."departamentoId" IS 'ID del Departamento solic
 
 
 --
+-- Name: votos; Type: TABLE; Schema: public; Owner: puntopymes
+--
+
+CREATE TABLE public.votos (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+    "deletedAt" timestamp with time zone,
+    "empleadoId" character varying NOT NULL,
+    "encuestaId" uuid NOT NULL,
+    "opcionId" uuid NOT NULL
+);
+
+
+ALTER TABLE public.votos OWNER TO puntopymes;
+
+--
+-- Name: COLUMN votos."createdAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.votos."createdAt" IS 'Fecha de creación del registro';
+
+
+--
+-- Name: COLUMN votos."updatedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.votos."updatedAt" IS 'Fecha de última actualización del registro';
+
+
+--
+-- Name: COLUMN votos."deletedAt"; Type: COMMENT; Schema: public; Owner: puntopymes
+--
+
+COMMENT ON COLUMN public.votos."deletedAt" IS 'Fecha de borrado lógico (soft delete)';
+
+
+--
 -- Data for Name: activos; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.activos (id, "createdAt", "updatedAt", nombre, serial, tipo, estado, "empresaId", "deletedAt", valor, "fechaAdquisicion") FROM stdin;
-39b3f90f-36a5-4c0e-bb05-508536b31733	2025-11-20 17:07:11.862754+00	2025-11-20 17:54:21.816791+00	Laptop Dell XPS 15	DELL-12345-XPS	Computación	DISPONIBLE	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	2500	2025-01-10
+COPY public.activos (id, "createdAt", "updatedAt", "deletedAt", nombre, descripcion, serial, tipo, estado, valor, "imageUrl", "fechaAdquisicion", "empresaId", "sucursalId") FROM stdin;
+7670e124-c877-4af3-8516-3a7598844dd6	2025-12-18 16:41:22.363943+00	2025-12-18 16:55:50.140231+00	\N	Prueba		\N	Prueba	DISPONIBLE	0		2025-12-27	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+6e5221f4-63cc-4aa5-8416-4c2255619cb0	2025-12-18 16:36:19.534689+00	2025-12-18 21:28:24.600183+00	\N	Computadora Dell		S/N	Computación	EN_REPARACION	1500		2025-12-18	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+08d85776-73b1-4572-91eb-e8486baf5409	2025-12-18 16:36:36.035302+00	2025-12-18 21:29:00.642013+00	\N	Celular Huaweii		\N	Movil	DISPONIBLE	300		2025-12-18	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+b006ea1c-f128-4743-aaba-11aedc41b459	2025-12-20 23:21:02.934864+00	2025-12-20 23:22:45.884815+00	\N	Laptop Dell	Compu	\N	Computación	DISPONIBLE	1000		2025-12-20	a5edc1dd-9410-4a40-986b-d280e10af715	dd146528-e6c8-4970-a572-10e7b6f94429
 \.
 
 
@@ -2738,8 +3134,21 @@ COPY public.activos (id, "createdAt", "updatedAt", nombre, serial, tipo, estado,
 -- Data for Name: activos_asignados; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.activos_asignados (id, "createdAt", "updatedAt", "fechaAsignacion", "fechaDevolucion", estado, "activoId", "empleadoId", "deletedAt", observaciones) FROM stdin;
-592479fc-34b2-4009-b1ef-e2b8b05e1786	2025-11-20 17:53:11.820825+00	2025-11-20 17:54:21.834345+00	2025-11-20	2025-02-01	DEVUELTO	39b3f90f-36a5-4c0e-bb05-508536b31733	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Entrega inicial con cargador y mouse. | Devolución: Devuelto en buen estado.
+COPY public.activos_asignados (id, "createdAt", "updatedAt", "deletedAt", "fechaAsignacion", "fechaDevolucion", estado, observaciones, "activoId", "empleadoId") FROM stdin;
+485e8e23-162d-43be-8b08-90bd920fee75	2025-12-18 21:05:35.528326+00	2025-12-18 21:28:24.613359+00	\N	2025-12-18	2025-12-18	DEVUELTO	Dañó la pantalla 	6e5221f4-63cc-4aa5-8416-4c2255619cb0	c52bd81b-9341-434f-9364-6817bfc82885
+8f0f8035-29a6-41c9-946d-d372a174eea2	2025-12-18 21:28:44.940847+00	2025-12-18 21:29:00.648497+00	\N	2025-12-18	2025-12-18	DEVUELTO	Todo bien	08d85776-73b1-4572-91eb-e8486baf5409	70847fc0-7314-40d8-9b93-82763c14d4b9
+ebf25f10-24aa-44fb-b89d-b44210bbd377	2025-12-20 23:22:38.328149+00	2025-12-20 23:22:45.892596+00	\N	2025-12-20	2025-12-20	DEVUELTO	Todo Bien	b006ea1c-f128-4743-aaba-11aedc41b459	99d62f5a-86e8-4844-9488-1da5bde6317c
+\.
+
+
+--
+-- Data for Name: anuncios; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.anuncios (id, "createdAt", "updatedAt", "deletedAt", titulo, contenido, prioridad, "fechaExpiracion", "empresaId", "sucursalId") FROM stdin;
+05d5bc2f-e576-4b6a-b15f-ad8e463bb77c	2025-12-23 15:46:00.472849+00	2025-12-23 15:46:00.472849+00	\N	Muchachos Ola	Aca digo ola	MEDIA	2025-12-24 05:00:00	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+9fa9196d-ef3e-48d8-be3a-69377e66940d	2025-12-23 15:46:24.846021+00	2025-12-23 15:46:24.846021+00	\N	Ola pero solo para zamora	Ola Zamora	ALTA	2025-12-24 05:00:00	a5edc1dd-9410-4a40-986b-d280e10af715	e305608f-24d0-46f4-892a-04dd92817db6
+127a524c-2b1f-4292-a87b-4450ae15ffae	2025-12-23 15:46:48.617236+00	2025-12-23 15:46:48.617236+00	\N	Este si es para zamora?	aaaavcasdkljasd	MEDIA	2025-12-24 05:00:00	a5edc1dd-9410-4a40-986b-d280e10af715	e305608f-24d0-46f4-892a-04dd92817db6
 \.
 
 
@@ -2788,6 +3197,13 @@ f1d3e556-426a-4c98-ad80-8f6331069ace	2025-11-21 06:15:55.718714+00	2025-11-21 16
 94457f07-2bec-4ef9-a325-9304ed4a3343	2025-11-21 06:34:33.434735+00	2025-11-21 16:45:19.009555+00	\N	Eri Rod	erickrodasa559@gmail.com	5930995520577	http://localhost:3000/uploads/public/vacantes/15c7ea4d-403d-4280-9364-d7c3d6ea6956/candidatos/ca536de11075f452be8f1d61ed48ffeff.pdf	15	El candidato carece de la experiencia requerida (5+ años). Aunque menciona Java y Javascript, no hay evidencia de NestJS, Microservicios, AWS o Docker. El nivel de inglés indicado como 'Fluent' es un punto positivo, pero insuficiente.	NUEVO	2025-11-21	15c7ea4d-403d-4280-9364-d7c3d6ea6956
 9bb976bc-993f-4d62-904d-f57c8e6d647e	2025-12-02 04:00:21.960575+00	2025-12-02 04:00:25.826414+00	\N	Postulante Prueba	ruby02591@gmail.com	+593995520577	http://localhost:3000/uploads/public/vacantes/15c7ea4d-403d-4280-9364-d7c3d6ea6956/candidatos/7c9d35befb40e82f69ecd105d1bb6e3f.pdf	60	El candidato tiene experiencia en Node.js (mencionado como Node.js Developer), pero no se menciona explícitamente NestJS ni microservicios. Tiene más de 5 años de experiencia. AWS y Docker no aparecen en el CV. El nivel de inglés no se puede determinar.	NUEVO	2025-12-02	15c7ea4d-403d-4280-9364-d7c3d6ea6956
 170e33bd-ee1f-40e7-bdee-32d0e8e3a1c3	2025-12-03 22:08:22.469903+00	2025-12-03 22:08:26.512918+00	\N	AAAAAA	fddkfkhfkhg@gmail.com	7897987	http://localhost:3000/uploads/public/vacantes/15c7ea4d-403d-4280-9364-d7c3d6ea6956/candidatos/bb489107879e5cc4eacb64928bdfbf912.pdf	65	El candidato tiene experiencia en Node.js, que es un buen punto de partida. Sin embargo, no menciona explícitamente NestJS, Microservicios, AWS o Docker. Su experiencia laboral es relevante, pero la falta de habilidades específicas reduce su puntuación.	NUEVO	2025-12-03	15c7ea4d-403d-4280-9364-d7c3d6ea6956
+f64c3cfc-7a65-43f7-bd86-977d0ceb5d11	2025-12-20 23:39:18.468182+00	2025-12-20 23:48:21.788609+00	\N	Ricardo Ricky	erickrodas55@gmail.com	+593995520577	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/d5a45415b77a2da6aa8610de10b48f10f87.pdf	\N	Error en análisis automático: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\nPlease retry in 35.297076951s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_input_token_count","quotaId":"GenerateContentInputTokensPerModelPerMinute-FreeTier","quotaDimensions":{"model":"gemini-2.0-flash","location":"global"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerMinutePerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"35s"}]	REVISION	2025-12-20	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
+380b9c64-c306-48b8-adb9-6c5a19a09b44	2025-12-20 23:58:39.104581+00	2025-12-20 23:58:57.306335+00	\N	Valentina Samaniego	ruby02591@gmail.com	0995520577	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/b9518b8924dc327889fc0921ff0995f4.pdf	\N	Error en análisis automático: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\nPlease retry in 59.767236076s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_input_token_count","quotaId":"GenerateContentInputTokensPerModelPerMinute-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerMinutePerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"59s"}]	REVISION	2025-12-20	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
+a821d10c-a915-46e6-96ff-4c1fdc942d3a	2025-12-21 00:01:58.708107+00	2025-12-21 00:02:16.715239+00	\N	Jeimy Torres	jatorres99@gmail.com	9129301231	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/fc215bf38c2134205a3101aeb84f5f055.pdf	\N	Error en análisis automático: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\nPlease retry in 40.348518231s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_input_token_count","quotaId":"GenerateContentInputTokensPerModelPerMinute-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerMinutePerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"40s"}]	REVISION	2025-12-21	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
+637b04a6-10cc-4878-8a82-4318a415a959	2025-12-21 00:18:16.643142+00	2025-12-21 00:18:34.569288+00	\N	Sujeto Prueba	correo@correo.com	819231321	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/994649c3eb7cc95e40b14e8a44efd4b5.pdf	\N	Error en análisis automático: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\nPlease retry in 22.485790043s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_input_token_count","quotaId":"GenerateContentInputTokensPerModelPerMinute-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerMinutePerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"22s"}]	REVISION	2025-12-21	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
+70d6df9e-3875-4ff9-a67e-cece99a727fb	2025-12-21 00:20:27.384217+00	2025-12-21 00:20:27.938612+00	\N	PRUEBA 2	prueba@prueba.com	091391203021	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/311b1092d11543a0be4a2a10e6ef5b381.pdf	\N	Error en análisis automático: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.	REVISION	2025-12-21	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
+49df8401-d751-4a89-aad1-22d1b6cf3a27	2025-12-21 00:26:20.564753+00	2025-12-21 00:27:03.420287+00	\N	PRUEBA 3 PORFAVOR	pruebaweim@email.com	23490123	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/94fb3188f43f0144a6fa649671afe398.pdf	\N	Fallo: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\nPlease retry in 53.610857313s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_input_token_count","quotaId":"GenerateContentInputTokensPerModelPerMinute-FreeTier","quotaDimensions":{"model":"gemini-2.0-flash","location":"global"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerMinutePerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}},{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.0-flash"}}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"53s"}]	REVISION	2025-12-21	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
+b1488b7b-594c-4915-bf96-0b10f74a879f	2025-12-21 00:29:42.83523+00	2025-12-21 00:29:50.939707+00	\N	PRUEBA 4 GABY	gaby@gaby.com	0193091232	http://localhost:3000/uploads/public/vacantes/1b126ba5-8f25-4cea-9cdf-4e8116a3c95c/candidatos/6e0a92cd7fb1865bf6334a8dd04232d6.pdf	95	El candidato es un ajuste técnico excelente. Posee 10 años de experiencia avanzada en análisis de datos, SQL, Python y data warehousing, cumpliendo con creces el perfil de 'Analista de Base de Datos'. Sus logros demuestran directamente la capacidad de tomar decisiones para reducir costos y mejorar la productividad (ej. 86% de ahorro de mano de obra y aumento del 92% en eficiencia), que es el objetivo principal de la vacante. Aunque su título actual es 'Junior Data Analyst', su experiencia y resultados cuantificados lo hacen un candidato muy fuerte para el rol Senior. El requisito de 'Trabajo en Equipo' se evidencia a través de la gestión de stakeholders y la colaboración en el desarrollo de aplicaciones.	NUEVO	2025-12-21	1b126ba5-8f25-4cea-9cdf-4e8116a3c95c
 \.
 
 
@@ -2795,12 +3211,36 @@ f1d3e556-426a-4c98-ad80-8f6331069ace	2025-11-21 06:15:55.718714+00	2025-11-21 16
 -- Data for Name: cargos; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.cargos (id, "createdAt", "updatedAt", nombre, "departamentoId", "deletedAt", "salarioMin", "salarioMax") FROM stdin;
-3420e657-2590-4b90-b767-ae21ce4376ad	2025-11-08 05:57:28.62905+00	2025-11-08 05:57:28.62905+00	Administrador	eefa3998-7a2d-4f4d-be0f-54e8acfb8231	\N	0	0
-e22c878e-b03f-4139-adbc-9bce341e744a	2025-11-23 05:15:20.806607+00	2025-11-23 05:15:20.806607+00	Programador Back	7ee03611-e52b-424a-bca8-345a82d368b0	\N	1000	3000
-47d66cbe-c18f-46ab-9884-4a9d3dfd393e	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Administrador	024860da-5fec-4fd8-8e9e-0881d96c38ff	\N	0	0
-8e9af25c-a6ff-4e22-85b6-8932d8f47502	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Administrador	f28d5149-727c-4c0f-aef3-6695745b7587	\N	0	0
-31cd3ee8-eab6-4c25-97ac-4f7fea9fb029	2025-12-04 16:37:26.705548+00	2025-12-04 16:37:26.705548+00	Programador Django	7ee03611-e52b-424a-bca8-345a82d368b0	\N	2000	3000
+COPY public.cargos (id, "createdAt", "updatedAt", nombre, "departamentoId", "deletedAt", "salarioMin", "salarioMax", descripcion, "empresaId") FROM stdin;
+3420e657-2590-4b90-b767-ae21ce4376ad	2025-11-08 05:57:28.62905+00	2025-11-08 05:57:28.62905+00	Administrador	eefa3998-7a2d-4f4d-be0f-54e8acfb8231	\N	0	0	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
+31cd3ee8-eab6-4c25-97ac-4f7fea9fb029	2025-12-04 16:37:26.705548+00	2025-12-04 16:37:26.705548+00	Programador Django	7ee03611-e52b-424a-bca8-345a82d368b0	\N	2000	3000	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
+e22c878e-b03f-4139-adbc-9bce341e744a	2025-11-23 05:15:20.806607+00	2025-11-23 05:15:20.806607+00	Programador Back	7ee03611-e52b-424a-bca8-345a82d368b0	\N	1000	3000	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673
+47d66cbe-c18f-46ab-9884-4a9d3dfd393e	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Administrador	024860da-5fec-4fd8-8e9e-0881d96c38ff	\N	0	0	\N	8904d395-93eb-4171-b148-fe9f10133955
+8e9af25c-a6ff-4e22-85b6-8932d8f47502	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Administrador	f28d5149-727c-4c0f-aef3-6695745b7587	\N	0	0	\N	61e81ec9-8d21-460b-81b3-addc2df089a4
+a9e3d811-866c-48b9-89ca-10ece66e44bf	2025-12-19 03:31:35.735563+00	2025-12-19 03:34:02.624264+00	1500	d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-12-19 03:34:02.624264+00	1200	1800	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+a31e4b6b-4969-4357-b63d-055619e46ec8	2025-12-19 03:31:38.281478+00	2025-12-19 03:34:04.975876+00	$ 2,500.50	d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-12-19 03:34:04.975876+00	2200.5	2800.5	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+e9110198-ff1c-469a-aed4-0883863a4c75	2025-12-19 03:31:38.705877+00	2025-12-19 03:34:07.408202+00	3200	d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-12-19 03:34:07.408202+00	2900	3500	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+4e7181fc-d7ce-4375-ad2a-38042329b4b6	2025-12-19 03:31:40.983339+00	2025-12-19 03:34:08.755107+00	800	d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-12-19 03:34:08.755107+00	500	1100	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+42f62faa-1138-4a89-aa8a-bb6cc20f1dd2	2025-12-19 03:37:09.46126+00	2025-12-19 03:37:09.46126+00	Desarrollador Senior	d3da9e1a-51c0-431e-9668-a4c6727e242f	\N	1200	1800	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+c1ce3c64-8ce5-4c58-aa6f-ff1b6193002a	2025-12-19 03:37:11.6682+00	2025-12-19 03:37:11.6682+00	Contadora	d3da9e1a-51c0-431e-9668-a4c6727e242f	\N	2200.5	2800.5	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+b412ab68-c302-4088-aa06-03a371a2eeaa	2025-12-19 03:37:13.733905+00	2025-12-19 03:37:13.733905+00	Gerente de Ventas	d3da9e1a-51c0-431e-9668-a4c6727e242f	\N	2900	3500	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+d9367fa0-1102-465b-bb01-20b5b5eb3dcc	2025-12-19 03:37:15.665561+00	2025-12-19 03:37:15.665561+00	Asistente	d3da9e1a-51c0-431e-9668-a4c6727e242f	\N	500	1100	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+6791436f-bee5-461b-b827-cbae46517240	2025-12-19 03:37:17.468676+00	2025-12-19 03:37:17.468676+00	Sin Cargo Asignado	d3da9e1a-51c0-431e-9668-a4c6727e242f	\N	100	700	Generado automáticamente por Importación Masiva	d845d7a9-9dcf-4db3-95f3-131b93e40673
+90c299da-fd74-494e-9772-241c22ee039c	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Gerente General	09cff220-ff38-4ae4-86ef-7f1d93bac88c	\N	0	0	\N	\N
+236e81ac-094f-4ca6-b9a7-3de7c7a57f82	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Gerente General	afd4869b-2484-49b5-a17e-227d7ba49ccd	\N	0	0	\N	\N
+bc0905e3-1a71-4bda-b0d4-945fd1d14045	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Gerente General	5bc08bfd-ac0e-4125-a935-a4a62a52cd5b	\N	0	0	\N	\N
+1315832e-f24d-449e-8b33-df2dfeb900e2	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Gerente General	d4ed7407-3dea-4c27-ab8d-20b9a3cceea9	\N	0	0	\N	\N
+a390fd2f-fdb5-4d54-b396-3dffd82198ec	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Gerente General	97e69216-a0c4-4346-a7f9-1f2f96e91eca	\N	0	0	\N	\N
+53d2d98d-210e-4a4e-8205-35a0853fe8df	2025-12-20 06:30:01.612+00	2025-12-20 06:30:01.612+00	Gerente General	33655640-aafb-469d-8d8d-89fd0d2d04a9	\N	0	0	\N	\N
+7a58b83c-9826-4009-b18e-1f8901aab279	2025-12-20 19:14:06.713653+00	2025-12-20 19:14:06.713653+00	Desarrollador Senior	33655640-aafb-469d-8d8d-89fd0d2d04a9	\N	1200	1800	Generado automáticamente por Importación Masiva	a5edc1dd-9410-4a40-986b-d280e10af715
+343297d6-7294-4764-861c-55eeafbf1b24	2025-12-20 19:14:10.338819+00	2025-12-20 19:14:10.338819+00	Contadora	33655640-aafb-469d-8d8d-89fd0d2d04a9	\N	2200.5	2800.5	Generado automáticamente por Importación Masiva	a5edc1dd-9410-4a40-986b-d280e10af715
+c20225ff-bf43-4975-b828-f1e3e614df15	2025-12-20 19:14:12.948776+00	2025-12-20 19:14:12.948776+00	Gerente de Ventas	33655640-aafb-469d-8d8d-89fd0d2d04a9	\N	2900	3500	Generado automáticamente por Importación Masiva	a5edc1dd-9410-4a40-986b-d280e10af715
+f96104d0-4871-4429-88f1-a4b4e0c98fa3	2025-12-20 19:14:15.53659+00	2025-12-20 19:14:15.53659+00	Asistente	33655640-aafb-469d-8d8d-89fd0d2d04a9	\N	500	1100	Generado automáticamente por Importación Masiva	a5edc1dd-9410-4a40-986b-d280e10af715
+886b57d6-b76a-46b0-b879-f42ffd5579df	2025-12-20 19:14:17.678761+00	2025-12-20 19:14:17.678761+00	Sin Cargo Asignado	33655640-aafb-469d-8d8d-89fd0d2d04a9	\N	100	700	Generado automáticamente por Importación Masiva	a5edc1dd-9410-4a40-986b-d280e10af715
+3c8f4d53-8442-40a3-b6f4-aede9e54cabe	2025-12-20 23:09:09.000123+00	2025-12-20 23:09:09.000123+00	Promotor	54e9a5b1-5f85-47b7-815c-55b8d43aa0f2	\N	500	800	\N	\N
+2a256b4b-8760-4c17-bb53-15a758447d95	2025-12-20 23:33:29.871693+00	2025-12-20 23:33:29.871693+00	Analista de Datos	54e9a5b1-5f85-47b7-815c-55b8d43aa0f2	\N	800	1000	\N	\N
+c7cc35a2-2536-4402-a334-e37f56729575	2025-12-21 22:33:37.555878+00	2025-12-21 22:33:37.555878+00	Prueba Puesto	54e9a5b1-5f85-47b7-815c-55b8d43aa0f2	\N	0	200	\N	\N
+09ce3359-5768-48e0-906e-bb23c019d15b	2025-12-22 15:28:04.712456+00	2025-12-22 15:28:04.712456+00	 Byron Alvarez	694bc682-5f9c-4fd2-af7b-32d06808b51c	\N	1	2	\N	\N
 \.
 
 
@@ -2836,6 +3276,31 @@ cd58ea72-f617-45bf-9378-e86f2c466f2b	2025-12-09 16:48:14.818679+00	2025-12-09 16
 e44c9b6b-05d7-425a-8031-feb6c4b88488	2025-12-09 17:02:48.240524+00	2025-12-09 17:03:10.740031+00	Plazo Fijo	2000	USD	2025-12-09	2025-12-09	Finalizado	50432592-194c-4707-a212-5a716cfca48e	\N
 2db3a639-ddef-4821-920e-caf02750b0b2	2025-12-09 23:09:56.031942+00	2025-12-09 23:09:56.031942+00	Indefinido	1500	USD	2025-12-09	\N	Vigente	c351bc6e-bb11-4738-8fe0-db467bd6e1ce	\N
 e753fc13-cf0e-44d3-92ac-4b45b460f3e6	2025-11-13 05:04:44.515372+00	2025-12-16 16:54:08.626269+00	Indefinido	50000	USD	2025-01-01	2025-12-16	Finalizado	96c517a9-ebd5-4be6-a678-00eb00f1f2f4	\N
+ed89e66f-460e-4d6f-851c-b9feea699363	2025-12-19 03:31:38.724705+00	2025-12-19 03:32:47.511716+00	Indefinido	3200	USD	3200-01-01	2025-12-19	Finalizado	d4eb6ed1-60f5-4f86-a9e6-f59655e78324	\N
+59ccc41d-3709-441a-ab93-f262e55054f8	2025-12-19 03:31:35.800003+00	2025-12-19 03:32:52.871548+00	Indefinido	1500	USD	1970-01-01	2025-12-19	Finalizado	b9179f69-7b28-46bb-9bbf-529603d1716f	\N
+7a8d6351-e421-4c71-aef4-74deb630bf43	2025-12-19 03:31:41.002066+00	2025-12-19 03:32:55.301492+00	Indefinido	800	USD	1970-01-01	2025-12-19	Finalizado	27a394c2-17bd-4bc6-9d98-395b7bd0a980	\N
+0edca061-9745-43f1-87a2-be14b5b638dc	2025-12-19 03:37:13.76628+00	2025-12-19 03:40:04.329446+00	Indefinido	3200	USD	2021-05-20	2025-12-19	Finalizado	d4eb6ed1-60f5-4f86-a9e6-f59655e78324	\N
+c50ac9e4-938f-46ee-8357-6edc33f9f69a	2025-12-19 03:37:11.694574+00	2025-12-19 03:40:09.165047+00	Indefinido	2500.5	USD	2022-11-01	2025-12-19	Finalizado	50b9d742-4d39-440b-8d45-02b131527103	\N
+b55a43f1-cf45-4adb-bd12-06d0efdadc85	2025-12-19 03:37:15.694595+00	2025-12-19 03:40:30.189666+00	Indefinido	800	USD	2023-08-10	2025-12-19	Finalizado	27a394c2-17bd-4bc6-9d98-395b7bd0a980	\N
+10288ef9-106d-4106-a575-d35514147d08	2025-12-19 03:37:09.52033+00	2025-12-19 03:40:35.865516+00	Indefinido	1500	USD	2023-01-15	2025-12-19	Finalizado	b9179f69-7b28-46bb-9bbf-529603d1716f	\N
+a221cf41-87ad-4544-97de-0d0a08fcd54d	2025-12-19 03:41:45.484983+00	2025-12-19 03:41:45.484983+00	Indefinido	1500	USD	2023-01-15	\N	Vigente	b9179f69-7b28-46bb-9bbf-529603d1716f	\N
+dfefbc82-c6df-4396-8f25-68604fa40222	2025-12-19 03:41:47.233713+00	2025-12-19 03:41:47.233713+00	Indefinido	2500.5	USD	2022-11-01	\N	Vigente	50b9d742-4d39-440b-8d45-02b131527103	\N
+c58ec2d9-912f-4ae8-a05e-9ae9e1e89297	2025-12-19 03:41:48.944219+00	2025-12-19 03:41:48.944219+00	Indefinido	3200	USD	2021-05-20	\N	Vigente	d4eb6ed1-60f5-4f86-a9e6-f59655e78324	\N
+e8194faf-d2db-459f-bbf3-584b7a96f889	2025-12-19 03:41:50.726066+00	2025-12-19 03:41:50.726066+00	Indefinido	800	USD	2023-08-10	\N	Vigente	27a394c2-17bd-4bc6-9d98-395b7bd0a980	\N
+6f5cb3b5-3ec6-4476-a00e-67df5b7b1ac7	2025-12-19 03:41:52.372435+00	2025-12-19 03:41:52.372435+00	Indefinido	400	USD	2023-09-01	\N	Vigente	a78fa518-091d-457a-9cfe-aebc8724e2bd	\N
+855d1ecd-0725-41c6-85a6-10a5733a10b6	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Indefinido	0	USD	2025-12-20	\N	Vigente	67c9a831-d9fa-458a-b762-784b1bd3a3d9	\N
+60cef99c-8789-4448-9477-3734cf2dbcc5	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Indefinido	0	USD	2025-12-20	\N	Vigente	e1da2a85-3966-44a5-bfa9-05a00b92cc4f	\N
+e7731298-29f5-4246-bcd7-2b5539ecd9a5	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Indefinido	0	USD	2025-12-20	\N	Vigente	fd4d7d33-43a6-49e0-8213-35b8cc4710e4	\N
+99d6988b-859b-4f6a-85c7-b606388ce553	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Indefinido	0	USD	2025-12-20	\N	Vigente	a18ede53-3038-49fd-9a0b-5dfc37839417	\N
+ba2f818a-c11d-4937-a670-6c1ce2cc1854	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Indefinido	0	USD	2025-12-20	\N	Vigente	99538004-92d6-47e7-b600-d173ea61e3ff	\N
+1ad5c8e0-0fba-44f3-a10c-afffa39e5876	2025-12-20 06:30:01.612+00	2025-12-20 06:30:01.612+00	Indefinido	0	USD	2025-12-20	\N	Vigente	635ce828-e8a4-4a75-9b6c-02dd4e91c309	\N
+bc8b1259-84d1-4dbb-81f0-5f793d6adfca	2025-12-20 19:14:06.827974+00	2025-12-20 19:14:06.827974+00	Indefinido	1500	USD	2023-01-15	\N	Vigente	33679e25-e8a7-42d1-9abb-bc72637f772c	\N
+dd33cc13-2a89-4770-bff2-83a9cd8bf30b	2025-12-20 19:14:10.357098+00	2025-12-20 19:14:10.357098+00	Indefinido	2500.5	USD	2022-11-01	\N	Vigente	add8ef71-6b8f-423f-95fb-eab7e29efb70	\N
+9f51a600-1457-48e7-8e4c-0b5c17ebaacf	2025-12-20 19:14:12.964815+00	2025-12-20 19:14:12.964815+00	Indefinido	3200	USD	2021-05-20	\N	Vigente	90a07dc8-8feb-4582-8830-425e388d441a	\N
+cb84393b-22ef-4567-9272-30568e3e3c62	2025-12-20 19:14:15.557099+00	2025-12-20 19:14:15.557099+00	Indefinido	800	USD	2023-08-10	\N	Vigente	99d62f5a-86e8-4844-9488-1da5bde6317c	\N
+e893e5ee-255a-4afa-bb6d-4d1d23f70f23	2025-12-20 19:14:17.696013+00	2025-12-20 19:14:17.696013+00	Indefinido	400	USD	2023-09-01	\N	Vigente	e7dc0706-a387-4f70-a0b4-e0acb60b46f8	\N
+396080b4-72b3-4699-9a82-9732c2e8246a	2025-12-22 00:26:13.309903+00	2025-12-22 00:26:13.309903+00	Indefinido	2300	USD	2025-12-21	\N	Vigente	a375538e-94fe-4d2c-9a3a-eb42a03d26f6	\N
+92348ecd-f0a3-47a4-b691-1595ce4869a6	2025-12-22 15:28:52.67209+00	2025-12-22 15:28:52.67209+00	Indefinido	2	USD	2025-12-22	\N	Vigente	81b2d249-202d-4b8f-b84b-440c668ee216	\N
 \.
 
 
@@ -2845,6 +3310,7 @@ e753fc13-cf0e-44d3-92ac-4b45b460f3e6	2025-11-13 05:04:44.515372+00	2025-12-16 16
 
 COPY public.cursos (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, duration, instructor, category, "imageUrl", "isActive", "empresaId") FROM stdin;
 7803502f-ac52-4288-8bc7-118e8ea85c79	2025-12-16 16:33:09.125849+00	2025-12-16 16:33:09.125849+00	\N	VALENTINA DISEÑO	VALENTINA TE ENSEÑA A DISEÑAR	2 horas	Valentina Samaniego	Tecnología	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvPQt2VvSA3ENdFDEjWHTs2pdqZtWQyhayPQ&s	t	d845d7a9-9dcf-4db3-95f3-131b93e40673
+666d8f1e-4624-41aa-8030-7e9260ef1e3d	2025-12-21 04:13:53.893931+00	2025-12-21 04:13:53.893931+00	\N	Curso Frontend	Vamos a aprender angular 20	4 horas	Gabriela Loyola	Tecnología	https://facialix.com/wp-content/uploads/2024/01/curso-frontend-certificado-gratis.jpg	t	a5edc1dd-9410-4a40-986b-d280e10af715
 \.
 
 
@@ -2852,14 +3318,22 @@ COPY public.cursos (id, "createdAt", "updatedAt", "deletedAt", titulo, descripci
 -- Data for Name: departamentos; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.departamentos (id, "createdAt", "updatedAt", nombre, "empresaId", "deletedAt") FROM stdin;
-eefa3998-7a2d-4f4d-be0f-54e8acfb8231	2025-11-08 05:57:28.62905+00	2025-11-23 01:52:44.571295+00	General	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-23 01:52:44.571295+00
-d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-11-23 02:01:37.803898+00	2025-11-23 02:01:37.803898+00	Finanzas	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-7ee03611-e52b-424a-bca8-345a82d368b0	2025-11-23 02:01:43.791995+00	2025-11-23 02:01:43.791995+00	Development	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-f54ec2d6-22f8-4bf9-adf1-2f2df9ab6a32	2025-11-23 21:57:42.178249+00	2025-11-23 21:57:42.178249+00	Diseño	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-024860da-5fec-4fd8-8e9e-0881d96c38ff	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	General	8904d395-93eb-4171-b148-fe9f10133955	\N
-f28d5149-727c-4c0f-aef3-6695745b7587	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	General	61e81ec9-8d21-460b-81b3-addc2df089a4	\N
-2bc47045-73ff-4e62-b53c-561fa26193e9	2025-11-23 02:01:32.580501+00	2025-12-16 16:41:39.603986+00	Marketin	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+COPY public.departamentos (id, "createdAt", "updatedAt", nombre, "empresaId", "deletedAt", "sucursalId") FROM stdin;
+eefa3998-7a2d-4f4d-be0f-54e8acfb8231	2025-11-08 05:57:28.62905+00	2025-11-23 01:52:44.571295+00	General	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-23 01:52:44.571295+00	\N
+d3da9e1a-51c0-431e-9668-a4c6727e242f	2025-11-23 02:01:37.803898+00	2025-11-23 02:01:37.803898+00	Finanzas	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	\N
+7ee03611-e52b-424a-bca8-345a82d368b0	2025-11-23 02:01:43.791995+00	2025-11-23 02:01:43.791995+00	Development	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	\N
+f54ec2d6-22f8-4bf9-adf1-2f2df9ab6a32	2025-11-23 21:57:42.178249+00	2025-11-23 21:57:42.178249+00	Diseño	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	\N
+024860da-5fec-4fd8-8e9e-0881d96c38ff	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	General	8904d395-93eb-4171-b148-fe9f10133955	\N	\N
+f28d5149-727c-4c0f-aef3-6695745b7587	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	General	61e81ec9-8d21-460b-81b3-addc2df089a4	\N	\N
+2bc47045-73ff-4e62-b53c-561fa26193e9	2025-11-23 02:01:32.580501+00	2025-12-16 16:41:39.603986+00	Marketin	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	\N
+09cff220-ff38-4ae4-86ef-7f1d93bac88c	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	General	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	\N
+afd4869b-2484-49b5-a17e-227d7ba49ccd	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	General	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	\N
+5bc08bfd-ac0e-4125-a935-a4a62a52cd5b	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	General	60cdd23e-d098-4c2b-ab9c-83f1aee45642	\N	\N
+d4ed7407-3dea-4c27-ab8d-20b9a3cceea9	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	General	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	\N	\N
+97e69216-a0c4-4346-a7f9-1f2f96e91eca	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	General	f99851b0-65cd-48b5-88de-e95e7944a380	\N	\N
+33655640-aafb-469d-8d8d-89fd0d2d04a9	2025-12-20 06:30:01.612+00	2025-12-20 06:30:01.612+00	General	a5edc1dd-9410-4a40-986b-d280e10af715	\N	\N
+54e9a5b1-5f85-47b7-815c-55b8d43aa0f2	2025-12-20 23:08:49.615983+00	2025-12-20 23:08:49.615983+00	Marketing	a5edc1dd-9410-4a40-986b-d280e10af715	\N	dd146528-e6c8-4970-a572-10e7b6f94429
+694bc682-5f9c-4fd2-af7b-32d06808b51c	2025-12-22 15:27:51.83584+00	2025-12-22 15:27:51.83584+00	Byron Alvarez	a5edc1dd-9410-4a40-986b-d280e10af715	\N	e305608f-24d0-46f4-892a-04dd92817db6
 \.
 
 
@@ -2870,6 +3344,20 @@ f28d5149-727c-4c0f-aef3-6695745b7587	2025-11-27 20:11:34.64177+00	2025-11-27 20:
 COPY public.documentos_empleados (id, "createdAt", "updatedAt", "deletedAt", nombre, tipo, url, "fechaSubida", "empleadoId") FROM stdin;
 1617bf3a-a399-4747-9d1b-9e08a6659d2d	2025-11-22 21:45:32.494419+00	2025-11-22 21:45:32.494419+00	\N	Prueba2	Certificación Externa	http://localhost:3000/uploads/d845d7a9-9dcf-4db3-95f3-131b93e40673/empleados/fa703991-ff73-4097-825b-19355d867255/documentos/a394297db2b99a4575db3fec610aa1d8b.pdf	2025-11-22	fa703991-ff73-4097-825b-19355d867255
 6aaa2a4b-cdf6-457d-8ca5-eb93956332ef	2025-11-22 22:15:29.012953+00	2025-11-22 22:15:29.012953+00	\N	Prueba3	Otros	http://localhost:3000/uploads/d845d7a9-9dcf-4db3-95f3-131b93e40673/empleados/fa703991-ff73-4097-825b-19355d867255/documentos/b105fb3afde331cde891851afa0a3765f.pdf	2025-11-22	fa703991-ff73-4097-825b-19355d867255
+55627ca4-8823-4284-b6cb-0d09d74b9efa	2025-12-21 01:48:52.252644+00	2025-12-21 01:48:52.252644+00	\N	PRUEBA DOCUMENTO	Certificación Externa	http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/empleados/635ce828-e8a4-4a75-9b6c-02dd4e91c309/documentos/b7da1b505f24e5e87356698d7b91081f2.pdf	2025-12-21	635ce828-e8a4-4a75-9b6c-02dd4e91c309
+\.
+
+
+--
+-- Data for Name: documentos_empresa; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.documentos_empresa (id, "createdAt", "updatedAt", "deletedAt", nombre, descripcion, url, categoria, "fechaSubida", "empresaId", "sucursalId") FROM stdin;
+401fd5de-4861-4b8b-bf4e-9077b1141718	2025-12-21 01:16:18.802841+00	2025-12-21 01:16:18.802841+00	\N	EticaAplicada.pdf	Prueba	https://via.placeholder.com/pdf-mock.pdf	FORMATOS	2025-12-21	a5edc1dd-9410-4a40-986b-d280e10af715	e305608f-24d0-46f4-892a-04dd92817db6
+fb25c8f6-b501-4ba7-8c21-f12ee8be07b9	2025-12-21 01:57:07.008415+00	2025-12-21 01:57:07.008415+00	\N	PRUEBA SEDE ZAMORA		http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/documentos-empresa/7bc6eb27e10a22351db1ffbd6c53d4c3.pdf	POLÍTICA	2025-12-21	a5edc1dd-9410-4a40-986b-d280e10af715	e305608f-24d0-46f4-892a-04dd92817db6
+f25b0984-2e16-4399-89ed-5f20f8225664	2025-12-21 02:08:13.343814+00	2025-12-21 02:08:13.343814+00	\N	Coso Prueba EN loja		http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/documentos-empresa/e5223464b3d01bc109924e77f34cf7a1.pdf	FORMATO	2025-12-21	a5edc1dd-9410-4a40-986b-d280e10af715	dd146528-e6c8-4970-a572-10e7b6f94429
+664e32d2-d1d0-4082-8684-ef67a7b4a42b	2025-12-21 04:15:04.222807+00	2025-12-21 04:15:04.222807+00	\N	Politica Interna Empresa 2026	Documento de Normativa Interna	http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/documentos-empresa/10a7d413852e7ede3fa1f1568aa30dfdc.pdf	POLÍTICA	2025-12-21	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+574fe906-575c-4c34-a0a1-5a2db6ea8d47	2025-12-21 04:32:07.956641+00	2025-12-21 04:32:07.956641+00	\N	Reglamento Interno Empresa	Documento de Normativa Interna	http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/documentos-empresa/83c107681f80d0f6ee961cd101a90633ae.pdf	REGLAMENTO	2025-12-21	a5edc1dd-9410-4a40-986b-d280e10af715	\N
 \.
 
 
@@ -2880,7 +3368,6 @@ COPY public.documentos_empleados (id, "createdAt", "updatedAt", "deletedAt", nom
 COPY public.empleados (id, "createdAt", "updatedAt", nombre, apellido, "tipoIdentificacion", "nroIdentificacion", "emailPersonal", telefono, direccion, "fechaNacimiento", estado, "datosPersonalizados", "empresaId", "usuarioId", "rolId", "cargoId", "jefeId", "deletedAt", "fotoUrl", "sucursalId") FROM stdin;
 cc6e191b-6566-46b7-8ed3-3ada5364414d	2025-11-15 04:59:12.532954+00	2025-11-15 04:59:12.532954+00	Gaby	Loyola	\N	\N	gaby@test.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
 6f912371-9183-4516-90b1-9d53c8a6b491	2025-11-22 06:08:15.174964+00	2025-11-22 06:08:15.174964+00	Erick	Rodas Jh	\N	\N	erickrodas559@gmail.com	0995520577	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
-fa703991-ff73-4097-825b-19355d867255	2025-11-08 05:57:28.62905+00	2025-11-22 22:57:45.013771+00	Juan	Pérez	\N	\N	\N	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	07ef5af6-1fba-4618-b461-22ccdc263c2b	9d8d7df7-ed94-4882-8936-799a2dc35a2e	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	http://localhost:3000/uploads/d845d7a9-9dcf-4db3-95f3-131b93e40673/empleados/fa703991-ff73-4097-825b-19355d867255/foto/46cff591ef22166109fa587e1bc3134d2.png	\N
 c52bd81b-9341-434f-9364-6817bfc82885	2025-11-23 23:56:48.671596+00	2025-11-23 23:56:48.852416+00	Valentina	.	\N	\N	valentinasamaniego5@gmail.com	0995520577	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	f160d896-8729-47cc-a9dc-378cf088c48b	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	e22c878e-b03f-4139-adbc-9bce341e744a	\N	\N	\N	\N
 7ca7fc59-9a54-4639-9693-e22e33a63244	2025-11-22 06:15:08.293896+00	2025-11-25 18:58:46.059244+00	Jhair	Ordoñez	\N	\N	ruby02591@gmail.com	0995520577	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	7a2b302d-191f-4a9a-875d-42034c723522	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	http://localhost:3000/uploads/d845d7a9-9dcf-4db3-95f3-131b93e40673/empleados/7ca7fc59-9a54-4639-9693-e22e33a63244/foto/3b756b3925271a552d10fc91206a7fdad.png	\N
 20828f29-0d04-444b-b788-87f5acefc9c2	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Jeimy	Torres	\N	\N	\N	\N	\N	\N	Activo	\N	8904d395-93eb-4171-b148-fe9f10133955	9a75b06a-0b74-4592-9e82-4d85c47920cf	5e667a90-3c46-47fe-9922-b8928e59de4b	47d66cbe-c18f-46ab-9884-4a9d3dfd393e	\N	\N	\N	\N
@@ -2892,6 +3379,25 @@ c52bd81b-9341-434f-9364-6817bfc82885	2025-11-23 23:56:48.671596+00	2025-11-23 23
 50432592-194c-4707-a212-5a716cfca48e	2025-12-09 17:02:48.208849+00	2025-12-09 17:03:10.748039+00	EsoTilin	.	\N	\N	jeimy1605@gmai.com	0995520577	\N	\N	Inactivo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	7cc24c3c-3393-417f-94d2-36dd2d318dc3	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	31cd3ee8-eab6-4c25-97ac-4f7fea9fb029	\N	\N	\N	\N
 c351bc6e-bb11-4738-8fe0-db467bd6e1ce	2025-11-27 20:13:33.018732+00	2025-12-09 23:09:56.086264+00	Wilson	Lozano	\N	\N	jeyxnwn@gmail.com	0995520577	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	b315bcdc-323a-44d1-b8af-7a148b9228f2	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	e22c878e-b03f-4139-adbc-9bce341e744a	\N	\N	\N	\N
 96c517a9-ebd5-4be6-a678-00eb00f1f2f4	2025-11-13 05:03:27.236121+00	2025-12-16 16:54:08.635768+00	Byron	Alvarez	\N	\N	contratos@test.com	\N	\N	\N	Inactivo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	63b5fcb2-2fd6-4454-bf05-0f75a13a1227	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	\N	\N
+a78fa518-091d-457a-9cfe-aebc8724e2bd	2025-12-19 03:37:17.485538+00	2025-12-19 03:41:52.446779+00	Luis	Torres	CEDULA	1109876543	luis.torres@empresa.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	919d3d87-42da-4bc0-9234-740233573029	9b0fa648-2d0f-4531-8f8d-7e3a826961c7	6791436f-bee5-461b-b827-cbae46517240	\N	\N	\N	\N
+fa703991-ff73-4097-825b-19355d867255	2025-11-08 05:57:28.62905+00	2025-12-19 06:52:23.51951+00	Juan	Pérez	\N	\N	\N	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	07ef5af6-1fba-4618-b461-22ccdc263c2b	9d8d7df7-ed94-4882-8936-799a2dc35a2e	3420e657-2590-4b90-b767-ae21ce4376ad	\N	\N	http://localhost:3000/uploads/d845d7a9-9dcf-4db3-95f3-131b93e40673/empleados/fa703991-ff73-4097-825b-19355d867255/foto/9ff938d3c862d181c4c94663e11950e3.png	\N
+b9179f69-7b28-46bb-9bbf-529603d1716f	2025-12-19 03:31:35.792133+00	2025-12-19 03:41:45.519569+00	Juan Carlos	Pérez	CEDULA	1104567890	juan.perez@empresa.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	f35ee9d2-9fbd-4b57-8bdf-b9580f1208be	9b0fa648-2d0f-4531-8f8d-7e3a826961c7	42f62faa-1138-4a89-aa8a-bb6cc20f1dd2	\N	\N	\N	\N
+50b9d742-4d39-440b-8d45-02b131527103	2025-12-19 03:31:38.295229+00	2025-12-19 03:41:47.241592+00	María	Gómez	CEDULA	0912345678	maria.gomez@empresa.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	2aa19fb4-c140-4698-adc0-9b0515c12154	9b0fa648-2d0f-4531-8f8d-7e3a826961c7	c1ce3c64-8ce5-4c58-aa6f-ff1b6193002a	\N	\N	\N	\N
+d4eb6ed1-60f5-4f86-a9e6-f59655e78324	2025-12-19 03:31:38.719945+00	2025-12-19 03:41:48.953824+00	Pedro	Ramírez	CEDULA	1712345678	pedro.ramirez@empresa.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	bd8480a4-8b69-47f2-a5fd-ef461b1830a7	9b0fa648-2d0f-4531-8f8d-7e3a826961c7	b412ab68-c302-4088-aa06-03a371a2eeaa	\N	\N	\N	\N
+27a394c2-17bd-4bc6-9d98-395b7bd0a980	2025-12-19 03:31:40.997722+00	2025-12-19 03:41:50.736367+00	Ana	López	CEDULA	0102030405	ana.lopez@empresa.com	\N	\N	\N	Activo	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	539a0df3-e1e0-4abc-87c5-2024b7ab76d3	9b0fa648-2d0f-4531-8f8d-7e3a826961c7	d9367fa0-1102-465b-bb01-20b5b5eb3dcc	\N	\N	\N	\N
+67c9a831-d9fa-458a-b762-784b1bd3a3d9	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Usuario	Actual	\N	\N	\N	\N	\N	\N	Activo	\N	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	4d5745af-8a8f-4baf-85bb-6a848c9f68de	90c299da-fd74-494e-9772-241c22ee039c	\N	\N	\N	\N
+e1da2a85-3966-44a5-bfa9-05a00b92cc4f	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Usuario	Actual	\N	\N	\N	\N	\N	\N	Activo	\N	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	e1f1ae8a-68ff-4af3-a619-248f5ace8087	236e81ac-094f-4ca6-b9a7-3de7c7a57f82	\N	\N	\N	\N
+fd4d7d33-43a6-49e0-8213-35b8cc4710e4	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Usuario	Actual	\N	\N	\N	\N	\N	\N	Activo	\N	60cdd23e-d098-4c2b-ab9c-83f1aee45642	07ef5af6-1fba-4618-b461-22ccdc263c2b	bc88625b-ba71-4364-9e6e-38c68b38cc29	bc0905e3-1a71-4bda-b0d4-945fd1d14045	\N	\N	\N	\N
+a18ede53-3038-49fd-9a0b-5dfc37839417	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Usuario	Actual	\N	\N	\N	\N	\N	\N	Activo	\N	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	07ef5af6-1fba-4618-b461-22ccdc263c2b	f8f291c4-4fb3-47b5-a6db-e07d213a46e7	1315832e-f24d-449e-8b33-df2dfeb900e2	\N	\N	\N	\N
+99538004-92d6-47e7-b600-d173ea61e3ff	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Usuario	Actual	\N	\N	\N	\N	\N	\N	Activo	\N	f99851b0-65cd-48b5-88de-e95e7944a380	07ef5af6-1fba-4618-b461-22ccdc263c2b	a24a1b78-2b2a-46fa-bf87-963b07d0e4e6	a390fd2f-fdb5-4d54-b396-3dffd82198ec	\N	\N	\N	\N
+90a07dc8-8feb-4582-8830-425e388d441a	2025-12-20 19:14:12.957681+00	2025-12-21 21:20:30.56294+00	Pedro	Yepez	CEDULA	1712345678	pedro.ramirez@empresa.com	\N	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	bd8480a4-8b69-47f2-a5fd-ef461b1830a7	8e61e6b1-34f1-4dfe-96a1-2b34bd0309e4	c20225ff-bf43-4975-b828-f1e3e614df15	635ce828-e8a4-4a75-9b6c-02dd4e91c309	\N	\N	e305608f-24d0-46f4-892a-04dd92817db6
+81b2d249-202d-4b8f-b84b-440c668ee216	2025-12-22 15:28:52.659385+00	2025-12-23 19:02:16.159904+00	Byron	Alvarez	Cedula	1111111111	bvalvarez1.1@gmail.com	234234232	\N	\N	De Vacaciones	\N	a5edc1dd-9410-4a40-986b-d280e10af715	d94163f7-0c0e-44f4-a507-385eb0b71c31	2525fb5e-2942-4ff4-913f-1243afd4f6ec	09ce3359-5768-48e0-906e-bb23c019d15b	90a07dc8-8feb-4582-8830-425e388d441a	\N	\N	e305608f-24d0-46f4-892a-04dd92817db6
+635ce828-e8a4-4a75-9b6c-02dd4e91c309	2025-12-20 06:30:01.612+00	2025-12-21 04:49:04.19209+00	Erick	Rodas	\N	\N	ruby02591@gmail.com	\N	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	7a2b302d-191f-4a9a-875d-42034c723522	b74f3f4d-3422-4ffa-a816-343f8d4b556d	53d2d98d-210e-4a4e-8205-35a0853fe8df	\N	\N	http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/empleados/635ce828-e8a4-4a75-9b6c-02dd4e91c309/foto/6f9e6e58b701c20807abe6e107db92281.png	\N
+e7dc0706-a387-4f70-a0b4-e0acb60b46f8	2025-12-20 19:14:17.69002+00	2025-12-21 21:17:55.842085+00	Luis	Torres	CEDULA	1109876543	luis.torres@empresa.com	\N	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	919d3d87-42da-4bc0-9234-740233573029	2525fb5e-2942-4ff4-913f-1243afd4f6ec	886b57d6-b76a-46b0-b879-f42ffd5579df	90a07dc8-8feb-4582-8830-425e388d441a	\N	\N	e305608f-24d0-46f4-892a-04dd92817db6
+99d62f5a-86e8-4844-9488-1da5bde6317c	2025-12-20 19:14:15.552936+00	2025-12-21 21:21:14.722837+00	Ana	López	CEDULA	0102030405	ana.lopez@empresa.com	\N	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	539a0df3-e1e0-4abc-87c5-2024b7ab76d3	8e61e6b1-34f1-4dfe-96a1-2b34bd0309e4	f96104d0-4871-4429-88f1-a4b4e0c98fa3	635ce828-e8a4-4a75-9b6c-02dd4e91c309	\N	\N	dd146528-e6c8-4970-a572-10e7b6f94429
+add8ef71-6b8f-423f-95fb-eab7e29efb70	2025-12-20 19:14:10.352813+00	2025-12-21 21:21:31.894047+00	María	Gómez	CEDULA	0912345678	maria.gomez@empresa.com	\N	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	2aa19fb4-c140-4698-adc0-9b0515c12154	2525fb5e-2942-4ff4-913f-1243afd4f6ec	343297d6-7294-4764-861c-55eeafbf1b24	99d62f5a-86e8-4844-9488-1da5bde6317c	\N	\N	dd146528-e6c8-4970-a572-10e7b6f94429
+33679e25-e8a7-42d1-9abb-bc72637f772c	2025-12-20 19:14:06.812807+00	2025-12-21 21:22:21.209952+00	Juan Carlos	Pérez	CEDULA	1104567890	juan.perez@empresa.com	\N	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	f35ee9d2-9fbd-4b57-8bdf-b9580f1208be	57a26648-434e-463a-98c5-2d1e776aad99	7a58b83c-9826-4009-b18e-1f8901aab279	635ce828-e8a4-4a75-9b6c-02dd4e91c309	\N	\N	\N
+a375538e-94fe-4d2c-9a3a-eb42a03d26f6	2025-12-22 00:26:13.287644+00	2025-12-23 04:47:01.907592+00	Jeimy	Torres	Cedula	1900897917	jeyxnwn@gmail.com	0995520577	\N	\N	Activo	\N	a5edc1dd-9410-4a40-986b-d280e10af715	b315bcdc-323a-44d1-b8af-7a148b9228f2	2525fb5e-2942-4ff4-913f-1243afd4f6ec	343297d6-7294-4764-861c-55eeafbf1b24	99d62f5a-86e8-4844-9488-1da5bde6317c	\N	http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/empleados/a375538e-94fe-4d2c-9a3a-eb42a03d26f6/foto/2b2f82ae29b8addaad5baca2c4201727.png	dd146528-e6c8-4970-a572-10e7b6f94429
 \.
 
 
@@ -2903,6 +3409,55 @@ COPY public.empresas (id, "createdAt", "updatedAt", nombre, "planSuscripcion", b
 8904d395-93eb-4171-b148-fe9f10133955	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Empresa Jeis	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/2b51e5f26f98e22cbf10152184910ca21f.png", "primaryColor": "#E74C3C"}	\N	\N
 61e81ec9-8d21-460b-81b3-addc2df089a4	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Empresa Prueba 2	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/27979cc7b87e75b25e473c2ca4f35737.png", "primaryColor": "#9B59B6"}	\N	\N
 d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-08 05:57:28.62905+00	2025-12-10 05:36:22.584357+00	Mi Empresa S.A.	basic	\N	\N	{"nomina": {"frecuenciaPago": "mensual", "multiplicadorHorasExtra": 1.5}}
+67f7cfd0-9099-44f2-9a28-3609cb8ef272	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	EmpresaPruebaRoles	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/5dd7e6b6d311c46d0639c66651d28645.png", "primaryColor": "#F39C12"}	\N	\N
+24dce8fe-3132-463d-917c-c19fe787b8c6	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	PruebaRoles	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/6b121bb823c357dd10159441de41092db6.png", "primaryColor": "#F39C12"}	\N	\N
+60cdd23e-d098-4c2b-ab9c-83f1aee45642	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Empresa Prueba 3 Roles	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/210224192451045b510d6b2d40810eb598c6.png", "primaryColor": "#34495E"}	\N	\N
+036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	OlaEstaPrueba	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/a104c193927d10e8d4535f4f875974136.png", "primaryColor": "#F39C12"}	\N	\N
+f99851b0-65cd-48b5-88de-e95e7944a380	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	AAAAAAAAAAA	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/f14acddc2e21dc8bfa82aeb8515a804c.png", "primaryColor": "#9B59B6"}	\N	\N
+a5edc1dd-9410-4a40-986b-d280e10af715	2025-12-20 06:30:01.612+00	2025-12-25 01:52:31.931223+00	EMPRESA PRUEBA DIOS	basic	{"logoUrl": "http://localhost:3000/uploads/public/temp/logos/910752e7f1ddcb8a42d8e1fd6313108a65.png", "primaryColor": "#4c7401"}	\N	\N
+\.
+
+
+--
+-- Data for Name: encuesta_opciones; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.encuesta_opciones (id, "createdAt", "updatedAt", "deletedAt", texto, votos, "encuestaId") FROM stdin;
+7e69b1fc-71cb-4dbb-98fe-81e3875026d5	2025-12-23 04:45:39.309353+00	2025-12-23 04:45:39.309353+00	\N	Si	0	6e36bc09-7fa4-4827-8c4b-8f27c0919fd6
+5551c9f3-b053-4a30-a2b8-951c88e910ce	2025-12-23 04:45:39.309353+00	2025-12-23 04:45:39.309353+00	\N	Tambien	0	6e36bc09-7fa4-4827-8c4b-8f27c0919fd6
+faa5740d-ee8f-4838-8a47-0459126ea813	2025-12-23 04:46:08.620655+00	2025-12-23 04:46:08.620655+00	\N	Tampoco	0	bc346ec7-bada-406f-96d6-ad287847d407
+bf4ed477-17b8-4801-a322-9dddbe0ba955	2025-12-23 04:58:36.806316+00	2025-12-23 04:58:36.806316+00	\N	a	0	048d1c89-fb00-458f-a958-42a0d15677f1
+dfd29608-cbe5-4615-b4e0-6b35b35294f6	2025-12-23 05:02:06.133325+00	2025-12-23 05:02:06.133325+00	\N	ASDASD	0	950dff22-6655-48a7-a8af-d90061e3b7f2
+ddc9d819-7389-4c00-b0c4-4bba92e10145	2025-12-23 05:11:06.638275+00	2025-12-23 05:11:06.638275+00	\N	a	0	fde4e6ef-3352-4929-a8aa-fd216de48786
+c1c7bea8-8a41-4baf-a020-b9d9290d1359	2025-12-23 05:14:11.510219+00	2025-12-23 05:14:11.510219+00	\N	2	0	ce9e760c-e235-4a19-8e6f-f26b76c574c3
+04867b6d-8871-4fbf-b398-b94d1a108946	2025-12-23 05:20:00.594609+00	2025-12-23 05:20:00.594609+00	\N	2	0	bc55881c-28a3-4af6-8508-bf324f171624
+3346b4a0-4f7e-41e5-8ed6-95cd97003738	2025-12-23 05:34:58.61546+00	2025-12-23 05:34:58.61546+00	\N	b	0	98c30b93-c89f-4f13-ba31-d1d45a22ea34
+6ece9b01-1538-41c6-be0c-7b97788ead9f	2025-12-23 05:39:35.325773+00	2025-12-23 05:39:35.325773+00	\N	1	0	c2429d4d-9510-431c-85ac-583f511184f9
+8c7fe69c-71fa-4fdd-a8d8-beaf58d16dd1	2025-12-23 05:39:35.325773+00	2025-12-23 15:06:10.737174+00	\N	2	1	c2429d4d-9510-431c-85ac-583f511184f9
+dc9fc2d7-2cda-439e-a3a9-439172b6ce97	2025-12-23 05:34:58.61546+00	2025-12-23 15:10:47.198172+00	\N	a	1	98c30b93-c89f-4f13-ba31-d1d45a22ea34
+002cd226-6f75-4397-8269-e27a4c3ffb8c	2025-12-23 05:20:00.594609+00	2025-12-23 15:11:00.613066+00	\N	1	1	bc55881c-28a3-4af6-8508-bf324f171624
+736c02a6-25ff-4679-97c6-5ce635053d85	2025-12-23 05:14:11.510219+00	2025-12-23 15:11:10.139601+00	\N	1	1	ce9e760c-e235-4a19-8e6f-f26b76c574c3
+15a63baf-3848-45d6-b559-1193e4925ed1	2025-12-23 05:11:06.638275+00	2025-12-23 15:11:29.582135+00	\N	b	1	fde4e6ef-3352-4929-a8aa-fd216de48786
+e52b394e-17f9-4009-9c15-e916df5be29b	2025-12-23 05:02:06.133325+00	2025-12-23 15:11:37.651957+00	\N	SDASDA	1	950dff22-6655-48a7-a8af-d90061e3b7f2
+fa8e3200-0357-4683-9f8b-a228dec2360d	2025-12-23 04:58:36.806316+00	2025-12-23 15:11:41.51817+00	\N	b	1	048d1c89-fb00-458f-a958-42a0d15677f1
+fcc79715-b272-4f40-800c-33d745f35a32	2025-12-23 04:46:08.620655+00	2025-12-23 15:11:47.746853+00	\N	No	1	bc346ec7-bada-406f-96d6-ad287847d407
+\.
+
+
+--
+-- Data for Name: encuestas; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.encuestas (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, "fechaFin", "esAnonima", activa, "empresaId", "sucursalId") FROM stdin;
+6e36bc09-7fa4-4827-8c4b-8f27c0919fd6	2025-12-23 04:45:39.309353+00	2025-12-23 04:45:39.309353+00	\N	Encuesta Global Prueba	Probando	2025-12-23 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+bc346ec7-bada-406f-96d6-ad287847d407	2025-12-23 04:46:08.620655+00	2025-12-23 04:46:08.620655+00	\N	Esta si es la global la otra era de zamora	Esta si es la global	2025-12-26 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+048d1c89-fb00-458f-a958-42a0d15677f1	2025-12-23 04:58:36.806316+00	2025-12-23 04:58:36.806316+00	\N	New Encuesta Zamora	AAAAAAAAAAAAAAAAAAA	2025-12-27 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+950dff22-6655-48a7-a8af-d90061e3b7f2	2025-12-23 05:02:06.133325+00	2025-12-23 05:02:06.133325+00	\N	ENCUESTA POR 2VA VEZ ZAMORA	AAAAAAAAA	2025-12-26 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+fde4e6ef-3352-4929-a8aa-fd216de48786	2025-12-23 05:11:06.638275+00	2025-12-23 05:11:06.638275+00	\N	ESTA SI ES LA BUENA SI DIOS QUIERE	ZAMORA	2025-12-26 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+ce9e760c-e235-4a19-8e6f-f26b76c574c3	2025-12-23 05:14:11.510219+00	2025-12-23 05:14:11.510219+00	\N	SI DIOS QUIERE ESTA SI ES LA BUENA	AAAA	2025-12-25 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+bc55881c-28a3-4af6-8508-bf324f171624	2025-12-23 05:20:00.594609+00	2025-12-23 05:20:00.594609+00	\N	voy a llorar	aasadasdsa	2025-12-25 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+98c30b93-c89f-4f13-ba31-d1d45a22ea34	2025-12-23 05:34:58.61546+00	2025-12-23 05:34:58.61546+00	\N	dios mio	asdasda	2025-12-26 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+c2429d4d-9510-431c-85ac-583f511184f9	2025-12-23 05:39:35.325773+00	2025-12-23 05:39:35.325773+00	\N	la 9na es la vencida	9na encuesta	2025-12-25 05:00:00	f	t	a5edc1dd-9410-4a40-986b-d280e10af715	\N
 \.
 
 
@@ -2921,6 +3476,9 @@ COPY public.evaluaciones (id, "createdAt", "updatedAt", "calificacionPotencial",
 
 COPY public.inscripciones_cursos (id, "createdAt", "updatedAt", "deletedAt", estado, progreso, calificacion, "fechaInscripcion", "fechaCompletado", "cursoId", "empleadoId") FROM stdin;
 e824383a-a758-446b-8162-dfb18d9e0bad	2025-12-16 16:39:58.827514+00	2025-12-16 16:39:58.827514+00	\N	Inscrito	0	\N	2025-12-16 16:39:58.827514	\N	7803502f-ac52-4288-8bc7-118e8ea85c79	fa703991-ff73-4097-825b-19355d867255
+52ad1ba3-bdb6-4569-a418-237187ea7e44	2025-12-20 06:15:56.568951+00	2025-12-20 06:15:56.568951+00	\N	Inscrito	0	\N	2025-12-20 06:15:56.568951	\N	7803502f-ac52-4288-8bc7-118e8ea85c79	7ca7fc59-9a54-4639-9693-e22e33a63244
+8819353e-fe06-4915-8ad5-a094a3af61b9	2025-12-21 04:13:58.855933+00	2025-12-21 04:13:58.855933+00	\N	Inscrito	0	\N	2025-12-21 04:13:58.855933	\N	666d8f1e-4624-41aa-8030-7e9260ef1e3d	635ce828-e8a4-4a75-9b6c-02dd4e91c309
+b82d8864-c626-47de-9fe7-79eae6806229	2025-12-22 00:28:01.21342+00	2025-12-22 00:28:01.21342+00	\N	Inscrito	0	\N	2025-12-22 00:28:01.21342	\N	666d8f1e-4624-41aa-8030-7e9260ef1e3d	a375538e-94fe-4d2c-9a3a-eb42a03d26f6
 \.
 
 
@@ -2928,9 +3486,8 @@ e824383a-a758-446b-8162-dfb18d9e0bad	2025-12-16 16:39:58.827514+00	2025-12-16 16
 -- Data for Name: items_gasto; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.items_gasto (id, "createdAt", "updatedAt", concepto, monto, fecha, "facturaUrl", "reporteId", "deletedAt") FROM stdin;
-05c3a86f-018e-4999-a51c-27b7515a4587	2025-11-21 02:36:53.288281+00	2025-11-21 02:36:53.288281+00	Boleto Aéreo Ida y Vuelta	250	2025-01-15	https://ejemplo.com/factura1.pdf	a1bcb5e9-6fb6-4d53-9a6e-f764865a9591	\N
-d68942a0-825d-46fc-84c7-5c844ef34997	2025-11-21 02:38:29.176442+00	2025-11-21 02:38:29.176442+00	Taxi al Aeropuerto	15.5	2025-01-15	\N	a1bcb5e9-6fb6-4d53-9a6e-f764865a9591	\N
+COPY public.items_gasto (id, "createdAt", "updatedAt", "deletedAt", concepto, categoria, monto, fecha, "facturaUrl", "reporteId") FROM stdin;
+ace8471b-3f9c-4396-b0ce-44a79d2f8c5c	2025-12-24 06:37:28.39071+00	2025-12-24 06:37:28.39071+00	\N	Taxi	Transporte	15	2025-12-24	http://localhost:3000/uploads/a5edc1dd-9410-4a40-986b-d280e10af715/gastos-facturas/3de38159215c392db4766c158104da846.pdf	69a2924e-9f0a-42f1-843c-be9e68fa41f7
 \.
 
 
@@ -2944,6 +3501,14 @@ COPY public.nominas_empleados (id, "createdAt", "updatedAt", "totalIngresos", "t
 ce8420a8-244c-43a1-ab58-4ef3f070ab27	2025-12-10 20:59:46.25652+00	2025-12-10 20:59:46.25652+00	0	0	0	ccf3c332-a2dd-44e1-abc5-a2e2d0e80147	fa703991-ff73-4097-825b-19355d867255	\N
 383cac55-b981-4fb3-bad4-4edcfc692f4b	2025-12-10 20:59:46.25652+00	2025-12-10 20:59:46.25652+00	50000	5500	44500	ccf3c332-a2dd-44e1-abc5-a2e2d0e80147	96c517a9-ebd5-4be6-a678-00eb00f1f2f4	\N
 a36773d1-6eca-4e4c-8767-7f058562e0b7	2025-12-10 20:59:46.25652+00	2025-12-10 20:59:46.25652+00	1500	165	1335	ccf3c332-a2dd-44e1-abc5-a2e2d0e80147	c351bc6e-bb11-4738-8fe0-db467bd6e1ce	\N
+99f988fd-fab5-447e-9ef3-e14dc70bba49	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	0	0	0	945f59e8-3c49-4353-a64e-98601f8bf3c9	635ce828-e8a4-4a75-9b6c-02dd4e91c309	\N
+7a516a7d-e106-47e6-afe3-24b766caa219	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	1500	0	1500	945f59e8-3c49-4353-a64e-98601f8bf3c9	33679e25-e8a7-42d1-9abb-bc72637f772c	\N
+005373e0-75b4-4381-9ede-a0e7e3a95f71	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	2500.5	0	2500.5	945f59e8-3c49-4353-a64e-98601f8bf3c9	add8ef71-6b8f-423f-95fb-eab7e29efb70	\N
+925ef08c-07e8-45da-80f9-ee415b7707f8	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	3200	0	3200	945f59e8-3c49-4353-a64e-98601f8bf3c9	90a07dc8-8feb-4582-8830-425e388d441a	\N
+c6afbc67-3efc-4681-bff0-dbb2e96786f0	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	800	0	800	945f59e8-3c49-4353-a64e-98601f8bf3c9	99d62f5a-86e8-4844-9488-1da5bde6317c	\N
+0e5a626d-3df1-457c-bde5-73df0316403d	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	400	0	400	945f59e8-3c49-4353-a64e-98601f8bf3c9	e7dc0706-a387-4f70-a0b4-e0acb60b46f8	\N
+fe734dfb-62c7-43fb-b6f7-f243c41a76ca	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	2300	0	2300	945f59e8-3c49-4353-a64e-98601f8bf3c9	a375538e-94fe-4d2c-9a3a-eb42a03d26f6	\N
+be25811d-3a43-4690-8e78-862c575b0dc4	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	2	0	2	945f59e8-3c49-4353-a64e-98601f8bf3c9	81b2d249-202d-4b8f-b84b-440c668ee216	\N
 \.
 
 
@@ -2975,6 +3540,16 @@ COPY public.periodos_nomina (id, "createdAt", "updatedAt", "fechaInicio", "fecha
 dcf10b53-3ac1-4778-8d78-e21712290c5c	2025-11-13 16:20:35.978576+00	2025-11-13 16:25:00.067557+00	2025-11-16	2025-11-30	Cerrado	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-13 16:25:00.067557+00
 8ea9d2d2-3b09-4e0b-9613-d57644c16d0a	2025-11-13 16:19:33.33187+00	2025-11-15 16:03:20.49983+00	2025-11-01	2025-11-15	Procesado	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
 ccf3c332-a2dd-44e1-abc5-a2e2d0e80147	2025-12-10 05:24:40.016557+00	2025-12-10 20:59:46.25652+00	2025-12-10	2025-12-10	Procesado	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+945f59e8-3c49-4353-a64e-98601f8bf3c9	2025-12-25 02:04:45.384132+00	2025-12-25 02:04:56.928466+00	2025-12-01	2025-12-31	Procesado	a5edc1dd-9410-4a40-986b-d280e10af715	\N
+\.
+
+
+--
+-- Data for Name: plantillas_onboarding; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.plantillas_onboarding (id, "createdAt", "updatedAt", "deletedAt", nombre, "empresaId") FROM stdin;
+55beadfd-eb8c-4a42-8c32-50aecd5dfb91	2025-12-19 06:40:41.147334+00	2025-12-19 06:40:41.147334+00	\N	Onboarding General	d845d7a9-9dcf-4db3-95f3-131b93e40673
 \.
 
 
@@ -2982,18 +3557,19 @@ ccf3c332-a2dd-44e1-abc5-a2e2d0e80147	2025-12-10 05:24:40.016557+00	2025-12-10 20
 -- Data for Name: proyectos; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.proyectos (id, "createdAt", "updatedAt", nombre, descripcion, "empresaId", "deletedAt", estado, "liderId") FROM stdin;
-ec3f09f8-75b1-42f8-9038-ccac65795ce7	2025-11-16 22:18:18.387481+00	2025-11-18 15:18:29.702785+00	Proyecto Alfa (Actualizado)	Descripción detallada del proyecto Alfa.	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-18 15:18:29.702785+00	Activo	cc6e191b-6566-46b7-8ed3-3ada5364414d
-24ffc3f6-dd3a-4e17-8f3d-f5af06767827	2025-11-18 15:39:02.950407+00	2025-11-18 15:39:02.950407+00	Proyecto Alfa (Completo)	Descripción detallada del proyecto Alfa.	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	cc6e191b-6566-46b7-8ed3-3ada5364414d
-722e44ce-7fd5-49a4-8b16-60eeaeddfbda	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Rediseño Web	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N
-313e8be3-7666-4931-9d84-cc02ad59adcb	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Migración Nube	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N
-1a38cd53-3680-4cf2-8d04-b2b832ae1ea5	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Campaña Q4	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N
-e8175d5e-aed9-4e5a-b02a-a93642d7d10d	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	App Móvil	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N
-20d3d556-ad8a-464e-a5fe-aa43b3833584	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Auditoría	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N
-ba26c0b6-dda7-4a91-9091-6e837674fecf	2025-11-24 04:51:26.331654+00	2025-11-24 04:51:26.331654+00	App Móvil v2	Desarrollo de nueva versión mobile	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	\N
-98378183-ce29-41c1-b1d6-00da41b4166b	2025-11-24 04:51:26.379385+00	2025-11-24 04:51:26.379385+00	Rediseño Web Corporativa	Actualización del sitio web principal	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	\N
-07ddbc30-06c4-459c-8e08-9f1518cf264b	2025-11-24 04:51:26.385128+00	2025-11-24 04:51:26.385128+00	Migración a Nube	Migración de infraestructura a AWS	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	\N
-3428358d-5c37-4766-a101-7723f36f999e	2025-12-05 15:29:41.399647+00	2025-12-05 15:29:41.399647+00	Proyecto Prueba 2	Prueba de Proyecto 	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	7ca7fc59-9a54-4639-9693-e22e33a63244
+COPY public.proyectos (id, "createdAt", "updatedAt", nombre, descripcion, "empresaId", "deletedAt", estado, "liderId", "sucursalId") FROM stdin;
+ec3f09f8-75b1-42f8-9038-ccac65795ce7	2025-11-16 22:18:18.387481+00	2025-11-18 15:18:29.702785+00	Proyecto Alfa (Actualizado)	Descripción detallada del proyecto Alfa.	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-18 15:18:29.702785+00	Activo	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N
+24ffc3f6-dd3a-4e17-8f3d-f5af06767827	2025-11-18 15:39:02.950407+00	2025-11-18 15:39:02.950407+00	Proyecto Alfa (Completo)	Descripción detallada del proyecto Alfa.	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N
+722e44ce-7fd5-49a4-8b16-60eeaeddfbda	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Rediseño Web	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N	\N
+313e8be3-7666-4931-9d84-cc02ad59adcb	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Migración Nube	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N	\N
+1a38cd53-3680-4cf2-8d04-b2b832ae1ea5	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Campaña Q4	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N	\N
+e8175d5e-aed9-4e5a-b02a-a93642d7d10d	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	App Móvil	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N	\N
+20d3d556-ad8a-464e-a5fe-aa43b3833584	2025-11-24 01:15:10.242088+00	2025-11-24 01:15:10.242088+00	Auditoría	Proyecto generado automáticamente	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	ACTIVO	\N	\N
+ba26c0b6-dda7-4a91-9091-6e837674fecf	2025-11-24 04:51:26.331654+00	2025-11-24 04:51:26.331654+00	App Móvil v2	Desarrollo de nueva versión mobile	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	\N	\N
+98378183-ce29-41c1-b1d6-00da41b4166b	2025-11-24 04:51:26.379385+00	2025-11-24 04:51:26.379385+00	Rediseño Web Corporativa	Actualización del sitio web principal	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	\N	\N
+07ddbc30-06c4-459c-8e08-9f1518cf264b	2025-11-24 04:51:26.385128+00	2025-11-24 04:51:26.385128+00	Migración a Nube	Migración de infraestructura a AWS	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	\N	\N
+3428358d-5c37-4766-a101-7723f36f999e	2025-12-05 15:29:41.399647+00	2025-12-05 15:29:41.399647+00	Proyecto Prueba 2	Prueba de Proyecto 	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	Activo	7ca7fc59-9a54-4639-9693-e22e33a63244	\N
+fa092a0f-91f5-4b48-aefa-9f1a00b6a68d	2025-12-20 21:52:26.645099+00	2025-12-20 21:52:26.645099+00	App Movil 2	Prueba aaaaa	a5edc1dd-9410-4a40-986b-d280e10af715	\N	Activo	90a07dc8-8feb-4582-8830-425e388d441a	e305608f-24d0-46f4-892a-04dd92817db6
 \.
 
 
@@ -3010,23 +3586,8 @@ e01e5681-7df2-42f7-8676-145b1818b2f1	2025-11-20 16:15:33.066241+00	2025-11-20 16
 -- Data for Name: reportes_gasto; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.reportes_gasto (id, "createdAt", "updatedAt", nombre, estado, total, "fechaReporte", "empleadoId", "deletedAt", descripcion) FROM stdin;
-a1bcb5e9-6fb6-4d53-9a6e-f764865a9591	2025-11-21 02:35:22.786196+00	2025-11-21 02:56:19.779647+00	Visita Comercial Quito - Enero	APROBADO	265.5	2025-11-21	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Gastos de viáticos para reunión con clientes.
-6604a98a-19fb-408f-8807-45bd21514799	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 0	APROBADO	535	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-fba3e275-0aa6-4c6b-9eb3-8be2a8619398	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 1	PENDIENTE	390	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-3c47d20a-470e-4617-93c7-8442b96e0579	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 2	APROBADO	404	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-dc9b5531-2e91-47f3-b6ad-7c2b4309f7ae	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 3	PENDIENTE	537	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-6fc99e1f-e9bf-4058-b116-5c7928308c69	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 4	APROBADO	215	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-24686519-f67e-4ed3-892a-b2a22f97dc66	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 5	PENDIENTE	442	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-c917a687-8de6-4a96-a333-a45304331147	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 6	APROBADO	235	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-5361d5ff-8222-4573-a746-8d512c2b5cd0	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 7	PENDIENTE	172	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-5e49a9b8-6182-411b-af74-f761b05e741b	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 8	APROBADO	81	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-ff847853-b4d2-43d9-b00b-bbc534953f5a	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 9	PENDIENTE	341	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-fc794872-c56a-44ae-8308-923effe5febc	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 10	APROBADO	454	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-2c9bf06e-9642-431a-81cb-be7e2468fb17	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 11	PENDIENTE	411	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-dacafdde-d7bc-485a-a706-a7d904f26525	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 12	APROBADO	506	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-57febd46-280e-4a6e-aaab-2bdf1603ac8e	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 13	PENDIENTE	386	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
-e6f737de-0925-43c5-8a8e-8eb46e53fe38	2025-11-24 01:15:10.304095+00	2025-11-24 01:15:10.304095+00	Gastos Viaje 14	APROBADO	163	2025-11-24	cc6e191b-6566-46b7-8ed3-3ada5364414d	\N	Viáticos simulados
+COPY public.reportes_gasto (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, estado, total, "fechaReporte", "empleadoId") FROM stdin;
+69a2924e-9f0a-42f1-843c-be9e68fa41f7	2025-12-24 06:21:06.03578+00	2025-12-24 06:39:07.245107+00	\N	Reporte d prueba	asdas probandooo	APROBADO	15	2025-12-24	a375538e-94fe-4d2c-9a3a-eb42a03d26f6
 \.
 
 
@@ -3034,14 +3595,44 @@ e6f737de-0925-43c5-8a8e-8eb46e53fe38	2025-11-24 01:15:10.304095+00	2025-11-24 01
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.roles (id, "createdAt", "updatedAt", nombre, permisos, "empresaId", "deletedAt", "esDefecto") FROM stdin;
-5e667a90-3c46-47fe-9922-b8928e59de4b	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Administrador	{"esAdmin": true, "puedeVerTodo": true}	8904d395-93eb-4171-b148-fe9f10133955	\N	f
-5f79c09d-474f-481f-a177-97755549b116	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Administrador	{"esAdmin": true, "puedeVerTodo": true}	61e81ec9-8d21-460b-81b3-addc2df089a4	\N	f
-e879137e-6c6e-4318-82f6-2c01df53093a	2025-11-12 16:16:08.968761+00	2025-12-16 17:45:51.295907+00	Rol de Prueba (Admin)	{}	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-13 15:25:43.987177+00	f
-63b5fcb2-2fd6-4454-bf05-0f75a13a1227	2025-11-09 02:22:31.016007+00	2025-12-16 17:45:51.295907+00	Rol de Prueba	{"finanzas": "read", "empleados.leer": true, "nomina.exportar": true, "empleados.editar": false, "asistencia.registro": true, "asistencia.reportes": true, "desempeno.ciclos.read": true, "desempeno.objetivos.read": true, "desempeno.objetivos.create": true, "desempeno.objetivos.update": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f
-fd570a79-4ba8-47a3-9a65-43a16ddcffa6	2025-12-12 05:25:50.422375+00	2025-12-16 17:45:51.295907+00	Rol Empleado BASE	{"empresa.configurar": false}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f
-9d8d7df7-ed94-4882-8936-799a2dc35a2e	2025-11-08 05:57:28.62905+00	2025-12-16 17:45:51.295907+00	Administrador	{"esAdmin": true, "nomina.leer": true, "reportes.ver": true, "empleados.leer": true, "empleados.crear": true, "nomina.exportar": true, "nomina.procesar": true, "roles.gestionar": true, "empleados.borrar": true, "empleados.editar": true, "tareas.gestionar": true, "activos.gestionar": true, "nomina.configurar": true, "asistencia.aprobar": true, "empleados.exportar": true, "empresa.configurar": true, "usuarios.gestionar": true, "desempeno.gestionar": true, "asistencia.leer_todo": true, "beneficios.gestionar": true, "documentos.gestionar": true, "onboarding.gestionar": true, "capacitacion.gestionar": true, "reclutamiento.gestionar": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f
-9b0fa648-2d0f-4531-8f8d-7e3a826961c7	2025-12-16 17:45:51.295907+00	2025-12-16 17:45:51.295907+00	Rol de prueba 2	{"empleados.leer": true, "empleados.crear": true, "empleados.borrar": true, "empleados.editar": true, "empleados.exportar": true}	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	t
+COPY public.roles (id, "createdAt", "updatedAt", nombre, permisos, "empresaId", "deletedAt", "esDefecto", descripcion) FROM stdin;
+bc88625b-ba71-4364-9e6e-38c68b38cc29	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Super Admin	["*"]	60cdd23e-d098-4c2b-ab9c-83f1aee45642	\N	f	\N
+96839e33-8025-40a5-9764-34b830b5125f	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Gerente de RRHH	["empleados.leer_basico", "empleados.leer_sensible", "empleados.gestion", "empleados.editar", "empleados.borrar", "empleados.exportar", "salarios.leer", "nomina.leer_todo", "nomina.leer", "nomina.procesar", "nomina.configurar", "nomina.exportar", "prestamos.aprobar", "beneficios.gestionar", "sucursales.gestion", "departamentos.gestion", "cargos.gestion", "onboarding.gestion", "reclutamiento.gestion", "desempeno.gestionar", "documentos.gestionar", "capacitacion.gestionar", "reportes.ver"]	60cdd23e-d098-4c2b-ab9c-83f1aee45642	\N	f	\N
+613dba8e-18b5-4649-922f-6ad8a8b72251	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Gerente de Sucursal	["empleados.leer_basico", "asistencia.leer_todo", "asistencia.modificar", "asistencia.aprobar", "turnos.gestion", "vacaciones.aprobar", "onboarding.ver_progreso", "activos.gestionar", "reportes.ver"]	60cdd23e-d098-4c2b-ab9c-83f1aee45642	\N	f	\N
+8deb752d-bedd-4a5b-8181-b0f47dafc52f	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Líder de Proyecto	["proyectos.gestion", "proyectos.leer", "tareas.gestion", "empleados.leer_basico", "reportes.ver"]	60cdd23e-d098-4c2b-ab9c-83f1aee45642	\N	f	\N
+f9c5b148-5b60-451f-8466-da9862d28bb5	2025-12-20 06:00:22.916107+00	2025-12-20 06:00:22.916107+00	Colaborador	["perfil.me", "nomina.leer_propia", "asistencia.leer_propia", "vacaciones.solicitar", "prestamos.solicitar", "onboarding.mi_progreso", "tareas.leer_propias", "tareas.ejecutar", "proyectos.leer"]	60cdd23e-d098-4c2b-ab9c-83f1aee45642	\N	t	\N
+f8f291c4-4fb3-47b5-a6db-e07d213a46e7	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Super Admin	["*"]	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	\N	f	\N
+4d5745af-8a8f-4baf-85bb-6a848c9f68de	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Super Admin	["*"]	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	f	\N
+4b699df4-9da7-4524-b2aa-ce185f9f160c	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Gerente de RRHH	["empleados.leer_basico", "empleados.leer_sensible", "empleados.gestion", "empleados.editar", "empleados.borrar", "empleados.exportar", "salarios.leer", "nomina.leer_todo", "nomina.leer", "nomina.procesar", "nomina.configurar", "nomina.exportar", "prestamos.aprobar", "beneficios.gestionar", "sucursales.gestion", "departamentos.gestion", "cargos.gestion", "onboarding.gestion", "reclutamiento.gestion", "desempeno.gestionar", "documentos.gestionar", "capacitacion.gestionar", "reportes.ver"]	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	f	\N
+1c6696ed-a051-4f6b-8431-b7b1a8505423	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Gerente de Sucursal	["empleados.leer_basico", "asistencia.leer_todo", "asistencia.modificar", "asistencia.aprobar", "turnos.gestion", "vacaciones.aprobar", "onboarding.ver_progreso", "activos.gestionar", "reportes.ver"]	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	f	\N
+2c482a19-850e-4f82-a7de-622a91fa8ab8	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Líder de Proyecto	["proyectos.gestion", "proyectos.leer", "tareas.gestion", "empleados.leer_basico", "reportes.ver"]	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	f	\N
+32ca3f69-d957-45c6-b6e4-2ab1834325f6	2025-12-20 05:28:43.722696+00	2025-12-20 05:28:43.722696+00	Colaborador	["perfil.me", "nomina.leer_propia", "asistencia.leer_propia", "vacaciones.solicitar", "prestamos.solicitar", "onboarding.mi_progreso", "tareas.leer_propias", "tareas.ejecutar", "proyectos.leer"]	67f7cfd0-9099-44f2-9a28-3609cb8ef272	\N	t	\N
+e1f1ae8a-68ff-4af3-a619-248f5ace8087	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Super Admin	["*"]	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	f	\N
+71c8b307-7291-4386-b14e-0d8d2dd4926f	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Gerente de RRHH	["empleados.leer_basico", "empleados.leer_sensible", "empleados.gestion", "empleados.editar", "empleados.borrar", "empleados.exportar", "salarios.leer", "nomina.leer_todo", "nomina.leer", "nomina.procesar", "nomina.configurar", "nomina.exportar", "prestamos.aprobar", "beneficios.gestionar", "sucursales.gestion", "departamentos.gestion", "cargos.gestion", "onboarding.gestion", "reclutamiento.gestion", "desempeno.gestionar", "documentos.gestionar", "capacitacion.gestionar", "reportes.ver"]	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	f	\N
+86862601-d2ba-4de1-8426-422a64334ded	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Gerente de Sucursal	["empleados.leer_basico", "asistencia.leer_todo", "asistencia.modificar", "asistencia.aprobar", "turnos.gestion", "vacaciones.aprobar", "onboarding.ver_progreso", "activos.gestionar", "reportes.ver"]	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	f	\N
+aa03530c-6181-4037-8cbe-5034775b3a83	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Líder de Proyecto	["proyectos.gestion", "proyectos.leer", "tareas.gestion", "empleados.leer_basico", "reportes.ver"]	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	f	\N
+a233785c-82cb-4e55-9273-72fa10b1b14b	2025-12-20 05:34:10.010546+00	2025-12-20 05:34:10.010546+00	Colaborador	["perfil.me", "nomina.leer_propia", "asistencia.leer_propia", "vacaciones.solicitar", "prestamos.solicitar", "onboarding.mi_progreso", "tareas.leer_propias", "tareas.ejecutar", "proyectos.leer"]	24dce8fe-3132-463d-917c-c19fe787b8c6	\N	t	\N
+b529842d-4456-4034-87e8-b6ac3289ecab	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Gerente de RRHH	["empleados.leer_basico", "empleados.leer_sensible", "empleados.gestion", "empleados.editar", "empleados.borrar", "empleados.exportar", "salarios.leer", "nomina.leer_todo", "nomina.leer", "nomina.procesar", "nomina.configurar", "nomina.exportar", "prestamos.aprobar", "beneficios.gestionar", "sucursales.gestion", "departamentos.gestion", "cargos.gestion", "onboarding.gestion", "reclutamiento.gestion", "desempeno.gestionar", "documentos.gestionar", "capacitacion.gestionar", "reportes.ver"]	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	\N	f	\N
+93805616-08a7-43ff-b7a0-3d1d61c824bd	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Gerente de Sucursal	["empleados.leer_basico", "asistencia.leer_todo", "asistencia.modificar", "asistencia.aprobar", "turnos.gestion", "vacaciones.aprobar", "onboarding.ver_progreso", "activos.gestionar", "reportes.ver"]	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	\N	f	\N
+77ba9d94-abff-4e69-8a6e-2c4cb844501e	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Líder de Proyecto	["proyectos.gestion", "proyectos.leer", "tareas.gestion", "empleados.leer_basico", "reportes.ver"]	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	\N	f	\N
+60fa0be0-ae0e-402b-8660-816d28e340f4	2025-12-20 06:12:01.767074+00	2025-12-20 06:12:01.767074+00	Colaborador	["perfil.me", "nomina.leer_propia", "asistencia.leer_propia", "vacaciones.solicitar", "prestamos.solicitar", "onboarding.mi_progreso", "tareas.leer_propias", "tareas.ejecutar", "proyectos.leer"]	036d7acf-8470-4c6c-ab20-e7c6a3aa2c14	\N	t	\N
+a24a1b78-2b2a-46fa-bf87-963b07d0e4e6	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Super Admin	["*"]	f99851b0-65cd-48b5-88de-e95e7944a380	\N	f	\N
+5e667a90-3c46-47fe-9922-b8928e59de4b	2025-11-26 07:03:34.303203+00	2025-11-26 07:03:34.303203+00	Administrador	["esAdmin", "puedeVerTodo"]	8904d395-93eb-4171-b148-fe9f10133955	\N	f	\N
+fd570a79-4ba8-47a3-9a65-43a16ddcffa6	2025-12-12 05:25:50.422375+00	2025-12-16 17:45:51.295907+00	Rol Empleado BASE	[]	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f	\N
+50b0fdc2-3de5-486b-8ce1-91e032f040a4	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Gerente de RRHH	["empleados.leer_basico", "empleados.leer_sensible", "empleados.gestion", "empleados.editar", "empleados.borrar", "empleados.exportar", "salarios.leer", "nomina.leer_todo", "nomina.leer", "nomina.procesar", "nomina.configurar", "nomina.exportar", "prestamos.aprobar", "beneficios.gestionar", "sucursales.gestion", "departamentos.gestion", "cargos.gestion", "onboarding.gestion", "reclutamiento.gestion", "desempeno.gestionar", "documentos.gestionar", "capacitacion.gestionar", "reportes.ver"]	f99851b0-65cd-48b5-88de-e95e7944a380	\N	f	\N
+66c7d888-48ae-4663-9276-a58eb79680fa	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Gerente de Sucursal	["empleados.leer_basico", "asistencia.leer_todo", "asistencia.modificar", "asistencia.aprobar", "turnos.gestion", "vacaciones.aprobar", "onboarding.ver_progreso", "activos.gestionar", "reportes.ver"]	f99851b0-65cd-48b5-88de-e95e7944a380	\N	f	\N
+c2ca4e4c-3b5e-45cc-bf1f-d70de89e2b1b	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Líder de Proyecto	["proyectos.gestion", "proyectos.leer", "tareas.gestion", "empleados.leer_basico", "reportes.ver"]	f99851b0-65cd-48b5-88de-e95e7944a380	\N	f	\N
+332e11db-7859-4be9-8d14-064aa40cc7eb	2025-12-20 06:13:14.569059+00	2025-12-20 06:13:14.569059+00	Colaborador	["perfil.me", "nomina.leer_propia", "asistencia.leer_propia", "vacaciones.solicitar", "prestamos.solicitar", "onboarding.mi_progreso", "tareas.leer_propias", "tareas.ejecutar", "proyectos.leer"]	f99851b0-65cd-48b5-88de-e95e7944a380	\N	t	\N
+5f79c09d-474f-481f-a177-97755549b116	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	Administrador	["esAdmin", "puedeVerTodo"]	61e81ec9-8d21-460b-81b3-addc2df089a4	\N	f	\N
+e879137e-6c6e-4318-82f6-2c01df53093a	2025-11-12 16:16:08.968761+00	2025-12-16 17:45:51.295907+00	Rol de Prueba (Admin)	[]	d845d7a9-9dcf-4db3-95f3-131b93e40673	2025-11-13 15:25:43.987177+00	f	\N
+63b5fcb2-2fd6-4454-bf05-0f75a13a1227	2025-11-09 02:22:31.016007+00	2025-12-16 17:45:51.295907+00	Rol de Prueba	["empleados.leer", "nomina.exportar", "asistencia.registro", "asistencia.reportes", "desempeno.ciclos.read", "desempeno.objetivos.read", "desempeno.objetivos.create", "desempeno.objetivos.update"]	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f	\N
+9d8d7df7-ed94-4882-8936-799a2dc35a2e	2025-11-08 05:57:28.62905+00	2025-12-16 17:45:51.295907+00	Administrador	["esAdmin", "nomina.leer", "reportes.ver", "empleados.leer", "empleados.crear", "nomina.exportar", "nomina.procesar", "roles.gestionar", "empleados.borrar", "empleados.editar", "tareas.gestionar", "activos.gestionar", "nomina.configurar", "asistencia.aprobar", "empleados.exportar", "empresa.configurar", "usuarios.gestionar", "desempeno.gestionar", "asistencia.leer_todo", "beneficios.gestionar", "documentos.gestionar", "onboarding.gestionar", "capacitacion.gestionar", "reclutamiento.gestionar"]	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	f	\N
+9b0fa648-2d0f-4531-8f8d-7e3a826961c7	2025-12-16 17:45:51.295907+00	2025-12-16 17:45:51.295907+00	Rol de prueba 2	["empleados.leer", "empleados.crear", "empleados.borrar", "empleados.editar", "empleados.exportar"]	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	t	\N
+b74f3f4d-3422-4ffa-a816-343f8d4b556d	2025-12-20 06:30:01.612+00	2025-12-24 05:56:35.418376+00	Super Admin	["*"]	a5edc1dd-9410-4a40-986b-d280e10af715	\N	f	\N
+59363bc0-b302-4481-bdbf-2442b2e68451	2025-12-20 06:30:01.612+00	2025-12-24 05:56:35.418376+00	Gerente de RRHH	["empleados.leer_basico", "empleados.leer_sensible", "empleados.gestion", "empleados.editar", "empleados.borrar", "empleados.exportar", "salarios.leer", "nomina.leer_todo", "nomina.leer", "nomina.procesar", "nomina.configurar", "nomina.exportar", "prestamos.aprobar", "beneficios.gestionar", "sucursales.gestion", "departamentos.gestion", "cargos.gestion", "onboarding.gestion", "reclutamiento.gestion", "desempeno.gestionar", "documentos.gestionar", "capacitacion.gestionar", "reportes.ver"]	a5edc1dd-9410-4a40-986b-d280e10af715	\N	f	\N
+8e61e6b1-34f1-4dfe-96a1-2b34bd0309e4	2025-12-20 06:30:01.612+00	2025-12-24 05:56:35.418376+00	Gerente de Sucursal	["empleados.leer_basico", "asistencia.leer_todo", "asistencia.modificar", "asistencia.aprobar", "turnos.gestion", "vacaciones.aprobar", "onboarding.ver_progreso", "activos.gestionar", "reportes.ver"]	a5edc1dd-9410-4a40-986b-d280e10af715	\N	f	\N
+57a26648-434e-463a-98c5-2d1e776aad99	2025-12-20 06:30:01.612+00	2025-12-24 05:56:35.418376+00	Líder de Proyecto	["proyectos.gestion", "proyectos.leer", "tareas.gestion", "empleados.leer_basico", "reportes.ver"]	a5edc1dd-9410-4a40-986b-d280e10af715	\N	f	\N
+2525fb5e-2942-4ff4-913f-1243afd4f6ec	2025-12-20 06:30:01.612+00	2025-12-20 06:30:01.612+00	Colaborador	["perfil.me", "nomina.leer_propia", "asistencia.leer_propia", "vacaciones.solicitar", "prestamos.solicitar", "onboarding.mi_progreso", "tareas.leer_propias", "tareas.ejecutar", "proyectos.leer", "gastos.reportar"]	a5edc1dd-9410-4a40-986b-d280e10af715	\N	t	\N
 \.
 
 
@@ -3059,6 +3650,14 @@ d18e1afd-5c3c-45e1-8586-ff073e076465	2025-12-10 20:59:46.25652+00	2025-12-10 20:
 fd220bb8-91a1-44f0-aa1b-dedc17b396f9	2025-12-10 20:59:46.25652+00	2025-12-10 20:59:46.25652+00	Egreso	Aporte Patronal	5500	383cac55-b981-4fb3-bad4-4edcfc692f4b	\N
 1cd1b485-93e7-440e-a9da-136be304cc91	2025-12-10 20:59:46.25652+00	2025-12-10 20:59:46.25652+00	Ingreso	Salario Base	1500	a36773d1-6eca-4e4c-8767-7f058562e0b7	\N
 c8fd7530-437d-43cc-a2e3-965464b01a2b	2025-12-10 20:59:46.25652+00	2025-12-10 20:59:46.25652+00	Egreso	Aporte Patronal	165	a36773d1-6eca-4e4c-8767-7f058562e0b7	\N
+8bebe393-d417-4eee-82cf-517fd0c5388f	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	0	99f988fd-fab5-447e-9ef3-e14dc70bba49	\N
+763f2a67-b855-45cf-800d-c67be22176a6	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	1500	7a516a7d-e106-47e6-afe3-24b766caa219	\N
+2f6cb6dc-2b0a-4ca2-a2ee-417e68d1a366	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	2500.5	005373e0-75b4-4381-9ede-a0e7e3a95f71	\N
+d311cd4d-e877-4492-8310-2f34d1cb8ba0	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	3200	925ef08c-07e8-45da-80f9-ee415b7707f8	\N
+3adabdd5-70ec-4801-b223-add4e5530234	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	800	c6afbc67-3efc-4681-bff0-dbb2e96786f0	\N
+dff4b5fe-dfee-448f-b2c6-8784e40a9576	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	400	0e5a626d-3df1-457c-bde5-73df0316403d	\N
+c0f1f4de-c8d8-403f-9bcc-185e35c04f59	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	2300	fe734dfb-62c7-43fb-b6f7-f243c41a76ca	\N
+2dc30d0e-d64b-4286-bb9d-649471484280	2025-12-25 02:04:56.928466+00	2025-12-25 02:04:56.928466+00	Ingreso	Salario Base	2	be25811d-3a43-4690-8e78-862c575b0dc4	\N
 \.
 
 
@@ -3066,9 +3665,12 @@ c8fd7530-437d-43cc-a2e3-965464b01a2b	2025-12-10 20:59:46.25652+00	2025-12-10 20:
 -- Data for Name: solicitudes_vacaciones; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.solicitudes_vacaciones (id, "createdAt", "updatedAt", "deletedAt", "fechaInicio", "fechaFin", "diasSolicitados", estado, comentario, "respuestaAdmin", "empleadoId") FROM stdin;
-6495fa72-0803-4a3f-89ef-b2c7088a63fd	2025-11-23 20:40:04.957855+00	2025-11-23 20:40:04.957855+00	\N	2025-11-26	2025-11-29	4	PENDIENTE	Solicitud desde Dashboard	\N	7ca7fc59-9a54-4639-9693-e22e33a63244
-33e42193-ff93-48fd-a59a-8fe8563c46f3	2025-12-03 14:19:14.330817+00	2025-12-03 14:19:14.330817+00	\N	2025-12-11	2025-12-18	8	PENDIENTE	Solicitud desde Dashboard	\N	7ca7fc59-9a54-4639-9693-e22e33a63244
+COPY public.solicitudes_vacaciones (id, "createdAt", "updatedAt", "deletedAt", "fechaInicio", "fechaFin", "diasSolicitados", estado, comentario, "respuestaAdmin", "empleadoId", "comentariosRespuesta", "fechaRespuesta") FROM stdin;
+6495fa72-0803-4a3f-89ef-b2c7088a63fd	2025-11-23 20:40:04.957855+00	2025-11-23 20:40:04.957855+00	\N	2025-11-26	2025-11-29	4	PENDIENTE	Solicitud desde Dashboard	\N	7ca7fc59-9a54-4639-9693-e22e33a63244	\N	\N
+33e42193-ff93-48fd-a59a-8fe8563c46f3	2025-12-03 14:19:14.330817+00	2025-12-03 14:19:14.330817+00	\N	2025-12-11	2025-12-18	8	PENDIENTE	Solicitud desde Dashboard	\N	7ca7fc59-9a54-4639-9693-e22e33a63244	\N	\N
+9e36081d-0f77-4c7c-879a-f2f3e314b3ee	2025-12-22 00:30:44.311937+00	2025-12-23 18:57:12.259287+00	\N	2025-12-24	2025-12-31	8	APROBADA	Solicitud desde Dashboard	\N	a375538e-94fe-4d2c-9a3a-eb42a03d26f6	Aprobado desde Overview	2025-12-23 18:57:12.245
+e5a00556-2ab4-433f-81db-71fdee16bdcc	2025-12-23 19:01:55.333293+00	2025-12-23 19:02:16.058718+00	\N	2025-12-23	2025-12-31	9	APROBADA	Solicitud desde Dashboard	\N	81b2d249-202d-4b8f-b84b-440c668ee216	Aprobado desde Overview	2025-12-23 19:02:16.049
+dfb81477-5aa0-4d36-90f8-dbb3d1e7abec	2025-12-24 06:14:04.953421+00	2025-12-24 06:38:19.442516+00	\N	2025-12-29	2025-12-31	3	APROBADA	Solicitud desde Dashboard	\N	a375538e-94fe-4d2c-9a3a-eb42a03d26f6	Aprobado desde Centro	2025-12-24 06:38:19.436
 \.
 
 
@@ -3091,8 +3693,10 @@ c389a14c-1883-444f-a527-c97105f6b6cf	2025-11-24 04:51:26.423443+00	2025-11-24 04
 -- Data for Name: sucursales; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.sucursales (id, "createdAt", "updatedAt", "deletedAt", nombre, direccion, telefono, activa, "empresaId") FROM stdin;
-b68f5b5c-14dc-4477-be9e-90cfe778a038	2025-11-27 18:09:40.215701+00	2025-11-27 18:09:40.215701+00	\N	Matriz Centro	Av. Amazonas y Naciones Unidas	\N	t	d845d7a9-9dcf-4db3-95f3-131b93e40673
+COPY public.sucursales (id, "createdAt", "updatedAt", "deletedAt", nombre, direccion, telefono, activa, "empresaId", "jefeId") FROM stdin;
+b68f5b5c-14dc-4477-be9e-90cfe778a038	2025-11-27 18:09:40.215701+00	2025-11-27 18:09:40.215701+00	\N	Matriz Centro	Av. Amazonas y Naciones Unidas	\N	t	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
+e305608f-24d0-46f4-892a-04dd92817db6	2025-12-20 20:35:27.35374+00	2025-12-20 20:35:27.35374+00	\N	Sede Zamora	Diego de Vaca y 24 de Mayo	111111111	t	a5edc1dd-9410-4a40-986b-d280e10af715	90a07dc8-8feb-4582-8830-425e388d441a
+dd146528-e6c8-4970-a572-10e7b6f94429	2025-12-20 20:36:53.393243+00	2025-12-20 20:36:53.393243+00	\N	Sede Loja	Av. Pio Jaramillo	11111111111111111111111	t	a5edc1dd-9410-4a40-986b-d280e10af715	99d62f5a-86e8-4844-9488-1da5bde6317c
 \.
 
 
@@ -3118,6 +3722,30 @@ cdbb5cd4-2d20-46ed-abb9-d7a6b72f8626	2025-11-19 21:26:02.606684+00	2025-12-13 05
 
 
 --
+-- Data for Name: tareas_empleado; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.tareas_empleado (id, "createdAt", "updatedAt", "deletedAt", "empleadoId", titulo, descripcion, enlace, completado, "plantillaOrigenId") FROM stdin;
+c7f36168-e47e-4979-9c72-ddc4f1e83076	2025-12-19 06:40:41.179716+00	2025-12-19 17:05:22.935731+00	\N	fa703991-ff73-4097-825b-19355d867255	Completa tu Perfil	Sube tu foto y actualiza tu teléfono de contacto.	/dashboard/my-profile	t	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+0063ce2c-b091-4fe7-aa6f-936291e6564d	2025-12-19 06:40:41.179716+00	2025-12-19 17:05:28.842791+00	\N	fa703991-ff73-4097-825b-19355d867255	Video de Bienvenida	Mira el mensaje de nuestro CEO sobre la cultura de la empresa.	\N	t	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+0b6e2e21-d200-4a3f-9c36-ade835b16539	2025-12-19 06:40:41.179716+00	2025-12-19 17:05:30.619199+00	\N	fa703991-ff73-4097-825b-19355d867255	Políticas de Seguridad	Lee y acepta el manual de seguridad de la información.	/dashboard/policies	t	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+f485c105-51ad-4040-84bd-33989df2dde2	2025-12-19 06:40:41.179716+00	2025-12-19 17:05:32.039277+00	\N	fa703991-ff73-4097-825b-19355d867255	Configuración de Correo	Asegúrate de tener acceso a tu email corporativo.	\N	t	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+\.
+
+
+--
+-- Data for Name: tareas_plantilla; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.tareas_plantilla (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, enlace, "plantillaId") FROM stdin;
+6044767f-f6bd-4a7e-ad8a-17fa68a288da	2025-12-19 06:40:41.147334+00	2025-12-19 06:40:41.147334+00	\N	Video de Bienvenida	Mira el mensaje de nuestro CEO sobre la cultura de la empresa.	\N	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+6ce1664b-b149-4c7b-8275-894b5da762bc	2025-12-19 06:40:41.147334+00	2025-12-19 06:40:41.147334+00	\N	Políticas de Seguridad	Lee y acepta el manual de seguridad de la información.	/dashboard/policies	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+b00c9a00-237b-441a-8b48-f146d8208bb1	2025-12-19 06:40:41.147334+00	2025-12-19 06:40:41.147334+00	\N	Configuración de Correo	Asegúrate de tener acceso a tu email corporativo.	\N	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+6d46f3fb-1478-4bbe-9393-1e785447467b	2025-12-19 06:40:41.147334+00	2025-12-19 06:40:41.147334+00	\N	Completa tu Perfil	Sube tu foto y actualiza tu teléfono de contacto.	/dashboard/my-profile	55beadfd-eb8c-4a42-8c32-50aecd5dfb91
+\.
+
+
+--
 -- Data for Name: timesheets; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
@@ -3138,6 +3766,12 @@ f160d896-8729-47cc-a9dc-378cf088c48b	2025-11-23 23:56:48.828769+00	2025-11-23 23
 f734b62b-e1af-4ab4-bad9-5eaa550f849a	2025-11-27 18:11:22.745145+00	2025-11-27 18:11:22.745145+00	gerente@matriz.com	$2b$10$0GEj12.C3idwFL.RgPuFIuDxjWrClLX2jBQVFAiDdsc3Bp6DlU53G	t	\N	\N
 b315bcdc-323a-44d1-b8af-7a148b9228f2	2025-11-27 20:11:34.64177+00	2025-11-27 20:11:34.64177+00	jeyxnwn@gmail.com	$2b$10$x7qi0qeb2ukj7G6YqyzTr.zE0m0SdLKiPzcylqEP3sdo4gwiinCza	t	\N	\N
 7cc24c3c-3393-417f-94d2-36dd2d318dc3	2025-12-09 17:02:48.315739+00	2025-12-09 17:02:48.315739+00	jeimy1605@gmai.com	$2b$10$qa0j2fBGiQRu4KHHMXa2keD0tZ.Qlf00GEti65JNQ.tiPx44EXbAi	t	\N	\N
+f35ee9d2-9fbd-4b57-8bdf-b9580f1208be	2025-12-19 03:31:35.890882+00	2025-12-19 03:31:35.890882+00	juan.perez@empresa.com	$2b$10$k2wbhpFhFodVTCjUx0bAa.l7WBCFV85QeBc58bniQiTYUnfhlVX.a	t	\N	\N
+bd8480a4-8b69-47f2-a5fd-ef461b1830a7	2025-12-19 03:31:38.789487+00	2025-12-19 03:31:38.789487+00	pedro.ramirez@empresa.com	$2b$10$MhawrJiH10P0dv8pgtDBQ.JpJk38wdCdk0UjXMh.zWFt4Rna1lTEy	t	\N	\N
+539a0df3-e1e0-4abc-87c5-2024b7ab76d3	2025-12-19 03:31:41.059964+00	2025-12-19 03:31:41.059964+00	ana.lopez@empresa.com	$2b$10$tawunsWA3.TrETqsqYUD0u0jCEg4KfGzKA12b6Nm5dvdT1uBguAXG	t	\N	\N
+2aa19fb4-c140-4698-adc0-9b0515c12154	2025-12-19 03:37:11.758374+00	2025-12-19 03:37:11.758374+00	maria.gomez@empresa.com	$2b$10$Pm53JXXMgV8KKRXef/gmQ.BbdvvIeUlR.0N0k4NSY4YGXDsqkX/TW	t	\N	\N
+919d3d87-42da-4bc0-9234-740233573029	2025-12-19 03:41:52.436637+00	2025-12-19 03:41:52.436637+00	luis.torres@empresa.com	$2b$10$oyBYBNx.JK7Ks4AcZnn6lOVpidOOmfnnD8nv0OQ3ISl3fBEPnhQJS	t	\N	\N
+d94163f7-0c0e-44f4-a507-385eb0b71c31	2025-12-22 15:28:52.838916+00	2025-12-22 15:28:52.838916+00	bvalvarez1.1@gmail.com	$2b$10$dCXMfwNDoOzAFTqxbWTTseM4vrZXlzqluvbAECbAyQ6L56co6qVBO	t	\N	\N
 \.
 
 
@@ -3145,10 +3779,28 @@ b315bcdc-323a-44d1-b8af-7a148b9228f2	2025-11-27 20:11:34.64177+00	2025-11-27 20:
 -- Data for Name: vacantes; Type: TABLE DATA; Schema: public; Owner: puntopymes
 --
 
-COPY public.vacantes (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, requisitos, estado, ubicacion, "salarioMin", "salarioMax", "fechaCierre", "empresaId", "departamentoId") FROM stdin;
-15c7ea4d-403d-4280-9364-d7c3d6ea6956	2025-11-21 06:13:15.382395+00	2025-11-21 06:13:15.382395+00	\N	Desarrollador Backend Senior	Buscamos experto en NestJS y Microservicios para liderar el equipo técnico.	Más de 5 años de experiencia. Inglés avanzado. Conocimientos sólidos en AWS y Docker.	PUBLICA	Remoto	2500	3500	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N
-da238ee2-7f49-4f7e-a003-f2370198d11f	2025-12-04 16:21:36.829889+00	2025-12-04 16:21:36.829889+00	\N	Analista de Datos	Tiene q analizar datos para dar soluciones a la empresa, reportes y sugerir decisiones para el progreso de la empresa 	Trabajo en Equipo, Ingles Avanzado, Liderazgo	PUBLICA	Remoto	1500	1700	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	d3da9e1a-51c0-431e-9668-a4c6727e242f
-d0e00f91-58f1-4d17-beee-bd89d6d5ba82	2025-12-04 16:37:26.717338+00	2025-12-04 16:37:26.717338+00	\N	Programador Django	Buscamos a alguien con amplio conocimiento en desarrollo de aplicaciones moviles en django, minimo 3 años de experiencia y proyectos previos	Trabajo en Equipo, Django Senior, 3 años de experiencia	PUBLICA	Presencial	2000	3000	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	7ee03611-e52b-424a-bca8-345a82d368b0
+COPY public.vacantes (id, "createdAt", "updatedAt", "deletedAt", titulo, descripcion, requisitos, estado, ubicacion, "salarioMin", "salarioMax", "fechaCierre", "empresaId", "departamentoId", "sucursalId") FROM stdin;
+15c7ea4d-403d-4280-9364-d7c3d6ea6956	2025-11-21 06:13:15.382395+00	2025-11-21 06:13:15.382395+00	\N	Desarrollador Backend Senior	Buscamos experto en NestJS y Microservicios para liderar el equipo técnico.	Más de 5 años de experiencia. Inglés avanzado. Conocimientos sólidos en AWS y Docker.	PUBLICA	Remoto	2500	3500	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	\N	\N
+da238ee2-7f49-4f7e-a003-f2370198d11f	2025-12-04 16:21:36.829889+00	2025-12-04 16:21:36.829889+00	\N	Analista de Datos	Tiene q analizar datos para dar soluciones a la empresa, reportes y sugerir decisiones para el progreso de la empresa 	Trabajo en Equipo, Ingles Avanzado, Liderazgo	PUBLICA	Remoto	1500	1700	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	d3da9e1a-51c0-431e-9668-a4c6727e242f	\N
+d0e00f91-58f1-4d17-beee-bd89d6d5ba82	2025-12-04 16:37:26.717338+00	2025-12-04 16:37:26.717338+00	\N	Programador Django	Buscamos a alguien con amplio conocimiento en desarrollo de aplicaciones moviles en django, minimo 3 años de experiencia y proyectos previos	Trabajo en Equipo, Django Senior, 3 años de experiencia	PUBLICA	Presencial	2000	3000	\N	d845d7a9-9dcf-4db3-95f3-131b93e40673	7ee03611-e52b-424a-bca8-345a82d368b0	\N
+43c49cc4-6989-4e97-9210-d800cfcdee4c	2025-12-21 22:33:37.591965+00	2025-12-21 22:33:37.591965+00	\N	Prueba Puesto	Probando Varias Cosas a ver si funciona	Trabajo en Equipo	BORRADOR	Remoto	0	200	\N	a5edc1dd-9410-4a40-986b-d280e10af715	54e9a5b1-5f85-47b7-815c-55b8d43aa0f2	dd146528-e6c8-4970-a572-10e7b6f94429
+1b126ba5-8f25-4cea-9cdf-4e8116a3c95c	2025-12-20 23:33:29.884249+00	2025-12-21 22:38:22.899644+00	\N	Analista de Datos	Analista de base de datos sr, que pueda tomar decisiones para reducir los costos de la empresa y mejorar la productividad	Trabajo en Equipo	CERRADA	Remoto	800	1000	\N	a5edc1dd-9410-4a40-986b-d280e10af715	54e9a5b1-5f85-47b7-815c-55b8d43aa0f2	dd146528-e6c8-4970-a572-10e7b6f94429
+\.
+
+
+--
+-- Data for Name: votos; Type: TABLE DATA; Schema: public; Owner: puntopymes
+--
+
+COPY public.votos (id, "createdAt", "updatedAt", "deletedAt", "empleadoId", "encuestaId", "opcionId") FROM stdin;
+81e005bc-2301-4e6b-b71a-426a6f2b321f	2025-12-23 15:06:10.680742+00	2025-12-23 15:06:10.680742+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	c2429d4d-9510-431c-85ac-583f511184f9	8c7fe69c-71fa-4fdd-a8d8-beaf58d16dd1
+2824d959-a643-442e-bec3-1026f58169c0	2025-12-23 15:10:47.186014+00	2025-12-23 15:10:47.186014+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	98c30b93-c89f-4f13-ba31-d1d45a22ea34	dc9fc2d7-2cda-439e-a3a9-439172b6ce97
+31c43a9e-dee5-436b-89db-83bbcddcefe0	2025-12-23 15:11:00.602092+00	2025-12-23 15:11:00.602092+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	bc55881c-28a3-4af6-8508-bf324f171624	002cd226-6f75-4397-8269-e27a4c3ffb8c
+61813a12-b99e-41a4-96a0-3052fb9dd11c	2025-12-23 15:11:10.124135+00	2025-12-23 15:11:10.124135+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	ce9e760c-e235-4a19-8e6f-f26b76c574c3	736c02a6-25ff-4679-97c6-5ce635053d85
+65c8cbd2-508b-4817-a5ba-9dbe65207689	2025-12-23 15:11:29.567123+00	2025-12-23 15:11:29.567123+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	fde4e6ef-3352-4929-a8aa-fd216de48786	15a63baf-3848-45d6-b559-1193e4925ed1
+5edf7a38-7f6b-4541-9449-123773488029	2025-12-23 15:11:37.643112+00	2025-12-23 15:11:37.643112+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	950dff22-6655-48a7-a8af-d90061e3b7f2	e52b394e-17f9-4009-9c15-e916df5be29b
+b4577e78-7f74-4505-b464-95ea9b95e536	2025-12-23 15:11:41.510396+00	2025-12-23 15:11:41.510396+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	048d1c89-fb00-458f-a958-42a0d15677f1	fa8e3200-0357-4683-9f8b-a228dec2360d
+099b9723-6faa-4571-8a75-fce14ed36fef	2025-12-23 15:11:47.741199+00	2025-12-23 15:11:47.741199+00	\N	b315bcdc-323a-44d1-b8af-7a148b9228f2	bc346ec7-bada-406f-96d6-ad287847d407	fcc79715-b272-4f40-800c-33d745f35a32
 \.
 
 
@@ -3166,6 +3818,14 @@ ALTER TABLE ONLY public.cargos
 
 ALTER TABLE ONLY public.timesheets
     ADD CONSTRAINT "PK_1dc280b68c9353ecce41a34be71" PRIMARY KEY (id);
+
+
+--
+-- Name: tareas_empleado PK_2a8dbd773ccd63c5f28f8fe76d7; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.tareas_empleado
+    ADD CONSTRAINT "PK_2a8dbd773ccd63c5f28f8fe76d7" PRIMARY KEY (id);
 
 
 --
@@ -3198,6 +3858,14 @@ ALTER TABLE ONLY public.evaluaciones
 
 ALTER TABLE ONLY public.beneficios_asignados
     ADD CONSTRAINT "PK_3db0507f72d1e15e419c7d7dd95" PRIMARY KEY (id);
+
+
+--
+-- Name: tareas_plantilla PK_3eec8744adb94fc7b30ab484d79; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.tareas_plantilla
+    ADD CONSTRAINT "PK_3eec8744adb94fc7b30ab484d79" PRIMARY KEY (id);
 
 
 --
@@ -3265,6 +3933,14 @@ ALTER TABLE ONLY public.departamentos
 
 
 --
+-- Name: encuesta_opciones PK_6e2b840d34287e99a90bd02678a; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.encuesta_opciones
+    ADD CONSTRAINT "PK_6e2b840d34287e99a90bd02678a" PRIMARY KEY (id);
+
+
+--
 -- Name: empleados PK_73a63a6fcb4266219be3eb0ce8a; Type: CONSTRAINT; Schema: public; Owner: puntopymes
 --
 
@@ -3281,11 +3957,27 @@ ALTER TABLE ONLY public.periodos_nomina
 
 
 --
+-- Name: documentos_empresa PK_8a73e530b14e408a12cb2e8ce1e; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.documentos_empresa
+    ADD CONSTRAINT "PK_8a73e530b14e408a12cb2e8ce1e" PRIMARY KEY (id);
+
+
+--
 -- Name: tareas PK_9370ac1b0569cacf8cda6815c97; Type: CONSTRAINT; Schema: public; Owner: puntopymes
 --
 
 ALTER TABLE ONLY public.tareas
     ADD CONSTRAINT "PK_9370ac1b0569cacf8cda6815c97" PRIMARY KEY (id);
+
+
+--
+-- Name: plantillas_onboarding PK_98126d7e1d9804648e901b4f21f; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.plantillas_onboarding
+    ADD CONSTRAINT "PK_98126d7e1d9804648e901b4f21f" PRIMARY KEY (id);
 
 
 --
@@ -3302,6 +3994,14 @@ ALTER TABLE ONLY public.activos_asignados
 
 ALTER TABLE ONLY public.inscripciones_cursos
     ADD CONSTRAINT "PK_99a7ea2245fa5f70b43f204413c" PRIMARY KEY (id);
+
+
+--
+-- Name: votos PK_9d231aec05098f2c5b5a87bb4d9; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.votos
+    ADD CONSTRAINT "PK_9d231aec05098f2c5b5a87bb4d9" PRIMARY KEY (id);
 
 
 --
@@ -3361,6 +4061,14 @@ ALTER TABLE ONLY public.contratos
 
 
 --
+-- Name: encuestas PK_cff77141e81a3b68a91a37691dd; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.encuestas
+    ADD CONSTRAINT "PK_cff77141e81a3b68a91a37691dd" PRIMARY KEY (id);
+
+
+--
 -- Name: solicitudes_vacaciones PK_d216a09ba81c0b2c223fda93450; Type: CONSTRAINT; Schema: public; Owner: puntopymes
 --
 
@@ -3409,6 +4117,14 @@ ALTER TABLE ONLY public.novedades_nomina
 
 
 --
+-- Name: anuncios PK_e38512a0cf3f4f9452fcdc082de; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.anuncios
+    ADD CONSTRAINT "PK_e38512a0cf3f4f9452fcdc082de" PRIMARY KEY (id);
+
+
+--
 -- Name: documentos_empleados PK_e8466a74c254dc822a65610ddc7; Type: CONSTRAINT; Schema: public; Owner: puntopymes
 --
 
@@ -3422,6 +4138,14 @@ ALTER TABLE ONLY public.documentos_empleados
 
 ALTER TABLE ONLY public.rubros_nomina
     ADD CONSTRAINT "PK_fce054151a56db25c4243553b12" PRIMARY KEY (id);
+
+
+--
+-- Name: sucursales UQ_0a7eea63b27be63ede649fe34a8; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.sucursales
+    ADD CONSTRAINT "UQ_0a7eea63b27be63ede649fe34a8" UNIQUE ("jefeId");
 
 
 --
@@ -3462,6 +4186,14 @@ ALTER TABLE ONLY public.usuarios
 
 ALTER TABLE ONLY public.asignaciones_tareas
     ADD CONSTRAINT "UQ_801b438647acae49db43932c905" UNIQUE ("tareaId", "empleadoId");
+
+
+--
+-- Name: votos UQ_a591ce51d113ba55f75a31dcee4; Type: CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.votos
+    ADD CONSTRAINT "UQ_a591ce51d113ba55f75a31dcee4" UNIQUE ("encuestaId", "empleadoId");
 
 
 --
@@ -3552,6 +4284,13 @@ CREATE INDEX "IDX_195d169e4d4abf2b670cb6996b" ON public.proyectos USING btree ("
 
 
 --
+-- Name: IDX_1a6d51963ec83351ddc85a3a63; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_1a6d51963ec83351ddc85a3a63" ON public.documentos_empresa USING btree ("empresaId");
+
+
+--
 -- Name: IDX_1ba1c7b8b68d91ee7b4b2d8c9e; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
@@ -3573,10 +4312,38 @@ CREATE INDEX "IDX_237cf37f04aca360092dfd1b65" ON public.periodos_nomina USING bt
 
 
 --
+-- Name: IDX_253da16de07ee534485714e3da; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_253da16de07ee534485714e3da" ON public.tareas_plantilla USING btree ("deletedAt");
+
+
+--
+-- Name: IDX_25455553cbc65327fdf0254e3a; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_25455553cbc65327fdf0254e3a" ON public.tareas_empleado USING btree ("deletedAt");
+
+
+--
 -- Name: IDX_2c37f7816b0a677e99b635ac8f; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
 CREATE INDEX "IDX_2c37f7816b0a677e99b635ac8f" ON public.roles USING btree ("empresaId");
+
+
+--
+-- Name: IDX_2cc3bb9bbd57a385f67fc9e1d5; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_2cc3bb9bbd57a385f67fc9e1d5" ON public.departamentos USING btree ("sucursalId");
+
+
+--
+-- Name: IDX_2ea2d775728671a12979854c07; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_2ea2d775728671a12979854c07" ON public.plantillas_onboarding USING btree ("deletedAt");
 
 
 --
@@ -3654,6 +4421,20 @@ CREATE INDEX "IDX_443c638f02cf7701b128ceef2e" ON public.conceptos_nomina USING b
 --
 
 CREATE INDEX "IDX_446adfc18b35418aac32ae0b7b" ON public.usuarios USING btree (email);
+
+
+--
+-- Name: IDX_448cae3e056d8ee6472433e817; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_448cae3e056d8ee6472433e817" ON public.anuncios USING btree ("deletedAt");
+
+
+--
+-- Name: IDX_462ad0c7fc2a24c726ae62bc5b; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_462ad0c7fc2a24c726ae62bc5b" ON public.documentos_empresa USING btree ("sucursalId");
 
 
 --
@@ -3916,6 +4697,13 @@ CREATE INDEX "IDX_a9adad2defec8e6fc0e3c25fd8" ON public.reportes_gasto USING btr
 
 
 --
+-- Name: IDX_aaa6c5471e0924fda73c320bc9; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_aaa6c5471e0924fda73c320bc9" ON public.votos USING btree ("deletedAt");
+
+
+--
 -- Name: IDX_b4577a6a04bb57be1608d7b509; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
@@ -3934,6 +4722,13 @@ CREATE INDEX "IDX_b62a1f31acb5e6fa2e55d7b5c0" ON public.objetivos USING btree ("
 --
 
 CREATE INDEX "IDX_b72e2e096afb8f4dfcb2c42fd5" ON public.solicitudes_vacaciones USING btree ("empleadoId");
+
+
+--
+-- Name: IDX_b91095d0f11aaec8fe61d18c4f; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_b91095d0f11aaec8fe61d18c4f" ON public.encuestas USING btree ("deletedAt");
 
 
 --
@@ -3958,6 +4753,13 @@ CREATE INDEX "IDX_bae287db424133750dbc5e5d46" ON public.asignaciones_tareas USIN
 
 
 --
+-- Name: IDX_be1f98c9025378c4f5ce058a86; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_be1f98c9025378c4f5ce058a86" ON public.activos USING btree ("sucursalId");
+
+
+--
 -- Name: IDX_c09fda078554e9fb501f55d42d; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
@@ -3965,10 +4767,24 @@ CREATE INDEX "IDX_c09fda078554e9fb501f55d42d" ON public.rubros_nomina USING btre
 
 
 --
+-- Name: IDX_c88bf745ca419a8624641ce529; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_c88bf745ca419a8624641ce529" ON public.tareas_empleado USING btree ("empleadoId");
+
+
+--
 -- Name: IDX_c9b92a66b04bad522daf0fbc68; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
 CREATE INDEX "IDX_c9b92a66b04bad522daf0fbc68" ON public.departamentos USING btree ("deletedAt");
+
+
+--
+-- Name: IDX_d0e8a883565e5c5a2f5773b4eb; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_d0e8a883565e5c5a2f5773b4eb" ON public.cargos USING btree ("empresaId");
 
 
 --
@@ -4035,6 +4851,13 @@ CREATE INDEX "IDX_ee4b455959e2897ce6acdb4313" ON public.items_gasto USING btree 
 
 
 --
+-- Name: IDX_eecfe6818d0b140dbe9d0d1674; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_eecfe6818d0b140dbe9d0d1674" ON public.vacantes USING btree ("sucursalId");
+
+
+--
 -- Name: IDX_f0f7c23b855ae6a397d7eecbaf; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
@@ -4056,10 +4879,32 @@ CREATE INDEX "IDX_f2610f1e59eba594ce0c5bfc06" ON public.beneficios_asignados USI
 
 
 --
+-- Name: IDX_f59f5c8dd151d87b374ad24a46; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_f59f5c8dd151d87b374ad24a46" ON public.documentos_empresa USING btree ("deletedAt");
+
+
+--
+-- Name: IDX_fd4a694e65472c9b152c21a8eb; Type: INDEX; Schema: public; Owner: puntopymes
+--
+
+CREATE INDEX "IDX_fd4a694e65472c9b152c21a8eb" ON public.encuesta_opciones USING btree ("deletedAt");
+
+
+--
 -- Name: IDX_fff0f4e1e18c39b6e5dd47b46c; Type: INDEX; Schema: public; Owner: puntopymes
 --
 
 CREATE INDEX "IDX_fff0f4e1e18c39b6e5dd47b46c" ON public.evaluaciones USING btree ("evaluadoId");
+
+
+--
+-- Name: sucursales FK_0a7eea63b27be63ede649fe34a8; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.sucursales
+    ADD CONSTRAINT "FK_0a7eea63b27be63ede649fe34a8" FOREIGN KEY ("jefeId") REFERENCES public.empleados(id) ON DELETE SET NULL;
 
 
 --
@@ -4092,6 +4937,14 @@ ALTER TABLE ONLY public.empleados
 
 ALTER TABLE ONLY public.proyectos
     ADD CONSTRAINT "FK_195d169e4d4abf2b670cb6996b4" FOREIGN KEY ("empresaId") REFERENCES public.empresas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: documentos_empresa FK_1a6d51963ec83351ddc85a3a633; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.documentos_empresa
+    ADD CONSTRAINT "FK_1a6d51963ec83351ddc85a3a633" FOREIGN KEY ("empresaId") REFERENCES public.empresas(id) ON DELETE CASCADE;
 
 
 --
@@ -4151,6 +5004,14 @@ ALTER TABLE ONLY public.roles
 
 
 --
+-- Name: departamentos FK_2cc3bb9bbd57a385f67fc9e1d55; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.departamentos
+    ADD CONSTRAINT "FK_2cc3bb9bbd57a385f67fc9e1d55" FOREIGN KEY ("sucursalId") REFERENCES public.sucursales(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: objetivos FK_2f117a0e479e54f255c088a7288; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
 --
 
@@ -4172,6 +5033,14 @@ ALTER TABLE ONLY public.objetivos
 
 ALTER TABLE ONLY public.timesheets
     ADD CONSTRAINT "FK_380afec568aa32421cd37efd26c" FOREIGN KEY ("empleadoId") REFERENCES public.empleados(id) ON DELETE CASCADE;
+
+
+--
+-- Name: encuesta_opciones FK_39cca0a2bd5909b8475f1c5ed06; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.encuesta_opciones
+    ADD CONSTRAINT "FK_39cca0a2bd5909b8475f1c5ed06" FOREIGN KEY ("encuestaId") REFERENCES public.encuestas(id) ON DELETE CASCADE;
 
 
 --
@@ -4204,6 +5073,14 @@ ALTER TABLE ONLY public.proyectos
 
 ALTER TABLE ONLY public.departamentos
     ADD CONSTRAINT "FK_43d95fc248a316eefd63e789481" FOREIGN KEY ("empresaId") REFERENCES public.empresas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: documentos_empresa FK_462ad0c7fc2a24c726ae62bc5bc; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.documentos_empresa
+    ADD CONSTRAINT "FK_462ad0c7fc2a24c726ae62bc5bc" FOREIGN KEY ("sucursalId") REFERENCES public.sucursales(id) ON DELETE CASCADE;
 
 
 --
@@ -4375,11 +5252,43 @@ ALTER TABLE ONLY public.empleados
 
 
 --
+-- Name: proyectos FK_b4c1ee415a5155af7052e01d699; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.proyectos
+    ADD CONSTRAINT "FK_b4c1ee415a5155af7052e01d699" FOREIGN KEY ("sucursalId") REFERENCES public.sucursales(id) ON DELETE SET NULL;
+
+
+--
 -- Name: solicitudes_vacaciones FK_b72e2e096afb8f4dfcb2c42fd50; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
 --
 
 ALTER TABLE ONLY public.solicitudes_vacaciones
     ADD CONSTRAINT "FK_b72e2e096afb8f4dfcb2c42fd50" FOREIGN KEY ("empleadoId") REFERENCES public.empleados(id) ON DELETE CASCADE;
+
+
+--
+-- Name: activos FK_be1f98c9025378c4f5ce058a86a; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.activos
+    ADD CONSTRAINT "FK_be1f98c9025378c4f5ce058a86a" FOREIGN KEY ("sucursalId") REFERENCES public.sucursales(id) ON DELETE SET NULL;
+
+
+--
+-- Name: anuncios FK_bf5138d8ad8cd5f215481c77067; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.anuncios
+    ADD CONSTRAINT "FK_bf5138d8ad8cd5f215481c77067" FOREIGN KEY ("sucursalId") REFERENCES public.sucursales(id) ON DELETE CASCADE;
+
+
+--
+-- Name: votos FK_c5fb480d9afeff7ee0904ef2af5; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.votos
+    ADD CONSTRAINT "FK_c5fb480d9afeff7ee0904ef2af5" FOREIGN KEY ("encuestaId") REFERENCES public.encuestas(id);
 
 
 --
@@ -4396,6 +5305,14 @@ ALTER TABLE ONLY public.empleados
 
 ALTER TABLE ONLY public.reportes_gasto
     ADD CONSTRAINT "FK_c9e1d826bfff7caa96a74df107a" FOREIGN KEY ("empleadoId") REFERENCES public.empleados(id) ON DELETE CASCADE;
+
+
+--
+-- Name: votos FK_cb495d69c28e80766f3f0391991; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.votos
+    ADD CONSTRAINT "FK_cb495d69c28e80766f3f0391991" FOREIGN KEY ("opcionId") REFERENCES public.encuesta_opciones(id);
 
 
 --
@@ -4420,6 +5337,14 @@ ALTER TABLE ONLY public.ciclos_evaluacion
 
 ALTER TABLE ONLY public.beneficios_asignados
     ADD CONSTRAINT "FK_d990e2babdc537d97fbfb84d7e2" FOREIGN KEY ("empleadoId") REFERENCES public.empleados(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tareas_plantilla FK_dc4b003b1f150bc279f44efa50b; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.tareas_plantilla
+    ADD CONSTRAINT "FK_dc4b003b1f150bc279f44efa50b" FOREIGN KEY ("plantillaId") REFERENCES public.plantillas_onboarding(id);
 
 
 --
@@ -4452,6 +5377,14 @@ ALTER TABLE ONLY public.rubros_nomina
 
 ALTER TABLE ONLY public.items_gasto
     ADD CONSTRAINT "FK_ee4b455959e2897ce6acdb43131" FOREIGN KEY ("reporteId") REFERENCES public.reportes_gasto(id) ON DELETE CASCADE;
+
+
+--
+-- Name: vacantes FK_eecfe6818d0b140dbe9d0d16749; Type: FK CONSTRAINT; Schema: public; Owner: puntopymes
+--
+
+ALTER TABLE ONLY public.vacantes
+    ADD CONSTRAINT "FK_eecfe6818d0b140dbe9d0d16749" FOREIGN KEY ("sucursalId") REFERENCES public.sucursales(id) ON DELETE SET NULL;
 
 
 --
@@ -4505,5 +5438,5 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict SQ7hbfwTsPMfT1ACjQK4zhSml9mISmgqFqCGvta1m0pNRhXm7Ozq6oStfUc2l1q
+\unrestrict muevZti0fkb0gFT3Eb69CAhuwYwcau63veD0mDO7jTu1LGyPTtHzMMNaaXVgySu
 

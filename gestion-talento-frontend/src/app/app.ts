@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 // Importa tu servicio de Auth
 import { AuthService } from './modules/auth/services/auth';
+import { ThemeService } from './core/services/theme';
 
 @Component({
   selector: 'app-root',
@@ -15,10 +16,12 @@ export class App implements OnInit {
 
   // Inyectamos el servicio
   private authService = inject(AuthService);
+  private themeService = inject(ThemeService);
 
   ngOnInit() {
     // Lógica para aplicar el tema guardado al recargar la página (F5)
     this.applyStoredTheme();
+    this.themeService.getCurrentPrimaryColor();
   }
 
   private applyStoredTheme() {

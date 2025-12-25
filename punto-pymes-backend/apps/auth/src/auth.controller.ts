@@ -73,4 +73,15 @@ export class AuthController {
   createCompanyUser(@Payload() data: { usuarioId: string; nombre: string; plan: string; branding: any }) {
     return this.authService.createCompanyForUser(data.usuarioId, data);
   }
+
+  @MessagePattern({ cmd: 'get_company_detail' })
+  async getCompanyDetail(@Payload() data: { empresaId: string, userId: string }) {
+    // Si tienes empresaId, busca por eso. Si no, busca por usuario.
+    return this.authService.getCompanyDetail(data.empresaId, data.userId);
+  }
+
+  @MessagePattern({ cmd: 'update_company_branding' })
+  async updateBranding(@Payload() data: { empresaId: string, branding: any }) {
+    return this.authService.updateCompanyBranding(data.empresaId, data.branding);
+  }
 }

@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSpinner } from '@angular/material/progress-spinner';
 // Importa tu servicio
 import { AuthService } from '../../services/auth';
 
@@ -21,7 +22,8 @@ import { AuthService } from '../../services/auth';
     MatFormFieldModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatSpinner
   ],
   templateUrl: './register.html',
   styleUrls: ['./register.scss']

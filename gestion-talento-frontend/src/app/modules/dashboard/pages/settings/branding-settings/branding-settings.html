@@ -1,31 +1,157 @@
-<div class="branding-settings-container">
-  <app-subpage-header title="Apariencia de la Empresa" backRoute="/dashboard/settings">
-  </app-subpage-header>
-  <p class="description">Personaliza el logo y el color principal que verán tus empleados.</p>
+<app-subpage-header title="Configuración de Marca" subtitle="Personaliza el logo y colores de tu empresa">
+</app-subpage-header>
 
-  <div class="setting-item">
-      <label>Logo de la Empresa</label>
-      <div class="logo-preview-container">
-          <img [src]="companyLogo" alt="Logo Actual" class="logo-preview" *ngIf="companyLogo">
-          <div class="logo-placeholder" *ngIf="!companyLogo">Sin Logo</div>
-          <button class="btn btn-secondary btn-small" (click)="logoInput.click()">Cambiar Logo</button>
-          <input type="file" accept="image/png, image/jpeg, image/svg+xml" #logoInput
-              (change)="onLogoSelected($event)" hidden>
-      </div>
-      <span class="hint">Recomendado: SVG o PNG transparente, máx 1MB.</span>
-  </div>
+<div class="branding-container" *ngIf="!isLoading; else loadingTemplate">
 
-  <div class="setting-item">
-      <label for="primary-color">Color Principal</label>
-      <div class="color-picker-container">
-          <input type="color" id="primary-color" [(ngModel)]="primaryColor" class="color-input">
-          <span class="color-hex">{{ primaryColor }}</span>
-      </div>
-      <span class="hint">Este color se usará en botones principales, enlaces y elementos activos.</span>
-  </div>
+    <!-- ============================================ -->
+    <!-- SECCIÓN: LOGO -->
+    <!-- ============================================ -->
+    <div class="branding-section card">
+        <div class="section-header">
+            <h3>Logo de la Empresa</h3>
+            <p class="section-description">
+                Sube el logo de tu empresa (JPG, PNG, WebP o SVG). Máximo 2MB.
+            </p>
+        </div>
 
-  <div class="actions-footer">
-      <button mat-stroked-button>Restablecer Predeterminados</button>
-      <button mat-flat-button color="primary" (click)="saveBranding()">Guardar Cambios</button>
-  </div>
+        <div class="logo-preview-container">
+            <!-- Preview del Logo -->
+            <div class="logo-preview" [class.has-logo]="companyLogo">
+                <img *ngIf="companyLogo" [src]="companyLogo" alt="Logo de la empresa" class="logo-image">
+                <div *ngIf="!companyLogo" class="logo-placeholder">
+                    <span class="placeholder-icon">🏢</span>
+                    <span class="placeholder-text">Sin logo</span>
+                </div>
+            </div>
+
+            <!-- Acciones del Logo -->
+            <div class="logo-actions">
+                <label class="upload-btn" [class.disabled]="isSaving">
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                        (change)="onLogoSelected($event)" [disabled]="isSaving" style="display: none;">
+                    <span>
+                        {{ companyLogo ? 'Cambiar Logo' : 'Subir Logo' }}
+                    </span>
+                </label>
+
+                <button *ngIf="companyLogo" type="button" class="remove-logo-btn" (click)="removeLogo()"
+                    [disabled]="isSaving">
+                    Eliminar
+                </button>
+            </div>
+
+            <p class="logo-hint">
+                Recomendamos un logo cuadrado o horizontal con fondo transparente
+            </p>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECCIÓN: COLOR CORPORATIVO -->
+    <!-- ============================================ -->
+    <div class="branding-section card">
+        <div class="section-header">
+            <h3>Color Corporativo</h3>
+            <p class="section-description">
+                Selecciona el color principal que represente tu marca.
+                Se aplicará en toda la plataforma.
+            </p>
+        </div>
+
+        <!-- Color Picker Principal -->
+        <div class="color-picker-group">
+            <label class="color-picker-label">
+                Color Principal
+            </label>
+
+            <div class="color-picker-wrapper">
+                <input type="color" [(ngModel)]="primaryColor" (input)="onColorChange(primaryColor)"
+                    [disabled]="isSaving" class="color-input">
+
+                <input type="text" [(ngModel)]="primaryColor" (input)="onColorChange(primaryColor)"
+                    [disabled]="isSaving" placeholder="#E74C3C" maxlength="7" class="color-text-input">
+
+                <div class="color-preview-box" [style.background-color]="primaryColor"
+                    [class.light-color]="isColorLight()">
+                    <span class="preview-check">✓</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colores Predefinidos -->
+        <div class="preset-colors-section">
+            <label class="preset-label">Colores Predefinidos</label>
+            <div class="preset-colors-grid">
+                <button *ngFor="let preset of presetColors" type="button" class="color-preset-btn"
+                    [class.active]="primaryColor === preset.value" [style.background-color]="preset.value"
+                    [title]="preset.name" (click)="selectPresetColor(preset.value)" [disabled]="isSaving">
+                    <span class="preset-check" *ngIf="primaryColor === preset.value">✓</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Visual -->
+        <div class="color-preview-section">
+            <label class="preview-label">Vista Previa</label>
+            <div class="preview-components">
+
+                <!-- Botón Preview -->
+                <button class="preview-button" [style.background-color]="primaryColor"
+                    [style.color]="isColorLight() ? '#2C3E50' : 'white'">
+                    Botón de Ejemplo
+                </button>
+
+                <!-- Badge Preview -->
+                <span class="preview-badge" [style.background-color]="primaryColor + '15'" [style.color]="primaryColor">
+                    Estado Activo
+                </span>
+
+                <!-- Link Preview -->
+                <a class="preview-link" [style.color]="primaryColor">
+                    Enlace de Ejemplo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ACCIONES PRINCIPALES -->
+    <!-- ============================================ -->
+    <div class="branding-actions">
+        <div class="actions-left">
+            <button mat-button type="button" (click)="resetToDefault()"
+                [disabled]="isSaving || primaryColor === '#E74C3C'">
+                Restaurar por Defecto
+            </button>
+
+            <button mat-button type="button" (click)="cancelChanges()" [disabled]="isSaving || !hasUnsavedChanges()">
+                Cancelar Cambios
+            </button>
+        </div>
+
+        <button mat-flat-button color="primary" type="button" (click)="saveBranding()"
+            [disabled]="isSaving || !hasUnsavedChanges()">
+
+            <mat-spinner *ngIf="isSaving" diameter="20" style="display: inline-block; margin-right: 8px;">
+            </mat-spinner>
+
+            <span>{{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}</span>
+        </button>
+    </div>
+
+    <!-- Mensaje de Cambios sin Guardar -->
+    <div class="unsaved-warning" *ngIf="hasUnsavedChanges() && !isSaving">
+        ⚠️ Tienes cambios sin guardar
+    </div>
+
 </div>
+
+<!-- ============================================ -->
+<!-- LOADING STATE -->
+<!-- ============================================ -->
+<ng-template #loadingTemplate>
+    <div class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p class="loading-text">Cargando configuración...</p>
+    </div>
+</ng-template>

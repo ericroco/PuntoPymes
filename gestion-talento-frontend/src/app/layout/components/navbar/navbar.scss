@@ -1,190 +1,368 @@
+// ============================================
+// VARIABLES & MIXINS
+// ============================================
+$navbar-height: 80px; // Misma altura visual que el header del sidebar
+$element-height: 44px; // Altura unificada para inputs y botones
+$border-radius: 12px; // Radio consistente con tu identidad
+
 :host {
   display: block;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  padding: 1rem 2rem;
+  width: 100%;
   position: sticky;
   top: 0;
   z-index: 100;
-  /* Subí un poco el z-index para que el dropdown no quede tapado */
+  background-color: var(--color-surface);
+  // Borde sutil inferior para separar del contenido
+  border-bottom: 1px solid var(--color-border);
 }
 
 .navbar-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: $navbar-height;
+  padding: 0 2rem; // Espaciado lateral generoso
+  background: var(--color-surface);
 }
 
-.page-title {
+// ============================================
+// 1. TÍTULO Y CONTEXTO
+// ============================================
+.page-context {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
     margin: 0;
     line-height: 1.2;
+    letter-spacing: -0.5px;
   }
 
-  p {
-    margin: 0;
-    color: var(--color-text-secondary);
-  }
-
-  // 👇 ESTILO NUEVO: Mensaje de "Filtrando por..."
-  .filtered-msg {
-    color: #f57c00; // Naranja llamativo
-    font-size: 0.9rem;
+  .context-subtitle {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     margin-top: 4px;
+    min-height: 24px;
 
-    .dot {
-      width: 8px;
-      height: 8px;
-      background: #f57c00;
-      border-radius: 50%;
-      display: inline-block;
+    .welcome-msg {
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    // Badge animado cuando hay filtro
+    .filter-badge {
+      background-color: rgba(243, 156, 18, 0.1); // Naranja muy suave
+      color: #F39C12;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(243, 156, 18, 0.2);
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        background-color: #F39C12;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+        animation: pulse 2s infinite;
+      }
     }
   }
 }
 
+// ============================================
+// 2. BARRA DE ACCIONES (Derecha)
+// ============================================
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 
-  // 👇 ESTILO NUEVO: Selector de Sucursales
-  .branch-selector {
-    width: 220px;
-
-    // Hacks para personalizar Material Design (Angular Material)
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none; // Quita el espacio extra de abajo
-    }
-
-    ::ng-deep .mat-mdc-text-field-wrapper {
-      background-color: var(--color-background); // Mismo fondo que el input search
-      border: 1px solid var(--color-border);
-      border-radius: var(--border-radius);
-      height: 42px; // Altura fija igual al search
-      padding: 0;
-    }
-
-    ::ng-deep .mat-mdc-form-field-flex {
-      align-items: center;
-      padding: 0 12px !important;
-      height: 100%;
-    }
-
-    ::ng-deep .mat-mdc-select-value {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--color-text-primary);
-    }
-
-    // El icono de la flechita
-    ::ng-deep .mat-mdc-select-arrow {
-      color: var(--color-text-secondary);
-    }
-  }
-}
-
-.search-bar {
-  position: relative;
-  height: 42px; // Aseguramos altura para alinear con el selector
-
-  .search-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    color: var(--color-text-secondary);
-    z-index: 2;
-  }
-
-  input {
-    background-color: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    padding: 0.65rem 1rem 0.65rem 3rem;
-    width: 250px;
-    font-family: var(--font-family-base);
-    font-size: 0.95rem;
-    transition: width 0.3s ease, box-shadow 0.3s ease;
-    height: 100%; // Llenar el contenedor
-    box-sizing: border-box;
-
-    &:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
-      width: 300px;
-    }
-  }
-}
-
-.icon-button {
-  position: relative;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  padding: 0.5rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    color: var(--color-primary);
-    transform: scale(1.1);
-  }
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-.notification-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: var(--color-accent);
-  color: white;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  font-size: 0.7rem;
-  font-weight: 600;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid var(--color-surface);
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer; // Agregado para UX
-
-  img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover; // Para que no se deforme
-    border: 1px solid var(--color-border);
-  }
-
-  .user-info {
+  // --- Wrapper común para Inputs ---
+  .action-group {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+  }
 
-    .user-name {
-      font-weight: 600;
-      font-size: 0.95rem;
+  // DIVISOR VERTICAL
+  .divider-vertical {
+    width: 1px;
+    height: 32px;
+    background-color: var(--color-border);
+    margin: 0 0.5rem;
+  }
+
+  // --- A. SELECTOR DE SUCURSAL (Material Hack Limpio) ---
+  .branch-wrapper {
+    width: 200px;
+
+    ::ng-deep .mat-mdc-form-field {
+      width: 100%;
+
+      // Quitar espacio inferior reservado para errores
+      .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
+
+      .mat-mdc-text-field-wrapper {
+        height: $element-height;
+        padding: 0 12px;
+        background-color: var(--color-background); // Gris suave
+        border: 1px solid transparent; // Borde transparente inicial
+        border-radius: $border-radius;
+        transition: all 0.2s ease;
+
+        &.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+        &.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+        &.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+          border: none; // Quitar borde default de Material
+        }
+      }
+
+      // Contenido del trigger (Icono + Texto)
+      .trigger-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--color-text-primary);
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          color: var(--color-primary); // Icono coloreado
+        }
+
+        // Truncar texto largo
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 130px;
+        }
+      }
+
+      // Estado Focus/Hover
+      &.mat-focused .mat-mdc-text-field-wrapper {
+        background-color: var(--color-surface);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px var(--color-primary-light); // Glow effect
+      }
+    }
+  }
+
+  // --- B. BARRA DE BÚSQUEDA ---
+  .search-wrapper {
+    .search-box {
+      position: relative;
+      height: $element-height;
+      width: 240px;
+      transition: width 0.3s ease;
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--color-text-secondary);
+        pointer-events: none;
+      }
+
+      .search-input {
+        width: 100%;
+        height: 100%;
+        padding-left: 40px; // Espacio para icono
+        padding-right: 15px;
+        background-color: var(--color-background);
+        border: 1px solid transparent;
+        border-radius: $border-radius;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        color: var(--color-text-primary);
+        outline: none;
+        transition: all 0.2s ease;
+
+        &::placeholder {
+          color: var(--color-text-secondary);
+          opacity: 0.7;
+        }
+
+        &:focus {
+          background-color: var(--color-surface);
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px var(--color-primary-light);
+        }
+      }
+
+      // Expansión al foco
+      &:focus-within {
+        width: 300px;
+      }
+    }
+  }
+
+  // --- C. BOTÓN NOTIFICACIONES ---
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: var(--color-background);
+      color: var(--color-primary);
     }
 
-    .user-role {
-      font-size: 0.8rem;
-      color: var(--color-text-secondary);
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
     }
+
+    .notification-dot {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-danger);
+      border-radius: 50%;
+      border: 2px solid var(--color-surface);
+    }
+  }
+
+  // --- D. PERFIL DE USUARIO ---
+  .user-profile-wrapper {
+    margin-left: 0.5rem;
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 4px 4px 12px;
+      border-radius: 50px; // Pill shape
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: var(--color-background);
+        border-color: var(--color-border);
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; // Texto alineado a la derecha
+        line-height: 1.2;
+
+        .name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--color-text-primary);
+        }
+
+        .role {
+          font-size: 0.75rem;
+          color: var(--color-text-secondary);
+        }
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--color-surface);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+// ============================================
+// ANIMACIONES & RESPONSIVE
+// ============================================
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(243, 156, 18, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Mobile
+@media (max-width: 900px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+
+  .branch-wrapper,
+  .divider-vertical,
+  .user-info {
+    display: none !important; // Ocultar elementos complejos en móvil
+  }
+
+  .search-wrapper .search-box {
+    width: 44px; // Colapsar a solo icono
+    background: transparent;
+    padding: 0;
+
+    .search-input {
+      display: none;
+    }
+
+    .search-icon {
+      position: static;
+      transform: none;
+      margin: auto;
+      cursor: pointer;
+    }
+
+    // Al click (implementar lógica de expansión si se desea)
   }
 }

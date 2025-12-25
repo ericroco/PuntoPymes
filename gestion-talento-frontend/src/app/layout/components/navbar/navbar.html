@@ -1,70 +1,93 @@
 <header class="navbar-container">
-  <div class="page-title">
+
+  <div class="page-context">
     <h1>Vista General</h1>
-    <p *ngIf="!selectedBranchId">Bienvenido de nuevo, {{ displayName | titlecase }}</p>
-    <p *ngIf="selectedBranchId" class="filtered-msg">
-      <span class="dot"></span> Filtrando por Sucursal
-    </p>
+
+    <div class="context-subtitle">
+      <span *ngIf="!selectedBranchId" class="welcome-msg">
+        Bienvenido de nuevo, {{ displayName | titlecase }}
+      </span>
+
+      <div *ngIf="selectedBranchId" class="filter-badge fade-in">
+        <span class="dot"></span>
+        Filtrando por Sucursal
+      </div>
+    </div>
   </div>
 
   <div class="navbar-actions">
 
-    <div class="branch-selector" *ngIf="canSwitchBranch">
-      <mat-form-field appearance="outline" class="dense-select">
+    <div class="action-group branch-wrapper" *ngIf="canSwitchBranch">
+      <mat-form-field appearance="outline">
         <mat-select [value]="selectedBranchId" (selectionChange)="onBranchChange($event.value)"
           placeholder="🏢 Todas las Sedes">
+
+          <mat-select-trigger>
+            <div class="trigger-content">
+              <mat-icon class="trigger-icon">store</mat-icon>
+              <span>{{ getBranchName(selectedBranchId) || 'Todas las Sedes' }}</span>
+            </div>
+          </mat-select-trigger>
 
           <mat-option [value]="null">
             <span class="option-text">🏢 Todas las Sedes</span>
           </mat-option>
-
           <mat-option *ngFor="let b of branches" [value]="b.id">
             <span class="option-text">📍 {{ b.nombre }}</span>
           </mat-option>
-
         </mat-select>
       </mat-form-field>
     </div>
-    <div class="search-bar">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="search-icon">
-        <path
-          d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z" />
-      </svg>
-      <input type="text" placeholder="Buscar empleado o tarea...">
+
+    <div class="action-group search-wrapper">
+      <div class="search-box">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input type="text" placeholder="Buscar..." class="search-input">
+      </div>
     </div>
 
-    <button class="icon-button notification-button" [matMenuTriggerFor]="notificationMenu">
-      <mat-icon>notifications</mat-icon> <span class="notification-badge" *ngIf="notificationCount > 0">{{
-        notificationCount }}</span>
-    </button>
+    <div class="divider-vertical"></div>
 
-    <mat-menu #notificationMenu="matMenu" xPosition="before" class="notification-panel">
-      <div class="notification-header">
-        <span>Notificaciones</span>
-        <button mat-button color="primary" (click)="markAllRead()">Marcar leídas</button>
-      </div>
+    <div class="action-group">
+      <button class="icon-btn" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon>notifications_none</mat-icon>
+        <span class="notification-dot" *ngIf="notificationCount > 0"></span>
+      </button>
+    </div>
 
-      <div class="notification-list">
-        <button mat-menu-item *ngFor="let notif of notifications" [class.unread]="!notif.read">
-          <mat-icon [color]="notif.color">{{ notif.icon }}</mat-icon>
-          <div class="notif-content">
-            <span class="notif-title">{{ notif.title }}</span>
-            <span class="notif-time">{{ notif.time }}</span>
-          </div>
-        </button>
-
-        <div *ngIf="notifications.length === 0" class="empty-notif">
-          Sin novedades
+    <div class="user-profile-wrapper">
+      <div class="user-card">
+        <div class="user-info">
+          <span class="name">{{ displayName | titlecase }}</span>
+          <span class="role">{{ userRole }}</span>
         </div>
-      </div>
-    </mat-menu>
-
-    <div class="user-profile">
-      <img [src]="userAvatar" alt="Avatar" onerror="this.src='assets/images/default-avatar.png'">
-      <div class="user-info">
-        <span class="user-name">{{ displayName | titlecase }}</span>
-        <span class="user-role">{{ userRole }}</span>
+        <img [src]="userAvatar" alt="Avatar" class="avatar" onerror="this.src='assets/images/default-avatar.png'">
       </div>
     </div>
+
   </div>
 </header>
+
+<mat-menu #notificationMenu="matMenu" xPosition="before" class="notification-panel">
+  <div class="notification-header">
+    <h3>Notificaciones</h3>
+    <button mat-button color="primary" (click)="markAllRead()">Marcar leídas</button>
+  </div>
+
+  <div class="notification-list">
+    <button mat-menu-item *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+      <div class="notif-icon-box" [style.color]="notif.color || 'inherit'">
+        <mat-icon>{{ notif.icon }}</mat-icon>
+      </div>
+      <div class="notif-content">
+        <span class="notif-title">{{ notif.title }}</span>
+        <span class="notif-time">{{ notif.time }}</span>
+      </div>
+    </button>
+
+    <div *ngIf="notifications.length === 0" class="empty-notif">
+      <mat-icon>notifications_off</mat-icon>
+      <p>No tienes notificaciones nuevas</p>
+    </div>
+  </div>
+</mat-menu>

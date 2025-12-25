@@ -16,6 +16,7 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
+import { RpcException } from '@nestjs/microservices';
 
 
 @Injectable()
@@ -777,5 +778,54 @@ export class AuthService {
 
       return nuevaEmpresa;
     });
+  }
+
+  // 1. Obtener detalles
+  async getCompanyDetail(empresaId: string, userId: string) {
+    let empresa: Empresa | null = null;
+
+    // ESCENARIO 1: Tenemos el ID de la empresa (Lo ideal y más rápido)
+    if (empresaId) {
+      empresa = await this.empresaRepository.findOne({
+        where: { id: empresaId }
+        // ¡OJO! NO cargamos 'relations' aquí para evitar datos innecesarios
+      });
+    }
+
+    // ESCENARIO 2: Solo tenemos el UserID (Fallback)
+    // Usamos QueryBuilder para evitar errores de ORM complejos
+    else if (userId) {
+      empresa = await this.empresaRepository.createQueryBuilder('empresa')
+        // Unimos con empleados para filtrar
+        .innerJoin('empresa.empleados', 'empleado')
+        // Unimos con usuario (asumiendo que empleado tiene relación 'usuario')
+        // Si tu relación en empleado se llama diferente, ajusta 'empleado.usuario'
+        .innerJoin('empleado.usuario', 'usuario')
+        .where('usuario.id = :userId', { userId })
+        .getOne();
+    }
+
+    if (!empresa) {
+      throw new RpcException(new NotFoundException('Empresa no encontrada para este usuario'));
+    }
+
+    // Retornamos la empresa limpia. 
+    // Al no haber usado 'relations', no hay riesgo de bucle infinito.
+    return empresa;
+  }
+
+  // 2. Actualizar Branding
+  async updateCompanyBranding(empresaId: string, brandingData: any) {
+    const empresa = await this.empresaRepository.findOne({ where: { id: empresaId } });
+    if (!empresa) throw new RpcException('Empresa no encontrada');
+
+    // Actualizamos SOLO la columna branding (respetando lo que ya exista si quieres)
+    empresa.branding = {
+      ...empresa.branding, // Mantiene datos viejos si los hubiera
+      logoUrl: brandingData.logoUrl,
+      primaryColor: brandingData.primaryColor
+    };
+
+    return this.empresaRepository.save(empresa);
   }
 }
