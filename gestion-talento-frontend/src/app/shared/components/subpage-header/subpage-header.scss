@@ -1,37 +1,57 @@
 .subpage-header-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.back-button {
+  // Dimensiones fijas
+  width: 40px !important; // Un poco más grande para mejor click
+  height: 40px !important;
+  
+  // FIX: Centrado perfecto con Flexbox (ignora line-height)
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  color: var(--color-text-secondary);
+  border-radius: 50%; // Circular
+  transition: background-color 0.2s ease;
+
+  // Resetear estilos internos de Material que a veces molestan
+  padding: 0 !important;
+  line-height: 1 !important;
+
+  &:hover {
+    background-color: var(--color-surface-variant); // Feedback visual
+    color: var(--color-text-primary);
+  }
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    // Asegurar que el icono no tenga márgenes internos
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem; // Space below header
-    // Optional: Add a border if desired
-    // border-bottom: 1px solid var(--color-border);
-    // padding-bottom: 1rem;
+    justify-content: center;
+    line-height: 1;
   }
-  
-  .back-button {
-    // Use Material's density mixins if available, or set size manually
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
-    color: var(--color-text-secondary); // Make back button less prominent
-  
-    mat-icon {
-      font-size: 20px;
-      height: 20px;
-      width: 20px;
-      line-height: 20px;
-    }
-  }
-  
-  .subpage-title {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 600;
-    flex-grow: 1; // Takes available space
-  }
-  
-  .subpage-actions {
-    // Styles for the container of transcluded buttons/content
-    display: flex;
-    gap: 0.5rem;
-  }
+}
+
+.subpage-title {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  flex-grow: 1;
+  letter-spacing: -0.5px;
+}
+
+.subpage-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}

@@ -1,16 +1,20 @@
 <div class="page-container course-catalog-page">
 
-  <div class="header-actions-row">
-    <app-subpage-header title="Portal de Desarrollo"></app-subpage-header>
+<div class="header-actions-row">
+    <app-subpage-header title="Portal de Desarrollo" class="flex-grow"></app-subpage-header>
 
-    <div *ngIf="can(P.TRAINING_MANAGE)" class="view-toggle">
-      <span class="toggle-label">Modo:</span>
-      <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()" appearance="legacy">
+    <div *ngIf="can(P.TRAINING_MANAGE)" class="view-toggle-container">
+      <span class="toggle-label">VISTA:</span>
+      <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()" class="custom-toggle-group">
         <mat-button-toggle value="student" aria-label="Vista Estudiante">
-          <mat-icon>school</mat-icon> Estudiante
+          <div class="toggle-content">
+            <mat-icon>school</mat-icon> <span>Estudiante</span>
+          </div>
         </mat-button-toggle>
         <mat-button-toggle value="admin" aria-label="Vista Gestor">
-          <mat-icon>admin_panel_settings</mat-icon> Gestor LMS
+          <div class="toggle-content">
+            <mat-icon>admin_panel_settings</mat-icon> <span>Gestor LMS</span>
+          </div>
         </mat-button-toggle>
       </mat-button-toggle-group>
     </div>

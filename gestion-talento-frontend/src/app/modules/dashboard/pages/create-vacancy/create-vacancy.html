@@ -1,23 +1,28 @@
-<div class="page-container create-vacancy-page">
+<div class="page-container create-vacancy-page fade-in">
   <app-subpage-header [title]="pageTitle" backRoute="/dashboard/recruitment"></app-subpage-header>
 
-  <form [formGroup]="vacancyForm" (ngSubmit)="onSave(true)">
+  <form [formGroup]="vacancyForm" (ngSubmit)="onSave(true)" class="main-form">
+    
     <div class="form-grid">
 
-      <mat-card class="form-section">
+      <mat-card class="form-card card-brand">
         <mat-card-header>
+          <div mat-card-avatar class="header-icon">
+            <mat-icon>work_outline</mat-icon>
+          </div>
           <mat-card-title>Detalles del Puesto</mat-card-title>
+          <mat-card-subtitle>Información básica de la vacante</mat-card-subtitle>
         </mat-card-header>
+        
         <mat-card-content>
-
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Título del Puesto</mat-label>
             <input matInput formControlName="title" placeholder="Ej: Analista de Datos Senior" required>
-            <mat-error *ngIf="vacancyForm.get('title')?.hasError('required')">El título es obligatorio.</mat-error>
+            <mat-icon matSuffix>badge</mat-icon>
+            <mat-error *ngIf="vacancyForm.get('title')?.hasError('required')">Requerido</mat-error>
           </mat-form-field>
 
           <div class="form-row">
-
             <mat-form-field appearance="outline" class="form-field">
               <mat-label>Departamento</mat-label>
               <mat-select formControlName="department" required>
@@ -26,27 +31,29 @@
                   {{ dept.nombre }}
                 </mat-option>
               </mat-select>
-              <mat-error>Requerido.</mat-error>
+              <mat-icon matSuffix>domain</mat-icon>
+              <mat-error>Requerido</mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-field">
               <mat-label>Ubicación</mat-label>
-              <input matInput formControlName="location" placeholder="Ej: Remoto, Oficinas Centrales" required>
-              <mat-error>Requerido.</mat-error>
+              <input matInput formControlName="location" placeholder="Ej: Remoto, Sede Central" required>
+              <mat-icon matSuffix>place</mat-icon>
+              <mat-error>Requerido</mat-error>
             </mat-form-field>
           </div>
 
           <div class="form-row">
             <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Salario Mínimo (USD)</mat-label>
-              <input matInput type="number" formControlName="salarioMin" min="0">
-              <span matPrefix>$&nbsp;</span>
+              <mat-label>Salario Mínimo</mat-label>
+              <span matSuffix class="currency-prefix">$</span>
+              <input matInput type="number" formControlName="salarioMin" min="0" placeholder="0.00">
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Salario Máximo (USD)</mat-label>
-              <input matInput type="number" formControlName="salarioMax" min="0">
-              <span matPrefix>$&nbsp;</span>
+              <mat-label>Salario Máximo</mat-label>
+              <span matSuffix class="currency-prefix">$</span>
+              <input matInput type="number" formControlName="salarioMax" min="0" placeholder="0.00">
             </mat-form-field>
           </div>
 
@@ -57,56 +64,65 @@
                 {{ template.name }}
               </mat-option>
             </mat-select>
-            <mat-hint>Elige las fases que seguirá el candidato (ej. Entrevista Técnica, Psicométrica).</mat-hint>
+            <mat-icon matSuffix>linear_scale</mat-icon>
+            <mat-hint>Define las fases de entrevista para este puesto.</mat-hint>
           </mat-form-field>
-
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="form-section">
+      <mat-card class="form-card">
         <mat-card-header>
-          <mat-card-title>Descripción y Requisitos</mat-card-title>
+          <div mat-card-avatar class="header-icon secondary">
+            <mat-icon>description</mat-icon>
+          </div>
+          <mat-card-title>Perfil y Requisitos</mat-card-title>
+          <mat-card-subtitle>Define qué estás buscando</mat-card-subtitle>
         </mat-card-header>
-        <mat-card-content>
 
-          <mat-form-field appearance="outline" class="full-width">
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width description-field">
             <mat-label>Descripción del Puesto</mat-label>
-            <textarea matInput formControlName="description" rows="8" required
-              placeholder="Describe las responsabilidades, beneficios y cultura de la empresa..."></textarea>
+            <textarea matInput formControlName="description" rows="12" required
+              placeholder="Describe las responsabilidades, beneficios y cultura..."></textarea>
             <mat-error>Mínimo 20 caracteres.</mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="chip-list-field full-width">
-            <mat-label>Requisitos Clave (Skills)</mat-label>
+          <mat-form-field appearance="outline" class="full-width chip-list-field">
+            <mat-label>Skills Requeridos</mat-label>
             <mat-chip-grid #chipGrid aria-label="Ingresar requisitos">
-              <mat-chip-row *ngFor="let req of requirements" (removed)="removeRequirement(req)">
+              <mat-chip-row *ngFor="let req of requirements" (removed)="removeRequirement(req)" 
+                class="custom-chip">
                 {{req}}
                 <button matChipRemove [attr.aria-label]="'Remover ' + req">
                   <mat-icon>cancel</mat-icon>
                 </button>
               </mat-chip-row>
-              <input placeholder="Escribe y presiona Enter..." [matChipInputFor]="chipGrid"
-                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addRequirement($event)" />
+              <input placeholder="Escribe y presiona Enter..." 
+                [matChipInputFor]="chipGrid"
+                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" 
+                (matChipInputTokenEnd)="addRequirement($event)" />
             </mat-chip-grid>
-            <mat-hint>Ej: Inglés Avanzado, Python, Liderazgo (Presiona Enter para agregar)</mat-hint>
+            <mat-icon matSuffix>stars</mat-icon>
+            <mat-hint>Ej: Inglés C1, Liderazgo, Angular (Enter para agregar)</mat-hint>
           </mat-form-field>
-
         </mat-card-content>
       </mat-card>
 
     </div>
 
     <footer class="page-footer-actions">
-      <button *ngIf="!isEditMode" type="button" mat-stroked-button (click)="onSave(false)" [disabled]="isSubmitting">
-        Guardar como Borrador
-      </button>
+      <div class="footer-container">
+        <button *ngIf="!isEditMode" type="button" mat-stroked-button (click)="onSave(false)" [disabled]="isSubmitting">
+          <mat-icon>save_as</mat-icon> Guardar Borrador
+        </button>
 
-      <button type="submit" mat-flat-button color="primary" [disabled]="isSubmitting || vacancyForm.invalid">
-        <mat-spinner *ngIf="isSubmitting" diameter="20" class="spinner-white"></mat-spinner>
-        <span *ngIf="!isSubmitting">
-          <mat-icon>send</mat-icon> {{ isEditMode ? 'Guardar Cambios' : 'Publicar Vacante' }}
-        </span>
-      </button>
+        <button type="submit" mat-flat-button color="primary" [disabled]="isSubmitting || vacancyForm.invalid">
+          <mat-spinner *ngIf="isSubmitting" diameter="24" class="spinner-white"></mat-spinner>
+          <span *ngIf="!isSubmitting" class="btn-label">
+            <mat-icon>send</mat-icon> {{ isEditMode ? 'Guardar Cambios' : 'Publicar Vacante' }}
+          </span>
+        </button>
+      </div>
     </footer>
 
   </form>

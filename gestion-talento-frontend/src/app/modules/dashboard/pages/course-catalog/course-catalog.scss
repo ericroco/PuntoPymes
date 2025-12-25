@@ -5,93 +5,95 @@
 /* =========================================
    HEADER Y TOGGLE DE VISTAS
    ========================================= */
+// --- HEADER & TOGGLE (FIXED CENTERING) ---
 .header-actions-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  gap: 1.5rem;
+  margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
   flex-wrap: wrap;
 
-  app-subpage-header {
-    margin-bottom: 0;
-    flex: 1;
-    min-width: 200px;
-  }
+  .flex-grow { flex: 1; min-width: 200px; }
 }
 
-.view-toggle {
+.view-toggle-container {
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #fff;
-  padding: 8px 14px;
+  background-color: var(--color-surface);
+  padding: 4px 6px 4px 16px; // Padding asimétrico para etiqueta
   border-radius: 50px;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-  white-space: nowrap;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 
   .toggle-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #757575;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
     letter-spacing: 0.5px;
   }
 }
 
-::ng-deep .view-toggle mat-button-toggle-group {
+// Custom Toggle Group (Estilo Segmented Control)
+::ng-deep .custom-toggle-group {
   border: none !important;
-  background-color: #f5f5f5;
-  border-radius: 20px;
-  padding: 3px;
+  background-color: var(--color-surface-variant); // Fondo gris del track
+  border-radius: 24px;
+  padding: 4px;
   height: 40px;
-  box-shadow: none;
+  display: flex;
+  align-items: center;
 
-  .mat-button-toggle-appearance-standard {
+  .mat-button-toggle {
     background-color: transparent;
-    color: #616161;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border-radius: 17px !important;
+    color: var(--color-text-secondary);
     border: none !important;
+    border-radius: 20px !important;
     min-width: 130px;
-    transition: all 0.25s ease;
+    height: 32px; // Altura fija interna
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
+    // Centrado estricto del contenido del botón
     .mat-button-toggle-label-content {
+      padding: 0 16px;
+      line-height: 32px !important;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      line-height: 40px;
-      padding: 0 16px;
     }
 
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 6px;
-      opacity: 0.7;
-    }
-
-    &.mat-button-toggle-checked {
-      background-color: var(--color-primary, #3f51b5);
-      color: white !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-
-      mat-icon {
-        color: white;
-        opacity: 1;
+    .toggle-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      mat-icon { 
+        font-size: 18px; 
+        width: 18px; 
+        height: 18px; 
+        margin: 0;
+        display: flex;
+        align-items: center;
+      }
+      
+      span { 
+        font-size: 0.85rem; 
+        font-weight: 600; 
+        position: relative;
+        top: 1px; // Ajuste óptico de fuente
       }
     }
 
-    &:not(.mat-button-toggle-checked):hover {
-      background-color: #ececec;
+    // Estado Activo (Pill blanca flotante)
+    &.mat-button-toggle-checked {
+      background-color: white;
+      color: var(--color-primary) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      
+      mat-icon { color: var(--color-primary); }
     }
-  }
-
-  .mat-button-toggle+.mat-button-toggle {
-    border-left: none;
   }
 }
 
@@ -139,36 +141,115 @@ mat-progress-bar {
 /* =========================================
    BARRA DE FILTROS
    ========================================= */
+// --- FILTROS Y BÚSQUEDA (CENTRADO CORREGIDO) ---
 .filter-bar {
   display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
   flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
-  .filter-field {
-    min-width: 200px;
-    flex: 0 1 auto;
+  // Estilo base unificado para Inputs y Selects
+  mat-form-field {
+    // 1. Eliminar espacio de error inferior
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper { 
+      display: none !important; 
+    }
+    
+    // 2. Estilizar la caja contenedora
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: white;
+      border-radius: 12px;
+      height: 48px !important; // Altura fija
+      padding: 0 12px !important;
+      border: 1px solid var(--color-border);
+      
+      // Flexbox para el wrapper principal
+      display: flex !important;
+      align-items: center !important;
+
+      // Quitar bordes por defecto de Material
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing { border: none !important; }
+    }
+
+    // 3. CENTRADO ESTRICTO (LA CLAVE)
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 100% !important;
+      align-items: center !important;
+      padding: 0 !important;
+    }
+
+    // 4. RESETEAR EL INFIX (Soluciona el texto "muy abajo")
+    ::ng-deep .mat-mdc-form-field-infix {
+      padding: 0 !important;
+      min-height: unset !important;
+      border-top: none !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      width: auto !important; // Dejar que el contenido defina el ancho
+    }
+
+    // 5. INPUT DE TEXTO (Buscador)
+    ::ng-deep input.mat-mdc-input-element {
+      margin: 0 !important;
+      padding: 0 !important;
+      top: 0 !important;
+      height: 100% !important;
+      // Pequeño ajuste óptico para la fuente Poppins
+      transform: translateY(1px); 
+    }
+
+    // 6. SELECT (Categoría)
+    ::ng-deep .mat-mdc-select-trigger {
+      display: flex !important;
+      align-items: center !important;
+      height: 100% !important;
+      
+      .mat-mdc-select-value {
+        display: flex;
+        align-items: center;
+        max-width: 100%;
+      }
+    }
+
+    // 7. ARREGLAR ETIQUETA "CATEGORÍA"
+    // Al quitar el borde notch, la etiqueta flotante puede verse mal.
+    // Esto asegura que se centre cuando está en reposo.
+    ::ng-deep .mdc-floating-label {
+      top: 50% !important;
+      left: 0 !important;
+      transform: translateY(-50%) !important;
+      pointer-events: none;
+      
+      // Cuando la etiqueta flota (hay valor seleccionado o foco)
+      &.mdc-floating-label--float-above {
+        display: none !important; // Ocultamos la etiqueta flotante para limpieza visual (estilo placeholder)
+      }
+    }
   }
 
   .search-field {
-    flex-grow: 1;
-    min-width: 250px;
+    flex: 1;
+    min-width: 300px;
+    
+    // Centrar icono de lupa
+    .search-icon { 
+      color: var(--color-text-muted); 
+      margin-right: 8px;
+      display: flex;
+      align-items: center;
+    }
+    
+    // Asegurar que el contenedor del prefijo también esté centrado
+    ::ng-deep .mat-mdc-form-field-text-prefix {
+      align-self: center !important;
+      display: flex !important;
+    }
   }
 
-  mat-form-field {
-    ::ng-deep .mat-mdc-form-field-flex {
-      height: 48px;
-    }
-
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-  }
+  .filter-field { width: 220px; }
 }
 
 /* =========================================
@@ -395,11 +476,13 @@ mat-progress-bar {
     overflow: hidden;
   }
 
-  .admin-course-table {
+ .admin-course-table {
     width: 100%;
 
     .mat-mdc-header-row {
-      background-color: var(--color-background, #fafafa);
+      // CAMBIO: Usar un gris explícito o var(--color-surface-variant) si es gris
+      // Evita var(--color-background) si está "tintada" de rojo
+      background-color: #f9fafb !important; 
     }
 
     .mat-mdc-header-cell {
@@ -412,16 +495,19 @@ mat-progress-bar {
     }
 
     .mat-mdc-cell {
-      border-bottom: 1px solid var(--color-border, #e0e0e0);
+      border-bottom: 1px solid var(--color-border-light); // Asegura que el borde sea sutil
       font-size: 0.9rem;
       padding: 1rem 0.75rem;
+      color: var(--color-text-primary);
     }
 
     .mat-mdc-row {
       transition: background-color 0.2s ease;
+      background-color: white; // Fondo base blanco puro
 
       &:hover {
-        background-color: #f8f8f8;
+        // CAMBIO: Gris muy suave al pasar el mouse, nunca rojo/rosa
+        background-color: #f3f4f6 !important; 
       }
 
       &:last-child .mat-mdc-cell {
