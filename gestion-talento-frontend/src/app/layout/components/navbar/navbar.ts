@@ -1,33 +1,37 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router'; // <--- IMPORTANTE para routerLink
 import { AuthService, User } from '../../../modules/auth/services/auth';
 
-// 👇 Material Modules (AGREGADOS PARA EL MENÚ Y EL SELECT)
+// 👇 Material Modules
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { MatMenuModule } from '@angular/material/menu';     // <--- NUEVO
-import { MatButtonModule } from '@angular/material/button'; // <--- NUEVO
-import { MatIconModule } from '@angular/material/icon';     // <--- NUEVO
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider'; // <--- CORRECCIÓN DEL ERROR
 
-// 👇 Servicios, Constantes e Interfaces
+// 👇 Servicios e Interfaces
 import { BranchesService, Branch } from '../../../modules/organization/services/branches';
 import { ContextService } from '../../../modules/dashboard/services/context';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
-// Importamos la interfaz que definimos antes
 import { Notification } from '../../../shared/interfaces/notification.interface';
 import { EmployeesService, Employee } from '../../../modules/dashboard/services/employees';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,     // <--- Necesario para los enlaces del menú
     MatFormFieldModule,
     MatSelectModule,
-    MatMenuModule,   // <--- Agregar
-    MatButtonModule, // <--- Agregar
-    MatIconModule    // <--- Agregar
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule  // <--- Soluciona el error NG8001
   ],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss']
@@ -46,10 +50,9 @@ export class Navbar implements OnInit {
   selectedBranchId: string | null = null;
   canSwitchBranch = false;
 
-  // --- 🔔 LOGICA DE NOTIFICACIONES (NUEVO) ---
+  // --- 🔔 LÓGICA DE NOTIFICACIONES ---
   notificationCount = 0;
 
-  // Datos simulados (luego vendrán del backend)
   notifications: Notification[] = [
     {
       id: '1',
@@ -75,22 +78,20 @@ export class Navbar implements OnInit {
       title: 'Bienvenido a PuntoPymes',
       time: 'Ayer',
       icon: 'info',
-      color: 'accent', // Gris/Azul
+      color: 'accent',
       read: true
     }
   ];
 
   ngOnInit(): void {
-    // 1. Obtenemos el usuario básico del token (Auth)
+    // 1. Usuario básico del token
     this.currentUser = this.authService.getUser();
 
-    // 2. 👇 CARGAR DATOS REALES DEL EMPLEADO
-    // Usamos el ID del usuario para buscar su ficha de empleado
+    // 2. Datos reales del empleado
     if (this.currentUser && this.currentUser.id) {
       this.employeesService.getEmployeeById(this.currentUser.id).subscribe({
         next: (emp) => {
           this.currentEmployee = emp;
-          // Opcional: Si el empleado tiene una foto más reciente que el token, se actualizará sola
         },
         error: (err) => console.warn('No se pudo cargar perfil de empleado', err)
       });
@@ -105,6 +106,12 @@ export class Navbar implements OnInit {
     }
   }
 
+  // --- ACCIONES DE USUARIO ---
+
+  logout() {
+    this.authService.logout();
+  }
+
   // --- LÓGICA DE NOTIFICACIONES ---
 
   updateNotificationCount() {
@@ -112,21 +119,18 @@ export class Navbar implements OnInit {
   }
 
   markAllRead() {
-    // Marcamos todas como leídas localmente
     this.notifications.forEach(n => n.read = true);
     this.updateNotificationCount();
-
-    // Aquí podrías llamar al backend: this.notificationService.markAllAsRead().subscribe(...)
   }
 
-  // --- LÓGICA DE SUCURSALES (EXISTENTE) ---
+  // --- LÓGICA DE SUCURSALES ---
 
   loadBranches() {
     this.branchesService.getBranches().subscribe({
       next: (data) => {
         this.branches = data.filter(b => b.activa);
       },
-      error: (err) => console.error('Error cargando sucursales para el header', err)
+      error: (err) => console.error('Error cargando sucursales', err)
     });
   }
 
@@ -147,30 +151,22 @@ export class Navbar implements OnInit {
     window.location.reload();
   }
 
-  // --- HELPERS ACTUALIZADOS ---
+  // --- HELPERS ---
 
   get displayName(): string {
-    // 1. Prioridad: Datos del Empleado (RRHH)
     if (this.currentEmployee) {
       return `${this.currentEmployee.nombre} ${this.currentEmployee.apellido}`;
     }
-
-    // 2. Fallback: Datos del Token (Auth) - Aquí ya no intentamos acceder a .nombre si no existe
     if (this.currentUser) {
-      // Si tu interfaz User tiene 'email', usamos eso.
-      // Si por casualidad tu token SÍ traía nombre pero TypeScript se quejaba, podrías hacer (this.currentUser as any).nombre
       return this.currentUser.email?.split('@')[0] || 'Usuario';
     }
-
     return 'Invitado';
   }
 
   get userRole(): string {
-    // Puedes sacar el rol del empleado (cargo) o del usuario (sistema)
     if (this.currentEmployee?.cargo?.nombre) {
-      return this.currentEmployee.cargo.nombre; // Ej: "Desarrollador Senior"
+      return this.currentEmployee.cargo.nombre;
     }
-
     const roleMap: any = {
       'admin': 'Administrador del Sistema',
       'gerente': 'Gerente',
@@ -180,7 +176,6 @@ export class Navbar implements OnInit {
   }
 
   get userAvatar(): string {
-    // Priorizamos la foto del empleado, luego la del usuario, luego default
     return this.currentEmployee?.fotoUrl ||
       this.currentUser?.fotoUrl ||
       'assets/images/default-avatar.png';
@@ -191,4 +186,4 @@ export class Navbar implements OnInit {
     const branch = this.branches.find(b => b.id === branchId);
     return branch ? branch.nombre : '';
   }
-} 
+}

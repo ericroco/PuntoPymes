@@ -1,16 +1,22 @@
 <header class="navbar-container">
 
-  <div class="page-context">
-    <h1>Vista General</h1>
+  <div class="navbar-left">
+    <button class="menu-btn mobile-only" mat-icon-button>
+      <mat-icon>menu</mat-icon>
+    </button>
 
-    <div class="context-subtitle">
-      <span *ngIf="!selectedBranchId" class="welcome-msg">
-        Bienvenido de nuevo, {{ displayName | titlecase }}
-      </span>
+    <div class="page-context">
+      <h1>Vista General</h1>
+      
+      <div class="context-subtitle">
+        <span *ngIf="!selectedBranchId" class="welcome-msg fade-in">
+          Bienvenido, <strong>{{ displayName | titlecase }}</strong>
+        </span>
 
-      <div *ngIf="selectedBranchId" class="filter-badge fade-in">
-        <span class="dot"></span>
-        Filtrando por Sucursal
+        <div *ngIf="selectedBranchId" class="filter-badge fade-in">
+          <span class="dot"></span>
+          <span>Filtrando por Sucursal</span>
+        </div>
       </div>
     </div>
   </div>
@@ -18,22 +24,22 @@
   <div class="navbar-actions">
 
     <div class="action-group branch-wrapper" *ngIf="canSwitchBranch">
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="branch-select-field">
         <mat-select [value]="selectedBranchId" (selectionChange)="onBranchChange($event.value)"
-          placeholder="🏢 Todas las Sedes">
-
+          placeholder="Todas las Sedes">
+          
           <mat-select-trigger>
             <div class="trigger-content">
               <mat-icon class="trigger-icon">store</mat-icon>
-              <span>{{ getBranchName(selectedBranchId) || 'Todas las Sedes' }}</span>
+              <span class="trigger-text">{{ getBranchName(selectedBranchId) || 'Todas las Sedes' }}</span>
             </div>
           </mat-select-trigger>
 
           <mat-option [value]="null">
-            <span class="option-text">🏢 Todas las Sedes</span>
+            <mat-icon>domain</mat-icon> Todas las Sedes
           </mat-option>
           <mat-option *ngFor="let b of branches" [value]="b.id">
-            <span class="option-text">📍 {{ b.nombre }}</span>
+            <mat-icon>store_mall_directory</mat-icon> {{ b.nombre }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -42,26 +48,28 @@
     <div class="action-group search-wrapper">
       <div class="search-box">
         <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" placeholder="Buscar..." class="search-input">
+        <input type="text" placeholder="Buscar en TalenTrack..." class="search-input">
       </div>
     </div>
 
     <div class="divider-vertical"></div>
 
     <div class="action-group">
-      <button class="icon-btn" [matMenuTriggerFor]="notificationMenu">
+      <button mat-icon-button class="notification-btn" [matMenuTriggerFor]="notificationMenu">
         <mat-icon>notifications_none</mat-icon>
         <span class="notification-dot" *ngIf="notificationCount > 0"></span>
       </button>
     </div>
 
     <div class="user-profile-wrapper">
-      <div class="user-card">
+      <div class="user-card" [matMenuTriggerFor]="userMenu">
         <div class="user-info">
           <span class="name">{{ displayName | titlecase }}</span>
           <span class="role">{{ userRole }}</span>
         </div>
-        <img [src]="userAvatar" alt="Avatar" class="avatar" onerror="this.src='assets/images/default-avatar.png'">
+        <div class="avatar-container">
+          <img [src]="userAvatar" alt="Avatar" class="avatar" onerror="this.src='assets/images/default-avatar.png'">
+        </div>
       </div>
     </div>
 
@@ -76,7 +84,7 @@
 
   <div class="notification-list">
     <button mat-menu-item *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
-      <div class="notif-icon-box" [style.color]="notif.color || 'inherit'">
+      <div class="notif-icon-box" [style.color]="notif.color || 'var(--color-primary)'">
         <mat-icon>{{ notif.icon }}</mat-icon>
       </div>
       <div class="notif-content">
@@ -90,4 +98,17 @@
       <p>No tienes notificaciones nuevas</p>
     </div>
   </div>
+</mat-menu>
+
+<mat-menu #userMenu="matMenu" xPosition="before">
+  <button mat-menu-item routerLink="/dashboard/my-profile">
+    <mat-icon>account_circle</mat-icon> Mi Perfil
+  </button>
+  <button mat-menu-item routerLink="/dashboard/settings">
+    <mat-icon>settings</mat-icon> Configuración
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon color="warn">logout</mat-icon> Cerrar Sesión
+  </button>
 </mat-menu>

@@ -1,442 +1,414 @@
 /* ==========================================================================
-   OVERVIEW DASHBOARD STYLES (Admin & Employee Views) - CORRECTED COLORS
+   TALENTRACK OVERVIEW - ESTILOS FINALIZADOS
+   (Layout Responsive + Botones Estandarizados según Identidad Visual)
    ========================================================================== */
 
-// --- Estilos Globales para la Página ---
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container.overview-page {
+  padding: var(--spacing-md);
+  max-width: 100%;
+  margin: 0 auto;
+  overflow-x: hidden;
+  animation: fadeIn 0.4s ease-out;
+
+  @media (min-width: 768px) {
+    padding: var(--spacing-xl);
+  }
+}
+
 .page-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  h2 {
+    font-family: var(--font-family-base);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: 1.5rem;
+    margin: 0;
+    letter-spacing: -0.5px;
+    
+    @media (min-width: 768px) {
+      font-size: 1.75rem;
+    }
+  }
 }
 
 mat-divider {
-  margin: 2rem 0;
-  // Asegura que el divider use tu color de borde
-  border-top-color: var(--color-border) !important;
+  margin: var(--spacing-lg) 0;
+  border-top-color: var(--color-border-light) !important;
 }
 
-.no-data-placeholder {
-  text-align: center;
-  padding: 1rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  min-height: 50px; // Evita que el widget colapse
+// ==========================================================================
+// SECCIÓN: ESTANDARIZACIÓN DE BOTONES (SEGÚN IDENTIDAD VISUAL)
+// ==========================================================================
+
+// 1. Botón Principal (CTA - "Solicitar", "Participar")
+// Estilo: Gradiente, Sombra suave, Hover Lift, Pill Shape
+button[mat-flat-button][color="primary"] {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  color: white !important;
+  border-radius: 24px !important; // Forma de píldora
+  padding: 0 24px !important;
+  height: 42px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(var(--color-primary-rgb), 0.3); // Sombra con color de marca
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); // Transición suave
+
+  mat-icon {
+    margin-right: 8px;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px); // Efecto Lift
+    box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.45);
+    filter: brightness(1.05);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(var(--color-primary-rgb), 0.3);
+  }
+
+  &:disabled {
+    background: var(--color-border) !important;
+    box-shadow: none;
+    opacity: 0.7;
+  }
 }
 
-// --- Estilos para las Tarjetas de KPI (Admin) ---
+// 2. Botón Secundario (Outlined - "Accesos Rápidos")
+// Estilo: Borde sutil, Hover con fondo muy suave
+button[mat-stroked-button] {
+  border-radius: 12px !important; // Bordes redondeados modernos
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+  padding: 0 20px !important;
+  height: 48px !important; // Más alto para facilitar el click
+  font-weight: 500 !important;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  justify-content: flex-start !important; // Alinear texto a la izquierda
+
+  mat-icon {
+    color: var(--color-primary); // Icono siempre con color de marca
+    margin-right: 12px;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-variant) !important;
+    border-color: var(--color-primary-subtle) !important;
+    color: var(--color-primary-dark) !important;
+    transform: translateX(4px); // Pequeño movimiento a la derecha indicando navegación
+  }
+}
+
+// 3. Botón de Texto / Enlace (Actions - "Ver Detalles", "Ver Todas")
+// Estilo: Texto en color primario, Hover con fondo tintado
+button[mat-button] {
+  color: var(--color-primary) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+  border-radius: 8px !important;
+  text-transform: uppercase;
+  font-size: 0.8rem !important;
+
+  &:hover {
+    background-color: var(--color-primary-light) !important; // Fondo tintado al hover
+  }
+}
+
+// 4. Botones de Icono (Acciones rápidas - Aprobar/Rechazar)
+// Estilo: Circulares, Colores semánticos (Éxito/Error)
+button[mat-icon-button] {
+  transition: all 0.2s ease;
+
+  // Aprobar
+  &.btn-approve {
+    color: var(--color-success);
+    background-color: var(--color-success-light); // Fondo suave siempre visible
+    
+    &:hover {
+      background-color: var(--color-success);
+      color: white;
+      transform: scale(1.1);
+    }
+  }
+
+  // Rechazar
+  &.btn-reject {
+    color: var(--color-danger);
+    background-color: var(--color-danger-light); // Fondo suave siempre visible
+    
+    &:hover {
+      background-color: var(--color-danger);
+      color: white;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// ==========================================================================
+// SECCIÓN: LAYOUT & CARDS
+// ==========================================================================
+
+// --- TARJETAS KPI ---
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 .card {
   background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  padding: 1.5rem;
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
-  border-left-width: 4px;
-  border-left-style: solid;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-  // Colores de borde usando variables semánticas
-  &.card-blue {
-    border-left-color: var(--color-info);
+  // Branding Colors accent
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px; // Borde lateral en lugar de superior (más limpio)
+    height: 100%;
+    background: var(--card-accent, var(--color-border));
+    transition: width 0.2s ease;
   }
 
-  &.card-green {
-    border-left-color: var(--color-success);
+  &:hover {
+    transform: translateY(-4px); // Lift en toda la tarjeta
+    box-shadow: var(--shadow-md);
+    
+    &::before {
+      width: 6px; // Acento se hace más grueso
+    }
   }
 
-  &.card-orange {
-    border-left-color: var(--color-warning);
-  }
+  &.card-blue { --card-accent: var(--color-info); }
+  &.card-green { --card-accent: var(--color-success); }
+  &.card-orange { --card-accent: var(--color-warning); }
+  &.card-red { --card-accent: var(--color-danger); }
+  &.card-brand { --card-accent: var(--color-primary); }
 
-  .card-content {
-    flex-grow: 1;
-  }
+  .card-content { flex-grow: 1; padding-left: var(--spacing-sm); }
 
   .card-title {
-    margin: 0 0 0.5rem 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
     color: var(--color-text-secondary);
-    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
   }
 
   .card-value {
-    font-size: 2.5rem;
+    font-family: var(--font-family-base);
+    font-size: 2rem;
     font-weight: 700;
-    margin: 0;
     color: var(--color-text-primary);
+    margin: 0;
   }
 
   .card-footer {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-
+    margin-top: var(--spacing-md);
+    padding-left: var(--spacing-sm);
+    
     .trend {
       font-weight: 600;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
 
-      // Colores de tendencia usando variables semánticas
-      &.positive {
-        color: var(--color-success-dark);
-      }
-
-      &.negative {
-        color: var(--color-danger-dark);
-      }
+      &.positive { background: var(--color-success-light); color: var(--color-success-dark); }
+      &.negative { background: var(--color-danger-light); color: var(--color-danger-dark); }
     }
 
     .details-link {
-      color: var(--color-text-secondary);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s;
+      
+      &:hover {
+        color: var(--color-primary);
+      }
     }
   }
 }
 
-// --- Grid principal para Widgets ---
+// --- GRID PRINCIPAL ---
 .overview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
+  grid-template-columns: 1fr; 
+  gap: var(--spacing-lg);
 
-// Grid específico para Empleado
-.employee-grid {
-  @media (min-width: 900px) {
-    grid-template-columns: 1fr 1fr;
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-// Estilo base para los widgets (MatCard)
+.employee-grid {
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// --- WIDGET CONTAINER ---
 .overview-widget {
+  height: 100%;
   display: flex;
   flex-direction: column;
-
+  background: var(--color-surface) !important;
+  border-radius: var(--border-radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--color-border-light);
+  width: 100%;
+  
   mat-card-header {
-    padding-bottom: 0.5rem;
-  }
-
-  mat-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
+    padding: var(--spacing-lg) var(--spacing-lg) 0 !important;
+    
+    mat-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      
+      mat-icon { color: var(--color-primary); }
+    }
   }
 
   mat-card-content {
+    padding: var(--spacing-lg) !important;
     flex-grow: 1;
-    padding-top: 0;
-
-    p {
-      margin-bottom: 0.5rem;
-      color: var(--color-text-secondary);
-
-      strong {
-        color: var(--color-text-primary);
-        font-weight: 600;
-      }
-    }
-  }
-
-  mat-list {
-    padding-top: 0;
-  }
-
-  mat-list-item {
-    height: auto !important;
-    padding: 0.5rem 0 !important;
-
-    ::ng-deep .mat-mdc-list-item__content {
-      // Target Material v15+ internal class
-      padding: 0 !important;
-    }
   }
 
   mat-card-actions {
-    padding: 8px 16px 8px 0 !important;
+    padding: 8px var(--spacing-lg) var(--spacing-lg) !important;
+    border-top: 1px solid var(--color-border-light); // Separador sutil para el footer
   }
 }
 
-// --- Estilos Específicos Empleado ---
-.kpi-widget {
-  .kpi-item {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--color-border);
+// --- ELEMENTOS INTERNOS DE WIDGETS ---
 
-    &:last-child {
-      border: none;
-      margin-bottom: 0;
-      padding-bottom: 0;
-    }
-
-    label {
-      font-weight: 500;
-      color: var(--color-text-secondary);
-    }
-
-    .kpi-value {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--color-primary);
-
-      span {
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-left: 0.25rem;
-      }
-    }
-
-    // --- CORRECCIÓN BARRA DE PROGRESO ---
-    mat-progress-bar {
-      grid-column: 1 / -1;
-      margin-top: 0.5rem;
-      --mdc-linear-progress-active-indicator-color: var(--color-primary);
-      --mdc-linear-progress-track-color: var(--color-primary-light);
-    }
-  }
+// Listas (Aprobaciones)
+.request-icon {
+  background-color: var(--color-surface-variant);
+  color: var(--color-primary);
+  border-radius: 50%;
+  padding: 8px;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: var(--spacing-md);
 }
 
-.leave-request-form {
-  mat-card-actions {
-
-    button[mat-flat-button][color="primary"]:not(:disabled) {
-      background-color: var(--color-primary); // Opcional, por si acaso
-
-      color: --mat-sys-on-primary !important;
-
-
-      mat-icon {
-        color: white !important;
-        // O: color: var(--mat-sys-on-primary) !important;
-      }
-
-      // Estilo hover (sin cambios)
-      &:hover {
-        background-color: var(--color-primary-dark);
-      }
-    }
-
-    // Estilo cuando está deshabilitado (sin cambios)
-    button[mat-flat-button][color="primary"]:disabled {
-      // Material suele manejar bien los colores deshabilitados,
-      // pero puedes forzarlos si es necesario.
-      // background-color: rgba(0, 0, 0, 0.12);
-      // color: rgba(0, 0, 0, 0.38);
-    }
-  }
-}
-
-// Colores de prioridad para iconos (usando variables semánticas)
-.priority-alta {
-  color: var(--color-danger);
-}
-
-.priority-media {
-  color: var(--color-warning);
-}
-
-.priority-baja {
-  color: var(--color-success-dark);
-}
-
-// --- Estilos Específicos Admin ---
 .approval-actions {
   display: flex;
-  gap: 0.25rem;
-  flex-shrink: 0;
-  margin-left: 1rem;
-
-  // Botones de aprobación/rechazo usando variables semánticas
-  button[color="primary"] {
-    // Aprobar (check)
-    color: var(--color-success-dark);
-
-    &:hover:not(:disabled) {
-      background-color: var(--color-success-light);
-    }
-  }
-
-  button[color="warn"] {
-    // Rechazar (cruz)
-    color: var(--color-danger-dark);
-
-    &:hover:not(:disabled) {
-      background-color: var(--color-danger-light);
-    }
-  }
+  gap: 8px;
 }
 
-// --- CORRECCIÓN COLORES CALENDARIO (::ng-deep necesario y aplicado globalmente) ---
-// Es mejor poner esto en styles.scss global para consistencia, pero funciona aquí también.
-::ng-deep {
+// Cartelera
+.anuncio-card {
+  background-color: var(--color-surface-variant);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-left: 3px solid var(--color-primary-subtle);
+  transition: background 0.2s;
 
-  // Color del día seleccionado (círculo)
-  .mat-datepicker-content .mat-calendar-body-selected {
-    background-color: var(--color-primary) !important;
-    color: white !important;
+  &:hover {
+    background-color: white;
+    box-shadow: var(--shadow-sm);
   }
 
-  // Color del rango seleccionado (fondo entre inicio y fin)
-  .mat-datepicker-content .mat-calendar-body-cell.mat-calendar-body-in-range::before {
-    background: var(--color-primary-light) !important;
-    opacity: 0.6; // Ajusta opacidad si deseas
-  }
-
-  // Color de inicio/fin del rango (círculo en los extremos)
-  .mat-datepicker-content .mat-calendar-body-cell.mat-calendar-body-range-start:not(.mat-calendar-body-range-end)::after,
-  .mat-datepicker-content .mat-calendar-body-cell.mat-calendar-body-range-end:not(.mat-calendar-body-range-start)::after {
-    background: var(--color-primary) !important;
-  }
-
-  // Color del día actual (contorno)
-  .mat-datepicker-content .mat-calendar-body-today {
-    border-color: var(--color-primary) !important;
-
-    // Si el día actual también está seleccionado, asegura el color correcto
-    &.mat-calendar-body-selected {
-      background-color: var(--color-primary) !important;
-      color: white !important;
-    }
-  }
-}
-
-// --- CORRECCIÓN BOTÓN "Ver todas mis tareas" ---
-// Asumiendo que el botón en HTML tiene color="primary"
-.overview-widget mat-card-actions button[color="primary"] {
-  color: var(--color-primary); // Fuerza el color del texto
-
-  &:hover:not(:disabled) {
-    background-color: rgba(var(--color-primary-rgb, 231, 76, 60), 0.08); // Usa un fondo muy ligero en hover
-  }
-}
-
-.chart-widget {
-  mat-card-content.chart-container {
-    height: 250px; // Altura fija para los contenedores de gráficos
-    display: flex; // Ayuda a centrar/ajustar el gráfico
-    justify-content: center;
-    align-items: center;
-    padding-top: 1rem !important; // Añadir padding si es necesario
-  }
-
-  // Sobrescribe estilos de ngx-charts si es necesario
-  // Ejemplo: Hacer tooltips más pequeños
-  ::ng-deep .ngx-charts-tooltip-content {
-    font-size: 0.8rem;
-  }
-}
-
-// --- Estilos para Widget de Accesos Rápidos ---
-.quick-links-widget {
-  mat-card-content.quick-links-container {
-    display: grid;
-    // Crea 2 columnas de botones
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem; // Espacio entre botones
-
-    button[mat-stroked-button] {
-      width: 100%; // Hace que los botones ocupen su celda
-      justify-content: flex-start; // Alinea icono y texto a la izquierda
-      padding: 0.75rem 1rem;
-      text-align: left;
-
-      mat-icon {
-        margin-right: 0.5rem;
-      }
-
-      // Color del borde y texto (coincide con secundario)
-      border-color: var(--color-border);
-      color: var(--color-text-secondary);
-
-      &:hover {
-        background-color: var(--color-background);
-        color: var(--color-primary);
-        border-color: var(--color-primary-light);
-      }
-    }
-  }
-}
-
-// --- Estilos para Widget de Eventos (MatList) ---
-// Puedes ajustar estilos de mat-list-item si es necesario
-.overview-widget mat-list-item {
-  // Ejemplo: Reducir altura si es necesario
-  // height: 56px !important;
-}
-
-.polls-widget {
-  min-height: 200px;
-  /* Evita que la tarjeta salte de tamaño */
-
-  .title-with-badge {
+  .anuncio-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    width: 100%;
+    margin-bottom: 8px;
   }
 
-  .badge-count {
-    background-color: #f44336;
-    /* Rojo notificación */
-    color: white;
-    font-size: 12px;
+  .badge {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
     padding: 2px 8px;
     border-radius: 12px;
-    font-weight: bold;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
   }
+}
 
+// Polls
+.polls-widget {
   .poll-preview {
+    padding: var(--spacing-lg);
+    background: linear-gradient(180deg, var(--color-surface-variant) 0%, rgba(255,255,255,0) 100%);
+    border-radius: var(--border-radius);
     text-align: center;
-    padding: 10px 0;
-
-    .poll-title {
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: #333;
-    }
-
-    .poll-desc {
-      font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 16px;
-      line-height: 1.4;
-    }
-
-    .queue-info {
-      margin-top: 15px;
-      color: #888;
-      font-style: italic;
-    }
+    border: 1px dashed var(--color-border);
   }
+}
 
-  /* Estado vacío bonito */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0;
-    color: #4caf50;
-    /* Verde éxito */
+// Accesos Rápidos (Grid de botones)
+.quick-links-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm);
 
-    .empty-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 10px;
-    }
-
-    .no-data-placeholder {
-      color: #666;
-      margin: 0;
-      font-weight: 500;
-    }
+  @media (min-width: 500px) {
+    grid-template-columns: 1fr 1fr;
   }
+}
 
+// Charts
+.chart-container {
+  height: 250px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
+// Forms
+.leave-request-form {
+  mat-form-field { width: 100%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
