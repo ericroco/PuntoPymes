@@ -1,46 +1,72 @@
-<h2 mat-dialog-title>Registrar Devolución</h2>
+<div class="dialog-container">
 
-<div class="summary-box">
-    <p><strong>Equipo:</strong> {{ data.asset.nombre }} <span *ngIf="data.asset.serial">({{ data.asset.serial }})</span>
-    </p>
-    <p *ngIf="data.asset.asignadoA"><strong>Devuelve:</strong> {{ data.asset.asignadoA.nombreEmpleado }}</p>
-</div>
-
-<mat-dialog-content [formGroup]="form">
-    <div class="form-column">
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Fecha de Recepción</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="fechaDevolucion">
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Estado tras inspección</mat-label>
-            <mat-select formControlName="estado">
-                <mat-option *ngFor="let status of returnStatuses" [value]="status">
-                    {{ status }}
-                </mat-option>
-            </mat-select>
-            <mat-hint>Indica si el equipo regresa funcional o dañado.</mat-hint>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Observaciones / Detalles</mat-label>
-            <textarea matInput formControlName="observaciones" rows="3"
-                placeholder="Ej: Equipo recibido completo, sin rayones..."></textarea>
-            <mat-error *ngIf="form.get('observaciones')?.hasError('required')">
-                Es obligatorio documentar el estado de recepción.
-            </mat-error>
-        </mat-form-field>
-
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Registrar Devolución</h2>
+        <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
     </div>
-</mat-dialog-content>
 
-<mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancelar</button>
-    <button mat-flat-button color="warn" (click)="onSubmit()" [disabled]="isLoading || form.invalid">
-        Confirmar Recepción
-    </button>
-</mat-dialog-actions>
+    <mat-dialog-content class="simple-dialog-content">
+
+        <div class="return-summary">
+            <div class="summary-icon">
+                <mat-icon>keyboard_return</mat-icon>
+            </div>
+            <div class="summary-details">
+                <span class="label">Equipo a devolver:</span>
+                <span class="value">{{ data.asset.nombre }}</span>
+                <div class="meta-row">
+                    <span class="sub-value" *ngIf="data.asset.serial">S/N: {{ data.asset.serial }}</span>
+                    <span class="divider" *ngIf="data.asset.asignadoA && data.asset.serial">•</span>
+                    <span class="sub-value user" *ngIf="data.asset.asignadoA">
+                        <mat-icon>person</mat-icon> {{ data.asset.asignadoA.nombreEmpleado }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <form [formGroup]="form" class="simple-form">
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Fecha de Recepción</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fechaDevolucion" readonly
+                    (click)="picker.open()">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Estado tras inspección</mat-label>
+                <mat-select formControlName="estado">
+                    <mat-option *ngFor="let status of returnStatuses" [value]="status">
+                        {{ status }}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matSuffix>fact_check</mat-icon>
+                <mat-hint>Indica si el equipo regresa funcional o dañado.</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Observaciones / Detalles</mat-label>
+                <textarea matInput formControlName="observaciones" rows="3"
+                    placeholder="Ej: Equipo recibido completo, sin rayones..."></textarea>
+                <mat-icon matSuffix style="align-self: start; margin-top: 8px;">notes</mat-icon>
+                <mat-error *ngIf="form.get('observaciones')?.hasError('required')">
+                    Obligatorio documentar el estado.
+                </mat-error>
+            </mat-form-field>
+
+        </form>
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button mat-dialog-close class="btn-cancel">Cancelar</button>
+        <button mat-flat-button color="warn" (click)="onSubmit()" [disabled]="isLoading || form.invalid"
+            class="btn-save">
+            <mat-icon>assignment_return</mat-icon> Confirmar Recepción
+        </button>
+    </div>
+
+</div>

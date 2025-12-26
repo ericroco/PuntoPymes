@@ -11,6 +11,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { startWith, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
 
 import { AssetService } from '../../services/asset';
 import { Asset, AssignAssetDto } from '../../models/asset.models';
@@ -21,7 +22,7 @@ import { Asset, AssignAssetDto } from '../../models/asset.models';
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule,
     MatButtonModule, MatFormFieldModule, MatInputModule,
-    MatDatepickerModule, MatNativeDateModule, MatAutocompleteModule
+    MatDatepickerModule, MatNativeDateModule, MatAutocompleteModule, MatIcon
   ],
   templateUrl: './asset-assign-dialog.html',
   styleUrls: ['./asset-assign-dialog.scss']

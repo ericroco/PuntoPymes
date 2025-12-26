@@ -1,55 +1,75 @@
-<h2 mat-dialog-title>Asignación de Activo</h2>
+<div class="dialog-container">
 
-<div class="asset-summary">
-    <div class="summary-icon">💻</div>
-    <div class="summary-details">
-        <span class="label">Estás asignando:</span>
-        <span class="value">{{ data.asset.nombre }}</span>
-        <span class="sub-value" *ngIf="data.asset.serial">S/N: {{ data.asset.serial }}</span>
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Asignación de Activo</h2>
+        <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
     </div>
+
+    <mat-dialog-content class="simple-dialog-content">
+
+        <div class="asset-summary">
+            <div class="summary-icon">
+                <mat-icon>laptop_mac</mat-icon>
+            </div>
+            <div class="summary-details">
+                <span class="label">Estás asignando:</span>
+                <span class="value">{{ data.asset.nombre }}</span>
+                <span class="sub-value" *ngIf="data.asset.serial">S/N: {{ data.asset.serial }}</span>
+            </div>
+        </div>
+
+        <form [formGroup]="form" class="simple-form">
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Buscar Empleado</mat-label>
+                <input type="text" matInput formControlName="empleadoSeleccionado" [matAutocomplete]="auto"
+                    placeholder="Escribe para buscar...">
+
+                <mat-icon matSuffix>search</mat-icon>
+
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
+                    (optionSelected)="onOptionSelected($event)">
+                    <mat-option *ngFor="let emp of filteredEmployees$ | async" [value]="emp">
+                        <div class="employee-option">
+                            <span class="emp-name">{{ emp.nombre }} {{ emp.apellido }}</span>
+                            <small class="emp-cargo" *ngIf="emp.cargo"> - {{ emp.cargo }}</small>
+                        </div>
+                    </mat-option>
+                </mat-autocomplete>
+
+                <mat-error *ngIf="form.get('empleadoSeleccionado')?.hasError('required')">
+                    Debes seleccionar un responsable.
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Fecha de Entrega</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fechaAsignacion" readonly
+                    (click)="picker.open()">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Observaciones / Estado Físico</mat-label>
+                <textarea matInput formControlName="observaciones" rows="3"
+                    placeholder="Ej: Se entrega con cargador, mouse y funda."></textarea>
+                <mat-icon matSuffix style="align-self: start; margin-top: 8px;">description</mat-icon>
+                <mat-hint>Detalla accesorios para evitar reclamos.</mat-hint>
+            </mat-form-field>
+
+        </form>
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button mat-dialog-close class="btn-cancel">Cancelar</button>
+        <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isLoading || form.invalid"
+            class="btn-save">
+            <mat-icon>check_circle</mat-icon> Confirmar Asignación
+        </button>
+    </div>
+
 </div>
-
-<mat-dialog-content [formGroup]="form">
-    <div class="form-column">
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Buscar Empleado</mat-label>
-            <input type="text" matInput formControlName="empleadoSeleccionado" [matAutocomplete]="auto"
-                placeholder="Escribe para buscar...">
-            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
-                (optionSelected)="onOptionSelected($event)">
-                <mat-option *ngFor="let emp of filteredEmployees$ | async" [value]="emp">
-                    <div class="employee-option">
-                        <span class="emp-name">{{ emp.nombre }} {{ emp.apellido }}</span>
-                        <small class="emp-cargo" *ngIf="emp.cargo"> - {{ emp.cargo }}</small>
-                    </div>
-                </mat-option>
-            </mat-autocomplete>
-            <mat-error *ngIf="form.get('empleadoSeleccionado')?.hasError('required')">
-                Debes seleccionar un responsable
-            </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Fecha de Entrega</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="fechaAsignacion">
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Observaciones / Estado Físico</mat-label>
-            <textarea matInput formControlName="observaciones" rows="3"
-                placeholder="Ej: Se entrega con cargador, mouse y funda. Pantalla sin rayones."></textarea>
-            <mat-hint>Detalla qué accesorios entregas para evitar reclamos luego.</mat-hint>
-        </mat-form-field>
-
-    </div>
-</mat-dialog-content>
-
-<mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancelar</button>
-    <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isLoading || form.invalid">
-        Confirmar Asignación
-    </button>
-</mat-dialog-actions>

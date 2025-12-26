@@ -1,108 +1,134 @@
-<div class="profile-header-dialog">
-    <div class="info-principal">
-        <div class="avatar-placeholder-large">
-            {{ getInitials(candidate.nombre) }}
-        </div>
+<div class="dialog-container">
 
-        <div class="text-info">
-            <h1 mat-dialog-title>{{ candidate.nombre }}</h1>
-            <p class="subtitle">{{ candidate.email }}</p>
-        </div>
-    </div>
-
-    <div class="ai-badge-dialog" [ngClass]="getScoreColor(candidate.aiScore)"
-        [matTooltip]="'IA: ' + (candidate.aiScore || 0) + '% de coincidencia'">
-        <mat-icon>auto_awesome</mat-icon>
-        <span>{{ candidate.aiScore || 0 }}% Match</span>
-    </div>
-</div>
-
-<mat-divider></mat-divider>
-
-<div mat-dialog-content class="profile-content">
-    <mat-tab-group animationDuration="0ms">
-
-        <mat-tab label="Perfil y CV">
-            <div class="tab-content-container">
-
-                <div class="ai-analysis-box" *ngIf="candidate.aiAnalysis">
-                    <h4>🤖 Análisis de Inteligencia Artificial</h4>
-                    <p>{{ candidate.aiAnalysis }}</p>
-                </div>
-
-                <div class="cv-viewer-container">
-                    <h4>Currículum Vitae</h4>
-                    <div class="cv-placeholder">
-                        <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
-                        <span>Documento Original</span>
-
-                        <a [href]="candidate.cvUrl" target="_blank" mat-stroked-button color="primary"
-                            [disabled]="!candidate.cvUrl">
-                            <mat-icon>open_in_new</mat-icon> Abrir CV en nueva pestaña
-                        </a>
-                    </div>
-                </div>
-
-                <div class="details-container">
-                    <h4>Información de Contacto</h4>
-                    <mat-list>
-                        <mat-list-item>
-                            <mat-icon matListItemIcon>email</mat-icon>
-                            <div matListItemTitle>Correo</div>
-                            <div matListItemLine>{{ candidate.email }}</div>
-                        </mat-list-item>
-                        <mat-list-item>
-                            <mat-icon matListItemIcon>phone</mat-icon>
-                            <div matListItemTitle>Teléfono</div>
-                            <div matListItemLine>{{ candidate.telefono }}</div>
-                        </mat-list-item>
-                        <mat-list-item>
-                            <mat-icon matListItemIcon>calendar_today</mat-icon>
-                            <div matListItemTitle>Fecha Postulación</div>
-                            <div matListItemLine>{{ candidate.fechaPostulacion | date:'mediumDate' }}</div>
-                        </mat-list-item>
-                    </mat-list>
-                </div>
+    <div class="profile-header">
+        <div class="info-principal">
+            <div class="avatar-placeholder-large">
+                {{ getInitials(candidate.nombre) }}
             </div>
-        </mat-tab>
+            <div class="text-info">
+                <h2 mat-dialog-title>{{ candidate.nombre }}</h2>
+                <p class="subtitle">{{ candidate.email }}</p>
+            </div>
+        </div>
 
-        <mat-tab label="Historial y Notas">
-            <div class="tab-content-container">
-                <div class="notes-section">
-                    <h4>Añadir Nueva Nota (Local)</h4>
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Escribe un comentario...</mat-label>
-                        <textarea matInput [(ngModel)]="newNote" rows="3"></textarea>
-                    </mat-form-field>
-                    <button mat-stroked-button color="primary" (click)="addNote()" [disabled]="!newNote.trim()">
-                        <mat-icon>add_comment</mat-icon> Guardar Nota
-                    </button>
-                </div>
+        <div class="ai-badge" [ngClass]="getScoreColor(candidate.aiScore)"
+            [matTooltip]="'IA: ' + (candidate.aiScore || 0) + '% de coincidencia'">
+            <mat-icon>auto_awesome</mat-icon>
+            <span>{{ candidate.aiScore || 0 }}% Match</span>
+        </div>
 
-                <div class="activity-feed-section">
-                    <h4>Historial de Actividad</h4>
-                    <mat-list class="activity-feed">
-                        <div *ngFor="let item of activityHistory" class="feed-item">
-                            <div class="feed-icon"><mat-icon>history</mat-icon></div>
-                            <div class="feed-content">
-                                <div class="feed-action">{{ item.action }}</div>
-                                <div class="feed-date">{{ item.date | date:'medium' }}</div>
+        <button type="button" mat-icon-button class="close-btn" (click)="onClose()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="tabs-container">
+        <mat-tab-group animationDuration="0ms">
+
+            <!-- 🔥 TAB 1: Perfil y CV -->
+            <mat-tab label="Perfil y CV">
+                <ng-template matTabContent>
+                    <div class="tab-scroll-content">
+
+                        <div class="ai-analysis-box" *ngIf="candidate.aiAnalysis">
+                            <h4 class="box-title"><mat-icon>psychology</mat-icon> Análisis de IA</h4>
+                            <p>{{ candidate.aiAnalysis }}</p>
+                        </div>
+
+                        <div class="section-box">
+                            <h4>Currículum Vitae</h4>
+                            <div class="cv-placeholder">
+                                <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
+                                <span>Documento Original</span>
+                                <a [href]="candidate.cvUrl" target="_blank" mat-stroked-button color="primary"
+                                    [disabled]="!candidate.cvUrl">
+                                    <mat-icon>open_in_new</mat-icon> Abrir CV
+                                </a>
                             </div>
                         </div>
-                    </mat-list>
-                </div>
-            </div>
-        </mat-tab>
 
-    </mat-tab-group>
-</div>
+                        <div class="section-box">
+                            <h4>Información de Contacto</h4>
+                            <div class="contact-list">
+                                <div class="contact-item">
+                                    <mat-icon>email</mat-icon>
+                                    <div class="item-text">
+                                        <span class="label">Correo</span>
+                                        <span class="value">{{ candidate.email }}</span>
+                                    </div>
+                                </div>
+                                <div class="contact-item">
+                                    <mat-icon>phone</mat-icon>
+                                    <div class="item-text">
+                                        <span class="label">Teléfono</span>
+                                        <span class="value">{{ candidate.telefono }}</span>
+                                    </div>
+                                </div>
+                                <div class="contact-item">
+                                    <mat-icon>calendar_today</mat-icon>
+                                    <div class="item-text">
+                                        <span class="label">Fecha Postulación</span>
+                                        <span class="value">{{ candidate.fechaPostulacion | date:'mediumDate' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-<mat-divider></mat-divider>
+                    </div>
+                </ng-template>
+            </mat-tab>
 
-<div mat-dialog-actions align="end">
-    <button mat-stroked-button (click)="onClose()">Cerrar</button>
-    <button mat-flat-button color="primary" (click)="moveToNextPhase()">
-        <mat-icon>keyboard_arrow_right</mat-icon>
-        Mover a Siguiente Fase
-    </button>
+            <!-- 🔥 TAB 2: Historial y Notas -->
+            <mat-tab label="Historial y Notas">
+                <ng-template matTabContent>
+                    <div class="tab-scroll-content">
+
+                        <div class="section-box">
+                            <h4>Añadir Nota Interna</h4>
+                            <mat-form-field appearance="outline" class="full-width custom-field">
+                                <mat-label>Escribe un comentario...</mat-label>
+                                <textarea matInput [(ngModel)]="newNote" rows="3"></textarea>
+                            </mat-form-field>
+                            <div class="actions-right">
+                                <button mat-stroked-button color="primary" (click)="addNote()"
+                                    [disabled]="!newNote.trim()">
+                                    <mat-icon>add_comment</mat-icon> Guardar Nota
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="section-box">
+                            <h4>Historial de Actividad</h4>
+                            <div class="activity-feed">
+                                <div *ngFor="let item of activityHistory" class="feed-item">
+                                    <div class="feed-icon"><mat-icon>history</mat-icon></div>
+                                    <div class="feed-content">
+                                        <div class="feed-action">{{ item.action }}</div>
+                                        <div class="feed-date">{{ item.date | date:'medium' }}</div>
+                                    </div>
+                                </div>
+                                <div *ngIf="activityHistory.length === 0" class="no-activity">
+                                    Sin actividad reciente.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </ng-template>
+            </mat-tab>
+
+        </mat-tab-group>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button (click)="onClose()" class="btn-cancel">Cerrar</button>
+        <button mat-flat-button color="primary" (click)="moveToNextPhase()" class="btn-save">
+            <mat-icon>keyboard_arrow_right</mat-icon> Mover a Siguiente Fase
+        </button>
+    </div>
+
 </div>

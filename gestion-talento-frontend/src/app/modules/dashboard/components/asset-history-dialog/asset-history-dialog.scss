@@ -1,55 +1,195 @@
-// Variables (Ajustadas a tu identidad visual)
-$primary-color: #3f51b5;
-$text-main: #333;
-$text-secondary: #666;
-$border-color: #e0e0e0;
-$success-bg: #e8f5e9;
-$success-text: #2e7d32;
-$gray-bg: #f5f5f5;
-$gray-text: #616161;
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
 
-// 1. ENCABEZADO
-h2[mat-dialog-title] {
-    margin: 0;
-    padding: 24px 24px 4px 24px;
-    font-family: 'Roboto', sans-serif;
-    color: $primary-color;
-    font-size: 1.4rem;
-    font-weight: 500;
+// ============================================
+// ESTRUCTURA PRINCIPAL (SCROLL CONTROLADO)
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box !important;
 }
 
-h3[mat-dialog-subtitle] {
-    margin: 0 0 10px 0; // Margen abajo
-    padding: 0 24px 16px 24px;
-    color: $text-secondary;
-    font-size: 0.95rem;
-    font-weight: 400;
-    border-bottom: 1px solid $border-color; // Línea separadora sutil
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    height: 70vh; // Altura fija para ver bien la tabla
+    max-height: 90vh;
+    width: 100%;
+    min-width: 700px; // Tabla necesita espacio horizontal
+    background-color: var(--color-surface);
+    box-sizing: border-box;
+
+    @media (max-width: 750px) {
+        min-width: 100vw;
+        height: 100vh;
+        border-radius: 0 !important;
+    }
 }
 
-// 2. CONTENEDOR (Scroll y Layout)
-.history-container {
-    padding: 0 !important; // Quitamos padding default para que la tabla llegue a los bordes
-    max-height: 60vh; // Altura máxima fija
-    min-width: 600px; // Ancho mínimo cómodo
-    overflow-y: auto; // Scroll vertical
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    flex-shrink: 0;
+    box-sizing: border-box;
 
-    // Scrollbar moderna
-    &::-webkit-scrollbar {
-        width: 8px;
+    .header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+
+            .serial {
+                font-family: monospace;
+                color: var(--color-text-primary);
+                font-weight: 500;
+            }
+        }
     }
 
-    &::-webkit-scrollbar-track {
-        background: #f1f1f1;
+    .close-btn {
+        color: var(--color-text-secondary);
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// ============================================
+// CONTENIDO SCROLLABLE (TABLA)
+// ============================================
+::ng-deep mat-dialog-content.history-content {
+    flex-grow: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden !important; // Evitar scroll horizontal
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    width: 100%;
+
+    &::-webkit-scrollbar {
+        width: 6px;
     }
 
     &::-webkit-scrollbar-thumb {
-        background: #ccc;
+        background: var(--color-border);
         border-radius: 4px;
     }
 }
 
-// 3. ESTADOS DE CARGA Y VACÍO
+// ============================================
+// ESTILOS DE TABLA
+// ============================================
+table.full-width-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    // Header Sticky
+    th.mat-header-cell {
+        background: #FAFAFA; // Color de fondo del header
+        color: var(--color-text-secondary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--color-border);
+        white-space: nowrap;
+    }
+
+    td.mat-cell {
+        padding: 1rem 1.5rem;
+        color: var(--color-text-primary);
+        border-bottom: 1px solid var(--color-border);
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    // Hover en filas
+    tr.mat-row:hover {
+        background-color: #F8F9FA;
+    }
+}
+
+// Celdas específicas
+.date-cell {
+    display: flex;
+    flex-direction: column;
+
+    .main-date {
+        font-weight: 500;
+    }
+
+    .sub-date {
+        color: var(--color-text-secondary);
+        font-size: 0.8em;
+    }
+}
+
+.responsable-name {
+    font-weight: 500;
+}
+
+.notes-cell {
+    max-width: 250px; // Limitar ancho para que no rompa la tabla
+    white-space: normal;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+}
+
+// Badge de Estado
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.returned {
+        background-color: #F1F1F1;
+        color: var(--color-text-secondary);
+    }
+
+    &.active {
+        background-color: rgba(46, 204, 113, 0.1); // Verde suave
+        color: var(--color-success);
+        border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+}
+
+// ============================================
+// ESTADOS (LOADING / EMPTY)
+// ============================================
 .loading-shade {
     display: flex;
     justify-content: center;
@@ -59,85 +199,70 @@ h3[mat-dialog-subtitle] {
 }
 
 .no-data {
-    text-align: center;
-    padding: 40px 20px;
-    color: $text-secondary;
-    font-style: italic;
-    background: $gray-bg;
-    margin: 20px;
-    border-radius: 8px;
-    border: 1px dashed #ccc;
-}
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--color-text-secondary);
+    gap: 10px;
 
-// 4. TABLA
-table {
-    width: 100%;
-    border-collapse: collapse;
-
-    // Cabecera pegajosa (Sticky Header)
-    th.mat-header-cell {
-        background: #fff; // Fondo blanco para tapar contenido al scrollear
-        color: $text-secondary;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        padding: 16px 24px;
-        border-bottom: 2px solid $gray-bg;
+    mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        opacity: 0.3;
     }
 
-    td.mat-cell {
-        padding: 16px 24px;
-        color: $text-main;
-        border-bottom: 1px solid $gray-bg;
-        font-size: 0.9rem;
+    p {
+        margin: 0;
+        font-style: italic;
+    }
+}
 
-        // Ajuste para la columna de observaciones si es muy larga
-        &:nth-child(3) {
-            max-width: 250px;
-            white-space: normal;
-            line-height: 1.4;
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    box-sizing: border-box;
+
+    button {
+        height: 40px;
+        padding: 0 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        text-transform: none;
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
         }
     }
+}
 
-    // Efecto hover en filas
-    tr.mat-row:hover {
-        background-color: #fbfbfb;
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 750px) {
+
+    // En móvil, la tabla puede necesitar scroll horizontal interno
+    ::ng-deep mat-dialog-content.history-content {
+        overflow-x: auto !important; // Permitir scroll horizontal SOLO en móvil si es necesario
     }
-}
 
-// 5. DETALLES ESPECÍFICOS
-
-// Fechas pequeñas
-small {
-    color: #999;
-    font-size: 0.8em;
-    display: block; // Forzar salto de línea limpio
-    margin-top: 2px;
-}
-
-// Estado (Badge / Pill)
-td span {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background-color: $gray-bg; // Por defecto (Devuelto)
-    color: $gray-text;
-    text-transform: uppercase;
-
-    // Estado Activo (Vigente)
-    &.status-active {
-        background-color: $success-bg;
-        color: $success-text;
-        border: 1px solid rgba($success-text, 0.1);
+    table.full-width-table {
+        min-width: 600px; // Forzar ancho mínimo para que la tabla no se aplaste
     }
-}
-
-// 6. BOTONES (Footer)
-mat-dialog-actions {
-    padding: 16px 24px 24px 24px !important;
-    border-top: 1px solid $border-color;
-    background: #fff;
 }

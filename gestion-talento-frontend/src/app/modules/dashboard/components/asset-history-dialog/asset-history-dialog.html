@@ -1,54 +1,76 @@
-<h2 mat-dialog-title>Historial de Asignaciones</h2>
-<h3 mat-dialog-subtitle>{{ data.asset.nombre }} ({{ data.asset.serial || 'S/N' }})</h3>
+<div class="dialog-container">
 
-<mat-dialog-content class="history-container">
-
-    <div *ngIf="isLoading" class="loading-shade">
-        <mat-spinner diameter="40"></mat-spinner>
+    <div class="dialog-header">
+        <div class="header-text">
+            <h2 mat-dialog-title>Historial de Asignaciones</h2>
+            <span class="subtitle">
+                {{ data.asset.nombre }} <span class="serial" *ngIf="data.asset.serial">({{ data.asset.serial }})</span>
+            </span>
+        </div>
+        <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
     </div>
 
-    <div *ngIf="!isLoading && history.length === 0" class="no-data">
-        <p>Este activo no tiene historial de movimientos.</p>
+    <mat-dialog-content class="history-content custom-scroll">
+
+        <div *ngIf="isLoading" class="loading-shade">
+            <mat-spinner diameter="40"></mat-spinner>
+        </div>
+
+        <div *ngIf="!isLoading && history.length === 0" class="no-data">
+            <mat-icon>history_toggle_off</mat-icon>
+            <p>Este activo no tiene historial de movimientos.</p>
+        </div>
+
+        <table mat-table [dataSource]="history" *ngIf="!isLoading && history.length > 0" class="full-width-table">
+
+            <ng-container matColumnDef="fecha">
+                <th mat-header-cell *matHeaderCellDef> Fecha </th>
+                <td mat-cell *matCellDef="let row">
+                    <div class="date-cell">
+                        <span class="main-date">{{ row.fechaAsignacion | date:'dd MMM yyyy' }}</span>
+                        <small class="sub-date" *ngIf="row.fechaDevolucion">
+                            hasta {{ row.fechaDevolucion | date:'dd MMM yyyy' }}
+                        </small>
+                    </div>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="empleado">
+                <th mat-header-cell *matHeaderCellDef> Responsable </th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="responsable-name">
+                        {{ row.empleado?.nombres }} {{ row.empleado?.apellidos }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="observaciones">
+                <th mat-header-cell *matHeaderCellDef> Notas </th>
+                <td mat-cell *matCellDef="let row" class="notes-cell">
+                    {{ row.observaciones || '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef> Estado </th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="status-badge" [class.active]="!row.fechaDevolucion"
+                        [class.returned]="row.fechaDevolucion">
+                        {{ row.fechaDevolucion ? 'Devuelto' : 'Vigente' }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button mat-dialog-close class="btn-cancel">Cerrar</button>
     </div>
 
-    <table mat-table [dataSource]="history" *ngIf="!isLoading && history.length > 0">
-
-        <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef> Fecha </th>
-            <td mat-cell *matCellDef="let row">
-                {{ row.fechaAsignacion | date:'shortDate' }}
-                <br>
-                <small *ngIf="row.fechaDevolucion">hasta {{ row.fechaDevolucion | date:'shortDate' }}</small>
-            </td>
-        </ng-container>
-
-        <ng-container matColumnDef="empleado">
-            <th mat-header-cell *matHeaderCellDef> Responsable </th>
-            <td mat-cell *matCellDef="let row">
-                {{ row.empleado?.nombres }} {{ row.empleado?.apellidos }}
-            </td>
-        </ng-container>
-
-        <ng-container matColumnDef="observaciones">
-            <th mat-header-cell *matHeaderCellDef> Notas </th>
-            <td mat-cell *matCellDef="let row"> {{ row.observaciones || '-' }} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef> Estado </th>
-            <td mat-cell *matCellDef="let row">
-                <span [class.status-active]="!row.fechaDevolucion">
-                    {{ row.fechaDevolucion ? 'Devuelto' : 'Vigente' }}
-                </span>
-            </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-
-</mat-dialog-content>
-
-<mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cerrar</button>
-</mat-dialog-actions>
+</div>

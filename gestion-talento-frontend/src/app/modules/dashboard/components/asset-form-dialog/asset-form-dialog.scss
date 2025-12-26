@@ -1,103 +1,266 @@
-// Variables de color (puedes ajustarlas a tu paleta)
-$primary-color: #3f51b5;
-$text-color: #333;
-$text-secondary: #666;
-$border-color: #e0e0e0;
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
 
-// 1. TÍTULO DEL DIÁLOGO
-h2[mat-dialog-title] {
-    margin: 0;
-    padding: 24px 24px 10px 24px; // Espaciado interno
-    font-family: 'Roboto', sans-serif; // O tu fuente principal
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: $primary-color;
-    border-bottom: 1px solid $border-color; // Línea sutil separadora
+// ============================================
+// ESTRUCTURA PRINCIPAL
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    overflow: hidden !important;
+    width: 600px !important; // 🔥 Width fijo del TypeScript
+    max-width: 90vw !important; // Responsive en pantallas pequeñas
+}
 
+.dialog-container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    max-height: 85vh; // Altura máxima para no salirse de la pantalla
+    width: 100%;
+    background-color: var(--color-surface);
+    overflow: hidden; // 🔥 CRÍTICO
+
+    @media (max-width: 700px) {
+        max-height: 100vh;
+        border-radius: 0 !important;
+    }
+}
+
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
+    display: flex;
     justify-content: space-between;
-}
+    align-items: center;
+    padding: 1.25rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    flex-shrink: 0;
 
-// 2. CONTENIDO (El Formulario)
-mat-dialog-content {
-    padding: 24px !important; // Sobrescribir padding default de Material
-    max-height: 75vh; // Evita que se salga de la pantalla en laptops pequeñas
-    overflow-y: auto; // Scroll suave si es necesario
-
-    // Estilizar la barra de scroll para que se vea moderna
-    &::-webkit-scrollbar {
-        width: 8px;
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: 'Poppins', sans-serif;
     }
 
-    &::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
+    .close-btn {
+        color: var(--color-text-secondary);
+        transition: color 0.2s;
 
-    &::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-        background: #bbb;
-    }
-}
-
-// 3. LA GRILLA (LAYOUT RESPONSIVO)
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; // Dos columnas iguales por defecto
-    gap: 16px; // Espacio entre campos
-    padding-top: 10px;
-
-    // Ajustes para los campos de Material
-    mat-form-field {
-        width: 100%;
-
-        // Un toque sutil: Quitar el padding inferior extra que a veces deja Material
-        .mat-mdc-form-field-subscript-wrapper {
-            margin-bottom: 0;
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
         }
     }
 }
 
-// 4. CLASE PARA CAMPOS QUE OCUPAN TODO EL ANCHO
-.full-width {
-    grid-column: 1 / -1; // Magia de CSS Grid: "Empieza en 1 y termina al final"
+// ============================================
+// CONTENIDO SCROLLEABLE
+// ============================================
+mat-dialog-content.asset-dialog-content {
+    flex-grow: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden !important; // 🔥 CRÍTICO
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100%;
+    max-width: 100%;
 
-    textarea {
-        min-height: 80px; // Altura mínima para la descripción
-        resize: vertical; // Permitir al usuario estirarlo solo hacia abajo
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-border);
+        border-radius: 4px;
     }
 }
 
-// 5. ACCIONES (BOTONES ABAJO)
-mat-dialog-actions {
-    padding: 16px 24px 24px 24px !important;
-    border-top: 1px solid #f5f5f5; // Separador muy sutil arriba
-    display: flex;
-    justify-content: flex-end; // Alinear a la derecha
-    gap: 8px;
-
-    button {
-        text-transform: uppercase; // Estilo clásico Material o quítalo si prefieres
-        letter-spacing: 0.5px;
-        font-weight: 500;
-    }
+.asset-form {
+    padding: 1.5rem $padding-modal;
+    width: 100%;
+    max-width: 100%; // 🔥 CRÍTICO
+    box-sizing: border-box;
 }
 
-// 6. RESPONSIVIDAD (MÓVIL)
-@media (max-width: 600px) {
-    .form-grid {
-        grid-template-columns: 1fr; // Una sola columna en celulares
-    }
+// ============================================
+// GRID SYSTEM (2 COLUMNAS)
+// ============================================
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); // 2 columnas iguales
+    gap: 1.25rem 1rem;
+    width: 100%;
+    max-width: 100%; // 🔥 CRÍTICO
+    box-sizing: border-box;
 
     .full-width {
-        grid-column: span 1; // Ya no necesita expandirse
+        grid-column: 1 / -1; // Ocupa ambas columnas
+        width: 100%;
+        max-width: 100%;
     }
 
-    h2[mat-dialog-title] {
-        font-size: 1.2rem;
+    // Por si un campo individual necesita full width
+    .custom-field.full-width {
+        grid-column: 1 / -1;
+    }
+}
+
+// ============================================
+// INPUTS SUAVES
+// ============================================
+::ng-deep .custom-field {
+    width: 100%;
+    max-width: 100%; // 🔥 CRÍTICO
+    box-sizing: border-box;
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: $radius-input !important;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        padding-right: 8px;
+        width: 100%; // 🔥 CRÍTICO
+        max-width: 100%; // 🔥 CRÍTICO
+        box-sizing: border-box;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+    }
+
+    // 🔥 FIX: Label no se sale
+    .mdc-notched-outline__notch {
+        max-width: calc(100% - 50px) !important;
+        padding: 0 8px;
+    }
+
+    .mdc-floating-label {
+        font-family: 'Poppins', sans-serif;
+        max-width: 100% !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mdc-floating-label--float-above {
+        transform: translateY(-27.25px) scale(0.75) !important;
+        max-width: calc(133% - 40px) !important;
+    }
+
+    // Input interno
+    input.mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+        max-width: 100%; // 🔥 CRÍTICO
+        box-sizing: border-box;
+    }
+
+    // Iconos suffix
+    .mat-icon[matSuffix] {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    // Datepicker toggle
+    .mat-datepicker-toggle {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+    }
+
+    // FOCUS
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+
+        .mat-icon[matSuffix],
+        .mat-datepicker-toggle {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+    }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+
+    button {
+        height: 44px;
+        padding: 0 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        text-transform: none;
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
+        }
+
+        &.btn-save {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+            mat-icon {
+                margin-right: 6px;
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+
+            &:disabled {
+                background: var(--color-border);
+                box-shadow: none;
+                color: var(--color-text-secondary);
+            }
+        }
+    }
+}
+
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 700px) {
+    .form-grid {
+        grid-template-columns: 1fr; // 1 columna en móvil
+        gap: 1.25rem;
+    }
+
+    .dialog-footer {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
     }
 }

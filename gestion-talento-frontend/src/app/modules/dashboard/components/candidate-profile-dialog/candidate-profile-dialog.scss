@@ -1,434 +1,536 @@
-/* ==========================================================================
-   ESTILOS PARA EL DIÁLOGO DE PERFIL DE CANDIDATO
-   ========================================================================== */
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
 
-// --- Encabezado del Perfil ---
-.profile-header-dialog {
+// ============================================
+// ESTRUCTURA PRINCIPAL
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+  padding: 0 !important;
+  border-radius: 16px !important;
+  background-color: var(--color-surface) !important;
+  overflow: hidden !important;
+  width: 800px !important;
+  max-width: 95vw !important;
+}
+
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  height: 85vh;
+  width: 100%;
+  background-color: var(--color-surface);
+  overflow: hidden;
+
+  @media (max-width: 700px) {
+    height: 100vh;
+    border-radius: 0 !important;
+  }
+}
+
+// ============================================
+// HEADER
+// ============================================
+.profile-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 16px 24px 10px;
+  align-items: center;
+  padding: 1.25rem $padding-modal;
+  background: var(--color-surface);
+  flex-shrink: 0;
   gap: 1rem;
+  flex-wrap: wrap;
 
   .info-principal {
     display: flex;
     align-items: center;
     gap: 1rem;
-    min-width: 0;
     flex: 1;
+    min-width: 0;
   }
 
-  .avatar-large {
-    width: 60px;
-    height: 60px;
+  .avatar-placeholder-large {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 700;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .text-info {
     min-width: 0;
-    flex: 1;
 
-    h1[mat-dialog-title] {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem !important;
-      padding: 0 !important;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    p.subtitle {
-      font-size: 0.95rem;
-      color: var(--color-text-secondary);
+    h2 {
       margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      font-family: 'Poppins', sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
   }
-}
 
-// --- Avatar Placeholder ---
-.avatar-placeholder-large {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  color: #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-// --- Badge de IA ---
-.ai-badge-dialog {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  flex-shrink: 0;
-  white-space: nowrap;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-
-  &.high {
-    background-color: var(--color-success);
-    color: white;
-  }
-
-  &.medium {
-    background-color: var(--color-warning);
-    color: white;
-  }
-
-  &.low {
-    background-color: var(--color-secondary);
-    color: white;
-  }
-}
-
-// --- Contenido de Pestañas ---
-[mat-dialog-content] {
-  padding: 0 24px;
-  max-height: 60vh;
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 10px;
-  }
-}
-
-.tab-content-container {
-  padding: 1.5rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-// --- Caja de Análisis IA ---
-.ai-analysis-box {
-  background-color: #f3e5f5;
-  border-left: 4px solid #9c27b0;
-  padding: 16px;
-  border-radius: var(--border-radius);
-
-  h4 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    color: #7b1fa2;
-    display: flex;
+  .ai-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1rem;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 600;
-  }
-
-  p {
-    margin: 0;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    color: #4a148c;
-  }
-}
-
-// --- Pestaña 1: Perfil y CV ---
-.cv-viewer-container {
-  h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  .cv-placeholder {
-    min-height: 180px;
-    border: 2px dashed var(--color-border);
-    border-radius: var(--border-radius);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 1.5rem;
-    background-color: var(--color-background);
-    color: var(--color-text-secondary);
-
-    .pdf-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      opacity: 0.5;
-    }
-
-    span {
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-
-    a[mat-stroked-button] {
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-      padding: 0 1rem;
-      height: 36px;
-      line-height: 36px;
-
-      mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: 0.25rem;
-      }
-    }
-  }
-}
-
-.details-container {
-  h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  mat-list {
-    padding-top: 0;
-  }
-
-  mat-list-item {
-    height: auto !important;
-    min-height: 56px;
-    padding: 8px 0 !important;
-
-    mat-icon[matListItemIcon] {
-      margin-right: 16px;
-      color: var(--color-text-secondary);
-    }
-
-    div[matListItemTitle] {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--color-text-primary);
-    }
-
-    div[matListItemLine] {
-      font-size: 0.9rem;
-      color: var(--color-text-secondary);
-      margin-top: 0.25rem;
-    }
-  }
-
-  .skills-title {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  .skills-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-
-    .skill-badge {
-      background-color: var(--color-primary-light);
-      color: var(--color-primary-dark);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-  }
-
-  p {
-    margin: 0.5rem 0;
-    line-height: 1.6;
-    color: var(--color-text-primary);
-  }
-}
-
-// --- Pestaña 2: Historial y Notas ---
-.notes-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  mat-form-field {
-    width: 100%;
-  }
-
-  button {
-    align-self: flex-end;
-    font-size: 0.9rem;
-    padding: 0 1rem;
-    height: 36px;
+    flex-shrink: 0;
+    white-space: nowrap;
 
     mat-icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
-      margin-right: 0.25rem;
-    }
-  }
-}
-
-.activity-feed-section {
-  h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  .activity-feed {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    padding: 0.75rem;
-    background-color: var(--color-surface);
-
-    &::-webkit-scrollbar {
-      width: 6px;
     }
 
-    &::-webkit-scrollbar-track {
-      background: transparent;
+    &.high {
+      background-color: rgba(16, 185, 129, 0.15);
+      color: var(--color-success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--color-border);
-      border-radius: 10px;
+    &.medium {
+      background-color: rgba(245, 158, 11, 0.15);
+      color: #F59E0B;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    &.low {
+      background-color: rgba(107, 114, 128, 0.15);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
     }
   }
-}
 
-// --- Items del Feed de Actividad ---
-.feed-item {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--color-border);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .feed-icon {
+  .close-btn {
+    color: var(--color-text-secondary);
+    transition: color 0.2s;
     flex-shrink: 0;
 
+    &:hover {
+      color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
+}
+
+// ============================================
+// TABS (ESTRUCTURA COMPLETA)
+// ============================================
+.tabs-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  ::ng-deep {
+
+    // Tab Group
+    .mat-mdc-tab-group {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    // Header de tabs
+    .mat-mdc-tab-header {
+      flex-shrink: 0;
+      background-color: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .mat-mdc-tab-labels {
+      padding: 0 $padding-modal;
+    }
+
+    .mdc-tab__text-label {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+    }
+
+    .mat-mdc-tab.mat-mdc-tab-active .mdc-tab__text-label {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    // Body wrapper
+    .mat-mdc-tab-body-wrapper {
+      flex: 1;
+      min-height: 0;
+    }
+
+    // Individual tab body
+    .mat-mdc-tab-body {
+      height: 100%;
+    }
+
+    // Content container
+    .mat-mdc-tab-body-content {
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+}
+
+// ============================================
+// CONTENIDO SCROLLEABLE
+// ============================================
+.tab-scroll-content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem $padding-modal;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+  }
+
+  // Espaciado entre secciones
+  >*+* {
+    margin-top: 1.5rem;
+  }
+}
+
+// ============================================
+// SECCIONES
+// ============================================
+.section-box {
+  h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-family: 'Poppins', sans-serif;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 8px;
+  }
+}
+
+// AI Analysis
+.ai-analysis-box {
+  background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+  border-left: 4px solid #9C27B0;
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1);
+
+  .box-title {
+    color: #7B1FA2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    font-size: 1rem;
+
     mat-icon {
-      color: var(--color-text-secondary);
       font-size: 20px;
       width: 20px;
       height: 20px;
     }
   }
 
-  .feed-content {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .feed-action {
+  p {
     margin: 0;
-    line-height: 1.5;
-    color: var(--color-text-primary);
-    font-size: 0.9rem;
-  }
-
-  .feed-date {
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    margin-top: 0.25rem;
+    line-height: 1.6;
+    color: #4A148C;
+    font-size: 0.95rem;
+    word-break: break-word;
   }
 }
 
-// --- Utilidades ---
+// CV Placeholder
+.cv-placeholder {
+  border: 2px dashed var(--color-border);
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  background-color: #FAFBFC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #F3F4F6;
+  }
+
+  .pdf-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.4;
+    color: #EF4444;
+  }
+
+  span {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+  }
+}
+
+// Contact List
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    background-color: #FAFBFC;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #F3F4F6;
+    }
+
+    mat-icon {
+      color: var(--color-primary);
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .item-text {
+      min-width: 0;
+      flex: 1;
+
+      .label {
+        font-size: 0.7rem;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .value {
+        font-size: 0.95rem;
+        color: var(--color-text-primary);
+        font-weight: 500;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
+
+// Activity Feed
+.activity-feed {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background-color: #FAFBFC;
+  max-height: 350px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+  }
+
+  .feed-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: #F3F4F6;
+    }
+
+    .feed-icon mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: var(--color-text-secondary);
+    }
+
+    .feed-content {
+      flex: 1;
+      min-width: 0;
+
+      .feed-action {
+        font-size: 0.9rem;
+        color: var(--color-text-primary);
+        line-height: 1.5;
+        margin-bottom: 4px;
+      }
+
+      .feed-date {
+        font-size: 0.75rem;
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+
+  .no-activity {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+}
+
+.actions-right {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+// ============================================
+// INPUTS
+// ============================================
 .full-width {
   width: 100%;
 }
 
-// --- Acciones del Diálogo ---
-[mat-dialog-actions] {
-  padding: 16px 24px;
+::ng-deep .custom-field {
+  width: 100%;
+
+  .mat-mdc-text-field-wrapper {
+    background-color: #F3F4F6 !important;
+    border-radius: $radius-input !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    padding-right: 8px;
+  }
+
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border: none !important;
+  }
+
+  .mdc-notched-outline__notch {
+    max-width: calc(100% - 50px) !important;
+  }
+
+  .mdc-floating-label {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .mdc-floating-label--float-above {
+    transform: translateY(-27.25px) scale(0.75) !important;
+    max-width: calc(133% - 40px) !important;
+  }
+
+  &.mat-focused .mat-mdc-text-field-wrapper {
+    background-color: var(--color-surface) !important;
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+  padding: 1rem $padding-modal;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  border-top: 1px solid var(--color-border);
 
   button {
-    font-size: 0.9rem;
-    padding: 0 1.25rem;
-    height: 40px;
+    height: 44px;
+    padding: 0 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    text-transform: none;
 
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
+    &.btn-cancel {
+      border: 1.5px solid var(--color-border);
+      color: var(--color-text-primary);
+      background: transparent;
+
+      &:hover {
+        background-color: var(--color-background);
+      }
+    }
+
+    &.btn-save {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+      mat-icon {
+        margin-right: 6px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        box-shadow: 0 6px 16px var(--color-primary-rgb);
+        transform: translateY(-1px);
+      }
     }
   }
 }
 
-// --- Tabs de Material ---
-::ng-deep .profile-content {
-  .mat-mdc-tab-group {
-    .mat-mdc-tab-labels {
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .mat-mdc-tab-body-wrapper {
-      padding-top: 0;
-    }
-  }
-}
-
-// --- Responsive ---
-@media (max-width: 768px) {
-  .profile-header-dialog {
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 700px) {
+  .profile-header {
     flex-direction: column;
-    gap: 1rem;
-
-    .ai-badge-dialog {
-      align-self: flex-start;
-    }
+    align-items: flex-start;
   }
 
-  .tab-content-container {
-    padding: 1rem 0;
+  .dialog-footer {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
   }
 }

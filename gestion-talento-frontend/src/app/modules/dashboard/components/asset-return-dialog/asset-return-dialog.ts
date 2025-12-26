@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatIcon } from '@angular/material/icon';
 
 import { AssetService } from '../../services/asset';
 import { Asset, AssetStatus, ReturnAssetDto } from '../../models/asset.models';
@@ -19,7 +20,7 @@ import { Asset, AssetStatus, ReturnAssetDto } from '../../models/asset.models';
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule,
     MatButtonModule, MatFormFieldModule, MatInputModule,
-    MatSelectModule, MatDatepickerModule, MatNativeDateModule
+    MatSelectModule, MatDatepickerModule, MatNativeDateModule, MatIcon
   ],
   templateUrl: './asset-return-dialog.html',
   styleUrls: ['./asset-return-dialog.scss']

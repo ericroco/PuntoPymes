@@ -1,12 +1,13 @@
-import { Component, Inject, OnInit } from '@angular/core'; 
+import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox'; 
-import { MatFormFieldModule } from '@angular/material/form-field'; 
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select'; 
+import { MatSelectModule } from '@angular/material/select';
+import { MatIcon } from '@angular/material/icon';
 
 interface Employee { id: number; name: string; avatar: string; department: string; role: string; }
 
@@ -19,36 +20,37 @@ interface Employee { id: number; name: string; avatar: string; department: strin
     MatDialogModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatFormFieldModule, 
-    MatInputModule,    
-    MatSelectModule    
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatIcon
   ],
   templateUrl: './assign-employee-dialog.html',
   styleUrls: ['./assign-employee-dialog.scss']
 })
-export class AssignEmployeeDialog implements OnInit { 
+export class AssignEmployeeDialog implements OnInit {
   allEmployees: Employee[] = [];
   filteredEmployees: Employee[] = [];
   selectedEmployeeIds: { [key: number]: boolean } = {};
 
   // --- NEW PROPERTIES FOR FILTERING ---
   searchTerm: string = '';
-  selectedDepartment: string = 'todos'; 
+  selectedDepartment: string = 'todos';
   departments: string[] = ['todos'];
 
   constructor(
     public dialogRef: MatDialogRef<AssignEmployeeDialog>,
     @Inject(MAT_DIALOG_DATA) public data: { sprintId: string, currentlyAssignedIds: number[] }
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.allEmployees = [
-       { id: 1, name: 'Jeimy Torres', avatar: '...', department: 'Tecnología', role: 'Frontend Dev' },
-       { id: 2, name: 'Valentina Samaniego', avatar: '...', department: 'Diseño', role: 'UX/UI Designer' },
-       { id: 3, name: 'Gabriela Loyola', avatar: '...', department: 'Contabilidad', role: 'Contadora' },
-       { id: 4, name: 'Erick Rodas', avatar: '...', department: 'Tecnología', role: 'Project Lead' },
-       { id: 5, name: 'Carlos Backend', avatar: '...', department: 'Tecnología', role: 'Backend Dev' },
-       { id: 6, name: 'Andrea Marketing', avatar: '...', department: 'Marketing', role: 'Specialist' },
+      { id: 1, name: 'Jeimy Torres', avatar: '...', department: 'Tecnología', role: 'Frontend Dev' },
+      { id: 2, name: 'Valentina Samaniego', avatar: '...', department: 'Diseño', role: 'UX/UI Designer' },
+      { id: 3, name: 'Gabriela Loyola', avatar: '...', department: 'Contabilidad', role: 'Contadora' },
+      { id: 4, name: 'Erick Rodas', avatar: '...', department: 'Tecnología', role: 'Project Lead' },
+      { id: 5, name: 'Carlos Backend', avatar: '...', department: 'Tecnología', role: 'Backend Dev' },
+      { id: 6, name: 'Andrea Marketing', avatar: '...', department: 'Marketing', role: 'Specialist' },
     ];
 
     // Populate departments list dynamically
@@ -88,7 +90,7 @@ export class AssignEmployeeDialog implements OnInit {
 
   // --- SELECTION LOGIC (using selectedEmployeeIds object) ---
   toggleSelection(employeeId: number): void {
-     this.selectedEmployeeIds[employeeId] = !this.selectedEmployeeIds[employeeId];
+    this.selectedEmployeeIds[employeeId] = !this.selectedEmployeeIds[employeeId];
   }
 
   onCancel(): void {
@@ -99,4 +101,6 @@ export class AssignEmployeeDialog implements OnInit {
     const selectedEmployees = this.allEmployees.filter(emp => this.selectedEmployeeIds[emp.id]);
     this.dialogRef.close(selectedEmployees);
   }
+
+
 }

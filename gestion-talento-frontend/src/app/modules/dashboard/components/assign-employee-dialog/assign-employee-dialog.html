@@ -1,57 +1,81 @@
-<h1 mat-dialog-title>Asignar Empleados al Sprint</h1>
+<div class="dialog-container">
 
-<div class="filter-controls-dialog">
-  <mat-form-field appearance="outline" class="search-field">
-    <mat-label>Buscar por nombre</mat-label>
-    <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Escribe un nombre...">
-    <mat-icon matSuffix>search</mat-icon>
-  </mat-form-field>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Asignar Empleados al Sprint</h2>
+    <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-  <mat-form-field appearance="outline" class="department-field">
-    <mat-label>Filtrar por Departamento</mat-label>
-    <mat-select [(ngModel)]="selectedDepartment" (ngModelChange)="applyFilters()">
-      <mat-option *ngFor="let dept of departments" [value]="dept">
-        {{ dept === 'todos' ? 'Todos los Departamentos' : dept }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-</div>
+  <mat-dialog-content class="assign-content" style="overflow-x: hidden;">
 
-<div mat-dialog-content class="employee-table-container">
-  <table class="employee-table">
-    <thead>
-      <tr>
-        <th class="checkbox-col"></th> <th>Nombre</th>
-        <th>Departamento</th>
-        <th>Cargo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let emp of filteredEmployees">
-        <td class="checkbox-col">
-          <mat-checkbox
-            [checked]="selectedEmployeeIds[emp.id]"
-            (change)="toggleSelection(emp.id)">
-          </mat-checkbox>
-        </td>
-        <td>
-          <div class="employee-cell">
-            <img [src]="emp.avatar || 'assets/images/default-avatar.png'" class="avatar-small">
-            <span>{{ emp.name }}</span>
-          </div>
-        </td>
-        <td>{{ emp.department }}</td>
-        <td>{{ emp.role }}</td>
-      </tr>
-      <tr *ngIf="filteredEmployees.length === 0">
-        <td colspan="4" class="no-results">No se encontraron empleados con esos filtros.</td>
-      </tr>
-    </tbody>
-  </table>
+    <div class="filter-controls">
 
-</div>
+      <mat-form-field appearance="outline" class="custom-field search-field">
+        <mat-label>Buscar por nombre</mat-label>
+        <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Escribe un nombre...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
 
-<div mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()">Guardar Asignaciones</button>
+      <mat-form-field appearance="outline" class="custom-field dept-field">
+        <mat-label>Departamento</mat-label>
+        <mat-select [(ngModel)]="selectedDepartment" (ngModelChange)="applyFilters()">
+          <mat-option *ngFor="let dept of departments" [value]="dept">
+            {{ dept === 'todos' ? 'Todos' : dept }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+
+    <div class="table-wrapper">
+      <table class="employee-table">
+        <thead>
+          <tr>
+            <th class="checkbox-col">
+              <mat-icon style="font-size: 18px; color: #999;">check_box_outline_blank</mat-icon>
+            </th>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>Cargo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of filteredEmployees" [class.selected]="selectedEmployeeIds[emp.id]">
+
+            <td class="checkbox-col">
+              <mat-checkbox color="primary" [checked]="selectedEmployeeIds[emp.id]" (change)="toggleSelection(emp.id)">
+              </mat-checkbox>
+            </td>
+
+            <td>
+              <div class="employee-cell">
+                <img [src]="emp.avatar || 'assets/images/default-avatar.png'" class="avatar-small">
+                <span class="emp-name">{{ emp.name }}</span>
+              </div>
+            </td>
+
+            <td class="secondary-text">{{ emp.department }}</td>
+            <td class="secondary-text">{{ emp.role }}</td>
+          </tr>
+
+          <tr *ngIf="filteredEmployees.length === 0">
+            <td colspan="4" class="no-results">
+              <mat-icon>search_off</mat-icon>
+              <p>No se encontraron empleados.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" class="btn-save">
+      <mat-icon>save_alt</mat-icon> Guardar Asignaciones
+    </button>
+  </div>
+
 </div>

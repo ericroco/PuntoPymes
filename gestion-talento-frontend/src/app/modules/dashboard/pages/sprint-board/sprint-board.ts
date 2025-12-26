@@ -281,5 +281,32 @@ export class SprintBoard implements OnInit {
 
   // Otros métodos placeholder
   openEditTaskDialog(task: Task) { }
-  openAssignEmployeeDialog() { }
+  openAssignEmployeeDialog() {
+    const dialogRef = this.dialog.open(AssignEmployeeDialog, {
+      width: '1200px',
+      disableClose: true,
+      data: {
+        sprintId: this.sprintId,
+        currentlyAssignedIds: [] // Por ahora vacío, luego puedes pasar los IDs ya asignados
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(selectedEmployees => {
+      if (selectedEmployees && selectedEmployees.length > 0) {
+        console.log('Empleados seleccionados:', selectedEmployees);
+
+        // TODO: Aquí puedes implementar la lógica para asignar empleados al sprint
+        // Por ejemplo:
+        // this.productivityService.assignEmployeesToSprint(this.sprintId!, selectedEmployees).subscribe(() => {
+        //   this.snackBar.open(`${selectedEmployees.length} empleado(s) asignado(s)`, 'Cerrar', { duration: 3000 });
+        // });
+
+        this.snackBar.open(
+          `${selectedEmployees.length} empleado(s) seleccionado(s)`,
+          'Cerrar',
+          { duration: 3000 }
+        );
+      }
+    });
+  }
 }
