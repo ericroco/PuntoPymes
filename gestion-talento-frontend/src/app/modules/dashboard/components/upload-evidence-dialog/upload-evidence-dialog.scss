@@ -1,89 +1,221 @@
-.task-title {
-    font-size: 1rem;
+// ==========================================================================
+// TALENTRACK - UPLOAD EVIDENCE DIALOG
+// ==========================================================================
+
+// --- ESTRUCTURA PRINCIPAL ---
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  max-width: 500px;
+  background-color: var(--color-surface);
+  box-sizing: border-box;
+  max-height: 90vh;
+}
+
+// --- HEADER ---
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+  background-color: var(--color-surface);
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .close-btn {
     color: var(--color-text-secondary);
-    margin-top: -10px;
-    margin-bottom: 15px;
+    &:hover { background-color: var(--color-surface-variant); color: var(--color-text-primary); }
+  }
 }
 
-.evidence-form-content {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding-top: 10px;
+// --- CONTENIDO ---
+.custom-content {
+  padding: 1.5rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  overflow-y: auto;
 }
 
-.hint {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    line-height: 1.4;
+// Info de Tarea
+.task-info-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--color-surface-variant);
+  padding: 12px;
+  border-radius: 12px;
+  
+  mat-icon { color: var(--color-primary); }
+  
+  div {
+    display: flex; flex-direction: column;
+    .label { font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-secondary); font-weight: 600; }
+    strong { font-size: 0.95rem; color: var(--color-text-primary); }
+  }
 }
 
-mat-form-field {
-    width: 100%;
+.hint-text {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.4;
 }
 
-.file-input-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    border: 1px dashed var(--color-border); // Borde punteado
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    flex-wrap: wrap; // Permite que el nombre del archivo pase abajo si es largo
-}
+// --- ÁREA DE CARGA (Estilo Dashboard) ---
+.upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: 16px;
+  background-color: #FAFAFA;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 
-.file-upload-label {
-    // Hereda estilos de .btn, ajustamos padding si es necesario
-    padding: 0.6rem 1.2rem;
-    cursor: pointer;
-}
+  &:hover {
+    background-color: #F3F4F6;
+    border-color: var(--color-primary);
+    .icon-wrapper { background-color: var(--color-primary-light); color: var(--color-primary); }
+  }
 
-.file-name {
-    font-size: 0.9rem;
-    font-style: italic;
-    color: var(--color-text-secondary);
-    flex-grow: 1; // Ocupa el espacio restante
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &.has-file {
+    background-color: #ECFDF5; // Verde muy claro
+    border-color: #10B981; // Verde
+    border-style: solid;
+  }
 
-    &.placeholder {
-        color: #bdbdbd; // Gris más claro para el placeholder
+  .icon-wrapper {
+    width: 48px; height: 48px; border-radius: 50%;
+    background-color: #E0E0E0; color: #757575;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    
+    mat-icon { font-size: 24px; width: 24px; height: 24px; }
+
+    &.success {
+      background-color: #D1FAE5; color: #059669;
     }
-}
+  }
 
-mat-error {
-    font-size: 0.75rem;
-    margin-top: -10px; // Ajusta posición del mensaje de error
-    width: 100%; // Asegura que ocupe todo el ancho
-}
+  .upload-text {
+    flex: 1;
+    h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-text-primary); }
+    p { margin: 2px 0 0; font-size: 0.8rem; color: var(--color-text-secondary); }
+    
+    .file-name { word-break: break-all; }
+    .success-msg { color: #059669; font-weight: 500; }
+  }
 
-[mat-dialog-actions] {
-    padding: 16px 24px;
-    border-top: 1px solid var(--color-border);
-}
-
-// (Asegúrate de tener los estilos para .btn.btn-secondary si los usas)
-.btn.btn-secondary {
-    background-color: var(--color-surface);
+  .remove-file-btn {
     color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
+    &:hover { color: var(--color-danger); }
+  }
+}
+
+.upload-error {
+  font-size: 0.8rem;
+  display: flex; align-items: center; gap: 4px;
+  margin-top: -8px;
+  
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+// --- FORMULARIO (Soft UI) ---
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-left: 4px;
+  }
+}
+
+// Textarea Nativo (Soft Style)
+.soft-textarea-wrapper {
+  width: 100%;
+  
+  textarea {
+    width: 100%;
+    background-color: #F3F4F6; // Gris suave
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    font-family: var(--font-family-base, sans-serif);
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
     transition: all 0.2s ease;
 
+    &::placeholder { color: var(--color-text-muted); }
+
+    &:focus {
+      background-color: white;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-subtle);
+    }
+  }
+}
+
+// --- FOOTER (Pill Buttons) ---
+.dialog-footer {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--color-border-light);
+  background-color: var(--color-surface);
+
+  .btn-cancel {
+    background-color: #F1F5F9 !important; 
+    color: var(--color-text-secondary) !important;
+    border-radius: 999px !important; // PILL
+    height: 44px;
+    padding: 0 24px;
+    font-weight: 600;
+    box-shadow: none !important;
+
     &:hover {
-        background-color: var(--color-background);
-        border-color: #dcdcdc;
+      background-color: #E2E8F0 !important; 
+      color: var(--color-text-primary) !important;
+    }
+  }
+
+  .btn-save {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+    color: white !important;
+    border-radius: 999px !important; // PILL
+    height: 44px;
+    padding: 0 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.45);
     }
 
-    mat-icon {
-        width: 18px;
-        height: 18px;
+    &:disabled {
+      background: #E2E8F0 !important;
+      color: #94A3B8 !important;
+      box-shadow: none !important;
+      opacity: 1 !important;
     }
+  }
 }

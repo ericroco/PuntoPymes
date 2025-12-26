@@ -6,11 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox'; // Para el checkbox
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-reject-candidate-dialog',
   standalone: true,
-  imports: [ CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatCheckboxModule ],
+  imports: [ CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatIcon ],
   templateUrl: './reject-candidate-dialog.html',
   styleUrls: ['./reject-candidate-dialog.scss']
 })

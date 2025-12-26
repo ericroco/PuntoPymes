@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, NgZone, ChangeDetectorRef } from '@angular/core'; // <--- AGREGAR ChangeDetectorRef
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -13,8 +13,8 @@ import { EmployeesService } from '../../services/employees';
 import { BulkImportResponse } from '../../models/bulk-import.models';
 
 interface SystemField {
-  key: string;       // Debe coincidir con tu CreateEmpleadoDto del backend
-  label: string;     // Lo que ve el usuario
+  key: string;
+  label: string;
   required: boolean;
   type: 'string' | 'number' | 'date';
 }
@@ -33,153 +33,147 @@ export class EmployeeImportDialog {
   private employeeService = inject(EmployeesService);
   private snackBar = inject(MatSnackBar);
   public dialogRef = inject(MatDialogRef<EmployeeImportDialog>);
+  private ngZone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef); // <--- INYECTAR ESTO
 
-  // 1. CONFIGURACIÓN: Campos exactos de tu CreateEmpleadoDto
   systemFields: SystemField[] = [
-    // 1. NOMBRES (Tu interfaz dice 'nombre', no 'nombres')
     { key: 'nombre', label: 'Nombres', required: true, type: 'string' },
-
-    // 2. APELLIDOS (Tu interfaz dice 'apellido', no 'apellidos')
     { key: 'apellido', label: 'Apellidos', required: true, type: 'string' },
-
-    // 3. LA CLAVE DEL ERROR (Tu interfaz usa 'nroIdentificacion')
     { key: 'nroIdentificacion', label: 'Nro. Identificación (Cédula)', required: true, type: 'string' },
-
-    // 4. EMAIL (Tu interfaz usa 'emailPersonal')
     { key: 'emailPersonal', label: 'Email Personal', required: true, type: 'string' },
-
-    // 5. SALARIO (Tu interfaz usa 'salario')
     { key: 'salario', label: 'Salario Base', required: false, type: 'number' },
-
-    // 6. FECHAS (Tu interfaz usa 'fechaInicio')
     { key: 'fechaInicio', label: 'Fecha Inicio', required: false, type: 'date' },
-    { key: 'cargoNombre', label: 'Nombre del Cargo (Ej: Contador)', required: false, type: 'string' },
+    { key: 'cargoNombre', label: 'Nombre del Cargo', required: false, type: 'string' },
   ];
 
   rawJsonData: any[] = [];
   sourceKeys: string[] = [];
-  fieldMapping: { [key: string]: string } = {}; // { 'nombres': 'First Name' }
+  fieldMapping: { [key: string]: string } = {};
 
   isProcessing = false;
   importResult: BulkImportResponse | null = null;
 
-  // PASO 1: Leer JSON
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
+  // --- PASO 1: LEER ARCHIVO (LÓGICA BLINDADA) ---
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    
+    if (!input.files || input.files.length === 0) return;
 
+    const file = input.files[0];
     const reader = new FileReader();
+
     reader.onload = (e: any) => {
-      try {
-        const json = JSON.parse(e.target.result);
-        if (Array.isArray(json) && json.length > 0) {
-          this.rawJsonData = json;
-          this.sourceKeys = Object.keys(json[0]);
-          this.autoMapFields();
-        } else {
-          this.snackBar.open('El archivo debe ser un Array JSON', 'Cerrar');
+      // Forzar ejecución dentro de la zona de Angular
+      this.ngZone.run(() => {
+        try {
+          const json = JSON.parse(e.target.result);
+          
+          if (Array.isArray(json) && json.length > 0) {
+            console.log('JSON Cargado:', json.length, 'registros');
+            
+            // 1. Asignar datos (creando nueva referencia para disparar cambios)
+            this.rawJsonData = [...json];
+            this.sourceKeys = Object.keys(json[0]);
+            
+            // 2. Automapeo
+            this.autoMapFields();
+
+            // 3. FORZAR DETECCIÓN DE CAMBIOS MANUALMENTE
+            this.cdr.markForCheck(); 
+            this.cdr.detectChanges(); // Doble seguridad
+            
+          } else {
+            this.snackBar.open('El archivo JSON está vacío o no es una lista válida', 'Cerrar');
+            this.rawJsonData = [];
+          }
+        } catch (err) {
+          console.error(err);
+          this.snackBar.open('Error: El archivo no es un JSON válido', 'Cerrar');
+          this.rawJsonData = [];
         }
-      } catch (err) {
-        this.snackBar.open('Error: JSON inválido', 'Cerrar');
-      }
+
+        // 4. RESETEAR EL INPUT PARA PERMITIR SUBIR EL MISMO ARCHIVO DE NUEVO
+        input.value = ''; 
+      });
     };
+
+    reader.onerror = () => {
+      this.ngZone.run(() => {
+        this.snackBar.open('Error de lectura del archivo', 'Cerrar');
+        input.value = '';
+      });
+    };
+
     reader.readAsText(file);
   }
 
-  // Auto-conectar columnas si tienen nombres similares
   autoMapFields() {
     this.systemFields.forEach(field => {
-      const match = this.sourceKeys.find(k => k.toLowerCase().includes(field.key.toLowerCase()));
+      const match = this.sourceKeys.find(k => 
+        k.toLowerCase() === field.key.toLowerCase() || 
+        k.toLowerCase().includes(field.label.toLowerCase())
+      );
       if (match) this.fieldMapping[field.key] = match;
     });
   }
 
-  // PASO 3: Procesar y Enviar
   processImport() {
     this.isProcessing = true;
-
-    // 1. Mapeo y Limpieza
+    
+    // Mapeo seguro
     const cleanEmployees = this.rawJsonData.map(row => {
       const newEmp: any = {};
-
       this.systemFields.forEach(field => {
         const sourceKey = this.fieldMapping[field.key];
-        // Si el usuario mapeó esa columna, limpiamos y asignamos
         if (sourceKey) {
           newEmp[field.key] = this.cleanValue(row[sourceKey], field.type);
         }
       });
-
-      // --- VALORES POR DEFECTO OBLIGATORIOS ---
       newEmp.estado = 'ACTIVO';
-
-      // 👇 IMPORTANTE: Tu interfaz requiere esto, le ponemos un valor por defecto
-      // Si no lo pones, el backend podría rechazarlo.
       newEmp.tipoIdentificacion = 'CEDULA';
-
       return newEmp;
     });
 
-    // 2. Validación rápida (CORREGIDA CON TUS NOMBRES REALES)
-    // Usamos 'nombre' y 'nroIdentificacion' tal como están en tu interfaz Employee
     const hasMissingData = cleanEmployees.some(e =>
       !e.nombre || !e.apellido || !e.nroIdentificacion || !e.emailPersonal
     );
 
     if (hasMissingData) {
-      this.snackBar.open('Error: Faltan campos obligatorios (Nombre, Apellido, Cédula o Email) por mapear.', 'Cerrar');
+      this.snackBar.open('Error: Faltan campos obligatorios. Revisa el paso "Conectar".', 'Cerrar', { duration: 5000 });
       this.isProcessing = false;
       return;
     }
 
-    // 3. Enviar al Gateway
     this.employeeService.importBulk(cleanEmployees).subscribe({
       next: (res) => {
         this.importResult = res;
         this.isProcessing = false;
-        // Opcional: Si quieres mostrar un snackbar de éxito rápido
+        this.cdr.detectChanges(); // Actualizar vista final
         if (res.errors === 0) {
           this.snackBar.open('¡Importación exitosa!', 'Cerrar', { duration: 3000 });
         }
       },
       error: (err) => {
         console.error(err);
-        this.snackBar.open('Error de comunicación con el servidor', 'Cerrar');
+        this.snackBar.open('Error del servidor', 'Cerrar');
         this.isProcessing = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // Limpiador de datos sucios (Currency, Fechas, espacios)
   cleanValue(val: any, type: string): any {
     if (val === null || val === undefined || val === '') return null;
-
-    if (type === 'string') {
-      return String(val).trim();
-    }
-
+    if (type === 'string') return String(val).trim();
     if (type === 'number') {
-      if (typeof val === 'string') {
-        // Limpia simbolos de moneda y comas ($ 1,200.00 -> 1200.00)
-        return parseFloat(val.replace(/[^0-9.-]+/g, ''));
-      }
+      if (typeof val === 'string') return parseFloat(val.replace(/[^0-9.-]+/g, '')) || 0;
       return Number(val);
     }
-
     if (type === 'date') {
-      // 1. Intentamos crear la fecha
+      // Manejo simple de fechas para evitar errores
       const date = new Date(val);
-
-      // 2. Verificamos si es válida (si date.getTime() es NaN, es inválida)
-      if (isNaN(date.getTime())) {
-        return null; // O devuelve la fecha actual si prefieres: new Date().toISOString().split('T')[0]
-      }
-
-      // 3. Formateamos a YYYY-MM-DD para evitar problemas de zona horaria y formatos raros
-      // Usamos toISOString pero cortamos la hora
-      return date.toISOString().split('T')[0];
+      return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
     }
-
     return val;
   }
 }

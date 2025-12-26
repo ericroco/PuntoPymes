@@ -1,108 +1,235 @@
-// Asegúrate de que el contenedor principal del diálogo tenga un tamaño máximo
-:host {
+// ==========================================================================
+// TALENTRACK - UPDATE PROGRESS DIALOG
+// ==========================================================================
+
+// --- ESTRUCTURA PRINCIPAL ---
+.dialog-container {
   display: flex;
   flex-direction: column;
-  max-height: 90vh; // Evita que el modal sea más alto que la pantalla
-  overflow: hidden; // Evita scroll en el contenedor padre, lo delegamos al contenido
+  width: 100vw;
+  max-width: 550px; // Ancho controlado
+  background-color: var(--color-surface);
+  box-sizing: border-box;
+  max-height: 90vh;
+}
+
+// --- HEADER ---
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+  background-color: var(--color-surface);
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .close-btn {
+    color: var(--color-text-secondary);
+    &:hover { background-color: var(--color-surface-variant); color: var(--color-text-primary); }
+  }
+}
+
+// --- CONTENIDO ---
+.custom-content {
+  padding: 1.5rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .goal-title {
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-secondary);
-  margin-top: -10px;
-  margin-bottom: 15px;
-  flex-shrink: 0; // Evita que el título se aplaste si falta espacio
+  margin: 0;
 }
 
-.progress-form-content {
+// SUCCESS BOX (Tarea completada)
+.success-box {
+  display: flex;
+  gap: 12px;
+  background-color: #ECFDF5; // Verde muy pálido
+  color: #047857; // Verde oscuro
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  align-items: flex-start;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+
+  mat-icon {
+    flex-shrink: 0;
+    color: #10B981; // Verde vibrante
+  }
+
+  div { display: flex; flex-direction: column; gap: 2px; }
+
+  .box-title { font-size: 0.85rem; font-weight: 500; opacity: 0.9; }
+  .task-name { font-size: 1rem; font-weight: 700; }
+  .box-hint { margin: 4px 0 0; font-size: 0.8rem; opacity: 0.8; }
+}
+
+// --- SECCIONES DEL FORMULARIO ---
+.form-section {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding-top: 10px;
+  gap: 8px;
 
-  // --- CAMBIOS PARA EVITAR EL CORTE ---
-  overflow-y: auto; // Habilita el scroll vertical si el contenido es muy alto
-  padding-right: 5px; // Espacio para que el scroll no tape contenido
-  padding-bottom: 10px; // Espacio extra abajo para que no se pegue al borde
-  flex-grow: 1; // Ocupa todo el espacio disponible
-  max-height: 100%; // Se asegura de respetar los límites del padre
-  // ------------------------------------
+  .field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-left: 4px;
+  }
 }
 
-.progress-input-group {
+// --- GRUPO SLIDER + INPUT ---
+.progress-control-group {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  flex-wrap: wrap; // Si la pantalla es muy estrecha, permite que los elementos bajen
+  background-color: white;
+  border: 1px solid var(--color-border-light);
+  padding: 12px 20px;
+  border-radius: 16px;
+
+  .custom-slider {
+    flex-grow: 1;
+    min-width: 150px;
+  }
+
+  .number-input-wrapper {
+    width: 100px;
+    flex-shrink: 0;
+  }
 }
 
-.progress-slider {
-  flex-grow: 1;
-  min-width: 150px; // Evita que el slider desaparezca si se encoge mucho
-
-  // Variables de color originales
-  --mat-slider-active-track-color: var(--color-primary);
-  --mat-slider-inactive-track-color: var(--color-primary-light);
-  --mat-slider-handle-color: var(--color-primary);
-}
-
-.progress-input {
-  width: 100px;
-}
-
-.comment-field {
+// --- INPUTS SOFT UI (Estilo Employee Import) ---
+.custom-field {
   width: 100%;
-}
 
-[mat-dialog-actions] {
-  padding: 16px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05); // Opcional: Separación visual sutil
-  flex-shrink: 0; // Asegura que los botones nunca se corten ni se encojan
-  background: white; // Evita transparencia si hay scroll detrás
-  z-index: 10;
-}
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none !important; } 
 
-.task-context {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background-color: var(--color-success-light);
-  border: 1px solid var(--color-success);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  flex-shrink: 0; // Evita que esta caja informativa se deforme
-
-  mat-icon {
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
-    color: var(--color-success-dark);
-    flex-shrink: 0; // El icono mantiene su tamaño siempre
-  }
-
-  div {
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: #F3F4F6 !important; // Gris suave
+    border-radius: 12px !important;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    
+    // Altura normal
+    height: 48px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
 
-    span {
-      font-size: 0.9rem;
-      color: var(--color-text-secondary);
-    }
+    .mdc-notched-outline,
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing { border: none !important; }
+  }
 
-    strong {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--color-text-primary);
+  // Input compacto para el número
+  &.compact ::ng-deep .mat-mdc-text-field-wrapper {
+    height: 40px; 
+    text-align: center;
+  }
+
+  // Estado Focus
+  &.mat-focused ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: white !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px var(--color-primary-subtle);
+  }
+  
+  // Centrar input
+  ::ng-deep input { 
+    text-align: center; 
+    font-weight: 600; 
+    color: var(--color-primary);
+  }
+}
+
+// --- TEXTAREA NATIVO (Estilo Soft) ---
+.soft-textarea-wrapper {
+  width: 100%;
+  
+  textarea {
+    width: 100%;
+    background-color: #F3F4F6;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    font-family: var(--font-family-base, sans-serif);
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+
+    &::placeholder { color: var(--color-text-muted); }
+
+    &:focus {
+      background-color: white;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-subtle);
     }
   }
 }
 
-.progress-label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
+// --- FOOTER (Pill Buttons) ---
+.dialog-footer {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--color-border-light);
+  background-color: var(--color-surface);
+
+  // Botón Cancelar
+  .btn-cancel {
+    background-color: #F1F5F9 !important; 
+    color: var(--color-text-secondary) !important;
+    border-radius: 999px !important; // PILL
+    height: 44px;
+    padding: 0 24px;
+    font-weight: 600;
+    box-shadow: none !important;
+
+    &:hover {
+      background-color: #E2E8F0 !important; 
+      color: var(--color-text-primary) !important;
+    }
+  }
+
+  // Botón Actualizar
+  .btn-save {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+    color: white !important;
+    border-radius: 999px !important; // PILL
+    height: 44px;
+    padding: 0 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.45);
+    }
+
+    &:disabled {
+      background: #E2E8F0 !important;
+      color: #94A3B8 !important;
+      box-shadow: none !important;
+      opacity: 1 !important;
+    }
+  }
 }

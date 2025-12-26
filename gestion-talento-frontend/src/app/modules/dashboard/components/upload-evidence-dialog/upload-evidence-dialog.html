@@ -1,35 +1,78 @@
-<h1 mat-dialog-title>Adjuntar Evidencia</h1>
-<p class="task-title">Para la tarea: <strong>{{ taskTitle }}</strong></p>
+<div class="dialog-container">
 
-<form [formGroup]="evidenceForm" (ngSubmit)="onConfirm()">
-  <div mat-dialog-content class="evidence-form-content">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Adjuntar Evidencia</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <p class="hint">Para marcar esta tarea como completada, por favor adjunta la evidencia (ej. captura de pantalla, documento, enlace a PR).</p>
+  <form [formGroup]="evidenceForm" (ngSubmit)="onConfirm()">
+    
+    <mat-dialog-content class="custom-content custom-scroll">
 
-    <div class="file-input-container">
-      <label for="file-upload" class="file-upload-label btn btn-secondary">
-        <mat-icon>upload_file</mat-icon>
-        <span>Seleccionar Archivo</span>
-      </label>
-      <input id="file-upload" type="file" (change)="onFileSelected($event)" #fileInput hidden>
+      <div class="task-info-box">
+        <mat-icon>task</mat-icon>
+        <div>
+          <span class="label">Para la tarea:</span>
+          <strong>{{ taskTitle }}</strong>
+        </div>
+      </div>
 
-      <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
-      <span class="file-name placeholder" *ngIf="!selectedFile">Ningún archivo seleccionado</span>
+      <p class="hint-text">Para completar esta tarea, adjunta la evidencia (captura, documento, etc).</p>
 
-      <mat-error *ngIf="evidenceForm.get('fileInput')?.hasError('required') && evidenceForm.get('fileInput')?.touched">
-        Se requiere un archivo de evidencia.
+      <div class="upload-area" (click)="fileInput.click()" [class.has-file]="!!selectedFile">
+        
+        <ng-container *ngIf="!selectedFile">
+          <div class="icon-wrapper">
+            <mat-icon>cloud_upload</mat-icon>
+          </div>
+          <div class="upload-text">
+            <h3>Seleccionar Archivo</h3>
+            <p>Haz clic aquí para buscar</p>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="selectedFile">
+          <div class="icon-wrapper success">
+            <mat-icon>description</mat-icon>
+          </div>
+          <div class="upload-text">
+            <h3 class="file-name">{{ selectedFile.name }}</h3>
+            <p class="success-msg">Listo para subir</p>
+          </div>
+          <button type="button" mat-icon-button class="remove-file-btn" 
+                  (click)="$event.stopPropagation(); selectedFile = null; fileInput.value = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </ng-container>
+
+        <input #fileInput type="file" (change)="onFileSelected($event)" hidden (click)="fileInput.value = ''">
+      </div>
+
+      <mat-error *ngIf="evidenceForm.get('fileInput')?.hasError('required') && evidenceForm.get('fileInput')?.touched" 
+                 class="upload-error">
+        <mat-icon>error</mat-icon> Se requiere un archivo de evidencia.
       </mat-error>
+
+      <div class="form-section">
+        <label class="field-label">Comentario (Opcional)</label>
+        <div class="soft-textarea-wrapper">
+          <textarea formControlName="comment" rows="3" 
+                    placeholder="Añadir notas sobre la evidencia..."></textarea>
+        </div>
+      </div>
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+      <button type="button" mat-flat-button class="btn-cancel" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button type="submit" mat-flat-button color="primary" class="btn-save" [disabled]="evidenceForm.invalid || !selectedFile">
+        Confirmar y Completar
+      </button>
     </div>
 
-    <mat-form-field appearance="outline" class="comment-field">
-      <mat-label>Comentario (Opcional)</mat-label>
-      <textarea matInput formControlName="comment" rows="3" placeholder="Añadir un comentario..."></textarea>
-    </mat-form-field>
-
-  </div>
-
-  <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="evidenceForm.invalid">Confirmar y Completar Tarea</button>
-  </div>
-</form>
+  </form>
+</div>

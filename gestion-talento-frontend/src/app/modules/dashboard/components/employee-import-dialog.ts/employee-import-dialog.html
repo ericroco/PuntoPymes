@@ -1,76 +1,147 @@
-<h2 mat-dialog-title>Importación Masiva de Personal</h2>
+<div class="dialog-container">
 
-<mat-dialog-content>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Importación Masiva de Personal</h2>
+    <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="import-content custom-scroll">
+    
     <div *ngIf="importResult" class="result-box">
-        <div class="header-success">
-            <mat-icon>check_circle</mat-icon>
-            <h3>Proceso Finalizado</h3>
+      <div class="status-icon" [ngClass]="importResult.errors === 0 ? 'success' : 'warning'">
+        <mat-icon>{{ importResult.errors === 0 ? 'check_circle' : 'warning' }}</mat-icon>
+      </div>
+      <h3>Proceso Finalizado</h3>
+      
+      <div class="stats-row">
+        <div class="stat success">
+          <span class="label">Importados</span>
+          <span class="value">{{ importResult.success }}</span>
         </div>
-        <p>Importados: <strong>{{ importResult.success }}</strong> | Fallidos: <strong class="err">{{
-                importResult.errors }}</strong></p>
+        <div class="divider"></div>
+        <div class="stat error">
+          <span class="label">Fallidos</span>
+          <span class="value">{{ importResult.errors }}</span>
+        </div>
+      </div>
 
-        <div class="error-log" *ngIf="importResult.details.length > 0">
-            <ul>
-                <li *ngFor="let d of importResult.details">
-                    <strong>{{ d.identifier }}:</strong> {{ d.error }}
-                </li>
-            </ul>
-        </div>
+      <div class="error-log custom-scroll" *ngIf="importResult.details.length > 0">
+        <h4>Detalle de Errores:</h4>
+        <ul>
+          <li *ngFor="let d of importResult.details">
+            <strong>{{ d.identifier }}:</strong> {{ d.error }}
+          </li>
+        </ul>
+      </div>
     </div>
 
-    <mat-stepper [linear]="true" #stepper *ngIf="!importResult">
+    <mat-stepper [linear]="true" #stepper *ngIf="!importResult" class="custom-stepper">
 
-        <mat-step label="Cargar JSON" [completed]="rawJsonData.length > 0">
-            <div class="upload-area">
-                <mat-icon>cloud_upload</mat-icon>
-                <p>Sube tu archivo JSON</p>
-                <input type="file" (change)="onFileSelected($event)" accept=".json">
-                <p *ngIf="rawJsonData.length > 0" class="success-text">✅ {{ rawJsonData.length }} registros cargados.
-                </p>
+      <mat-step label="Cargar JSON" [completed]="rawJsonData.length > 0">
+        <div class="step-content centered">
+          
+          <div class="upload-area" (click)="fileInput.click()">
+            <div class="icon-wrapper" [class.active]="rawJsonData.length > 0">
+              <mat-icon>{{ rawJsonData.length > 0 ? 'check' : 'cloud_upload' }}</mat-icon>
             </div>
-            <div class="actions">
-                <button mat-button matStepperNext [disabled]="rawJsonData.length === 0">Siguiente</button>
-            </div>
-        </mat-step>
+            
+            <h3 *ngIf="rawJsonData.length === 0">Sube tu archivo JSON</h3>
+            <h3 *ngIf="rawJsonData.length > 0" class="text-success">¡Archivo Cargado!</h3>
 
-        <mat-step label="Conectar">
-            <p class="hint">Relaciona las columnas de tu archivo (Derecha) con el sistema (Izquierda).</p>
-            <table class="mapping-table">
-                <tr *ngFor="let field of systemFields">
-                    <td>{{ field.label }} <span *ngIf="field.required" class="req">*</span></td>
-                    <td>
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width">
-                            <mat-select [(value)]="fieldMapping[field.key]" placeholder="Ignorar">
-                                <mat-option [value]="null">-- No importar --</mat-option>
-                                <mat-option *ngFor="let key of sourceKeys" [value]="key">
-                                    {{ key }} <small>(Ej: {{ rawJsonData[0][key] }})</small>
-                                </mat-option>
-                            </mat-select>
-                        </mat-form-field>
-                    </td>
-                </tr>
-            </table>
-            <div class="actions">
-                <button mat-button matStepperPrevious>Atrás</button>
-                <button mat-flat-button color="primary" matStepperNext>Revisar</button>
-            </div>
-        </mat-step>
+            <p *ngIf="rawJsonData.length === 0">Haz clic aquí para seleccionar</p>
+            <p *ngIf="rawJsonData.length > 0" class="success-text">
+              {{ rawJsonData.length }} registros detectados. Listo para continuar.
+            </p>
 
-        <mat-step label="Procesar">
-            <div class="confirm-area">
-                <p>Se importarán <strong>{{ rawJsonData.length }}</strong> empleados.</p>
-                <mat-progress-bar *ngIf="isProcessing" mode="indeterminate"></mat-progress-bar>
+            <input type="file" #fileInput 
+                   (change)="onFileSelected($event)" 
+                   accept=".json" 
+                   style="display: none;">
+          </div>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" matStepperNext 
+                    [disabled]="rawJsonData.length === 0" 
+                    class="btn-save">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Conectar">
+        <div class="step-content">
+          <div class="info-box">
+            <mat-icon>link</mat-icon>
+            <p>Relaciona las columnas de tu archivo (Derecha) con los campos del sistema (Izquierda).</p>
+          </div>
+
+          <table class="mapping-table">
+            <thead>
+              <tr>
+                <th>Campo Sistema</th>
+                <th>Columna en JSON</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let field of systemFields">
+                <td class="label-col">
+                  {{ field.label }} <span *ngIf="field.required" class="req">*</span>
+                </td>
+                <td class="input-col">
+                  <mat-form-field appearance="outline" class="custom-field full-width" subscriptSizing="dynamic">
+                    <mat-select [(value)]="fieldMapping[field.key]" placeholder="-- Ignorar --">
+                      <mat-option [value]="null">-- No importar --</mat-option>
+                      <mat-option *ngFor="let key of sourceKeys" [value]="key">
+                        {{ key }} 
+                        <span class="sample-data" *ngIf="rawJsonData.length > 0">
+                          (Ej: {{ rawJsonData[0][key] }})
+                        </span>
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious class="btn-cancel">Atrás</button>
+            <button mat-flat-button color="primary" matStepperNext class="btn-save">
+              Revisar <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Procesar">
+        <div class="step-content centered">
+          <div class="confirm-area">
+            <div class="icon-wrapper big">
+              <mat-icon>groups</mat-icon>
             </div>
-            <div class="actions">
-                <button mat-button matStepperPrevious [disabled]="isProcessing">Atrás</button>
-                <button mat-flat-button color="primary" (click)="processImport()" [disabled]="isProcessing">
-                    {{ isProcessing ? 'Importando...' : 'Iniciar' }}
-                </button>
-            </div>
-        </mat-step>
+            <h3>¿Listo para importar?</h3>
+            <p>Se procesarán <strong>{{ rawJsonData.length }}</strong> empleados.</p>
+            <mat-progress-bar *ngIf="isProcessing" mode="indeterminate" class="custom-progress"></mat-progress-bar>
+          </div>
+
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious [disabled]="isProcessing" class="btn-cancel">Atrás</button>
+            <button mat-flat-button color="primary" (click)="processImport()" [disabled]="isProcessing" class="btn-save">
+              <mat-icon>play_arrow</mat-icon> {{ isProcessing ? 'Importando...' : 'Iniciar Importación' }}
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
     </mat-stepper>
-</mat-dialog-content>
 
-<mat-dialog-actions align="end" *ngIf="importResult">
-    <button mat-button mat-dialog-close>Cerrar</button>
-</mat-dialog-actions>
+  </mat-dialog-content>
+
+  <div class="dialog-footer" *ngIf="importResult">
+    <button mat-stroked-button mat-dialog-close class="btn-cancel">Cerrar Ventana</button>
+  </div>
+
+</div>

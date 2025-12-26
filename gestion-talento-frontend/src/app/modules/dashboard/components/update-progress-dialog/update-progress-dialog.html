@@ -1,46 +1,62 @@
-<h2 mat-dialog-title>Actualizar Progreso</h2>
+<div class="dialog-container">
 
-<div mat-dialog-content class="progress-form-content">
-
-  <p class="goal-title">{{ data.goalTitle }}</p>
-
-  <!-- Mensaje especial si viene de completar una tarea -->
-  <div *ngIf="data.completedTaskTitle" class="task-context">
-    <mat-icon color="primary">check_circle</mat-icon>
-    <div>
-      <span>¡Tarea completada!</span>
-      <strong>{{ data.completedTaskTitle }}</strong>
-      <p class="hint">¿Cuánto avanzó el objetivo con esta tarea?</p>
-    </div>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Actualizar Progreso</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
   <form [formGroup]="progressForm" (ngSubmit)="onSave()">
+    
+    <mat-dialog-content class="custom-content custom-scroll">
 
-    <div class="progress-input-group" style="margin-top: 20px;">
-      <!-- Slider -->
-      <mat-slider min="0" max="100" step="5" discrete showTickMarks>
-        <input matSliderThumb formControlName="progress">
-      </mat-slider>
+      <p class="goal-title">{{ data.goalTitle }}</p>
 
-      <!-- Input Numérico -->
-      <mat-form-field appearance="outline" class="progress-input" style="width: 100px; margin-left: 15px;">
-        <input matInput type="number" formControlName="progress" min="0" max="100">
-        <span matSuffix>%</span>
-      </mat-form-field>
+      <div *ngIf="data.completedTaskTitle" class="success-box">
+        <mat-icon>check_circle</mat-icon>
+        <div>
+          <span class="box-title">¡Tarea completada!</span>
+          <strong class="task-name">{{ data.completedTaskTitle }}</strong>
+          <p class="box-hint">¿Cuánto avanzó el objetivo con esta tarea?</p>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label class="field-label">Definir Progreso</label>
+        
+        <div class="progress-control-group">
+          <mat-slider min="0" max="100" step="5" discrete showTickMarks class="custom-slider">
+            <input matSliderThumb formControlName="progress">
+          </mat-slider>
+
+          <div class="number-input-wrapper">
+            <mat-form-field appearance="outline" class="custom-field compact" subscriptSizing="dynamic">
+              <input matInput type="number" formControlName="progress" min="0" max="100">
+              <span matSuffix>%</span>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label class="field-label">Comentario (Opcional)</label>
+        <div class="soft-textarea-wrapper">
+          <textarea formControlName="comment" rows="4" 
+                    placeholder="Ej: Terminé la fase de diseño..."></textarea>
+        </div>
+      </div>
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+      <button type="button" mat-flat-button class="btn-cancel" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button type="submit" mat-flat-button color="primary" class="btn-save" [disabled]="progressForm.invalid">
+        Actualizar
+      </button>
     </div>
 
-    <mat-form-field appearance="outline" class="comment-field" style="width: 100%;">
-      <mat-label>Comentario de Actualización (Opcional)</mat-label>
-      <textarea matInput formControlName="comment" rows="3" placeholder="Ej: Terminé la fase de diseño..."></textarea>
-    </mat-form-field>
-
   </form>
-
-</div>
-
-<div mat-dialog-actions align="end">
-  <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-  <button type="button" mat-flat-button color="primary" (click)="onSave()" [disabled]="progressForm.invalid">
-    Actualizar
-  </button>
 </div>

@@ -1,19 +1,43 @@
-<h1 mat-dialog-title>Rechazar a {{ data.candidateName }}</h1>
-<form [formGroup]="rejectForm" (ngSubmit)="onConfirmReject()">
-  <div mat-dialog-content>
-    <p>El candidato será movido fuera del pipeline. Esta acción no se puede deshacer.</p>
+<div class="dialog-container">
 
-    <mat-form-field appearance="outline">
-      <mat-label>Motivo del Rechazo (Interno, Opcional)</mat-label>
-      <textarea matInput formControlName="reason" rows="3" placeholder="Ej: No cumple con la experiencia técnica requerida."></textarea>
-    </mat-form-field>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Rechazar a {{ data.candidateName }}</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <mat-checkbox formControlName="sendEmail" color="primary">
-      Enviar correo electrónico de rechazo al candidato.
-    </mat-checkbox>
+  <mat-dialog-content class="simple-dialog-content">
+
+    <form [formGroup]="rejectForm" class="simple-form">
+
+      <div class="warning-box">
+        <mat-icon>warning_amber</mat-icon>
+        <p>El candidato será movido fuera del pipeline. Esta acción no se puede deshacer.</p>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Motivo del Rechazo (Interno, Opcional)</mat-label>
+        <textarea matInput formControlName="reason" rows="3"
+          placeholder="Ej: No cumple con la experiencia técnica..."></textarea>
+        <mat-icon matSuffix style="align-self: start; margin-top: 8px;">rate_review</mat-icon>
+      </mat-form-field>
+
+      <div class="checkbox-wrapper">
+        <mat-checkbox formControlName="sendEmail" color="warn">
+          Enviar correo electrónico de notificación al candidato.
+        </mat-checkbox>
+      </div>
+
+    </form>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button type="submit" mat-flat-button color="warn" (click)="onConfirmReject()" class="btn-reject">
+      <mat-icon>block</mat-icon> Confirmar Rechazo
+    </button>
   </div>
-  <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="warn">Confirmar Rechazo</button>
-  </div>
-</form>
+
+</div>

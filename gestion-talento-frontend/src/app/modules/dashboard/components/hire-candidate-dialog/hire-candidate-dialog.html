@@ -1,21 +1,41 @@
-<h1 mat-dialog-title>Contratar a {{ data.candidateName }}</h1>
-<form [formGroup]="hireForm" (ngSubmit)="onConfirmHire()">
-  <div mat-dialog-content>
-    <p>Estás a punto de marcar a este candidato como contratado y crear su perfil de empleado.</p>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Asignar Plantilla de Onboarding</mat-label>
-      <mat-select formControlName="onboardingTemplateId" required>
-        <mat-option *ngFor="let template of onboardingTemplates" [value]="template.id">
-          {{ template.name }}
-        </mat-option>
-      </mat-select>
-      <mat-error>Debes seleccionar una plantilla.</mat-error>
-    </mat-form-field>
-
-    </div>
-  <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="hireForm.invalid">Confirmar Contratación</button>
+<div class="dialog-container">
+  
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Contratar a {{ data.candidateName }}</h2>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
-</form>
+
+  <form [formGroup]="hireForm" (ngSubmit)="onConfirmHire()">
+    <mat-dialog-content class="custom-content">
+      
+      <div class="info-box">
+        <mat-icon>info</mat-icon>
+        <p>Estás a punto de marcar a este candidato como <strong>contratado</strong> y crear su perfil de empleado. Selecciona el proceso a seguir:</p>
+      </div>
+
+      <div class="form-section">
+        <label class="field-label">Asignar Plantilla de Onboarding</label>
+        <mat-form-field appearance="outline" class="custom-field full-width" subscriptSizing="dynamic">
+          <mat-select formControlName="onboardingTemplateId" placeholder="-- Seleccionar Plantilla --" required>
+            <mat-option *ngFor="let template of onboardingTemplates" [value]="template.id">
+              {{ template.name }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>assignment_ind</mat-icon>
+          <mat-error>Debes seleccionar una plantilla.</mat-error>
+        </mat-form-field>
+      </div>
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+      <button type="button" mat-flat-button class="btn-cancel" (click)="onCancel()">Cancelar</button>
+      <button type="submit" mat-flat-button color="primary" class="btn-save" [disabled]="hireForm.invalid">
+        Confirmar Contratación
+      </button>
+    </div>
+  </form>
+
+</div>
