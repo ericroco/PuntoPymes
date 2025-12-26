@@ -1,54 +1,74 @@
-<h2 mat-dialog-title>
-  {{ data?.role ? 'Editar Rol de Seguridad' : 'Crear Nuevo Rol' }}
-</h2>
+<div class="dialog-container">
 
-<form [formGroup]="roleForm" (ngSubmit)="onSave()">
-  <mat-dialog-content class="dialog-content">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      {{ data?.role ? 'Editar Rol' : 'Crear Nuevo Rol' }}
+    </h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <div class="basic-info-section">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nombre del Rol</mat-label>
-        <input matInput formControlName="name" placeholder="Ej: Supervisor de Ventas">
-        <mat-error *ngIf="roleForm.get('name')?.hasError('required')">Requerido</mat-error>
-      </mat-form-field>
+  <mat-dialog-content class="scrollable-content">
 
-      <div class="default-role-wrapper">
-        <mat-slide-toggle formControlName="esDefecto" color="primary">
-          Asignar automáticamente a nuevos empleados
-        </mat-slide-toggle>
-        <mat-icon class="info-icon"
-          matTooltip="Si activas esto, todos los empleados nuevos tendrán este rol por defecto. Solo puede haber uno activo.">
-          info
-        </mat-icon>
+    <form [formGroup]="roleForm" class="role-form-content">
+
+      <div class="basic-info-section">
+
+        <mat-form-field appearance="outline" class="full-width custom-field">
+          <mat-label>Nombre del Rol</mat-label>
+          <input matInput formControlName="name" placeholder="Ej: Supervisor de Ventas" required>
+          <mat-icon matSuffix>badge</mat-icon>
+          <mat-error *ngIf="roleForm.get('name')?.hasError('required')">Requerido</mat-error>
+        </mat-form-field>
+
+        <div class="default-role-wrapper">
+          <mat-slide-toggle formControlName="esDefecto" color="primary">
+            <span class="toggle-text">Asignar a nuevos empleados</span>
+          </mat-slide-toggle>
+          <mat-icon class="info-icon"
+            matTooltip="Si activas esto, todos los empleados nuevos tendrán este rol por defecto.">
+            info
+          </mat-icon>
+        </div>
+
       </div>
-    </div>
 
-    <mat-divider></mat-divider>
+      <mat-divider></mat-divider>
 
-    <h3 class="permissions-title">Definición de Permisos</h3>
-    <p class="permissions-hint">Marca las casillas para otorgar acceso a las funcionalidades.</p>
+      <div class="permissions-section">
+        <div class="section-header">
+          <h3 class="permissions-title">Permisos del Sistema</h3>
+          <p class="permissions-hint">Habilita las funciones permitidas para este rol.</p>
+        </div>
 
-    <div class="permissions-container">
+        <div class="permissions-container">
+          <div *ngFor="let group of permissionGroups" class="perm-group">
+            <h4 class="group-title">{{ group.name }}</h4>
 
-      <div *ngFor="let group of permissionGroups" class="perm-group">
-        <h4 class="group-title">{{ group.name }}</h4>
-
-        <div class="perm-list">
-          <div *ngFor="let perm of group.permissions" class="perm-item">
-            <mat-checkbox [checked]="permissionsMap[perm.key]" (change)="togglePermission(perm.key, $event.checked)"
-              color="primary">
-              {{ perm.label }}
-            </mat-checkbox>
+            <div class="perm-list">
+              <div *ngFor="let perm of group.permissions" class="perm-item">
+                <mat-checkbox [checked]="permissionsMap[perm.key]" (change)="togglePermission(perm.key, $event.checked)"
+                  color="primary">
+                  {{ perm.label }}
+                </mat-checkbox>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-    </div>
+    </form>
 
   </mat-dialog-content>
 
-  <mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary">Guardar Rol</button>
-  </mat-dialog-actions>
-</form>
+  <div class="dialog-footer">
+    <button type="button" mat-stroked-button (click)="onCancel()" class="btn-cancel">
+      Cancelar
+    </button>
+    <button type="button" mat-flat-button color="primary" (click)="onSave()" class="btn-save">
+      <mat-icon>save</mat-icon> Guardar Rol
+    </button>
+  </div>
+
+</div>

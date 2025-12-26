@@ -19,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatDatepickerModule, MatNativeDateModule, MatIconModule
   ],
   templateUrl: './add-expense-item-dialog.html',
-  styles: ['.full-width { width: 100%; margin-bottom: 10px; } .file-upload-box { cursor: pointer; transition: background 0.3s; } .file-upload-box:hover { background-color: #f5f5f5; }']
+  styleUrls: ['./add-expense-item-dialog.scss']
 })
 export class AddExpenseItemDialogComponent {
   private fb = inject(FormBuilder);

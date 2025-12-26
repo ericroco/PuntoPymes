@@ -1,49 +1,84 @@
-<h2 mat-dialog-title>{{ data?.title || 'Subir Documento' }}</h2>
+<div class="dialog-container">
 
-<mat-dialog-content [formGroup]="documentForm">
-
-  <div *ngIf="data?.mode === 'company'" style="margin-bottom: 1rem;">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Alcance / Destino</mat-label>
-      <mat-select formControlName="sucursalId">
-        <mat-option [value]="null">
-          <mat-icon style="margin-right: 8px;">public</mat-icon> Global (Toda la Empresa)
-        </mat-option>
-        <mat-option *ngFor="let b of branches" [value]="b.id">
-          <mat-icon style="margin-right: 8px;">store</mat-icon> {{ b.nombre }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Nombre del Documento</mat-label>
-    <input matInput formControlName="fileName" placeholder="Ej: Título Universitario">
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Tipo de Documento</mat-label>
-    <mat-select formControlName="documentType">
-      <mat-option *ngFor="let type of documentTypes" [value]="type">
-        {{ type }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none">
-
-  <div class="file-upload-area">
-    <button mat-stroked-button type="button" (click)="fileInput.click()">
-      <mat-icon>attach_file</mat-icon> Seleccionar Archivo
+  <div class="dialog-header">
+    <h2 mat-dialog-title>{{ data?.title || 'Subir Documento' }}</h2>
+    <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+      <mat-icon>close</mat-icon>
     </button>
-    <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
-    <span class="file-error" *ngIf="!selectedFile && documentForm.touched">Requerido *</span>
   </div>
 
-</mat-dialog-content>
+  <mat-dialog-content class="upload-dialog-content">
+    <form [formGroup]="documentForm" class="upload-form">
 
-<mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="documentForm.invalid || !selectedFile">
-    Subir
-  </button>
-</mat-dialog-actions>
+      <div *ngIf="data?.mode === 'company'" class="form-field-wrapper">
+        <mat-form-field appearance="outline" class="full-width custom-field">
+          <mat-label>Alcance / Destino</mat-label>
+          <mat-select formControlName="sucursalId">
+            <mat-option [value]="null">
+              <div class="option-with-icon">
+                <mat-icon>public</mat-icon>
+                <span>Global (Toda la Empresa)</span>
+              </div>
+            </mat-option>
+            <mat-option *ngFor="let b of branches" [value]="b.id">
+              <div class="option-with-icon">
+                <mat-icon>store</mat-icon>
+                <span>{{ b.nombre }}</span>
+              </div>
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>business</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Nombre del Documento</mat-label>
+        <input matInput formControlName="fileName" placeholder="Ej: Título Universitario">
+        <mat-icon matSuffix>description</mat-icon>
+        <mat-error *ngIf="documentForm.get('fileName')?.hasError('required')">
+          Requerido.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Tipo de Documento</mat-label>
+        <mat-select formControlName="documentType">
+          <mat-option *ngFor="let type of documentTypes" [value]="type">
+            {{ type }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>category</mat-icon>
+        <mat-error *ngIf="documentForm.get('documentType')?.hasError('required')">
+          Requerido.
+        </mat-error>
+      </mat-form-field>
+
+      <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+
+      <div class="file-upload-area">
+        <button mat-stroked-button type="button" (click)="fileInput.click()" class="btn-select-file">
+          <mat-icon>attach_file</mat-icon>
+          Seleccionar Archivo
+        </button>
+        <span class="file-name" *ngIf="selectedFile">
+          <mat-icon class="file-icon">insert_drive_file</mat-icon>
+          {{ selectedFile.name }}
+        </span>
+        <span class="file-placeholder" *ngIf="!selectedFile">Ningún archivo seleccionado</span>
+      </div>
+      <span class="file-error" *ngIf="!selectedFile && documentForm.touched">* Debe seleccionar un archivo</span>
+
+    </form>
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button mat-dialog-close class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="documentForm.invalid || !selectedFile"
+      class="btn-save">
+      <mat-icon>cloud_upload</mat-icon>
+      Subir
+    </button>
+  </div>
+
+</div>

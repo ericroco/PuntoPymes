@@ -22,7 +22,7 @@ interface DialogData {
     MatFormFieldModule, MatInputModule, MatSelectModule, MatIconModule
   ],
   templateUrl: './add-project-dialog.html',
-  styles: [`.full-width { width: 100%; margin-bottom: 10px; } .hint-text { color: #666; margin-bottom: 15px; }`]
+  styleUrl: './add-project-dialog.scss'
 })
 export class AddProjectDialog {
   form: FormGroup;

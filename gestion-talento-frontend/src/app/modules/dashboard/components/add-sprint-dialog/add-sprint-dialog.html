@@ -1,40 +1,64 @@
-<h1 mat-dialog-title>Crear Nuevo Sprint</h1>
+<div class="dialog-container">
 
-<div mat-dialog-content [formGroup]="sprintForm">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Crear Nuevo Sprint</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Nombre del Sprint</mat-label>
-    <input matInput formControlName="name" placeholder="Ej: Sprint Diciembre 2025" required>
-    <mat-error *ngIf="sprintForm.get('name')?.hasError('required')">
-      El nombre es obligatorio.
-    </mat-error>
-  </mat-form-field>
+  <mat-dialog-content class="simple-dialog-content">
 
-  <mat-form-field appearance="outline">
-    <mat-label>Descripción (Opcional)</mat-label>
-    <textarea matInput formControlName="description" placeholder="Objetivos principales del sprint..." rows="3"></textarea>
-  </mat-form-field>
+    <form [formGroup]="sprintForm" class="simple-form">
 
-  <mat-form-field appearance="outline">
-    <mat-label>Fecha de Inicio</mat-label>
-    <input matInput [matDatepicker]="startPicker" formControlName="startDate" required placeholder="Selecciona fecha inicio">
-    <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-    <mat-datepicker #startPicker></mat-datepicker>
-    <mat-error *ngIf="sprintForm.get('startDate')?.hasError('required')">
-      La fecha de inicio es obligatoria.
-    </mat-error>
-  </mat-form-field>
+      <p class="dialog-instruction">
+        <mat-icon>info</mat-icon>
+        Define el período de trabajo del equipo.
+      </p>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Fecha de Fin</mat-label>
-    <input matInput [matDatepicker]="endPicker" formControlName="endDate" required placeholder="Selecciona fecha fin">
-    <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-    <mat-datepicker #endPicker></mat-datepicker>
-    <mat-error *ngIf="sprintForm.get('endDate')?.hasError('required')">
-      La fecha de fin es obligatoria.
-    </mat-error>
-  </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Nombre del Sprint</mat-label>
+        <input matInput formControlName="name" placeholder="Ej: Sprint Diciembre 2025" required>
+        <mat-icon matSuffix>directions_run</mat-icon>
+        <mat-error *ngIf="sprintForm.get('name')?.hasError('required')">
+          Requerido
+        </mat-error>
+      </mat-form-field>
 
-</div> <div mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="sprintForm.invalid">Cre
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Descripción (Objetivos)</mat-label>
+        <textarea matInput formControlName="description" rows="3" placeholder="Objetivos principales..."></textarea>
+        <mat-icon matSuffix style="align-self: start; margin-top: 8px;">description</mat-icon>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Fecha Inicio</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="startDate" required
+            (click)="startPicker.open()">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Fecha Fin</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="endDate" required (click)="endPicker.open()">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+      </div>
+
+    </form>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="sprintForm.invalid" class="btn-save">
+      <mat-icon>save</mat-icon> Crear Sprint
+    </button>
+  </div>
+
+</div>

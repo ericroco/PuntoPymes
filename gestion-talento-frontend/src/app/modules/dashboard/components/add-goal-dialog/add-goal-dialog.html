@@ -1,58 +1,76 @@
-<h2 mat-dialog-title>Crear Nuevo Objetivo</h2>
+<div class="dialog-container">
 
-<form [formGroup]="form" (ngSubmit)="onSave()">
-    <mat-dialog-content class="dialog-content">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Crear Nuevo Objetivo</h2>
+        <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
 
-        <div class="type-selection" *ngIf="data.isAdmin" style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; color: #666; font-weight: 500;">Tipo de Meta:</label>
-            <mat-radio-group formControlName="tipo" color="primary" style="display: flex; gap: 20px;">
-                <mat-radio-button value="PERSONAL">Personal</mat-radio-button>
-                <mat-radio-button value="DEPARTAMENTO">Departamental</mat-radio-button>
-            </mat-radio-group>
-        </div>
+    <mat-dialog-content class="simple-dialog-content">
 
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Descripción del Objetivo</mat-label>
-            <textarea matInput formControlName="descripcion"
-                placeholder="Ej: Incrementar la cobertura de pruebas al 80%" rows="3" required></textarea>
-            <mat-error *ngIf="form.get('descripcion')?.hasError('required')">Requerido</mat-error>
-        </mat-form-field>
+        <form [formGroup]="form" class="simple-form">
 
-        <mat-form-field appearance="outline" class="full-width"
-            *ngIf="data.isAdmin && form.get('tipo')?.value === 'PERSONAL'">
-            <mat-label>Asignar a Empleado</mat-label>
-            <mat-select formControlName="empleadoId" required>
-                <mat-option *ngFor="let emp of data.employees" [value]="emp.id">
-                    {{ emp.nombre }} {{ emp.apellido }}
-                </mat-option>
-            </mat-select>
-            <mat-error>Debes asignar un responsable</mat-error>
-        </mat-form-field>
+            <div class="type-selection" *ngIf="data.isAdmin">
+                <label class="section-label">Tipo de Meta</label>
+                <mat-radio-group formControlName="tipo" color="primary" class="custom-radio-group">
+                    <mat-radio-button value="PERSONAL">Personal</mat-radio-button>
+                    <mat-radio-button value="DEPARTAMENTO">Departamental</mat-radio-button>
+                </mat-radio-group>
+            </div>
 
-        <mat-form-field appearance="outline" class="full-width"
-            *ngIf="data.isAdmin && form.get('tipo')?.value === 'DEPARTAMENTO'">
-            <mat-label>Asignar a Departamento</mat-label>
-            <mat-select formControlName="departamentoId" required>
-                <mat-option *ngFor="let dept of data.departments" [value]="dept.id">
-                    {{ dept.nombre }}
-                </mat-option>
-            </mat-select>
-            <mat-error>Debes seleccionar un departamento</mat-error>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Descripción del Objetivo</mat-label>
+                <textarea matInput formControlName="descripcion"
+                    placeholder="Ej: Incrementar la cobertura de pruebas al 80%" rows="3" required></textarea>
+                <mat-icon matSuffix style="align-self: start; margin-top: 8px;">flag</mat-icon>
+                <mat-error *ngIf="form.get('descripcion')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
 
-        <div class="progress-section">
-            <label style="color: #666;">Progreso Inicial: <strong>{{ form.get('progreso')?.value }}%</strong></label>
-            <mat-slider min="0" max="100" step="5" discrete showTickMarks>
-                <input matSliderThumb formControlName="progreso">
-            </mat-slider>
-        </div>
+            <mat-form-field appearance="outline" class="full-width custom-field"
+                *ngIf="data.isAdmin && form.get('tipo')?.value === 'PERSONAL'">
+                <mat-label>Asignar a Empleado</mat-label>
+                <mat-select formControlName="empleadoId" required>
+                    <mat-option *ngFor="let emp of data.employees" [value]="emp.id">
+                        {{ emp.nombre }} {{ emp.apellido }}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matSuffix>person</mat-icon>
+                <mat-error>Debes asignar un responsable</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field"
+                *ngIf="data.isAdmin && form.get('tipo')?.value === 'DEPARTAMENTO'">
+                <mat-label>Asignar a Departamento</mat-label>
+                <mat-select formControlName="departamentoId" required>
+                    <mat-option *ngFor="let dept of data.departments" [value]="dept.id">
+                        {{ dept.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matSuffix>domain</mat-icon>
+                <mat-error>Debes seleccionar un departamento</mat-error>
+            </mat-form-field>
+
+            <div class="progress-section">
+                <div class="progress-header">
+                    <label class="section-label">Progreso Inicial</label>
+                    <span class="progress-badge">{{ form.get('progreso')?.value }}%</span>
+                </div>
+                <mat-slider min="0" max="100" step="5" discrete showTickMarks class="custom-slider">
+                    <input matSliderThumb formControlName="progreso">
+                </mat-slider>
+            </div>
+
+        </form>
 
     </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
-        <button type="button" mat-button mat-dialog-close>Cancelar</button>
-        <button type="submit" mat-flat-button color="primary" [disabled]="form.invalid">
-            Crear Objetivo
+    <div class="dialog-footer">
+        <button type="button" mat-stroked-button mat-dialog-close class="btn-cancel">Cancelar</button>
+        <button type="button" mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid"
+            class="btn-save">
+            <mat-icon>track_changes</mat-icon> Crear Objetivo
         </button>
-    </mat-dialog-actions>
-</form>
+    </div>
+
+</div>

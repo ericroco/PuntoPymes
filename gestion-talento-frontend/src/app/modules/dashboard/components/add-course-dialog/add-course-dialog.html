@@ -1,56 +1,77 @@
-<h1 mat-dialog-title>{{ isEditMode ? 'Editar Curso' : 'Crear Nuevo Curso' }}</h1>
+<div class="dialog-container">
 
-<form [formGroup]="courseForm" (ngSubmit)="onSave()">
-  <div mat-dialog-content class="course-form-content">
-
-    <mat-form-field appearance="outline">
-      <mat-label>Título del Curso</mat-label>
-      <input matInput formControlName="title" required>
-      <mat-error>El título es obligatorio.</mat-error>
-    </mat-form-field>
-    
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Instructor</mat-label>
-        <input matInput formControlName="instructor" placeholder="Ej: Erick Rodas" required>
-        <mat-error>Requerido.</mat-error>
-      </mat-form-field>
-      
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Categoría</mat-label>
-        <mat-select formControlName="category" required>
-          <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
-        </mat-select>
-        <mat-error>Requerido.</mat-error>
-      </mat-form-field>
-    </div>
-
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Duración (Texto)</mat-label>
-        <input matInput formControlName="duration" placeholder="Ej: 8 horas" required>
-        <mat-error>Requerido.</mat-error>
-      </mat-form-field>
-      
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>URL de la Imagen de Portada</mat-label>
-        <input matInput formControlName="imageUrl" placeholder="https://..." required>
-        <mat-error>Requerido.</mat-error>
-      </mat-form-field>
-    </div>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Descripción del Curso</mat-label>
-      <textarea matInput formControlName="description" rows="5" required></textarea>
-      <mat-error>La descripción es obligatoria.</mat-error>
-    </mat-form-field>
-
-  </div>
-
-  <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="courseForm.invalid">
-      {{ isEditMode ? 'Guardar Cambios' : 'Crear Curso' }}
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      {{ isEditMode ? 'Editar Curso' : 'Crear Nuevo Curso' }}
+    </h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
-</form>
+
+  <mat-dialog-content class="custom-scroll">
+    <form [formGroup]="courseForm" (ngSubmit)="onSave()" class="course-form-content">
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Título del Curso</mat-label>
+        <input matInput formControlName="title" placeholder="Ej: Introducción a Angular" required>
+        <mat-icon matSuffix>school</mat-icon>
+        <mat-error>El título es obligatorio.</mat-error>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field custom-field">
+          <mat-label>Instructor</mat-label>
+          <input matInput formControlName="instructor" placeholder="Ej: Erick Rodas" required>
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error>Requerido.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field custom-field">
+          <mat-label>Categoría</mat-label>
+          <mat-select formControlName="category" required placeholder="Selecciona una">
+            <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>category</mat-icon>
+          <mat-error>Requerido.</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field custom-field">
+          <mat-label>Duración</mat-label>
+          <input matInput formControlName="duration" placeholder="Ej: 8 horas" required>
+          <mat-icon matSuffix>schedule</mat-icon>
+          <mat-error>Requerido.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field custom-field">
+          <mat-label>URL de Portada</mat-label>
+          <input matInput formControlName="imageUrl" placeholder="https://..." required>
+          <mat-icon matSuffix>image</mat-icon>
+          <mat-error>Requerido.</mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Descripción del Curso</mat-label>
+        <textarea matInput formControlName="description" rows="5" placeholder="Detalla el contenido..."
+          required></textarea>
+        <mat-error>La descripción es obligatoria.</mat-error>
+      </mat-form-field>
+
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button type="button" mat-stroked-button (click)="onCancel()" class="btn-cancel">
+      Cancelar
+    </button>
+    <button type="button" mat-flat-button color="primary" (click)="onSave()" [disabled]="courseForm.invalid"
+      class="btn-save">
+      <mat-icon>save</mat-icon>
+      {{ isEditMode ? 'Guardar Cambios' : 'Crear Curso' }}
+    </button>
+  </mat-dialog-actions>
+
+</div>

@@ -1,79 +1,282 @@
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    font-size: 0.95rem;
-    font-family: var(--font-family-base);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease-out;
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
 
-    svg {
+// ============================================
+// ESTRUCTURA COMPACTA (400PX SIN SCROLL)
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    overflow: visible !important; // 🔥 CLAVE: Sin scroll
+    width: 400px !important;
+    max-width: 400px !important;
+    height: auto !important; // Se ajusta al contenido
+    max-height: none !important; // Sin límite de altura
+    box-sizing: border-box !important;
+}
+
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    background-color: var(--color-surface);
+    box-sizing: border-box;
+    overflow: visible; // 🔥 Sin scroll
+}
+
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: 'Poppins', sans-serif;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        padding-right: 8px;
+    }
+
+    .close-btn {
+        color: var(--color-text-secondary);
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// ============================================
+// CONTENIDO
+// ============================================
+::ng-deep mat-dialog-content.simple-dialog-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: none !important; // 🔥 Sin límite de altura
+    overflow: visible !important; // 🔥 Sin scroll
+    box-sizing: border-box !important;
+}
+
+.simple-form {
+    padding: 1.5rem $padding-modal;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.dialog-instruction {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--color-primary);
+        flex-shrink: 0;
+        margin-top: 2px; // Alineado con el texto
+    }
+
+    span {
+        flex: 1;
+    }
+}
+
+// ============================================
+// INPUTS SUAVES (Identidad Visual)
+// ============================================
+.full-width {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+::ng-deep .custom-field {
+    width: 100%;
+    box-sizing: border-box;
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: $radius-input !important;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        padding-right: 8px;
+        box-sizing: border-box;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+    }
+
+    .mdc-notched-outline__notch {
+        max-width: calc(100% - 40px) !important;
+        padding: 0 8px;
+    }
+
+    .mdc-floating-label {
+        font-family: 'Poppins', sans-serif;
+        max-width: 100% !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mdc-floating-label--float-above {
+        transform: translateY(-27.25px) scale(0.75) !important;
+        max-width: calc(133% - 40px) !important;
+    }
+
+    input.mat-mdc-input-element {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mat-icon[matSuffix] {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        margin-right: 8px;
+        font-size: 20px;
         width: 20px;
         height: 20px;
     }
+
+    // FOCUS STATE
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+
+        .mat-icon[matSuffix] {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+    }
+
+    // Error state
+    .mat-mdc-form-field-error {
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
 }
 
-.btn.btn-secondary {
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
     background-color: var(--color-surface);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    font-weight: 500;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
 
-    &:hover {
-        background-color: var(--color-background);
-        border-color: #dcdcdc;
-        color: var(--color-text-primary);
+    button {
+        height: 40px;
+        padding: 0 1.25rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        text-transform: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background-color: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
+        }
+
+        &.btn-save {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+            &:hover:not(:disabled) {
+                box-shadow: 0 6px 16px var(--color-primary-rgb);
+                transform: translateY(-1px);
+            }
+
+            &:disabled {
+                background: var(--color-border);
+                box-shadow: none;
+                color: var(--color-text-secondary);
+                opacity: 0.6;
+            }
+        }
     }
 }
 
-[mat-dialog-content] {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; // Espacio entre campos
-}
-
-mat-form-field {
-    width: 100%;
-}
-
-.file-input-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    border: 1px dashed var(--color-border); // Borde punteado
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    flex-wrap: wrap; // Permite que el nombre del archivo pase abajo si es largo
-}
-
-.file-upload-label {
-    // Hereda estilos de .btn, ajustamos padding si es necesario
-    padding: 0.6rem 1.2rem;
-    cursor: pointer;
-}
-
-.file-name {
-    font-size: 0.9rem;
-    font-style: italic;
-    color: var(--color-text-secondary);
-    flex-grow: 1; // Ocupa el espacio restante
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    &.placeholder {
-        color: #bdbdbd; // Gris más claro para el placeholder
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 500px) {
+    :host ::ng-deep .mdc-dialog__surface {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: auto !important;
+        border-radius: 0 !important;
     }
-}
 
-mat-error {
-    font-size: 0.75rem;
-    margin-top: -10px; // Ajusta posición del mensaje de error
-    width: 100%; // Asegura que ocupe todo el ancho
+    .dialog-footer {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 }

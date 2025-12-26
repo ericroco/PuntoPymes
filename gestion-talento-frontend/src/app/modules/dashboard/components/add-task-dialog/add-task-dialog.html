@@ -1,55 +1,79 @@
-<h1 mat-dialog-title>Crear Nueva Tarea</h1>
+<div class="dialog-container">
 
-<form [formGroup]="taskForm" (ngSubmit)="onSave()">
-  <div mat-dialog-content class="task-form-content">
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Título de la Tarea</mat-label>
-      <input matInput formControlName="titulo" placeholder="Ej: Implementar login con Google" required>
-      <mat-error *ngIf="taskForm.get('titulo')?.hasError('required')">El título es obligatorio.</mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Descripción (Opcional)</mat-label>
-      <textarea matInput formControlName="descripcion" placeholder="Detalles técnicos..." rows="3"></textarea>
-    </mat-form-field>
-
-    <div class="form-row">
-
-      <mat-form-field appearance="outline" style="flex: 1;">
-        <mat-label>Puntos (Esfuerzo)</mat-label>
-        <input matInput type="number" formControlName="puntosHistoria" min="1" required>
-        <mat-error>Requerido</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" style="flex: 1;">
-        <mat-label>Prioridad</mat-label>
-        <mat-select formControlName="prioridad" required>
-          <mat-option value="BAJA">Baja</mat-option>
-          <mat-option value="MEDIA">Media</mat-option>
-          <mat-option value="ALTA">Alta</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-    </div>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Vincular a Objetivo Estratégico</mat-label>
-      <mat-select formControlName="objetivoId">
-        <mat-option [value]="null">-- Ninguno --</mat-option>
-        <mat-option *ngFor="let goal of myGoals" [value]="goal.id">
-          {{ goal.descripcion }} ({{ goal.progreso }}%)
-        </mat-option>
-      </mat-select>
-      <mat-hint>Al completar esta tarea, podrás actualizar el avance de este objetivo.</mat-hint>
-    </mat-form-field>
-
-  </div>
-
-  <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="taskForm.invalid">
-      Crear Tarea
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Crear Nueva Tarea</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
-</form>
+
+  <mat-dialog-content class="simple-dialog-content">
+
+    <form [formGroup]="taskForm" class="simple-form">
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Título de la Tarea</mat-label>
+        <input matInput formControlName="titulo" placeholder="Ej: Implementar login con Google" required>
+        <mat-icon matSuffix>edit</mat-icon>
+        <mat-error *ngIf="taskForm.get('titulo')?.hasError('required')">
+          El título es obligatorio.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Descripción (Opcional)</mat-label>
+        <textarea matInput formControlName="descripcion" placeholder="Detalles técnicos..." rows="3"></textarea>
+        <mat-icon matSuffix style="align-self: start; margin-top: 8px;">description</mat-icon>
+      </mat-form-field>
+
+      <div class="form-row">
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Puntos (Esfuerzo)</mat-label>
+          <input matInput type="number" formControlName="puntosHistoria" min="1" required>
+          <mat-icon matSuffix>timelapse</mat-icon>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Prioridad</mat-label>
+          <mat-select formControlName="prioridad" required>
+            <mat-option value="BAJA">
+              <mat-icon style="color: #4CAF50; margin-right: 8px;">arrow_downward</mat-icon> Baja
+            </mat-option>
+            <mat-option value="MEDIA">
+              <mat-icon style="color: #FFC107; margin-right: 8px;">remove</mat-icon> Media
+            </mat-option>
+            <mat-option value="ALTA">
+              <mat-icon style="color: #F44336; margin-right: 8px;">arrow_upward</mat-icon> Alta
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>flag</mat-icon>
+        </mat-form-field>
+
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Vincular a Objetivo Estratégico</mat-label>
+        <mat-select formControlName="objetivoId">
+          <mat-option [value]="null">-- Ninguno --</mat-option>
+          <mat-option *ngFor="let goal of myGoals" [value]="goal.id">
+            {{ goal.descripcion }} ({{ goal.progreso }}%)
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>track_changes</mat-icon>
+        <mat-hint>Al completar, actualiza el objetivo.</mat-hint>
+      </mat-form-field>
+
+    </form>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="taskForm.invalid" class="btn-save">
+      <mat-icon>add_task</mat-icon> Crear Tarea
+    </button>
+  </div>
+
+</div>

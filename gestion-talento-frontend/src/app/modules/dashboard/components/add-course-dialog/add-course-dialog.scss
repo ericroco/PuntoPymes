@@ -1,23 +1,262 @@
+// ============================================
+// VARIABLES DE IDENTIDAD
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
+
+// ============================================
+// ESTRUCTURA PRINCIPAL (RESPONSIVE)
+// ============================================
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; // Altura máxima segura
+  min-width: 550px; // Ancho base desktop
+  background-color: var(--color-surface);
+
+  // 📱 MÓVIL: Fullscreen
+  @media (max-width: 600px) {
+    min-width: 100vw;
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0 !important; // Cuadrado en móvil
+  }
+}
+
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem $padding-modal;
+  border-bottom: 1px solid var(--color-border);
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .close-btn {
+    color: var(--color-text-secondary);
+
+    &:hover {
+      color: var(--color-danger);
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+  }
+}
+
+// ============================================
+// CONTENIDO DEL FORMULARIO
+// ============================================
+mat-dialog-content.custom-scroll {
+  padding: $padding-modal !important;
+  flex-grow: 1;
+  overflow-y: auto;
+
+  // Scrollbar personalizado
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+  }
+}
+
 .course-form-content {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding-top: 10px;
+  gap: 1.25rem; // Espaciado vertical
+  padding-top: 0.5rem;
 }
 
-mat-form-field {
+.full-width {
   width: 100%;
 }
 
 .form-row {
   display: flex;
-  gap: 15px;
+  gap: 1rem;
+
   .form-field {
     flex: 1;
   }
 }
 
-[mat-dialog-actions] {
-  padding: 16px 24px;
+// ============================================
+// ESTILO DE INPUTS (Soft UI - TalenTrack)
+// ============================================
+::ng-deep .custom-field {
+
+  // Fondo suave y bordes redondeados
+  .mat-mdc-text-field-wrapper {
+    background-color: var(--color-background) !important; // #FAFBFC
+    border-radius: $radius-input !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    padding-left: 4px; // Ajuste para el icono
+  }
+
+  // Quitar bordes duros por defecto
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border: none !important;
+  }
+
+  // Iconos internos
+  .mat-icon {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+  }
+
+  // ESTADO FOCUS: Color de marca
+  &.mat-focused {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--color-surface) !important;
+      box-shadow: 0 0 0 3px var(--color-primary-light); // Glow effect
+      border-color: var(--color-primary);
+    }
+
+    .mat-icon {
+      color: var(--color-primary);
+      opacity: 1;
+    }
+  }
+
+  // Texto de etiquetas
+  .mdc-floating-label {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+// ============================================
+// FOOTER / ACCIONES
+// ============================================
+.dialog-actions {
+  padding: 1rem $padding-modal;
   border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  gap: 0.75rem;
+  margin-bottom: 0; // Fix Material margin
+
+  button {
+    height: 44px; // Altura táctil
+    padding: 0 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    text-transform: none; // No mayúsculas forzadas
+    letter-spacing: normal;
+
+    &.btn-cancel {
+      border: 1.5px solid var(--color-border);
+      color: var(--color-text-primary);
+
+      &:hover {
+        background-color: var(--color-background);
+      }
+    }
+
+    &.btn-save {
+      // Gradiente de marca
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 12px var(--color-primary-rgb); // Sombra con color
+
+      mat-icon {
+        margin-right: 6px;
+      }
+
+      &:disabled {
+        background: var(--color-border);
+        box-shadow: none;
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+}
+
+// ============================================
+// MEDIA QUERIES (Mobile Adaptation)
+// ============================================
+@media (max-width: 600px) {
+
+  // Filas a Columnas
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  // Header más compacto
+  .dialog-header {
+    padding: 1rem;
+  }
+
+  // Contenido con padding ajustado
+  mat-dialog-content.custom-scroll {
+    padding: 1rem !important;
+  }
+
+  // Botones apilados
+  .dialog-actions {
+    padding: 1rem;
+    flex-direction: column-reverse; // Botón guardar primero (visualmente arriba o abajo según prefieras, reverse lo pone arriba si usas column-reverse, o abajo si es column)
+
+    // Mejor usaremos column normal para móviles, guardar arriba es mejor a veces, o abajo sticky.
+    // Estandar: Guardar abajo full width.
+    flex-direction: column;
+
+    button {
+      width: 100%;
+      margin-left: 0 !important; // Reset margin material
+    }
+  }
+}
+
+// ============================================
+// FIX: Label flotante que se sale - SOLUCIÓN
+// ============================================
+::ng-deep .custom-field {
+
+  // Controlar el outline notch (la ranura donde va el label)
+  .mdc-notched-outline__notch {
+    max-width: calc(100% - 24px) !important; // Limitar ancho del notch
+    padding: 0 8px; // Padding interno
+  }
+
+  // Label flotante controlado
+  .mdc-floating-label {
+    max-width: 100% !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Cuando está flotando arriba (focused o con valor)
+  .mdc-floating-label--float-above {
+    // Escalar más pequeño si es necesario
+    transform: translateY(-27.25px) scale(0.75) !important;
+    max-width: calc(133% - 32px) !important; // Dar espacio pero limitado
+  }
+
+  // Iconos a la derecha
+  .mat-icon[matSuffix] {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+    margin-right: 8px;
+  }
+
+  &.mat-focused .mat-icon[matSuffix] {
+    color: var(--color-primary);
+    opacity: 1;
+  }
 }

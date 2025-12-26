@@ -1,67 +1,421 @@
-.full-width {
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.25rem; // 👈 REDUCIDO de 1.5rem a 1.25rem
+
+// ============================================
+// ESTRUCTURA PRINCIPAL (Sin scroll horizontal)
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box !important;
+    width: 600px !important; // 🔥 FORZAR ancho exacto
+    max-width: 600px !important;
+}
+
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    max-height: 90vh;
     width: 100%;
+    background-color: var(--color-surface);
+    box-sizing: border-box;
+    overflow: hidden; // 🔥 CRÍTICO
+
+    @media (max-width: 700px) {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0 !important;
+    }
+}
+
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    flex-shrink: 0;
+    box-sizing: border-box;
+
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: 'Poppins', sans-serif;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        padding-right: 12px;
+    }
+
+    .close-btn {
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// ============================================
+// CONTENIDO SCROLLABLE
+// ============================================
+::ng-deep mat-dialog-content.scrollable-content {
+    flex-grow: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    max-height: none !important;
+
+    // Scrollbar personalizado (opcional)
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-border);
+        border-radius: 4px;
+    }
+}
+
+// ============================================
+// CONTENIDO FORMULARIO
+// ============================================
+.role-form-content {
+    padding: 1.5rem $padding-modal;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+// ============================================
+// SECCIÓN 1: DATOS BÁSICOS
+// ============================================
+.basic-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .default-role-wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 1rem;
-    padding: 8px 12px;
-    background-color: #f5f7fa;
-    /* Fondo suave */
-    border-radius: 8px;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #FAFAFA;
+    border: 1px dashed var(--color-border);
+    border-radius: $radius-input;
+    box-sizing: border-box;
+    flex-wrap: wrap; // 🔥 Por si el texto es muy largo
+
+    .toggle-text {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        flex: 1;
+        min-width: 0; // 🔥 Permite que se comprima
+    }
 
     .info-icon {
-        font-size: 18px;
-        height: 18px;
-        width: 18px;
-        color: #666;
+        font-size: 20px;
+        height: 20px;
+        width: 20px;
+        color: var(--color-text-secondary);
         cursor: help;
+        opacity: 0.7;
+        flex-shrink: 0; // 🔥 No se comprime
+
+        &:hover {
+            opacity: 1;
+            color: var(--color-primary);
+        }
     }
 }
 
+// ============================================
+// SECCIÓN 2: PERMISOS
+// ============================================
+.permissions-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section-header {
+    width: 100%;
+}
+
 .permissions-title {
-    margin-top: 1rem;
-    margin-bottom: 4px;
+    margin: 0;
     font-size: 1rem;
     font-weight: 600;
+    color: var(--color-text-primary);
 }
 
 .permissions-hint {
+    margin: 4px 0 0 0;
     font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 1rem;
+    color: var(--color-text-secondary);
 }
 
 .permissions-container {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    /* Espacio entre grupos */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .perm-group {
+    width: 100%;
+    box-sizing: border-box;
+
     .group-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #3f51b5;
-        /* Color primario */
-        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin: 0 0 0.8rem 0;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 1px solid #eee;
         padding-bottom: 4px;
+        border-bottom: 1px solid var(--color-border);
     }
 
     .perm-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        /* Columnas responsivas */
-        gap: 8px;
+        // 1. AJUSTE: Subimos de 160px a 200px para dar más aire horizontal
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px; // Un poco más de espacio entre items
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .perm-item {
-        font-size: 0.9rem;
+        display: flex;
+        align-items: flex-start; // 2. AJUSTE: Alinear arriba por si el texto tiene 2 líneas
+        width: 100%;
+        box-sizing: border-box;
+        min-width: 0;
+        padding: 4px 0; // Un poco de aire vertical
+
+        // Ajuste interno del Checkbox de Material
+        ::ng-deep mat-checkbox {
+            width: 100%; // Ocupar todo el ancho disponible
+
+            .mdc-form-field {
+                align-items: flex-start; // Alinear checkbox con la primera línea de texto
+            }
+
+            // Estilo del texto (Label)
+            .mdc-label {
+                font-size: 0.9rem;
+                color: var(--color-text-primary);
+                font-family: 'Poppins', sans-serif;
+
+                // 3. LA SOLUCIÓN CLAVE: Permitir múltiples líneas
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                word-wrap: break-word; // Romper palabras largas si es necesario
+                line-height: 1.3; // Mejor lectura en multilínea
+                padding-top: 2px; // Alineación visual fina con la cajita del check
+            }
+        }
+    }
+}
+
+// ============================================
+// INPUTS SUAVES (Estándar)
+// ============================================
+.full-width {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+::ng-deep .custom-field {
+    width: 100%;
+    box-sizing: border-box;
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: $radius-input !important;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        padding-right: 12px;
+        box-sizing: border-box;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+    }
+
+    .mdc-notched-outline__notch {
+        max-width: calc(100% - 50px) !important;
+        padding: 0 8px;
+    }
+
+    .mdc-floating-label {
+        font-family: 'Poppins', sans-serif;
+        max-width: 100% !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mdc-floating-label--float-above {
+        transform: translateY(-27.25px) scale(0.75) !important;
+    }
+
+    input.mat-mdc-input-element {
+        padding: 14px 12px;
+        font-size: 0.95rem;
+    }
+
+    .mat-icon[matSuffix] {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        margin-right: 8px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+    }
+
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+
+        .mat-icon[matSuffix] {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+    }
+}
+
+// ============================================
+// DIVIDER
+// ============================================
+::ng-deep mat-divider {
+    border-top-color: var(--color-border);
+    margin: 0;
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    box-sizing: border-box;
+
+    button {
+        height: 44px;
+        padding: 0 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        text-transform: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
+        }
+
+        &.btn-save {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+            &:hover:not(:disabled) {
+                box-shadow: 0 6px 16px var(--color-primary-rgb);
+                transform: translateY(-1px);
+            }
+
+            &:disabled {
+                background: var(--color-border);
+                box-shadow: none;
+                color: var(--color-text-secondary);
+                opacity: 0.6;
+            }
+        }
+    }
+}
+
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 700px) {
+    :host ::ng-deep .mdc-dialog__surface {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+    }
+
+    .role-form-content {
+        padding: 1.25rem 1rem;
+    }
+
+    .perm-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dialog-footer {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+            justify-content: center;
+        }
     }
 }

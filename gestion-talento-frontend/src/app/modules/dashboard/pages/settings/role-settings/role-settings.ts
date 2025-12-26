@@ -89,7 +89,7 @@ export class RoleSettings implements OnInit {
   // --- CREAR NUEVO ROL ---
   createNewRole(): void {
     const dialogRef = this.dialog.open(AddRoleDialog, {
-      width: '600px', // Un poco más ancho para los permisos
+      width: '800px', // Un poco más ancho para los permisos
       disableClose: true,
       // No pasamos data porque es nuevo
     });

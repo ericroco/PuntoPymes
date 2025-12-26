@@ -1,79 +1,324 @@
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    font-size: 0.95rem;
-    font-family: var(--font-family-base);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease-out;
+$radius-input: 12px;
+$padding-modal: 1.25rem;
 
-    svg {
-        width: 20px;
-        height: 20px;
-    }
+// Estructura
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    overflow: visible !important;
+    width: 520px !important;
+    max-width: 520px !important;
+    height: auto !important;
+    max-height: none !important;
+    box-sizing: border-box !important;
 }
 
-.btn.btn-secondary {
-    background-color: var(--color-surface);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    font-weight: 500;
-
-    &:hover {
-        background-color: var(--color-background);
-        border-color: #dcdcdc;
-        color: var(--color-text-primary);
-    }
-}
-
-[mat-dialog-content] {
+.dialog-container {
     display: flex;
     flex-direction: column;
-    gap: 15px; // Espacio entre campos
+    width: 100%;
+    height: auto;
+    background-color: var(--color-surface);
+    box-sizing: border-box;
+    overflow: visible;
 }
 
-mat-form-field {
+// Header
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: 'Poppins', sans-serif;
+        flex: 1;
+        padding-right: 12px;
+    }
+
+    .close-btn {
+        color: var(--color-text-secondary);
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        transition: all 0.2s;
+
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// Content
+::ng-deep mat-dialog-content.upload-dialog-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+}
+
+.upload-form {
+    padding: 1.5rem $padding-modal;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-sizing: border-box;
+}
+
+.form-field-wrapper {
     width: 100%;
 }
 
-.file-input-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    border: 1px dashed var(--color-border); // Borde punteado
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    flex-wrap: wrap; // Permite que el nombre del archivo pase abajo si es largo
+// Inputs suaves
+.full-width {
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.file-upload-label {
-    // Hereda estilos de .btn, ajustamos padding si es necesario
-    padding: 0.6rem 1.2rem;
-    cursor: pointer;
-}
+::ng-deep .custom-field {
+    width: 100%;
+    box-sizing: border-box;
 
-.file-name {
-    font-size: 0.9rem;
-    font-style: italic;
-    color: var(--color-text-secondary);
-    flex-grow: 1; // Ocupa el espacio restante
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: $radius-input !important;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        padding-right: 12px;
+        box-sizing: border-box;
+    }
 
-    &.placeholder {
-        color: #bdbdbd; // Gris más claro para el placeholder
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+    }
+
+    .mdc-floating-label {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+    }
+
+    .mdc-floating-label--float-above {
+        transform: translateY(-27.25px) scale(0.75) !important;
+    }
+
+    input.mat-mdc-input-element {
+        padding: 14px 12px;
+        font-size: 0.95rem;
+    }
+
+    .mat-icon[matSuffix] {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        margin-right: 8px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+    }
+
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+
+        .mat-icon[matSuffix] {
+            color: var(--color-primary);
+            opacity: 1;
+        }
     }
 }
 
-mat-error {
-    font-size: 0.75rem;
-    margin-top: -10px; // Ajusta posición del mensaje de error
-    width: 100%; // Asegura que ocupe todo el ancho
+// Opciones con iconos
+.option-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--color-text-secondary);
+    }
+}
+
+// File upload area
+.file-upload-area {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1.5px dashed var(--color-border);
+    border-radius: $radius-input;
+    background-color: var(--color-background);
+    transition: all 0.2s;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+
+    &:hover {
+        border-color: var(--color-primary);
+        background-color: rgba(var(--color-primary-rgb), 0.05);
+    }
+
+    .btn-select-file {
+        border: 1.5px solid var(--color-border);
+        color: var(--color-text-primary);
+        background-color: var(--color-surface);
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+    }
+
+    .file-name {
+        font-size: 0.9rem;
+        color: var(--color-text-primary);
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+
+        .file-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            color: var(--color-success);
+        }
+    }
+
+    .file-placeholder {
+        font-size: 0.9rem;
+        font-style: italic;
+        color: var(--color-text-secondary);
+        flex-grow: 1;
+    }
+}
+
+.file-error {
+    font-size: 0.85rem;
+    color: var(--color-danger);
+    margin-top: -8px;
+    display: block;
+}
+
+// Footer
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    button {
+        height: 42px;
+        padding: 0 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background-color: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
+        }
+
+        &.btn-save {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+            &:hover:not(:disabled) {
+                box-shadow: 0 6px 16px var(--color-primary-rgb);
+                transform: translateY(-1px);
+            }
+
+            &:disabled {
+                background: var(--color-border);
+                box-shadow: none;
+                color: var(--color-text-secondary);
+                opacity: 0.6;
+            }
+        }
+    }
+}
+
+// Mobile
+@media (max-width: 600px) {
+    :host ::ng-deep .mdc-dialog__surface {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+    }
+
+    .upload-form {
+        padding: 1.25rem 1rem;
+    }
+
+    .file-upload-area {
+        flex-direction: column;
+        align-items: stretch;
+
+        .btn-select-file {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .dialog-footer {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 }

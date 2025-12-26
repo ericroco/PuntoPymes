@@ -1,245 +1,224 @@
-<h1 mat-dialog-title>Añadir Nuevo Empleado</h1>
+<div class="dialog-container">
 
-<div mat-dialog-content class="stepper-container">
-  <mat-vertical-stepper [linear]="true" #stepper>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Añadir Nuevo Empleado</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <mat-step [stepControl]="step1Form">
-      <form [formGroup]="step1Form">
+  <mat-dialog-content style="flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 0; box-sizing: border-box;">
+
+    <mat-vertical-stepper [linear]="true" #stepper style="background: transparent; box-sizing: border-box;">
+
+      <mat-step [stepControl]="step1Form">
         <ng-template matStepLabel>Información Personal</ng-template>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nombre Completo</mat-label>
-          <input matInput formControlName="name" required placeholder="Ej: Juan Pérez">
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error>El nombre es obligatorio.</mat-error>
-        </mat-form-field>
+        <form [formGroup]="step1Form" class="step-form-content">
 
-        <div class="form-row" style="display: flex; gap: 16px;">
-
-          <mat-form-field appearance="outline" style="flex: 0 0 35%;">
-            <mat-label>Tipo Doc.</mat-label>
-            <mat-select formControlName="tipoIdentificacion">
-              <mat-option value="Cedula">Cédula</mat-option>
-              <mat-option value="Pasaporte">Pasaporte</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="flex: 1;">
-            <mat-label>Número de Identificación</mat-label>
-            <input matInput formControlName="nroIdentificacion" required placeholder="Ej: 1712345678">
-            <mat-icon matSuffix>badge</mat-icon>
-
-            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('required')">
-              Requerido.
-            </mat-error>
-            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('pattern')">
-              Solo números.
-            </mat-error>
-            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('minlength')">
-              Faltan dígitos.
-            </mat-error>
-            <mat-error *ngIf="step1Form.get('nroIdentificacion')?.hasError('maxlength')">
-              Máximo 10 dígitos.
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Correo Electrónico</mat-label>
-            <input matInput type="email" formControlName="email" required placeholder="juan@empresa.com">
-            <mat-icon matSuffix>email</mat-icon>
-            <mat-error>Correo inválido u obligatorio.</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Teléfono / Celular</mat-label>
-            <input matInput type="tel" formControlName="phone" required placeholder="0991234567">
-            <mat-icon matSuffix>phone</mat-icon>
-            <mat-error>El teléfono es obligatorio.</mat-error>
-          </mat-form-field>
-        </div>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Fecha de Nacimiento (Opcional)</mat-label>
-          <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
-          <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
-          <mat-datepicker #dobPicker></mat-datepicker>
-        </mat-form-field>
-
-        <div class="step-actions">
-          <button mat-flat-button color="primary" matStepperNext>Siguiente</button>
-        </div>
-      </form>
-    </mat-step>
-
-    <mat-step [stepControl]="step2Form">
-      <form [formGroup]="step2Form">
-        <ng-template matStepLabel>Información Laboral</ng-template>
-
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Cargo / Rol</mat-label>
-            <mat-select formControlName="job" required>
-              <mat-option *ngFor="let job of availableJobs" [value]="job">{{ job.name }}</mat-option>
-            </mat-select>
-            <mat-error *ngIf="step2Form.get('job')?.hasError('required')">
-              Debes seleccionar un cargo.
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Departamento</mat-label>
-            <input matInput [value]="step2Form.get('job')?.value?.department || ''" [disabled]="true"
-              placeholder="Se asigna con el cargo">
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Rol de Sistema (Permisos de Acceso)</mat-label>
-            <mat-select formControlName="systemRole" required>
-              <mat-select-trigger>
-                {{ step2Form.get('systemRole')?.value?.nombre }}
-                <span *ngIf="step2Form.get('systemRole')?.value?.esDefecto"
-                  style="font-size: 0.8em; color: #666; margin-left: 8px;">
-                  (Automático)
-                </span>
-              </mat-select-trigger>
-
-              <mat-option *ngFor="let rol of availableRoles" [value]="rol">
-                {{ rol.nombre }}
-                <span *ngIf="rol.esDefecto" style="font-style: italic; color: gray; font-size: 0.8em;">
-                  - Por Defecto
-                </span>
-              </mat-option>
-            </mat-select>
-            <mat-icon matSuffix matTooltip="Define qué puede ver y hacer este usuario en la plataforma.">
-              security
-            </mat-icon>
+          <mat-form-field appearance="outline" class="full-width custom-field">
+            <mat-label>Nombre Completo</mat-label>
+            <input matInput formControlName="name" required placeholder="Ej: Juan Pérez">
+            <mat-icon matSuffix>person</mat-icon>
             <mat-error>Requerido.</mat-error>
           </mat-form-field>
-        </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Reporta a (Jefe)</mat-label>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="custom-field fixed-sm">
+              <mat-label>Tipo</mat-label>
+              <mat-select formControlName="tipoIdentificacion">
+                <mat-option value="Cedula">Cédula</mat-option>
+                <mat-option value="Pasaporte">Pasaporte</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-          <mat-select formControlName="reportsTo">
+            <mat-form-field appearance="outline" class="custom-field flex-grow">
+              <mat-label>No. Identificación</mat-label>
+              <input matInput formControlName="nroIdentificacion" required placeholder="1712345678">
+              <mat-icon matSuffix>badge</mat-icon>
+              <mat-error>Requerido</mat-error>
+            </mat-form-field>
+          </div>
 
-            <mat-option [value]="null">-- Ninguno (Es Gerente General) --</mat-option>
+          <mat-form-field appearance="outline" class="full-width custom-field">
+            <mat-label>Correo Corporativo</mat-label>
+            <input matInput type="email" formControlName="email" required placeholder="juan@empresa.com">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error>Inválido.</mat-error>
+          </mat-form-field>
 
-            <mat-option *ngFor="let manager of availableManagers" [value]="manager.id">
-              {{ manager.nombre }} {{ manager.apellido }}
-              <span *ngIf="manager.cargo?.nombre" style="font-size: 0.8em; color: gray;">
-                ({{ manager.cargo?.nombre }})
-              </span>
-            </mat-option>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Teléfono</mat-label>
+              <input matInput type="tel" formControlName="phone" required placeholder="099...">
+              <mat-icon matSuffix>phone</mat-icon>
+              <mat-error>Requerido.</mat-error>
+            </mat-form-field>
 
-          </mat-select>
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Nacimiento</mat-label>
+              <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
+              <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
+              <mat-datepicker #dobPicker></mat-datepicker>
+            </mat-form-field>
+          </div>
 
-          <mat-error *ngIf="step2Form.get('reportsTo')?.hasError('required')">
-            Debes seleccionar un supervisor.
-          </mat-error>
-        </mat-form-field>
+          <div class="step-actions">
+            <button type="button" mat-flat-button color="primary" matStepperNext class="btn-next">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </mat-step>
 
-        <div class="form-row">
-          <mat-form-field appearance="outline" style="flex: 1;">
-            <mat-label>Tipo de Contrato</mat-label>
+      <mat-step [stepControl]="step2Form">
+        <ng-template matStepLabel>Información Laboral</ng-template>
+
+        <form [formGroup]="step2Form" class="step-form-content">
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Cargo</mat-label>
+              <mat-select formControlName="job" required>
+                <mat-option *ngFor="let job of availableJobs" [value]="job">{{ job.name }}</mat-option>
+              </mat-select>
+              <mat-icon matSuffix>work</mat-icon>
+              <mat-error>Requerido.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field custom-field disabled-look">
+              <mat-label>Departamento</mat-label>
+              <input matInput [value]="step2Form.get('job')?.value?.department || ''" disabled placeholder="Auto">
+              <mat-icon matSuffix>domain</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Rol Sistema</mat-label>
+              <mat-select formControlName="systemRole" required>
+                <mat-select-trigger>
+                  {{ step2Form.get('systemRole')?.value?.nombre }}
+                </mat-select-trigger>
+                <mat-option *ngFor="let rol of availableRoles" [value]="rol">
+                  {{ rol.nombre }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>security</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Jefe Inmediato</mat-label>
+              <mat-select formControlName="reportsTo">
+                <mat-option [value]="null">-- Ninguno --</mat-option>
+                <mat-option *ngFor="let manager of availableManagers" [value]="manager.id">
+                  {{ manager.nombre }} {{ manager.apellido }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>supervisor_account</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width custom-field">
+            <mat-label>Tipo Contrato</mat-label>
             <mat-select formControlName="contractType" required>
               <mat-option value="Indefinido">Indefinido</mat-option>
               <mat-option value="Plazo Fijo">Plazo Fijo</mat-option>
               <mat-option value="Servicios Profesionales">Servicios Prof.</mat-option>
-              <mat-option value="Pasantía">Pasantía</mat-option>
             </mat-select>
+            <mat-icon matSuffix>description</mat-icon>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="flex: 1;">
-            <mat-label>Fecha de Inicio</mat-label>
-            <input matInput [matDatepicker]="pickerStart" formControlName="hireDate" required>
-            <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
-            <mat-datepicker #pickerStart></mat-datepicker>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Inicio</mat-label>
+              <input matInput [matDatepicker]="pickerStart" formControlName="hireDate" required>
+              <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+              <mat-datepicker #pickerStart></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field custom-field">
+              <mat-label>Fin (Opc)</mat-label>
+              <input matInput [matDatepicker]="pickerEnd" formControlName="contractEndDate">
+              <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+              <mat-datepicker #pickerEnd></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div class="step-actions">
+            <button type="button" mat-stroked-button matStepperPrevious class="btn-prev">Atrás</button>
+            <button type="button" mat-flat-button color="primary" matStepperNext class="btn-next">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <mat-step [stepControl]="step3Form">
+        <ng-template matStepLabel>Compensación</ng-template>
+
+        <form [formGroup]="step3Form" class="step-form-content">
+          <mat-form-field appearance="outline" class="full-width custom-field">
+            <mat-label>Salario Inicial (USD)</mat-label>
+            <input matInput type="number" formControlName="initialSalary" placeholder="Ej: 1500" required>
+            <mat-icon matSuffix>attach_money</mat-icon>
+            <mat-hint *ngIf="selectedJobSalaryRange">{{ selectedJobSalaryRange }}</mat-hint>
+            <mat-error>Requerido.</mat-error>
           </mat-form-field>
+
+          <div class="step-actions">
+            <button type="button" mat-stroked-button matStepperPrevious class="btn-prev">Atrás</button>
+            <button type="button" mat-flat-button color="primary" matStepperNext class="btn-next">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <mat-step>
+        <ng-template matStepLabel>Confirmar</ng-template>
+
+        <div class="step-form-content">
+          <div class="review-grid">
+            <div class="review-row">
+              <span class="label">Empleado:</span>
+              <span class="value">{{ step1Form.value.name }}</span>
+            </div>
+            <div class="review-row">
+              <span class="label">Cargo:</span>
+              <span class="value">{{ step2Form.value.job?.name }}</span>
+            </div>
+            <div class="review-row">
+              <span class="label">Salario:</span>
+              <span class="value highlight">{{ step3Form.value.initialSalary | currency:'USD' }}</span>
+            </div>
+          </div>
+
+          <div class="review-note">
+            <mat-icon>info</mat-icon>
+            <span>Credenciales a: <strong>{{ step1Form.value.email }}</strong></span>
+          </div>
+
+          <div class="step-actions">
+            <button type="button" mat-stroked-button matStepperPrevious class="btn-prev">Atrás</button>
+          </div>
         </div>
+      </mat-step>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Fecha de Finalización (Opcional)</mat-label>
-          <input matInput [matDatepicker]="pickerEnd" formControlName="contractEndDate">
-          <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
-          <mat-datepicker #pickerEnd></mat-datepicker>
-          <mat-hint>Dejar vacío si es indefinido</mat-hint>
-        </mat-form-field>
+    </mat-vertical-stepper>
+  </mat-dialog-content>
 
-        <div class="step-actions">
-          <button mat-stroked-button matStepperPrevious>Atrás</button>
-          <button mat-flat-button color="primary" matStepperNext>Siguiente</button>
-        </div>
-      </form>
-    </mat-step>
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
 
-    <mat-step [stepControl]="step3Form">
-      <form [formGroup]="step3Form">
-        <ng-template matStepLabel>Compensación Inicial</ng-template>
+    <button mat-flat-button color="primary" (click)="onSave()"
+      [disabled]="!step1Form.valid || !step2Form.valid || !step3Form.valid || isLoading" class="btn-save">
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Salario Inicial (USD)</mat-label>
-          <input matInput type="number" formControlName="initialSalary" placeholder="Ej: 1500" required>
-          <mat-icon matSuffix>attach_money</mat-icon>
-          <mat-hint *ngIf="selectedJobSalaryRange" style="color: #666;">
-            <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle;">info</mat-icon>
-            {{ selectedJobSalaryRange }}
-          </mat-hint>
+      <span *ngIf="!isLoading">Crear Empleado</span>
+      <span *ngIf="isLoading" style="display: flex; align-items: center; gap: 8px;">
+        <mat-icon class="spin">sync</mat-icon> Creando...
+      </span>
+    </button>
+  </div>
 
-          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('required')">Salario requerido.</mat-error>
-          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('min')">El salario es muy bajo.</mat-error>
-          <mat-error *ngIf="step3Form.get('initialSalary')?.hasError('max')">Excede el máximo del cargo.</mat-error>
-        </mat-form-field>
-
-        <div class="step-actions">
-          <button mat-stroked-button matStepperPrevious>Atrás</button>
-          <button mat-flat-button color="primary" matStepperNext>Siguiente</button>
-        </div>
-      </form>
-    </mat-step>
-
-    <mat-step>
-      <ng-template matStepLabel>Revisar y Crear</ng-template>
-      <div class="review-section">
-        <h4>Resumen del Empleado</h4>
-        <mat-divider></mat-divider>
-
-        <div class="review-grid">
-          <p><strong>Nombre:</strong> {{ step1Form.value.name }}</p>
-          <p><strong>Identificación:</strong> {{ step1Form.value.tipoIdentificacion }} - {{
-            step1Form.value.nroIdentificacion }}</p>
-          <p><strong>Email:</strong> {{ step1Form.value.email }}</p>
-          <p><strong>Cargo:</strong> {{ step2Form.value.job?.name }}</p>
-          <p><strong>Contrato:</strong> {{ step2Form.value.contractType }}</p>
-          <p><strong>Salario:</strong> {{ step3Form.value.initialSalary | currency:'USD' }}</p>
-        </div>
-
-        <p class="review-note">
-          <mat-icon>info</mat-icon>
-          Al crear, se enviarán las credenciales de acceso al correo proporcionado.
-        </p>
-      </div>
-
-      <div class="step-actions">
-        <button mat-stroked-button matStepperPrevious>Atrás</button>
-      </div>
-    </mat-step>
-
-  </mat-vertical-stepper>
-</div>
-
-<div mat-dialog-actions align="end" class="modal-actions">
-  <button mat-stroked-button (click)="onCancel()">Cancelar Creación</button>
-  <button mat-flat-button color="primary" (click)="onSave()"
-    [disabled]="!step1Form.valid || !step2Form.valid || !step3Form.valid || isLoading">
-
-    <span *ngIf="!isLoading">Crear Empleado</span>
-    <span *ngIf="isLoading" style="display: flex; align-items: center; gap: 8px;">
-      <mat-icon class="spin">sync</mat-icon> Creando...
-    </span>
-
-  </button>
 </div>

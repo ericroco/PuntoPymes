@@ -1,22 +1,34 @@
-<h2 mat-dialog-title>Registrar Novedad</h2>
-
-<div class="dialog-subtitle-container">
-  <p *ngIf="employeeName" class="subtitle">
-    Empleado: <span class="highlight">{{ employeeName }}</span>
-  </p>
-  <p *ngIf="selectedCount > 0" class="subtitle">
-    Acción Masiva: <span class="highlight">{{ selectedCount }} empleados seleccionados</span>
-  </p>
-</div>
+<h1 mat-dialog-title>Registrar Novedad</h1>
 
 <form [formGroup]="itemForm" (ngSubmit)="onSave()">
-  <mat-dialog-content class="form-content">
+  <div mat-dialog-content class="payroll-form-content custom-scroll">
 
-    <mat-form-field appearance="outline" class="full-width">
+    <div class="dialog-subtitle-container" *ngIf="employeeName || selectedCount > 0">
+      <div *ngIf="employeeName" class="info-pill">
+        <mat-icon>person</mat-icon> {{ employeeName }}
+      </div>
+      <div *ngIf="selectedCount > 0" class="info-pill action">
+        <mat-icon>layers</mat-icon> {{ selectedCount }} empleados
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width custom-field">
       <mat-label>Tipo de Novedad</mat-label>
-      <mat-select formControlName="concepto" required placeholder="Selecciona un concepto">
+      <mat-select formControlName="concepto" required placeholder="Selecciona concepto">
 
-        <mat-option *ngIf="availableItems.length === 0" disabled class="empty-option">
+        <mat-select-trigger>
+          <div class="trigger-content" *ngIf="itemForm.get('concepto')?.value as selected">
+            <mat-icon [class.icon-ingreso]="selected.tipo === 'Ingreso'"
+              [class.icon-egreso]="selected.tipo === 'Egreso'">
+              {{ selected.tipo === 'Ingreso' ? 'arrow_upward' : 'arrow_downward' }}
+            </mat-icon>
+            <span>{{ selected.nombre }}</span>
+          </div>
+        </mat-select-trigger>
+
+        <mat-icon matIconSuffix>category</mat-icon>
+
+        <mat-option *ngIf="availableItems.length === 0" disabled>
           No hay conceptos configurados.
         </mat-option>
 
@@ -33,37 +45,40 @@
         </mat-optgroup>
 
       </mat-select>
-      <mat-error>Requerido</mat-error>
+      <mat-error>Requerido.</mat-error>
     </mat-form-field>
 
     <div class="form-row">
-      <mat-form-field appearance="outline" class="half-width">
+      <mat-form-field appearance="outline" class="form-field custom-field">
         <mat-label>Monto</mat-label>
         <input matInput type="number" formControlName="amount" placeholder="0.00" min="0" required>
-        <span matPrefix>$&nbsp;</span>
+        <span matTextPrefix>$&nbsp;</span>
+        <mat-icon matIconSuffix>attach_money</mat-icon>
         <mat-error>Requerido.</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="half-width">
+      <mat-form-field appearance="outline" class="form-field custom-field">
         <mat-label>Fecha</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="applicationDate" required>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <input matInput [matDatepicker]="picker" formControlName="applicationDate" required readonly
+          (click)="picker.open()">
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
         <mat-error>Requerido.</mat-error>
       </mat-form-field>
     </div>
 
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="full-width custom-field">
       <mat-label>Observaciones</mat-label>
-      <textarea matInput formControlName="comments" rows="3"></textarea>
+      <textarea matInput formControlName="comments" rows="3" placeholder="Detalles opcionales..."></textarea>
+      <mat-icon matIconSuffix>edit_note</mat-icon>
     </mat-form-field>
 
-  </mat-dialog-content>
+  </div>
 
-  <mat-dialog-actions align="end" class="dialog-actions">
+  <div mat-dialog-actions align="end">
     <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
     <button type="submit" mat-flat-button color="primary" [disabled]="itemForm.invalid">
       Guardar
     </button>
-  </mat-dialog-actions>
+  </div>
 </form>

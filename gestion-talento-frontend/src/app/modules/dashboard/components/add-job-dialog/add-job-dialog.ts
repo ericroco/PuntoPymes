@@ -23,7 +23,7 @@ interface DialogData {
     MatFormFieldModule, MatInputModule, MatSelectModule, MatIconModule
   ],
   templateUrl: './add-job-dialog.html',
-  styles: [`.full-width { width: 100%; margin-bottom: 10px; } .form-row { display: flex; gap: 10px; }`]
+  styleUrl: './add-job-dialog.scss'
 })
 export class AddJobDialog implements OnInit {
   jobForm: FormGroup;

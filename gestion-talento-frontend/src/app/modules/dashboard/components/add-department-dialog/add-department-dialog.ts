@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Department } from '../../services/catalog';
+import { MatIcon } from '@angular/material/icon';
 
 interface DialogData {
   department?: Department; // Si viene, es edición
@@ -20,7 +21,7 @@ interface DialogData {
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule, MatIcon
   ],
   templateUrl: './add-department-dialog.html',
   styles: [`

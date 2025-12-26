@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatRadioModule } from '@angular/material/radio'; // <--- 1. IMPORTAR
+import { MatIcon } from '@angular/material/icon';
 
 // Importamos interfaces correctas
 import { Employee } from '../../services/employees';
@@ -27,14 +28,10 @@ interface DialogData {
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatSliderModule,
-    MatRadioModule // <--- AGREGAR AL IMPORT
+    MatRadioModule, MatIcon
   ],
   templateUrl: './add-goal-dialog.html',
-  styles: [`
-    .full-width { width: 100%; margin-bottom: 10px; }
-    .progress-section { margin-top: 10px; display: flex; flex-direction: column; }
-    .slider-label { margin-bottom: 5px; color: rgba(0,0,0,.6); font-size: 14px; font-weight: 500; }
-  `]
+  styleUrls: ['./add-goal-dialog.scss']
 })
 export class AddGoalDialog implements OnInit {
   form: FormGroup;
