@@ -15,6 +15,7 @@ import { ProductivityService } from '../../services/productivity';
 import { ContextService } from '../../services/context';
 import { BranchesService, Branch } from '../../../organization/services/branches';
 import { AuthService } from '../../../auth/services/auth';
+import { MatDivider } from '@angular/material/divider';
 
 @Component({
   selector: 'app-create-survey-dialog',
@@ -30,7 +31,8 @@ import { AuthService } from '../../../auth/services/auth';
     MatNativeDateModule,
     MatIconModule,
     MatSnackBarModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDivider
   ],
   templateUrl: './create-survey-dialog.html', // Asegúrate que el nombre coincida
   styleUrls: ['./create-survey-dialog.scss']

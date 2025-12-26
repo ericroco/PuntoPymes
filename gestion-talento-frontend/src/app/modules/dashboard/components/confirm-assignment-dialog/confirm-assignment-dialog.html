@@ -1,33 +1,56 @@
-<h1 mat-dialog-title>Confirmar y Aplicar Cambios</h1>
+<div class="dialog-container">
 
-<form [formGroup]="confirmationForm" (ngSubmit)="onSave()">
-  <div mat-dialog-content class="confirmation-content">
-    
-    <div class="summary-message">
-      <mat-icon color="primary">info</mat-icon>
-      <p>
-        Estás a punto de **establecer** la lista de 
-        <strong>"{{ data.benefitName }}"</strong> en 
-        <strong>{{ data.totalAssignedCount }} empleados</strong>.
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Confirmar y Aplicar Cambios</h2>
+    <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="simple-dialog-content">
+
+    <form [formGroup]="confirmationForm" class="simple-form">
+
+      <div class="summary-card info">
+        <div class="summary-icon">
+          <mat-icon>info</mat-icon>
+        </div>
+        <div class="summary-details">
+          <p class="main-text">
+            Estás a punto de establecer la lista de <strong>"{{ data.benefitName }}"</strong>.
+          </p>
+          <div class="highlight-row">
+            <mat-icon>people</mat-icon>
+            <span>Afectará a <strong>{{ data.totalAssignedCount }} empleados</strong>.</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="dialog-instruction">
+        Por favor, selecciona la fecha de aplicación para el próximo ciclo de nómina.
       </p>
-    </div>
 
-    <p>Por favor, selecciona la **fecha de aplicación** en la que estos cambios deben ser efectivos (usado para el próximo ciclo de nómina).</p>
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Fecha de Aplicación</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="applicationDate" required readonly
+          (click)="picker.open()">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="confirmationForm.get('applicationDate')?.hasError('required')">
+          La fecha es obligatoria.
+        </mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Fecha de Aplicación</mat-label>
-      <input matInput [matDatepicker]="picker" formControlName="applicationDate" required>
-      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-datepicker #picker></mat-datepicker>
-      <mat-error *ngIf="confirmationForm.get('applicationDate')?.hasError('required')">
-        La fecha es obligatoria.
-      </mat-error>
-    </mat-form-field>
-    
+    </form>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button type="button" mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button type="submit" mat-flat-button color="primary" (click)="onSave()" [disabled]="confirmationForm.invalid"
+      class="btn-save">
+      <mat-icon>check_circle</mat-icon> Confirmar y Guardar
+    </button>
   </div>
 
-  <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="confirmationForm.invalid">Confirmar y Guardar</button>
-  </div>
-</form>
+</div>

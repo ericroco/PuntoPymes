@@ -1,74 +1,85 @@
-<h2 mat-dialog-title>Editar Datos del Empleado</h2>
+<div class="dialog-container">
 
-<form [formGroup]="editForm" (ngSubmit)="onSave()">
-  <mat-dialog-content>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Editar Datos del Empleado</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <h3 style="font-size: 0.9rem; color: gray; margin-bottom: 10px;">Información Personal</h3>
+  <mat-dialog-content class="simple-dialog-content">
 
-    <div class="form-row" style="display: flex; gap: 1rem;">
-      <mat-form-field appearance="outline" style="flex: 1;">
-        <mat-label>Nombre</mat-label>
-        <input matInput formControlName="nombre" required>
-        <mat-error>Requerido</mat-error>
+    <form [formGroup]="editForm" class="simple-form">
+
+      <h3 class="section-title">Información Personal</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" required>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Apellido</mat-label>
+          <input matInput formControlName="apellido" required>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Correo Personal</mat-label>
+        <input matInput type="email" formControlName="emailPersonal" required>
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error>Correo inválido</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" style="flex: 1;">
-        <mat-label>Apellido</mat-label>
-        <input matInput formControlName="apellido" required>
-        <mat-error>Requerido</mat-error>
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Teléfono / Celular</mat-label>
+        <input matInput type="tel" formControlName="telefono">
+        <mat-icon matSuffix>phone</mat-icon>
       </mat-form-field>
-    </div>
 
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>Correo Personal</mat-label>
-      <input matInput type="email" formControlName="emailPersonal" required>
-      <mat-icon matSuffix>email</mat-icon>
-      <mat-error>Correo inválido</mat-error>
-    </mat-form-field>
+      <mat-divider></mat-divider>
 
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>Teléfono / Celular</mat-label>
-      <input matInput type="tel" formControlName="telefono">
-      <mat-icon matSuffix>phone</mat-icon>
-    </mat-form-field>
+      <h3 class="section-title">Asignación y Roles</h3>
 
-    <mat-divider style="margin: 1rem 0;"></mat-divider>
-    <h3 style="font-size: 0.9rem; color: gray; margin-bottom: 10px;">Asignación y Roles</h3>
-
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>Rol de Usuario</mat-label>
-      <mat-select formControlName="rolId" required>
-        <mat-option *ngFor="let rol of data.roles" [value]="rol.id">
-          {{ rol.nombre }}
-        </mat-option>
-      </mat-select>
-      <mat-error>El rol es requerido</mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>Jefe Directo (Supervisor)</mat-label>
-      <mat-select formControlName="jefeId">
-        <mat-option [value]="null">-- Sin Jefe (Nivel Gerencia) --</mat-option>
-
-        <ng-container *ngFor="let boss of data.managers">
-          <mat-option *ngIf="boss.id !== data.employee.id" [value]="boss.id">
-            {{ boss.nombre }} {{ boss.apellido }}
-            <span *ngIf="boss.cargo?.nombre" style="font-size: 0.8em; color: gray;">
-              ({{ boss.cargo?.nombre }})
-            </span>
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Rol de Usuario</mat-label>
+        <mat-select formControlName="rolId" required>
+          <mat-option *ngFor="let rol of data.roles" [value]="rol.id">
+            {{ rol.nombre }}
           </mat-option>
-        </ng-container>
+        </mat-select>
+        <mat-icon matSuffix>security</mat-icon>
+        <mat-error>El rol es requerido</mat-error>
+      </mat-form-field>
 
-      </mat-select>
-      <mat-hint>Al asignar un jefe, el empleado pasará a su sucursal.</mat-hint>
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Jefe Directo (Supervisor)</mat-label>
+        <mat-select formControlName="jefeId">
+          <mat-option [value]="null">-- Sin Jefe (Nivel Gerencia) --</mat-option>
+          <ng-container *ngFor="let boss of data.managers">
+            <mat-option *ngIf="boss.id !== data.employee.id" [value]="boss.id">
+              {{ boss.nombre }} {{ boss.apellido }}
+              <small *ngIf="boss.cargo?.nombre">({{ boss.cargo?.nombre }})</small>
+            </mat-option>
+          </ng-container>
+        </mat-select>
+        <mat-icon matSuffix>supervisor_account</mat-icon>
+        <mat-hint>Al asignar jefe, cambia la sucursal.</mat-hint>
+      </mat-form-field>
+
+    </form>
 
   </mat-dialog-content>
 
-  <mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="editForm.invalid || !editForm.dirty">
-      Guardar Cambios
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="editForm.invalid || !editForm.dirty"
+      class="btn-save">
+      <mat-icon>save</mat-icon> Guardar Cambios
     </button>
-  </mat-dialog-actions>
-</form>
+  </div>
+
+</div>

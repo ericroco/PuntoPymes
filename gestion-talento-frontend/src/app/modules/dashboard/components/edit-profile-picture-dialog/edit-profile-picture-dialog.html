@@ -1,37 +1,49 @@
-<h2 mat-dialog-title>Editar Foto de Perfil</h2>
+<div class="dialog-container">
 
-<mat-dialog-content class="content-container">
-
-    <div class="upload-state" *ngIf="!imageChangedEvent">
-        <div class="icon-wrapper">
-            <mat-icon>add_a_photo</mat-icon>
-        </div>
-        <p>Sube una nueva foto para tu perfil</p>
-        <button mat-flat-button color="primary" (click)="fileInput.click()">
-            Seleccionar Imagen
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Editar Foto de Perfil</h2>
+        <button type="button" mat-icon-button class="close-btn" mat-dialog-close>
+            <mat-icon>close</mat-icon>
         </button>
     </div>
 
-    <div class="crop-container" [class.hidden]="!imageChangedEvent">
-        <image-cropper [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="true" [aspectRatio]="1 / 1"
-            format="png" (imageCropped)="imageCropped($event)" (imageLoaded)="imageLoaded()"
-            (cropperReady)="cropperReady()" (loadImageFailed)="loadImageFailed()" [roundCropper]="true"
-            [alignImage]="'center'">
-        </image-cropper>
+    <mat-dialog-content class="simple-dialog-content center-content">
+
+        <div class="upload-state" *ngIf="!imageChangedEvent" (click)="fileInput.click()">
+            <div class="icon-wrapper">
+                <mat-icon>add_a_photo</mat-icon>
+            </div>
+            <h3>Sube una nueva foto</h3>
+            <p>Haz clic aquí para seleccionar un archivo (JPG, PNG)</p>
+            <button type="button" mat-stroked-button color="primary" class="upload-btn">
+                Seleccionar Imagen
+            </button>
+        </div>
+
+        <div class="crop-container" *ngIf="imageChangedEvent">
+            <image-cropper [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="true" [aspectRatio]="1 / 1"
+                format="png" (imageCropped)="imageCropped($event)" (imageLoaded)="imageLoaded()"
+                (cropperReady)="cropperReady()" (loadImageFailed)="loadImageFailed()" [roundCropper]="true"
+                [alignImage]="'center'" class="custom-cropper">
+            </image-cropper>
+        </div>
+
+        <input type="file" #fileInput style="display: none" (change)="fileChangeEvent($event)" accept="image/*" />
+
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+
+        <button mat-button color="primary" *ngIf="imageChangedEvent" (click)="fileInput.click()" class="change-btn">
+            Cambiar archivo
+        </button>
+
+        <div class="main-actions">
+            <button mat-stroked-button mat-dialog-close class="btn-cancel">Cancelar</button>
+            <button mat-flat-button color="primary" (click)="save()" [disabled]="!croppedImage" class="btn-save">
+                <mat-icon>save</mat-icon> Guardar y Actualizar
+            </button>
+        </div>
     </div>
 
-    <input type="file" #fileInput style="display: none" (change)="fileChangeEvent($event)" accept="image/*" />
-
-</mat-dialog-content>
-
-<mat-dialog-actions align="end">
-    <button mat-button *ngIf="imageChangedEvent" (click)="fileInput.click()">
-        Cambiar Foto
-    </button>
-
-    <button mat-button mat-dialog-close>Cancelar</button>
-
-    <button mat-flat-button color="primary" (click)="save()" [disabled]="!croppedImage">
-        Guardar y Actualizar
-    </button>
-</mat-dialog-actions>
+</div>

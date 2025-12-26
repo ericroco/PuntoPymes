@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatIcon } from '@angular/material/icon';
 
 // Re-use Task and Employee interfaces
 interface Task { id: number; title: string; assignedTo: string; dueDate: string; priority: 'alta' | 'media' | 'baja'; status: string; description?: string; /* Add assigneeId if needed */ }
@@ -20,7 +21,7 @@ interface Employee { id: number; name: string; avatar: string; }
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule, MatIcon
   ],
   templateUrl: './edit-task-dialog.html',
   styleUrls: ['./edit-task-dialog.scss'] // Puedes reutilizar los estilos de add-task-dialog.scss si quieres

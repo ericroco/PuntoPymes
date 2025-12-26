@@ -1,40 +1,67 @@
-<h1 mat-dialog-title>Editar Horario Asignado</h1>
+<div class="dialog-container">
 
-<form [formGroup]="scheduleForm" (ngSubmit)="onSave()">
-  <div mat-dialog-content class="schedule-form-content">
-
-    <mat-form-field appearance="outline">
-      <mat-label>Tipo de Horario</mat-label>
-      <mat-select formControlName="type">
-        <mat-option *ngFor="let type of scheduleTypes" [value]="type">{{ type }}</mat-option>
-      </mat-select>
-      <mat-error *ngIf="scheduleForm.get('type')?.hasError('required')">Requerido</mat-error>
-    </mat-form-field>
-
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Hora de Entrada</mat-label>
-        <input matInput type="time" formControlName="startTime" required>
-        <mat-error *ngIf="scheduleForm.get('startTime')?.hasError('required')">Requerido</mat-error>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Hora de Salida</mat-label>
-        <input matInput type="time" formControlName="endTime" required>
-        <mat-error *ngIf="scheduleForm.get('endTime')?.hasError('required')">Requerido</mat-error>
-      </mat-form-field>
-    </div>
-
-    <div class="days-selection" *ngIf="scheduleForm.get('type')?.value === 'Personalizado'">
-      <label class="days-label">Selecciona los días laborables:</label>
-      <div formArrayName="selectedDays" class="days-checkbox-group">
-        <mat-checkbox *ngFor="let day of daysOfWeek; let i = index" [formControlName]="i" color="primary">
-          {{ day.label }}
-        </mat-checkbox>
-      </div>
-       </div>
-
-  </div> <div mat-dialog-actions align="end">
-    <button type="button" mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button type="submit" mat-flat-button color="primary" [disabled]="scheduleForm.invalid">Guardar Horario</button>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Editar Horario Asignado</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
-</form>
+
+  <mat-dialog-content class="simple-dialog-content">
+
+    <form [formGroup]="scheduleForm" class="simple-form">
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Tipo de Horario</mat-label>
+        <mat-select formControlName="type">
+          <mat-option *ngFor="let type of scheduleTypes" [value]="type">
+            {{ type }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>schedule</mat-icon>
+        <mat-error *ngIf="scheduleForm.get('type')?.hasError('required')">Requerido</mat-error>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Entrada</mat-label>
+          <input matInput type="time" formControlName="startTime" required>
+          <mat-icon matSuffix>login</mat-icon>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Salida</mat-label>
+          <input matInput type="time" formControlName="endTime" required>
+          <mat-icon matSuffix>logout</mat-icon>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="days-section" *ngIf="scheduleForm.get('type')?.value === 'Personalizado'">
+        <div class="section-header">
+          <mat-icon>calendar_today</mat-icon>
+          <span>Días Laborables</span>
+        </div>
+
+        <div formArrayName="selectedDays" class="days-grid">
+          <mat-checkbox *ngFor="let day of daysOfWeek; let i = index" [formControlName]="i" color="primary"
+            class="day-checkbox">
+            {{ day.label }}
+          </mat-checkbox>
+        </div>
+        <mat-hint class="days-hint">Marca los días que aplican a este horario.</mat-hint>
+      </div>
+
+    </form>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="scheduleForm.invalid" class="btn-save">
+      <mat-icon>save</mat-icon> Guardar Horario
+    </button>
+  </div>
+
+</div>

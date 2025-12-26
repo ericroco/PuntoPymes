@@ -1,66 +1,88 @@
-<h2 mat-dialog-title>Crear Nueva Encuesta</h2>
+<div class="dialog-container">
 
-<mat-dialog-content class="dialog-content">
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Crear Nueva Encuesta</h2>
+        <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Título de la Pregunta</mat-label>
-            <input matInput formControlName="titulo" required>
-            <mat-error *ngIf="form.get('titulo')?.hasError('required')">Requerido</mat-error>
-        </mat-form-field>
+    <mat-dialog-content class="poll-content custom-scroll">
 
-        <mat-form-field appearance="outline" class="full-width" *ngIf="showBranchSelector">
-            <mat-label>Alcance de la Encuesta</mat-label>
-            <mat-select formControlName="sucursalId">
-                <mat-option [value]="null">
-                    🌐 Todas las Sedes (Global)
-                </mat-option>
+        <form [formGroup]="form" class="poll-form">
 
-                <mat-option *ngFor="let branch of branches" [value]="branch.id">
-                    📍 {{ branch.nombre }}
-                </mat-option>
-            </mat-select>
-            <mat-hint>Si seleccionas 'Todas', la verán todos los empleados.</mat-hint>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Título de la Pregunta</mat-label>
+                <input matInput formControlName="titulo" placeholder="Ej: ¿Qué menú prefieren para la fiesta?" required>
+                <mat-icon matSuffix>poll</mat-icon>
+                <mat-error *ngIf="form.get('titulo')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Descripción (Opcional)</mat-label>
-            <textarea matInput formControlName="descripcion" rows="2"></textarea>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width custom-field" *ngIf="showBranchSelector">
+                <mat-label>Alcance de la Encuesta</mat-label>
+                <mat-select formControlName="sucursalId">
+                    <mat-option [value]="null">🌐 Todas las Sedes (Global)</mat-option>
+                    <mat-divider></mat-divider>
+                    <mat-option *ngFor="let branch of branches" [value]="branch.id">
+                        📍 {{ branch.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-hint>Visible para todos si es Global.</mat-hint>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Fecha de Cierre</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="fechaFin" [min]="minDate" required>
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Descripción (Opcional)</mat-label>
+                <textarea matInput formControlName="descripcion" rows="2"
+                    placeholder="Detalles adicionales..."></textarea>
+            </mat-form-field>
 
-        <div class="options-section">
-            <h3>Opciones de Respuesta</h3>
-            <div formArrayName="opciones">
-                <div *ngFor="let option of opcionesArray.controls; let i = index" [formGroupName]="i"
-                    class="option-row">
-                    <mat-form-field appearance="outline" class="option-input">
-                        <mat-label>Opción {{ i + 1 }}</mat-label>
-                        <input matInput formControlName="texto" required>
-                    </mat-form-field>
-                    <button type="button" mat-icon-button color="warn" (click)="removeOption(i)"
-                        [disabled]="opcionesArray.length <= 2">
-                        <mat-icon>delete</mat-icon>
-                    </button>
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Fecha de Cierre</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fechaFin" [min]="minDate" required readonly
+                    (click)="picker.open()">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <div class="options-section">
+                <div class="section-header">
+                    <h3>Opciones de Respuesta</h3>
+                    <span class="badge">{{ opcionesArray.length }} opciones</span>
                 </div>
+
+                <div formArrayName="opciones" class="options-list">
+                    <div *ngFor="let option of opcionesArray.controls; let i = index" [formGroupName]="i"
+                        class="option-row">
+
+                        <mat-form-field appearance="outline" class="custom-field option-input">
+                            <mat-label>Opción {{ i + 1 }}</mat-label>
+                            <input matInput formControlName="texto" required placeholder="Escribe una opción...">
+                        </mat-form-field>
+
+                        <button type="button" mat-icon-button color="warn" (click)="removeOption(i)"
+                            [disabled]="opcionesArray.length <= 2" matTooltip="Eliminar opción">
+                            <mat-icon>delete_outline</mat-icon>
+                        </button>
+
+                    </div>
+                </div>
+
+                <button type="button" mat-stroked-button color="primary" class="add-btn" (click)="addOption()">
+                    <mat-icon>add_circle_outline</mat-icon> Agregar Opción
+                </button>
             </div>
-            <button type="button" mat-stroked-button color="primary" (click)="addOption()">
-                <mat-icon>add</mat-icon> Agregar Opción
-            </button>
-        </div>
 
-    </form>
-</mat-dialog-content>
+        </form>
 
-<mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()">Cancelar</button>
-    <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="form.invalid || isSubmitting">
-        {{ isSubmitting ? 'Creando...' : 'Crear Encuesta' }}
-    </button>
-</mat-dialog-actions>
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+        <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="form.invalid || isSubmitting"
+            class="btn-save">
+            <mat-icon>how_to_vote</mat-icon>
+            {{ isSubmitting ? 'Creando...' : 'Crear Encuesta' }}
+        </button>
+    </div>
+
+</div>

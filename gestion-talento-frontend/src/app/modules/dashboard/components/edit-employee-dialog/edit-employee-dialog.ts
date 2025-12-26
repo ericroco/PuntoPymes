@@ -25,7 +25,8 @@ export interface EditEmployeeData {
     MatFormFieldModule, MatInputModule, MatButtonModule,
     MatSelectModule, MatIconModule, MatDivider
   ],
-  templateUrl: './edit-employee-dialog.html'
+  templateUrl: './edit-employee-dialog.html',
+  styleUrls: ['./edit-employee-dialog.scss']
 })
 export class EditEmployeeDialog implements OnInit {
   editForm: FormGroup;

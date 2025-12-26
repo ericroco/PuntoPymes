@@ -76,7 +76,7 @@ export class Surveys implements OnInit {
 
   openCreateDialog() {
     const dialogRef = this.dialog.open(CreateSurveyDialogComponent, {
-      width: '500px',
+      width: '800px',
       disableClose: true // Obliga a usar cancelar o guardar
     });
 

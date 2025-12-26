@@ -8,14 +8,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatIcon } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox'; // For days checkboxes
 
 // Interface for the data passed in and returned
 interface ScheduleData {
-    type: 'Estándar' | 'Personalizado';
-    days: string[]; // Array of day codes ('L', 'M', 'X', 'J', 'V', 'S', 'D')
-    startTime: string; // HH:mm format
-    endTime: string;   // HH:mm format
+  type: 'Estándar' | 'Personalizado';
+  days: string[]; // Array of day codes ('L', 'M', 'X', 'J', 'V', 'S', 'D')
+  startTime: string; // HH:mm format
+  endTime: string;   // HH:mm format
 }
 
 @Component({
@@ -29,7 +30,8 @@ interface ScheduleData {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatCheckboxModule // Ensure MatCheckboxModule is imported
+    MatCheckboxModule,
+    MatIcon
   ],
   templateUrl: './edit-schedule-dialog.html',
   styleUrls: ['./edit-schedule-dialog.scss']
@@ -115,15 +117,15 @@ export class EditScheduleDialog implements OnInit {
       let finalSelectedDayValues: string[] = [];
 
       if (formData.type === 'Personalizado') {
-          // If custom, get the values from the FormArray
-          finalSelectedDayValues = this.selectedDaysFormArray.controls
-              // Map each checkbox state (true/false) to its corresponding day value ('L', 'M', etc.) or null
-              .map((control, index) => control.value ? this.daysOfWeek[index].value : null)
-              // Filter out the null values and ensure TypeScript knows the result is an array of strings
-              .filter((value): value is string => value !== null);
+        // If custom, get the values from the FormArray
+        finalSelectedDayValues = this.selectedDaysFormArray.controls
+          // Map each checkbox state (true/false) to its corresponding day value ('L', 'M', etc.) or null
+          .map((control, index) => control.value ? this.daysOfWeek[index].value : null)
+          // Filter out the null values and ensure TypeScript knows the result is an array of strings
+          .filter((value): value is string => value !== null);
       } else {
-          // If standard, use the default Monday-Friday
-          finalSelectedDayValues = ['L', 'M', 'X', 'J', 'V'];
+        // If standard, use the default Monday-Friday
+        finalSelectedDayValues = ['L', 'M', 'X', 'J', 'V'];
       }
 
       // Prepare the final schedule object to return

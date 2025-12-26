@@ -241,22 +241,23 @@ export class SprintBoard implements OnInit {
       disableClose: true,
       data: {
         sprintId: this.sprintId,
-        // availableAssignees: this.assignedEmployees, // Si el diálogo soporta asignación
-        // availableGoals: this.myGoals
       }
     });
 
     dialogRef.afterClosed().subscribe(newTaskData => {
       if (newTaskData) {
-        // Mapeo de datos del diálogo al DTO del backend
+        // CORRECCIÓN AQUÍ:
+        // No agregues sprintId al DTO, porque el servicio 'createTask' 
+        // ya lo usa para construir la URL, pero no debe ir en el body.
+
         const dto = {
-          ...newTaskData,
-          sprintId: this.sprintId
-          // Asegúrate de que los nombres coincidan (titulo, descripcion, etc.)
+          ...newTaskData
+          // ❌ sprintId: this.sprintId  <-- ELIMINA ESTA LÍNEA
         };
 
+        // Tu servicio ya recibe (sprintId, dto) por separado
         this.productivityService.createTask(this.sprintId!, dto).subscribe(task => {
-          this.pendingTasks.unshift(task); // Añadir al principio
+          this.pendingTasks.unshift(task);
           this.snackBar.open('Tarea creada', 'Cerrar', { duration: 3000 });
         });
       }
@@ -279,8 +280,28 @@ export class SprintBoard implements OnInit {
     // TODO: Lógica de cierre de sprint
   }
 
-  // Otros métodos placeholder
-  openEditTaskDialog(task: Task) { }
+  openEditTaskDialog(task: Task) {
+    const dialogRef = this.dialog.open(EditTaskDialog, {
+      width: '600px',
+      disableClose: true,
+      // 👇 SOLUCIÓN: Estructura exacta que espera el constructor de tu EditTaskDialog
+      data: {
+        taskData: { ...task },               // La tarea dentro de 'taskData'
+        availableAssignees: this.assignedEmployees // La lista de empleados para el select
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Llamada al servicio para guardar cambios real
+        this.productivityService.updateTask(task.id, result).subscribe(() => {
+          // Actualizamos la vista localmente para que se vea el cambio inmediato
+          Object.assign(task, result);
+          this.snackBar.open('Tarea actualizada', 'Cerrar', { duration: 3000 });
+        });
+      }
+    });
+  }
   openAssignEmployeeDialog() {
     const dialogRef = this.dialog.open(AssignEmployeeDialog, {
       width: '1200px',

@@ -1,41 +1,332 @@
-.dialog-content {
-    min-width: 400px;
-    padding-top: 10px;
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
 
-    /* Scroll suave si hay muchas opciones */
-    max-height: 70vh;
-    overflow-y: auto;
+// ============================================
+// ESTRUCTURA PRINCIPAL
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    overflow: hidden !important;
+    width: 800px !important;
+    max-width: 95vw !important;
 }
 
-.full-width {
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
     width: 100%;
-    margin-bottom: 5px;
-}
+    background-color: var(--color-surface);
+    overflow: hidden;
 
-.options-section {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    border: 1px solid #eee;
+    @media (max-width: 850px) {
+        max-height: 90vh;
+    }
 
-    h3 {
-        margin-top: 0;
-        font-size: 0.95rem;
-        color: #666;
-        margin-bottom: 10px;
+    @media (max-width: 600px) {
+        max-height: 100vh;
+        border-radius: 0 !important;
     }
 }
 
-.option-row {
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    padding: 1.25rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    flex-shrink: 0;
 
-    .option-input {
-        flex: 1;
-        // Quitamos margin bottom interno del mat-form-field para que queden pegaditos
-        margin-bottom: -1.25em;
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .close-btn {
+        color: var(--color-text-secondary);
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// ============================================
+// CONTENIDO SCROLLEABLE
+// ============================================
+mat-dialog-content.poll-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-border);
+        border-radius: 4px;
+    }
+}
+
+.poll-form {
+    padding: 1.5rem $padding-modal;
+
+    // Espaciado entre elementos
+    >*+* {
+        margin-top: 1.25rem;
+    }
+}
+
+// ============================================
+// SECCIÓN DE OPCIONES
+// ============================================
+.options-section {
+    background-color: #FAFBFC;
+    border: 1px solid var(--color-border);
+    border-radius: $radius-input;
+    padding: 1.25rem;
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .badge {
+            background-color: var(--color-border);
+            color: var(--color-text-secondary);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .option-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+
+        .option-input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        button {
+            margin-top: 4px;
+            color: var(--color-text-secondary);
+            flex-shrink: 0;
+
+            &:hover:not(:disabled) {
+                color: var(--color-danger);
+                background-color: rgba(239, 68, 68, 0.1);
+            }
+
+            &:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    .add-btn {
+        border-style: dashed;
+        width: 100%;
+
+        mat-icon {
+            margin-right: 6px;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+}
+
+// ============================================
+// INPUTS
+// ============================================
+.full-width {
+    width: 100%;
+}
+
+::ng-deep .custom-field {
+    width: 100%;
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: $radius-input !important;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        padding-right: 8px;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+    }
+
+    .mdc-notched-outline__notch {
+        max-width: calc(100% - 50px) !important;
+        padding: 0 8px;
+    }
+
+    .mdc-floating-label {
+        font-family: 'Poppins', sans-serif;
+        max-width: 100% !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mdc-floating-label--float-above {
+        transform: translateY(-27.25px) scale(0.75) !important;
+        max-width: calc(133% - 40px) !important;
+    }
+
+    input.mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mat-icon[matSuffix] {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .mat-datepicker-toggle {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+    }
+
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+
+        .mat-icon[matSuffix],
+        .mat-datepicker-toggle {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+    }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+
+    button {
+        height: 44px;
+        padding: 0 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        text-transform: none;
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
+        }
+
+        &.btn-save {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+            mat-icon {
+                margin-right: 6px;
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+
+            &:hover:not(:disabled) {
+                box-shadow: 0 6px 16px var(--color-primary-rgb);
+                transform: translateY(-1px);
+            }
+
+            &:disabled {
+                background: var(--color-border);
+                box-shadow: none;
+                color: var(--color-text-secondary);
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 600px) {
+    .dialog-footer {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
+    }
+
+    .option-row {
+        flex-direction: column;
+        align-items: stretch !important;
+
+        button {
+            margin-top: 0;
+            width: 100%;
+        }
     }
 }

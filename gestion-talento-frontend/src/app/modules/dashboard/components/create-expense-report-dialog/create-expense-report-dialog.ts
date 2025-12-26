@@ -15,10 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule
   ],
   templateUrl: './create-expense-report-dialog.html',
-  styles: [`
-    .full-width { width: 100%; margin-bottom: 10px; }
-    mat-dialog-content { padding-top: 20px; min-width: 350px; }
-  `]
+  styleUrls: ['./create-expense-report-dialog.scss']
 })
 export class CreateExpenseReportDialogComponent {
   private fb = inject(FormBuilder);

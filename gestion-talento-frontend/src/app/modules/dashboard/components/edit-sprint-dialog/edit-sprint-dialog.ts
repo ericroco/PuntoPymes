@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatIcon } from '@angular/material/icon';
 
 // Re-use Sprint interface if defined globally, or define locally
 interface Sprint { id: string; name: string; description: string; startDate: string; endDate: string; status: string; /* ... */ }
@@ -17,7 +18,7 @@ interface Sprint { id: string; name: string; description: string; startDate: str
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule
+    MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatIcon
   ],
   templateUrl: './edit-sprint-dialog.html',
   styleUrls: ['./edit-sprint-dialog.scss'] // Can reuse add-sprint-dialog styles
@@ -35,7 +36,7 @@ export class EditSprintDialog implements OnInit {
 
     // Helper to convert YYYY-MM-DD string to Date object
     const parseDate = (dateString: string | null): Date | null => {
-        return dateString ? new Date(dateString + 'T00:00:00') : null; // Add time to avoid timezone issues
+      return dateString ? new Date(dateString + 'T00:00:00') : null; // Add time to avoid timezone issues
     };
 
     this.sprintForm = this.fb.group({
@@ -46,7 +47,7 @@ export class EditSprintDialog implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   onCancel(): void {
     this.dialogRef.close();

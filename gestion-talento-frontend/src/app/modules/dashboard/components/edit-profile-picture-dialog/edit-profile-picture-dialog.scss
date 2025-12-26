@@ -1,41 +1,250 @@
-.content-container {
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
+
+// ============================================
+// ESTRUCTURA COMPACTA (FIX BLINDADO)
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+    padding: 0 !important;
+    border-radius: 16px !important;
+    background-color: var(--color-surface) !important;
+    display: block;
+    overflow: visible !important;
+    width: 100%;
+    height: auto !important;
+    box-sizing: border-box !important;
+    max-width: 500px !important; // Ancho ideal para recortes cuadrados
+}
+
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    background-color: var(--color-surface);
+    box-sizing: border-box;
+
+    @media (max-width: 600px) {
+        min-width: 100vw;
+        height: 100vh;
+        border-radius: 0 !important;
+    }
+}
+
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem $padding-modal;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+
+    h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .close-btn {
+        color: var(--color-text-secondary);
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+// ============================================
+// CONTENIDO
+// ============================================
+::ng-deep mat-dialog-content.simple-dialog-content {
+    margin: 0 !important;
+    padding: 1.5rem $padding-modal !important; // Padding uniforme
+    max-height: none !important;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center; // Centrar todo
+    justify-content: center;
+    min-height: 300px; // Altura mínima para que no se vea aplastado
+}
+
+// ESTADO 1: ÁREA DE SUBIDA (Diseño Pro)
+.upload-state {
+    width: 100%;
+    height: 250px;
+    border: 2px dashed var(--color-border);
+    border-radius: 16px;
+    background-color: #FAFAFA;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 300px;
-    min-width: 300px;
-    padding: 20px;
-}
-
-.upload-state {
+    cursor: pointer;
+    transition: all 0.2s ease;
     text-align: center;
-    color: #666;
+    gap: 10px;
+    padding: 20px;
+    box-sizing: border-box;
 
-    .icon-wrapper {
-        mat-icon {
-            font-size: 48px;
-            width: 48px;
-            height: 48px;
-            margin-bottom: 10px;
-            color: #3f51b5;
+    &:hover {
+        background-color: #F3F4F6;
+        border-color: var(--color-primary);
+
+        .icon-wrapper {
+            color: var(--color-primary);
+            background-color: var(--color-primary-light);
         }
     }
 
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #E0E0E0;
+        color: #757575;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+
+        mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+        }
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
     p {
-        margin-bottom: 20px;
-        font-size: 16px;
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--color-text-secondary);
+    }
+
+    .upload-btn {
+        pointer-events: none; // El click lo maneja el div padre
+        margin-top: 8px;
     }
 }
 
+// ESTADO 2: CROPPER
 .crop-container {
     width: 100%;
-    max-height: 400px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
+    height: 300px; // Altura fija para el cropper
+    background-color: #212121; // Fondo oscuro para resaltar la imagen
+    border-radius: 12px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
 
-    &.hidden {
-        display: none;
+    ::ng-deep image-cropper {
+        max-height: 100%;
+        width: 100%;
+    }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+    padding: 1rem $padding-modal;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    display: flex;
+    justify-content: space-between; // Separar "Cambiar archivo" de las acciones principales
+    align-items: center;
+    gap: 0.75rem;
+    box-sizing: border-box;
+
+    .main-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-left: auto; // Empujar a la derecha si no hay botón izquierdo
+    }
+
+    button {
+        height: 40px;
+        padding: 0 1.25rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        text-transform: none;
+
+        &.change-btn {
+            color: var(--color-primary);
+            padding-left: 0;
+            font-weight: 500;
+        }
+
+        &.btn-cancel {
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-primary);
+            background: transparent;
+
+            &:hover {
+                background-color: var(--color-background);
+            }
+        }
+
+        &.btn-save {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+            mat-icon {
+                margin-right: 6px;
+                font-size: 18px;
+            }
+
+            &:disabled {
+                background: var(--color-border);
+                box-shadow: none;
+                color: var(--color-text-secondary);
+            }
+        }
+    }
+}
+
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 600px) {
+    .dialog-footer {
+        flex-direction: column-reverse;
+        gap: 12px;
+
+        .main-actions {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        button {
+            width: 100%;
+        }
     }
 }

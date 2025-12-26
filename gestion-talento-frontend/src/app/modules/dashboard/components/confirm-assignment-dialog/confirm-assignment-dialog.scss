@@ -1,45 +1,278 @@
-/* ==========================================================================
-   ESTILOS PARA MODAL DE CONFIRMACIÓN DE ASIGNACIÓN
-   ========================================================================== */
+// ============================================
+// VARIABLES
+// ============================================
+$radius-input: 12px;
+$padding-modal: 1.5rem;
 
-.confirmation-content {
+// ============================================
+// ESTRUCTURA COMPACTA (FIX BLINDADO)
+// ============================================
+:host ::ng-deep .mdc-dialog__surface {
+  padding: 0 !important;
+  border-radius: 16px !important;
+  background-color: var(--color-surface) !important;
+  display: block;
+  overflow: visible !important;
+  width: 100%;
+  height: auto !important;
+  box-sizing: border-box !important;
+  max-width: 500px !important; // Ancho ideal para confirmaciones
+}
+
+.dialog-container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding-top: 10px;
+  width: 100%;
+  height: auto;
+  background-color: var(--color-surface);
+  box-sizing: border-box;
+
+  @media (max-width: 600px) {
+    min-width: 100vw;
+    height: 100vh;
+    border-radius: 0 !important;
+  }
 }
 
-// Mensaje de resumen destacado
-.summary-message {
+// ============================================
+// HEADER
+// ============================================
+.dialog-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: var(--color-info-light); // Fondo azul claro
-  border: 1px solid var(--color-info-dark);
-  border-radius: var(--border-radius);
-  
-  mat-icon {
-    color: var(--color-info-dark);
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
-  }
-  
-  p {
+  padding: 1rem $padding-modal;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+
+  h2 {
     margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 1.15rem;
+    font-weight: 700;
     color: var(--color-text-primary);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .close-btn {
+    color: var(--color-text-secondary);
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
   }
 }
 
-mat-form-field {
+// ============================================
+// CONTENIDO
+// ============================================
+::ng-deep mat-dialog-content.simple-dialog-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.simple-form {
+  padding: 1.5rem $padding-modal;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dialog-instruction {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+// Tarjeta de Resumen (Estilo Info Azul)
+.summary-card.info {
+  background-color: #E3F2FD; // Azul muy suave
+  padding: 1rem;
+  border-radius: $radius-input;
+  border: 1px solid #BBDEFB; // Borde azul suave
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-sizing: border-box;
+
+  .summary-icon {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #BBDEFB;
+    color: #1976D2; // Azul fuerte
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  .summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .main-text {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--color-text-primary);
+      line-height: 1.4;
+
+      strong {
+        color: #1565C0;
+      }
+    }
+
+    .highlight-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #1565C0;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 4px 8px;
+      border-radius: 6px;
+      align-self: flex-start;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+// ============================================
+// INPUTS SUAVES (Identidad Visual)
+// ============================================
+.full-width {
   width: 100%;
 }
 
-[mat-dialog-actions] {
-  padding: 16px 24px;
+::ng-deep .custom-field {
+  width: 100%;
+  display: block;
+
+  .mat-mdc-text-field-wrapper {
+    background-color: #F3F4F6 !important;
+    border-radius: $radius-input !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    padding-right: 8px;
+  }
+
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border: none !important;
+  }
+
+  // Label Fix
+  .mdc-notched-outline__notch {
+    max-width: calc(100% - 40px) !important;
+    padding: 0 8px;
+  }
+
+  .mdc-floating-label {
+    font-family: 'Poppins', sans-serif;
+    max-width: 100% !important;
+  }
+
+  // Iconos
+  .mat-datepicker-toggle {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+  }
+
+  // FOCUS
+  &.mat-focused {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--color-surface) !important;
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+      border-color: var(--color-primary);
+    }
+
+    .mat-datepicker-toggle {
+      color: var(--color-primary);
+      opacity: 1;
+    }
+  }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.dialog-footer {
+  padding: 1rem $padding-modal;
   border-top: 1px solid var(--color-border);
-  margin-top: 1rem;
+  background-color: var(--color-surface);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+
+  button {
+    height: 40px;
+    padding: 0 1.25rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    text-transform: none;
+
+    &.btn-cancel {
+      border: 1.5px solid var(--color-border);
+      color: var(--color-text-primary);
+      background: transparent;
+
+      &:hover {
+        background-color: var(--color-background);
+      }
+    }
+
+    &.btn-save {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 12px var(--color-primary-rgb);
+
+      mat-icon {
+        margin-right: 6px;
+        font-size: 18px;
+      }
+
+      &:disabled {
+        background: var(--color-border);
+        box-shadow: none;
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+}
+
+// ============================================
+// MOBILE
+// ============================================
+@media (max-width: 600px) {
+  .dialog-footer {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
 }

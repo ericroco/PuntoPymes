@@ -1,46 +1,75 @@
-<h1 mat-dialog-title>Editar Tarea</h1> <div mat-dialog-content [formGroup]="taskForm">
+<div class="dialog-container">
 
-  <mat-form-field appearance="outline">
-    <mat-label>Título de la Tarea</mat-label>
-    <input matInput formControlName="title" required>
-    <mat-error *ngIf="taskForm.get('title')?.hasError('required')">El título es obligatorio.</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Descripción (Opcional)</mat-label>
-    <textarea matInput formControlName="description" rows="3"></textarea>
-  </mat-form-field>
-
-  <div class="form-row">
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Asignar a</mat-label>
-      <mat-select formControlName="assignee" required [compareWith]="compareEmployees"> <mat-option *ngIf="availableAssignees.length === 0" disabled>No hay empleados asignados al sprint</mat-option>
-        <mat-option *ngFor="let emp of availableAssignees" [value]="emp">
-          {{ emp.name }}
-        </mat-option>
-      </mat-select>
-      <mat-error *ngIf="taskForm.get('assignee')?.hasError('required')">Debe asignar la tarea.</mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Prioridad</mat-label>
-      <mat-select formControlName="priority" required>
-        <mat-option *ngFor="let prio of priorities" [value]="prio">
-          {{ prio | titlecase }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Editar Tarea</h2>
+    <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Fecha Límite (Opcional)</mat-label>
-    <input matInput [matDatepicker]="picker" formControlName="dueDate">
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
+  <mat-dialog-content class="simple-dialog-content">
+
+    <form [formGroup]="taskForm" class="simple-form">
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Título de la Tarea</mat-label>
+        <input matInput formControlName="title" required>
+        <mat-icon matSuffix>edit</mat-icon>
+        <mat-error *ngIf="taskForm.get('title')?.hasError('required')">
+          El título es obligatorio.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Descripción (Opcional)</mat-label>
+        <textarea matInput formControlName="description" rows="3" placeholder="Detalles de la tarea..."></textarea>
+        <mat-icon matSuffix style="align-self: start; margin-top: 8px;">description</mat-icon>
+      </mat-form-field>
+
+      <div class="form-row">
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Asignar a</mat-label>
+          <mat-select formControlName="assignee" required [compareWith]="compareEmployees">
+            <mat-option *ngIf="availableAssignees.length === 0" disabled>
+              Sin empleados disponibles
+            </mat-option>
+            <mat-option *ngFor="let emp of availableAssignees" [value]="emp">
+              {{ emp.name }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error>Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="custom-field form-field">
+          <mat-label>Prioridad</mat-label>
+          <mat-select formControlName="priority" required>
+            <mat-option *ngFor="let prio of priorities" [value]="prio">
+              {{ prio | titlecase }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>flag</mat-icon>
+        </mat-form-field>
+
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width custom-field">
+        <mat-label>Fecha Límite (Opcional)</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="dueDate" readonly (click)="picker.open()">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+    </form>
+
+  </mat-dialog-content>
+
+  <div class="dialog-footer">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="taskForm.invalid" class="btn-save">
+      <mat-icon>save</mat-icon> Guardar Cambios
+    </button>
+  </div>
 
 </div>
-
-<div mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="taskForm.invalid">Guardar Cambios</button> </div>
