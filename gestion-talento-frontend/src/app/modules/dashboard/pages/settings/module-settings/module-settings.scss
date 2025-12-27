@@ -53,10 +53,10 @@
   padding-right: 1rem;
 
   // === FIX: ESTILOS DE TOGGLE (COLORES) ===
-  mat-slide-toggle {
-    
+  ::ng-deep mat-slide-toggle {
+
     // Label Text
-    ::ng-deep .mdc-label {
+    .mdc-label {
       font-weight: 600 !important;
       color: var(--color-text-primary) !important;
       font-size: 1rem !important;
@@ -65,48 +65,53 @@
 
     // --- 1. ESTADO ACTIVO (CHECKED) ---
     &.mat-mdc-slide-toggle-checked {
-      // Track (Fondo claro marca)
-      ::ng-deep .mdc-switch__track::after {
+      .mdc-switch__track::after {
         background-color: var(--color-primary-light) !important;
         border-color: var(--color-primary-light) !important;
       }
-      // Handle (Bolita color marca)
-      ::ng-deep .mdc-switch__handle::after {
+
+      .mdc-switch__handle::after {
         background-color: var(--color-primary) !important;
       }
-      // Icono (Checkmark) -> FORZAR BLANCO
-      ::ng-deep .mdc-switch__icon {
+
+      .mdc-switch__icon {
         color: white !important;
-        fill: white !important; 
-        --mdc-switch-selected-icon-color: white !important;
+        fill: white !important;
       }
     }
 
-    // --- 2. ESTADO DESHABILITADO (DISABLED) ---
-    // Aquí quitamos el rojo/rosa y ponemos gris neutro
-    &.mat-disabled {
-      opacity: 0.6; 
+    // --- 2. ESTADO DESHABILITADO - SOBRESCRIBIR VARIABLES CSS ---
+    &.mat-disabled,
+    &[disabled] {
+      // Sobrescribir las variables CSS que Material usa para disabled
+      --mdc-switch-disabled-selected-track-color: #E5E7EB !important;
+      --mdc-switch-disabled-unselected-track-color: #E5E7EB !important;
+      --mdc-switch-disabled-selected-handle-color: #9CA3AF !important;
+      --mdc-switch-disabled-unselected-handle-color: #9CA3AF !important;
+      --mdc-switch-disabled-selected-icon-color: white !important;
+      --mdc-switch-disabled-unselected-icon-color: white !important;
 
-      // Track (Fondo) -> Gris Claro
-      ::ng-deep .mdc-switch__track::after,
-      ::ng-deep .mdc-switch__track::before {
-        background-color: #E5E7EB !important; // Gris neutro
+      opacity: 0.6 !important;
+
+      .mdc-switch__track,
+      .mdc-switch__track::after,
+      .mdc-switch__track::before {
+        background-color: #E5E7EB !important;
         border-color: #E5E7EB !important;
       }
 
-      // Handle (Bolita) -> Gris Medio
-      ::ng-deep .mdc-switch__handle::after {
-        background-color: #9CA3AF !important; // Gris acero
+      .mdc-switch__handle,
+      .mdc-switch__handle::after,
+      .mdc-switch__handle::before {
+        background-color: #9CA3AF !important;
       }
 
-      // Icono dentro del disabled -> Gris claro o blanco
-      ::ng-deep .mdc-switch__icon {
+      .mdc-switch__icon {
         color: white !important;
         fill: white !important;
       }
 
-      // Texto Label -> Gris
-      ::ng-deep .mdc-label {
+      .mdc-label {
         color: var(--color-text-secondary) !important;
       }
     }
@@ -123,13 +128,20 @@
 // --- 4. BOTÓN CONFIGURACIÓN ---
 .config-button {
   color: var(--color-text-secondary);
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   transition: background-color 0.2s;
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &:hover {
     color: var(--color-primary);
@@ -137,22 +149,32 @@
   }
 }
 
-.config-placeholder { width: 40px; height: 40px; flex-shrink: 0; }
+.config-placeholder {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
 
 // --- 5. FOOTER FIJO ---
 .actions-footer {
-  position: fixed; bottom: 0; left: 0; width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
   padding: 1rem 2rem;
-  display: flex; justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
   z-index: 90;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
 
-  @media (min-width: 1024px) { padding-left: calc(280px + 2rem); }
+  @media (min-width: 1024px) {
+    padding-left: calc(280px + 2rem);
+  }
 
   button[mat-flat-button] {
-    border-radius: 999px !important; // Pill Shape
+    border-radius: 999px !important;
     height: 44px;
     padding: 0 32px;
     font-weight: 600;
@@ -160,7 +182,7 @@
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: white;
     box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
@@ -169,6 +191,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

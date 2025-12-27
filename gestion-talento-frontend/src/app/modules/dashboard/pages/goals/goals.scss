@@ -171,10 +171,8 @@ $radius-card: 16px;
 
   // Usa el color de marca
   &.type-dept {
-    border-left-color: #EC4899;
+    border-left-color: var(--color-primary); // O var(--color-info) si prefieres azul
   }
-
-  // Rosa distintivo para Depto
 
   // Header Card
   .card-header {
@@ -201,8 +199,8 @@ $radius-card: 16px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: #9D174D;
-      background: #FCE7F3;
+      color: var(--color-primary-dark);
+      background-color: var(--color-primary-light);
       padding: 4px 12px;
       border-radius: 12px;
       font-size: 0.75rem;
@@ -306,8 +304,8 @@ $radius-card: 16px;
 
       // Estilo Accent (Para Depto)
       &[color="accent"] {
-        color: #EC4899;
-        border-color: rgba(236, 72, 153, 0.3);
+        color: var(--color-primary-dark);
+        border-color: rgba(var(--color-primary-dark-rgb), 0.3);
 
         &:hover {
           background-color: #FDF2F8;
@@ -469,11 +467,11 @@ $radius-card: 16px;
     }
 
     &.is-dept {
-      color: #EC4899;
+      color: var(--color-primary-dark);
       font-weight: 500;
 
       mat-icon {
-        color: #EC4899;
+        color: var(--color-primary-dark);
       }
     }
   }

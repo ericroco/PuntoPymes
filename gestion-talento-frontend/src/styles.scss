@@ -1012,3 +1012,53 @@ table.mat-table {
 .mat-elevation-z8 {
   background-color: #ffffff !important;
 }
+
+/* ============================================================
+   FIX GLOBAL: TRACK DE PROGRESS BAR (FONDO GRIS)
+   ============================================================ */
+mat-progress-bar {
+  // 1. Forzar el color de la parte vacía a un gris visible (#E0E0E0)
+  --mdc-linear-progress-track-color: #E0E0E0 !important;
+
+  // 2. Por si acaso, forzar también el buffer
+  --mdc-linear-progress-buffer-color: #E0E0E0 !important;
+
+  // 3. Importante: Hacer transparente el contenedor para que se vea el gris
+  background-color: transparent !important;
+}
+
+/* Refuerzo para asegurar que el elemento interno del track tome el color */
+.mdc-linear-progress__buffer-bar {
+  background-color: #E0E0E0 !important;
+}
+
+/* ============================================================
+   FIX GLOBAL: MAT-SLIDE-TOGGLE DISABLED STATE (GRIS NEUTRO)
+   ============================================================ */
+mat-slide-toggle.mat-disabled {
+  opacity: 0.6 !important;
+
+  // 1. Track (Fondo del toggle) -> Gris claro neutral
+  .mdc-switch__track::after,
+  .mdc-switch__track::before {
+    background-color: #E5E7EB !important;
+    border-color: #E5E7EB !important;
+  }
+
+  // 2. Handle (Bolita) -> Gris medio/acero
+  .mdc-switch__handle::after {
+    background-color: #9CA3AF !important;
+  }
+
+  // 3. Icono interno -> Blanco para contraste
+  .mdc-switch__icon {
+    color: white !important;
+    fill: white !important;
+    --mdc-switch-selected-icon-color: white !important;
+  }
+
+  // 4. Label text -> Gris secundario
+  .mdc-label {
+    color: var(--color-text-secondary) !important;
+  }
+}
