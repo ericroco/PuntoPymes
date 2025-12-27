@@ -1,199 +1,219 @@
-// Reutilizamos estilos de páginas anteriores
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
+/* ==========================================================================
+   TALENTRACK - TIMESHEET (FINAL STYLE)
+   ========================================================================== */
+
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container {
+  padding: var(--spacing-xl);
+  max-width: 1400px; // Ancho amplio para la tabla de tiempos
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 100px;
 }
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    font-size: 0.95rem;
-    font-family: var(--font-family-base);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease-out;
+// --- 2. HEADER Y SELECTOR DE SEMANA ---
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
 
-    svg {
-        width: 20px;
-        height: 20px;
+  h2 {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  // Selector de Semana
+  .week-selector {
+    display: flex; align-items: center; gap: 1rem;
+    background-color: var(--color-surface);
+    padding: 6px 12px;
+    border-radius: 999px; // Pill contenedor
+    border: 1px solid var(--color-border-light);
+    box-shadow: var(--shadow-sm);
+
+    strong {
+      color: var(--color-text-primary);
+      font-weight: 600;
+      min-width: 220px;
+      text-align: center;
     }
+
+    // Botones de navegación (Flechas)
+    .btn-secondary {
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      height: 32px;
+      border-radius: 999px;
+    }
+  }
+}
+
+// --- 3. BOTONES GENERALES (PILL SHAPE) ---
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 24px; height: 44px;
+  border: none;
+  border-radius: 999px; // Pill Shape Obligatorio
+  font-weight: 600; font-family: var(--font-family-base); font-size: 0.9rem;
+  cursor: pointer; text-decoration: none;
+  transition: all 0.2s ease-out;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn.btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-    &:hover {
-        background-color: var(--color-primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+  }
 }
 
 .btn.btn-secondary {
-    background-color: var(--color-surface);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-        background-color: var(--color-background);
-        border-color: #dcdcdc;
-    }
-
-    svg {
-        width: 18px;
-        height: 18px;
-    }
+  background-color: white;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+  
+  &:hover {
+    background-color: var(--color-surface-variant);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
 }
 
+// --- 4. CONTENEDOR DE TABLA (TARJETA) ---
 .table-container {
-    background-color: var(--color-surface);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    overflow: hidden;
+  background-color: var(--color-surface);
+  border-radius: 16px; // Bordes redondeados (Soft UI)
+  box-shadow: var(--shadow-sm);
+  overflow: hidden; // Para recortar bordes de la tabla
+  border: 1px solid var(--color-border-light);
+  overflow-x: auto; // Scroll horizontal si es necesario
 }
 
+// --- 5. TABLA DE TIEMPOS ---
 table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px; // Asegurar ancho mínimo
 
-    th,
-    td {
-        padding: 1rem 1.5rem;
-        text-align: left;
-        border-bottom: 1px solid var(--color-border);
-        vertical-align: middle;
-    }
-
-    thead {
-        background-color: var(--color-background);
-
-        th {
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            text-transform: uppercase;
-            font-size: 0.8rem;
-        }
-    }
-
-    tbody tr {
-        transition: background-color 0.2s ease;
-
-        &:last-child {
-            td {
-                border-bottom: none;
-            }
-        }
-
-        &:hover {
-            background-color: #f8f8f8;
-        }
-    }
-}
-
-th,
-td {
-    padding: 1rem 1.5rem;
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
+  th, td {
+    padding: 1rem;
+    text-align: center; // Centrar números por defecto
+    border-bottom: 1px solid var(--color-border-light);
     vertical-align: middle;
-}
+    font-size: 0.9rem;
+  }
 
-thead {
-    background-color: var(--color-background);
+  // Primera columna (Proyecto) alineada a la izquierda
+  th:first-child, td:first-child {
+    text-align: left;
+    padding-left: 1.5rem;
+    width: 250px; // Ancho fijo para nombre
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
 
+  // Header de Tabla
+  thead {
+    background-color: #F9FAFB; // Gris claro
+    
     th {
-        font-weight: 600;
-        color: var(--color-text-secondary);
-        text-transform: uppercase;
-        font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      padding-top: 1.2rem;
+      padding-bottom: 1.2rem;
     }
-}
+  }
 
-// Estilos específicos de la Hoja de Horas
-.week-selector {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  tbody tr {
+    transition: background-color 0.2s ease;
+    &:hover { background-color: #F9FAFB; } // Hover suave
+    &:last-child td { border-bottom: none; }
+  }
 
-    strong {
-        color: var(--color-text-primary);
-    }
-}
-
-// Estilos para los inputs dentro de la tabla
-tbody td {
-    padding: 0.5rem; // Menos padding para que los inputs se vean bien
-
-    input {
-        width: 100%;
-        padding: 0.75rem 0.5rem;
-        border: 1px solid var(--color-border);
-        border-radius: var(--border-radius);
-        font-family: var(--font-family-base);
-        font-size: 1rem;
-        text-align: center;
-        -moz-appearance: textfield;
-        appearance: textfield;
-
-        &::-webkit-inner-spin-button,
-        &::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        &:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
-        }
-    }
-}
-
-td.total {
-    font-weight: 700;
+  // Inputs Numéricos (Soft UI)
+  tbody td input {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid transparent; // Sin borde inicial
+    background-color: #F3F4F6; // Gris suave
+    border-radius: 8px;
+    font-family: var(--font-family-base);
+    font-size: 0.95rem;
+    font-weight: 500;
     text-align: center;
+    color: var(--color-text-primary);
+    transition: all 0.2s;
+
+    // Quitar flechas de input number
+    -moz-appearance: textfield;
+    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    &:focus {
+      outline: none;
+      background-color: white;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-subtle);
+    }
+    
+    // Hover en input
+    &:hover:not(:focus) { background-color: #E5E7EB; }
+  }
+
+  // Columna Total (Vertical)
+  td.total {
+    font-weight: 700;
+    color: var(--color-text-primary);
+    background-color: #FAFAFA; // Ligeramente diferente
+    border-left: 1px solid var(--color-border-light);
+  }
 }
 
-// Estilos para el pie de tabla
+// --- 6. PIE DE TABLA (TOTALES) ---
 tfoot {
-    tr {
-        background-color: var(--color-background);
-        border-top: 2px solid var(--color-border);
-    }
+  tr {
+    background-color: #F3F4F6; // Gris footer
+    border-top: 2px solid var(--color-border-light);
+  }
 
-    td {
-        font-weight: 700;
-        text-align: center;
-        padding: 1rem 0.5rem;
-    }
+  td {
+    font-weight: 700;
+    padding: 1.2rem 1rem;
+    color: var(--color-text-secondary);
+  }
+  
+  // Etiqueta "Total Diario"
+  td:first-child { color: var(--color-text-primary); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem; }
 
-    .grand-total {
-        font-size: 1.2rem;
-        color: var(--color-primary);
-    }
+  // Gran Total (Esquina inferior derecha)
+  .grand-total {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    background-color: var(--color-primary-subtle); // Fondo sutil marca
+    border-left: 1px solid var(--color-border-light);
+  }
 }
 
+// --- 7. FOOTER DE PÁGINA (ACCIONES) ---
 .page-footer {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

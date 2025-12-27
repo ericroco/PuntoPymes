@@ -1,310 +1,251 @@
 /* ==========================================================================
-   ESTILOS COMPLETOS: LISTA DE SPRINTS
+   TALENTRACK - TASKS & SPRINT DASHBOARD (FINAL ALIGNMENT FIX)
    ========================================================================== */
 
-// --- 1. Botones Originales (Preservados) ---
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
-  font-family: var(--font-family-base);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-out;
-
-  svg,
-  mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-  }
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-  vertical-align: middle;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-
-  svg,
-  mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-  }
-
-  &:hover {
-    background-color: var(--color-border);
-    color: var(--color-primary);
-  }
-}
-
-.btn.btn-secondary {
-  background-color: var(--color-surface, #fff);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  font-weight: 500;
-  padding: 0.6rem 1.2rem;
-
-  &:hover {
-    background-color: var(--color-background);
-    border-color: #dcdcdc;
-    color: var(--color-text-primary);
-  }
-}
-
-// --- 2. Header y Selector Premium ---
-
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
 .page-container {
-  padding-bottom: 2rem;
+  padding: var(--spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 100px;
 }
 
+// --- 2. HEADER Y SELECTOR DE PROYECTO ---
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  
+  // FIX 1: Alinear todo al centro verticalmente (antes era flex-end)
+  align-items: center; 
+  
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1.5rem;
+  border-bottom: 1px solid var(--color-border-light);
+  padding-bottom: 1.5rem;
 
   .header-left {
     h2 {
       margin: 0;
+      font-family: var(--font-family-base);
+      font-size: 1.75rem;
+      font-weight: 700;
       color: var(--color-text-primary);
     }
 
     .subtitle {
-      margin-top: 5px;
+      margin-top: 4px;
       font-size: 0.95rem;
       color: var(--color-text-secondary);
-
-      strong {
-        color: var(--color-primary);
-      }
+      strong { color: var(--color-primary); font-weight: 600; }
     }
   }
 
   .header-actions {
     display: flex;
-    align-items: center;
-    gap: 20px; // Espacio entre selector y botón
+    align-items: center; // Asegura que los hijos (botones y select) se centren
+    gap: 12px;
     flex-wrap: wrap;
 
-    // ESTILOS DEL SELECTOR "PREMIUM"
+    // --- SELECTOR DE PROYECTO (ESTILO CAPSULA) ---
     .custom-project-select {
-      width: 260px;
-      font-size: 0.95rem;
-      margin-bottom: -1.25em; // Alineación con el botón
+      width: 240px;
+      font-size: 0.9rem;
+      
+      // FIX 2: Eliminar margen negativo que desalineaba
+      margin-bottom: 0 !important; 
 
-      .select-icon {
-        margin-right: 8px;
-        color: var(--color-primary);
-        opacity: 0.9;
-      }
+      // Eliminamos el espacio inferior reservado por Material
+      ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none !important; }
 
-      // Hack para modificar estilos internos de Material
-      ::ng-deep {
-        .mat-mdc-text-field-wrapper {
-          background-color: white !important;
-          border-radius: 50px !important; // Forma de píldora
-          padding-left: 16px !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); // Sombra suave
-          border: 1px solid transparent;
-          transition: all 0.3s ease;
-        }
+      // Wrapper del Input
+      ::ng-deep .mat-mdc-text-field-wrapper {
+        background-color: white !important;
+        border: 1px solid var(--color-border);
+        border-radius: 999px !important; // Pill Shape
+        
+        // FIX 3: Altura exacta igual a los botones
+        height: 44px !important; 
+        
+        padding: 0 16px 0 12px;
+        display: flex; align-items: center;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
 
-        // Hover
-        &:hover .mat-mdc-text-field-wrapper {
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-          transform: translateY(-1px);
-        }
-
-        // Focus
-        &.mat-focused .mat-mdc-text-field-wrapper {
-          border-color: var(--color-primary);
-        }
-
-        // Eliminar bordes por defecto
         .mdc-notched-outline__leading,
         .mdc-notched-outline__notch,
-        .mdc-notched-outline__trailing {
-          border: none !important;
-        }
+        .mdc-notched-outline__trailing { border: none !important; }
+      }
+
+      .select-icon { color: var(--color-primary); margin-right: 8px; }
+
+      &.mat-focused ::ng-deep .mat-mdc-text-field-wrapper,
+      &:hover ::ng-deep .mat-mdc-text-field-wrapper {
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.1);
+      }
+
+      ::ng-deep .mat-mdc-form-field-flex { 
+        height: 100%; 
+        align-items: center !important; // Centrado interno
+        padding: 0 !important;
+      }
+      
+      ::ng-deep .mdc-floating-label { display: none; } 
+      
+      // Ajuste para el texto seleccionado
+      ::ng-deep .mat-mdc-select-value { 
+        display: flex; 
+        align-items: center;
+        padding-top: 0 !important; // Resetear padding interno si existe
       }
     }
   }
 }
 
-.loading-bar {
-  margin-bottom: 1.5rem;
-  border-radius: 4px;
+// --- 3. BOTONES (PILL SHAPE) ---
+button[mat-flat-button], 
+button[mat-stroked-button] {
+  border-radius: 999px !important;
+  
+  // Altura exacta igual al selector
+  height: 44px !important; 
+  
+  padding: 0 24px;
+  font-weight: 600;
+  font-family: var(--font-family-base);
+  letter-spacing: 0.3px;
+  
+  // Flexbox para centrar icono y texto
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  mat-icon { margin-right: 6px; }
 }
 
-// --- 3. Grid y Tarjetas ---
+button[color="primary"][mat-flat-button] {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+  }
+}
 
+button[mat-stroked-button] {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  background: white;
+  
+  &:hover {
+    background-color: var(--color-surface-variant);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+}
+
+// --- 4. GRID DE SPRINTS ---
 .sprints-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 1.5rem;
 }
 
+// --- 5. TARJETA DE SPRINT ---
 .sprint-card {
   background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  border-left: 5px solid var(--color-primary);
+  position: relative;
+  overflow: hidden;
+  
+  // Borde izquierdo de color
+  border: 1px solid var(--color-border-light);
+  border-left: 6px solid var(--color-primary);
+  
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
   }
 
   .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.75rem;
-    gap: 10px;
+    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; gap: 12px;
 
     .sprint-name {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin: 0;
-      line-height: 1.3;
-      color: var(--color-text-primary);
-      word-break: break-word;
+      font-size: 1.15rem; font-weight: 700; margin: 0; line-height: 1.3; color: var(--color-text-primary);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
   }
 
   .sprint-description {
-    color: var(--color-text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin-bottom: 1.25rem;
-    flex-grow: 1;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    min-height: calc(1.5em * 3);
+    color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.25rem; flex-grow: 1;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 4.5em;
   }
 
   .sprint-dates {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    font-weight: 500;
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      opacity: 0.8;
-    }
+    display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;
+    font-size: 0.85rem; color: var(--color-text-muted); font-weight: 500;
+    mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--color-text-muted); }
   }
 
   .progress-container {
     margin-bottom: 1.5rem;
-    margin-top: auto;
-
     .progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--color-text-secondary);
-      margin-bottom: 6px;
-      font-weight: 500;
+      display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; margin-bottom: 6px; text-transform: uppercase;
     }
-
     mat-progress-bar {
-      height: 8px;
-      border-radius: 4px;
+      height: 6px; border-radius: 4px;
+      ::ng-deep .mdc-linear-progress__bar-inner { border-color: var(--color-primary); } 
     }
   }
 
   .card-footer {
-    border-top: 1px solid var(--color-border);
-    padding-top: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-top: 1px solid var(--color-border-light); padding-top: 1rem;
+    display: flex; justify-content: space-between; align-items: center;
+
+    .btn-icon {
+      width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent;
+      color: var(--color-text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+      &:hover { background-color: var(--color-surface-variant); color: var(--color-primary); }
+    }
+
+    .btn-secondary {
+      background-color: white; border: 1px solid var(--color-border); border-radius: 999px;
+      padding: 6px 16px; font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); cursor: pointer;
+      &:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    }
   }
 }
 
-// --- 4. Badges y Estados ---
-
+// --- 6. BADGES ---
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-
-  &.status-activo {
-    background-color: rgba(46, 204, 113, 0.15);
-    color: #27ae60;
-  }
-
-  &.status-planificado {
-    background-color: rgba(52, 152, 219, 0.15);
-    color: #2980b9;
-  }
-
-  &.status-completado {
-    background-color: rgba(149, 165, 166, 0.15);
-    color: #7f8c8d;
-  }
+  padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+  
+  &.status-activo { background-color: var(--color-success-light); color: var(--color-success-dark); }
+  &.status-planificado { background-color: var(--color-info-light); color: var(--color-info); }
+  &.status-completado { background-color: #F3F4F6; color: var(--color-text-muted); border: 1px solid var(--color-border); }
 }
 
-.empty-state,
-.empty-list-placeholder {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem;
-  color: var(--color-text-secondary);
-  background: var(--color-surface, #f9f9f9);
-  border-radius: var(--border-radius);
-  border: 2px dashed var(--color-border, #ccc);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.empty-state, .empty-list-placeholder {
+  grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: var(--color-surface); border-radius: 16px; border: 1px dashed var(--color-border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 1rem; color: var(--color-text-muted); }
+  h3 { margin: 0 0 0.5rem 0; color: var(--color-text-primary); }
+  p { color: var(--color-text-secondary); }
+}
 
-  mat-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1rem;
-    color: #bdbdbd;
-  }
+mat-progress-bar.loading-bar { margin-bottom: 2rem; border-radius: 4px; }
 
-  h3 {
-    margin: 0 0 0.5rem 0;
-    color: var(--color-text-primary);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

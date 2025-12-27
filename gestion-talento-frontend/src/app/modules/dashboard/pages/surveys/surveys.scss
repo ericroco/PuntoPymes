@@ -1,110 +1,185 @@
-// Reusing button styles
+/* ==========================================================================
+   TALENTRACK - SURVEYS DASHBOARD (FINAL STYLE)
+   ========================================================================== */
+
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container {
+  padding: var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 100px;
+}
+
+// --- 2. HEADER Y BOTONES ---
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
 }
+
+// Botón General (Pill Shape)
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0 24px;
+  height: 44px;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 999px; // Pill Shape Obligatorio
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-family: var(--font-family-base);
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s ease-out;
+  box-shadow: var(--shadow-sm);
 
-  svg {
-    width: 20px;
-    height: 20px;
-  }
+  svg { width: 20px; height: 20px; }
 }
+
+// Botón Primario
 .btn.btn-primary {
-  background-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-
+  
   &:hover {
-    background-color: var(--color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
   }
 }
 
-// Survey List Styles
+// --- 3. CONTENEDOR DE LISTA (TARJETA) ---
 .survey-list {
   background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  border-radius: 16px; // Bordes redondeados (Soft UI)
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  margin-top: 1.5rem;
 }
 
+// --- 4. ITEMS DE LA LISTA (FILAS) ---
 .survey-item {
   display: grid;
-  grid-template-columns: 3fr 1fr 1fr 1fr 1fr;
+  // Título (Flexible) | Votos | Fecha | Estado | Acciones (Fijo)
+  grid-template-columns: 2fr 1fr 1.2fr 1fr 140px; 
   align-items: center;
   gap: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
 
   &:last-child {
     border-bottom: none;
   }
 
+  // Hover en filas de datos
+  &:not(.header):hover {
+    background-color: #F9FAFB;
+  }
+
+  // --- HEADER DE LA TABLA ---
   &.header {
-    background-color: var(--color-background);
-    font-weight: 600;
+    background-color: #F9FAFB; // Gris claro
+    font-weight: 700;
     color: var(--color-text-secondary);
     text-transform: uppercase;
-    font-size: 0.8rem;
-    padding: 0.75rem 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 1.5rem;
   }
 }
+
+// --- 5. ESTILOS DE CONTENIDO ---
 
 .survey-title {
   font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
 }
 
+// Badges de Estado (Pill)
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
+  padding: 4px 12px;
+  border-radius: 12px; // Pill
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+  white-space: nowrap;
 
-  &.status-activa { background-color: #2ECC71; } // Verde
-  &.status-cerrada { background-color: #7F8C8D; } // Gris
-  &.status-borrador { background-color: #F1C40F; } // Amarillo
+  &.status-activa {
+    background-color: var(--color-success-light);
+    color: var(--color-success-dark); // Verde oscuro sobre claro
+  }
+
+  &.status-cerrada {
+    background-color: #F3F4F6; // Gris fondo
+    color: var(--color-text-muted); // Gris texto
+    border: 1px solid var(--color-border);
+  }
+
+  &.status-borrador {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning);
+  }
 }
 
+// --- 6. ACCIONES (BOTONES ICONO) ---
 .actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 4px;
   justify-content: flex-end;
+
+  .btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; // Tamaño para emojis o iconos
+    transition: background-color 0.2s ease;
+    color: var(--color-text-secondary);
+
+    &:hover {
+      background-color: var(--color-surface-variant);
+      color: var(--color-primary);
+    }
+
+    &.btn-danger:hover {
+      background-color: #FEE2E2;
+      color: #EF4444; // Rojo error
+    }
+  }
 }
 
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-  color: var(--color-text-secondary);
+// --- 7. ESTADOS DE CARGA Y VACÍO ---
+// Estilos para los divs con *ngIf del HTML
+div[style*="text-align: center"] {
+  color: var(--color-text-secondary) !important;
+  font-style: italic;
+  
+  // Padding consistente
+  padding: 3rem !important;
+}
 
-  &:hover {
-    background-color: var(--color-border);
-  }
-
-  &.btn-danger:hover {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary-dark);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

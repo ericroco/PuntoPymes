@@ -1,131 +1,105 @@
 /* ==========================================================================
-   ESTILOS PARA EL PIPELINE DE VACANTES (vacancy-pipeline.scss)
+   TALENTRACK - VACANCY PIPELINE (FINAL FIXES)
    ========================================================================== */
 
-// --- Estilos Globales Reutilizables ---
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
-  font-family: var(--font-family-base);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-out;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-.btn.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.btn.btn-secondary {
-  background-color: var(--color-surface);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  font-weight: 500;
-
-  &:hover {
-    background-color: var(--color-background);
-    border-color: #dcdcdc;
-    color: var(--color-text-primary);
-  }
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-  vertical-align: middle;
-  line-height: 1;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  &:hover {
-    background-color: var(--color-border);
-  }
-}
-
-.empty-list-placeholder {
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  padding: 2rem;
-  border: 2px dashed var(--color-border);
-  border-radius: var(--border-radius);
-  margin-top: 1rem;
-}
-
-// --- Contenedor Principal ---
-.pipeline-page {
+// --- 1. ESTRUCTURA Y LAYOUT ---
+.page-container.pipeline-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px - 4rem);
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  background-color: var(--color-background);
 }
 
-// --- Header ---
+// --- 2. HEADER Y FILTROS ---
 ::ng-deep app-subpage-header {
-  width: 100%;
   flex-shrink: 0;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
+  z-index: 10;
+
+  // FIX 1: BORDE DEL BOTÓN CONFIGURAR
+  button[mat-stroked-button] {
+    border: 1px solid var(--color-primary); // Borde visible
+    color: var(--color-primary); // Texto color marca
+    background: white;
+    
+    &:hover {
+      background-color: var(--color-surface-variant);
+    }
+  }
 }
 
-// --- Barra de Filtros ---
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
   padding: 1rem 1.5rem;
-  background-color: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 
-  .search-field {
-    flex: 1 1 auto;
-    min-width: 250px;
-    max-width: 400px;
-  }
-
-  .ai-filter-field {
-    min-width: 200px;
-  }
-
+  // === FIX 2 y 3: INPUTS CENTRADOS Y LABEL FLOTANTE ===
   mat-form-field {
-    ::ng-deep .mat-mdc-form-field-flex {
-      height: 48px;
+    // Caja del Input
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: #F3F4F6 !important;
+      border-radius: 12px !important;
+      height: 48px !important; // Altura fija
+      padding: 0 12px !important;
+      border: 1px solid transparent;
+      display: flex; align-items: center;
+      
+      .mdc-notched-outline__leading, .mdc-notched-outline__notch, .mdc-notched-outline__trailing { border: none !important; }
     }
 
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
+    // Focus State
+    &.mat-focused ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: white !important;
+      border-color: var(--color-primary) !important;
+      box-shadow: 0 0 0 3px var(--color-primary-subtle);
     }
+
+    // Centrado interno
+    ::ng-deep .mat-mdc-form-field-flex { 
+      height: 100%; 
+      align-items: center !important; 
+      padding: 0 !important; 
+    }
+
+    // FIX TEXTO BUSCAR: Empujarlo abajo para centrarlo verticalmente
+    ::ng-deep input.mat-mdc-input-element, 
+    ::ng-deep .mat-mdc-select-value {
+      margin-top: 14px !important; 
+      font-weight: 500;
+    }
+
+    // FIX LABEL "MATCH IA": Subirlo más arriba (Fuera del cuadro)
+    ::ng-deep .mdc-floating-label--float-above {
+      transform: translateY(-28px) scale(0.85) !important; // Sube mucho más arriba
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    // Label en reposo (Buscar candidato): Centrado perfecto
+    ::ng-deep .mdc-floating-label:not(.mdc-floating-label--float-above) {
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      margin-bottom: 0 !important;
+    }
+
+    // Icono Lupa
+    ::ng-deep .mat-icon { margin-top: 12px; }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
   }
+
+  .search-field { flex: 1; min-width: 250px; max-width: 400px; }
+  .ai-filter-field { min-width: 180px; }
 }
 
-// --- Contenedor del Tablero (Scroll Horizontal) ---
+// --- 3. TABLERO KANBAN ---
 .board-columns-container {
   display: flex;
   flex-direction: row;
@@ -134,281 +108,190 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding: 1.5rem;
-  background-color: var(--color-background);
-
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 10px;
-  }
+  
+  &::-webkit-scrollbar { height: 8px; }
+  &::-webkit-scrollbar-thumb { background-color: #D1D5DB; border-radius: 10px; }
+  &::-webkit-scrollbar-track { background: transparent; }
 }
 
-.avatar-placeholder {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #e0e0e0;
-  color: #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-// --- Columna de Fase (Kanban) ---
 .board-column {
-  width: 320px;
-  flex-shrink: 0;
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  min-width: 300px; width: 300px; flex-shrink: 0;
+  background-color: #F3F4F6;
+  border-radius: 16px;
+  border: 1px solid var(--color-border-light);
+  display: flex; flex-direction: column;
+  max-height: 100%;
 
   &.col-hired {
-    .column-title {
-      background-color: var(--color-success-light);
-      border-bottom-color: var(--color-success);
-      color: var(--color-success-dark);
-    }
+    background-color: #ECFDF5;
+    border-color: var(--color-success-light);
+    .column-title { color: var(--color-success-dark); border-bottom-color: rgba(16, 185, 129, 0.2); }
   }
 }
 
 .column-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  padding: 1rem 1.25rem;
-  margin: 0;
-  border-bottom: 2px solid var(--color-border);
-  text-transform: capitalize;
-  flex-shrink: 0;
+  font-size: 0.95rem; font-weight: 700; color: var(--color-text-secondary);
+  padding: 1rem 1.25rem; margin: 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
 }
 
-// --- Lista de Candidatos ---
 .candidate-list {
-  flex-grow: 1;
-  min-height: 100px;
-  overflow-y: auto;
-  padding: 1rem;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 10px;
-  }
+  flex-grow: 1; overflow-y: auto; padding: 0.75rem; min-height: 100px;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background-color: #D1D5DB; border-radius: 10px; }
+  &::-webkit-scrollbar-track { background: transparent; }
 }
 
-// --- Tarjeta de Candidato ---
+// --- 4. TARJETA DE CANDIDATO ---
 .candidate-card {
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0.75rem;
   padding: 1rem;
-  padding-right: 2.5rem; // Espacio para el drag handle
-  cursor: grab;
   position: relative;
-  transition: box-shadow 0.2s ease;
-
-  .card-actions-hover {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-  }
-
-  &:hover .card-actions-hover {
-    opacity: 1;
-  }
+  cursor: grab;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  
+  // Asegura que el padding no sume al ancho total
+  box-sizing: border-box; 
 
   &:hover {
-    box-shadow: var(--box-shadow);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-border-light);
+
+    .cdk-drag-handle { opacity: 1; }
   }
 
+  // === FIX: ELIMINAR SCROLL AL ARRASTRAR ===
   &.cdk-drag-preview {
-    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-      0 8px 10px 1px rgba(0, 0, 0, 0.14),
-      0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    box-sizing: border-box; // Crucial
+    overflow: hidden !important; // <--- ESTO ELIMINA LAS BARRAS
+    
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 12px; 
+    background: white; 
+    transform: scale(1.05);
+    
+    // Aseguramos que el ancho sea fijo para evitar recálculos raros
+    width: 280px !important; 
+    height: auto !important;
   }
 
   &.cdk-drag-placeholder {
-    opacity: 0.3;
-    background-color: var(--color-primary-light);
-    border: 2px dashed var(--color-primary);
-    min-height: 80px;
+    opacity: 0.4;
+    background: #E5E7EB;
+    border: 2px dashed #9CA3AF;
+    box-shadow: none;
   }
 }
 
-// --- Badge de Recomendación de IA ---
 .ai-recommendation {
-  position: absolute;
-  top: -10px;
-  left: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
-  border: 2px solid var(--color-surface);
-  z-index: 2;
+  position: absolute; top: -10px; left: 12px;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 12px;
+  font-size: 0.7rem; font-weight: 700; color: white;
+  border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+}
 
-  mat-icon {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+.candidate-info { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+
+.avatar-placeholder {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary-light), #E5E7EB);
+  color: var(--color-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+  border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.text-info { display: flex; flex-direction: column; overflow: hidden; }
+.candidate-name { font-weight: 600; font-size: 0.95rem; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.candidate-role { font-size: 0.8rem; color: var(--color-text-secondary); }
+
+.card-actions-hover {
+  position: absolute; bottom: 8px; right: 8px; opacity: 0; visibility: hidden; transition: all 0.2s;
+  button {
+    width: 28px; height: 28px; padding: 0;
+    background-color: #FEE2E2; color: #EF4444;
+    &:hover { background-color: #EF4444; color: white; }
+    mat-icon { font-size: 16px; }
   }
-
-  &.high {
-    background-color: var(--color-success);
-  }
-
-  &.medium {
-    background-color: var(--color-warning);
-  }
-
-  &.low {
-    background-color: var(--color-secondary);
-  }
 }
 
-.candidate-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
-  cursor: pointer;
-  min-width: 0; // Permite que funcione el text-overflow
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.text-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0; // Crucial para que el ellipsis funcione
-  flex: 1;
-}
-
-.candidate-name {
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.candidate-role {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-// --- Manija para Arrastrar (Drag Handle) ---
 .cdk-drag-handle {
-  position: absolute;
-  top: 10px;
-  right: 5px;
-  color: var(--color-secondary-light);
-  cursor: grab;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 3;
-
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
+  position: absolute; top: 8px; right: 8px; color: var(--color-text-muted);
+  opacity: 0; transition: opacity 0.2s; cursor: grab;
+  mat-icon { font-size: 18px; }
 }
 
-.candidate-card:hover .cdk-drag-handle {
-  opacity: 1;
-}
-
-// --- Zona de Rechazo Flotante ---
+// --- 5. ZONA DE RECHAZO (CORREGIDA) ---
 .reject-drop-zone {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 200px;
-  height: 120px;
-  background-color: var(--color-danger-light);
-  border: 2px dashed var(--color-danger-dark);
-  border-radius: var(--border-radius);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: fixed; 
+  bottom: 24px; 
+  
+  // FIX 5: Alinear a la derecha
+  right: 24px; 
+  left: auto; // Resetear left
+  transform: translateY(100px); // Solo animación Y, sin X
+  
+  width: 300px; // Un poco más ancho
+  height: 80px; // Menos alto para ser más compacto
+  background-color: #FEF2F2;
+  border: 2px dashed #EF4444;
+  border-radius: 16px;
+  
+  // FIX 4: Flex Row para alinear icono y texto horizontalmente
+  display: flex; 
+  flex-direction: row; 
+  align-items: center; 
   justify-content: center;
-  gap: 0.5rem;
-
-  color: var(--color-danger-dark);
+  gap: 12px; // Espacio entre icono y texto
+  
+  color: #B91C1C;
   font-weight: 600;
-  z-index: 1500;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+  opacity: 0; pointer-events: none;
 
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.8) translateY(20px);
-  transition: opacity 0.2s ease, visibility 0s linear 0.2s, transform 0.2s ease;
+  .reject-content {
+    display: flex; align-items: center; gap: 8px;
+  }
 
   &.is-visible {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1) translateY(0);
-    transition: opacity 0.2s ease, visibility 0s linear 0s, transform 0.2s ease;
+    transform: translateY(0);
+    opacity: 1; pointer-events: all;
   }
 
   &.cdk-drop-list-dragging {
-    background-color: var(--color-danger);
-    color: white;
+    background-color: #FEE2E2;
     transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   }
 
-  mat-icon {
-    font-size: 36px;
-    width: 36px;
-    height: 36px;
-  }
+  mat-icon { font-size: 28px; width: 28px; height: 28px; margin: 0; }
+  span { font-size: 0.95rem; }
 }
 
-// --- Clase para el contenido de la zona de rechazo ---
-.reject-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  text-align: center;
+// Botones Pill del Header
+button[mat-flat-button], 
+button[mat-stroked-button] {
+  border-radius: 999px !important;
+  height: 40px; padding: 0 20px;
+  font-weight: 600; font-family: var(--font-family-base);
+  mat-icon { margin-right: 6px; }
+}
+
+button[color="primary"][mat-flat-button] {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  &:hover { box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4); }
+}
+
+.empty-list-placeholder {
+  text-align: center; color: var(--color-text-muted); font-style: italic; font-size: 0.85rem; padding: 1rem;
 }
