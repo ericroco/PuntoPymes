@@ -44,7 +44,6 @@
   }
 }
 
-// --- 3. CONTENIDO DEL MÓDULO ---
 .module-info {
   display: flex;
   flex-direction: column;
@@ -52,7 +51,6 @@
   flex-grow: 1;
   padding-right: 1rem;
 
-  // === FIX: ESTILOS DE TOGGLE (COLORES) ===
   ::ng-deep mat-slide-toggle {
 
     // Label Text
@@ -63,8 +61,8 @@
       font-family: var(--font-family-base) !important;
     }
 
-    // --- 1. ESTADO ACTIVO (CHECKED) ---
-    &.mat-mdc-slide-toggle-checked {
+    // --- ESTADO ACTIVO (CHECKED) ---
+    &.mat-mdc-slide-toggle-checked:not(.mat-disabled) {
       .mdc-switch__track::after {
         background-color: var(--color-primary-light) !important;
         border-color: var(--color-primary-light) !important;
@@ -80,16 +78,19 @@
       }
     }
 
-    // --- 2. ESTADO DESHABILITADO - SOBRESCRIBIR VARIABLES CSS ---
+    // --- ESTADO DESHABILITADO (FORZAR GRIS) ---
     &.mat-disabled,
-    &[disabled] {
-      // Sobrescribir las variables CSS que Material usa para disabled
+    &[disabled],
+    &.force-neutral {
+      // Anular TODAS las variables CSS de Material relacionadas con primary
+      --mat-slide-toggle-selected-track-color: #E5E7EB !important;
+      --mat-slide-toggle-selected-handle-color: #9CA3AF !important;
+      --mdc-switch-selected-track-color: #E5E7EB !important;
+      --mdc-switch-selected-handle-color: #9CA3AF !important;
       --mdc-switch-disabled-selected-track-color: #E5E7EB !important;
-      --mdc-switch-disabled-unselected-track-color: #E5E7EB !important;
       --mdc-switch-disabled-selected-handle-color: #9CA3AF !important;
+      --mdc-switch-disabled-unselected-track-color: #E5E7EB !important;
       --mdc-switch-disabled-unselected-handle-color: #9CA3AF !important;
-      --mdc-switch-disabled-selected-icon-color: white !important;
-      --mdc-switch-disabled-unselected-icon-color: white !important;
 
       opacity: 0.6 !important;
 

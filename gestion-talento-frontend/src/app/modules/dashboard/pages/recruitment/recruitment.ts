@@ -97,4 +97,35 @@ export class Recruitment implements OnInit {
       }
     });
   }
+
+  onOpenVacancy(vacancy: Vacancy) {
+    // Determinamos el verbo correcto para el mensaje
+    const isDraft = vacancy.estado === 'BORRADOR';
+    const actionVerb = isDraft ? 'Publicar' : 'Republicar';
+    const confirmMsg = isDraft
+      ? `¿Deseas publicar la vacante "${vacancy.titulo}"? Será visible para los candidatos.`
+      : `¿Deseas republicar la vacante "${vacancy.titulo}"? Volverá a recibir candidatos.`;
+
+    // 1. Confirmación dinámica
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    // 2. Llamamos a updateVacancy pasando estado 'PUBLICA'
+    this.recruitmentService.updateVacancy(vacancy.id, { estado: 'PUBLICA' }).subscribe({
+      next: () => {
+        const successMsg = isDraft ? 'Vacante publicada exitosamente' : 'Vacante republicada exitosamente';
+        this.snackBar.open(successMsg, 'Cerrar', { duration: 3000 });
+        this.loadVacancies();
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+        const msg = err.error?.message || 'Error al cambiar estado de la vacante';
+        this.snackBar.open(msg, 'Cerrar', { duration: 5000 });
+      }
+    });
+  }
 }

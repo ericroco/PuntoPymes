@@ -11,8 +11,9 @@
 
         <div *ngFor="let module of moduleSettings" class="module-item">
             <div class="module-info">
-                <mat-slide-toggle [(ngModel)]="module.isActive" color="primary" [disabled]="isToggleDisabled(module)"
-                    [matTooltip]="isToggleDisabled(module) ? getDisabledTooltip(module) : null">
+                <mat-slide-toggle [(ngModel)]="module.isActive" [disabled]="isToggleDisabled(module)"
+                    [matTooltip]="isToggleDisabled(module) ? getDisabledTooltip(module) : null"
+                    [class.force-neutral]="isToggleDisabled(module)">
                     {{ module.label }}
                 </mat-slide-toggle>
                 <span class="module-hint">{{ module.hint }}</span>
