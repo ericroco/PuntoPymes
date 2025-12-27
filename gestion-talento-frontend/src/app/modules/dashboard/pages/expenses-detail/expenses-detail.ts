@@ -9,6 +9,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip'; // Agregado para tooltips
+import { MatSpinner } from '@angular/material/progress-spinner';
 
 import { ExpensesService } from '../../services/expenses';
 import { AddExpenseItemDialogComponent } from '../../components/add-expense-item-dialog/add-expense-item-dialog';
@@ -19,7 +20,7 @@ import { AddExpenseItemDialogComponent } from '../../components/add-expense-item
   imports: [
     CommonModule, MatButtonModule, MatIconModule,
     MatTableModule, MatCardModule, MatDialogModule, MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule, MatSpinner
   ],
   templateUrl: './expenses-detail.html',
   styleUrls: ['./expenses-detail.scss']

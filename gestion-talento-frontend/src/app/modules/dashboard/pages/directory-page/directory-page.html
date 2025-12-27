@@ -7,18 +7,18 @@
         </div>
 
         <div class="filters-bar">
-            <mat-form-field appearance="outline" class="search-field">
-                <mat-icon matPrefix>search</mat-icon>
+            <mat-form-field appearance="outline" class="search-field custom-field">
+                <mat-icon matIconPrefix>search</mat-icon>
                 <mat-label>Nombre, cargo o palabra clave</mat-label>
                 <input matInput [(ngModel)]="searchText" (keyup)="applyFilter()"
                     placeholder="Ej: Juan Perez o Gerente...">
-                <button *ngIf="searchText" matSuffix mat-icon-button (click)="searchText=''; applyFilter()">
+                <button *ngIf="searchText" matIconSuffix mat-icon-button (click)="searchText=''; applyFilter()">
                     <mat-icon>close</mat-icon>
                 </button>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="branch-field">
-                <mat-icon matPrefix>location_on</mat-icon>
+            <mat-form-field appearance="outline" class="branch-field custom-field">
+                <mat-icon matIconPrefix>location_on</mat-icon>
                 <mat-label>Sucursal</mat-label>
                 <mat-select [(ngModel)]="selectedBranch" (selectionChange)="applyFilter()">
                     <mat-option value="">Todas las sedes</mat-option>
@@ -30,15 +30,25 @@
         </div>
     </div>
 
+    <!-- LOADING -->
+    <div *ngIf="isLoading" class="loading-state">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Cargando directorio...</p>
+    </div>
+
+    <!-- GRID DE EMPLEADOS -->
     <div class="directory-grid" *ngIf="!isLoading && filteredEmployees.length > 0">
 
         <div class="employee-card" *ngFor="let emp of filteredEmployees">
             <div class="card-header-bg"></div>
 
+            <!-- Avatar con fallback a iniciales -->
             <div class="avatar-container">
-                <img [src]="emp.fotoUrl || 'assets/images/default-avatar.png'"
-                    (error)="$any($event.target).src = 'assets/images/default-avatar.png'"
-                    alt="Foto de {{ emp.nombre }}">
+                <img *ngIf="emp.fotoUrl" [src]="emp.fotoUrl" (error)="emp.fotoUrl = undefined" [alt]="emp.nombre">
+
+                <div *ngIf="!emp.fotoUrl" class="avatar-placeholder">
+                    {{ getInitials(emp.nombre, emp.apellido) }}
+                </div>
             </div>
 
             <div class="card-body">
@@ -75,15 +85,13 @@
         </div>
     </div>
 
-    <div *ngIf="isLoading" class="loading-state">
-        <p>Cargando directorio...</p>
-    </div>
-
+    <!-- EMPTY STATE -->
     <div *ngIf="!isLoading && filteredEmployees.length === 0" class="empty-state">
         <mat-icon>search_off</mat-icon>
         <h3>No se encontraron resultados</h3>
         <p>Intenta con otros términos o cambia la sucursal seleccionada.</p>
         <button mat-stroked-button (click)="searchText=''; selectedBranch=''; applyFilter()">
+            <mat-icon>refresh</mat-icon>
             Limpiar filtros
         </button>
     </div>

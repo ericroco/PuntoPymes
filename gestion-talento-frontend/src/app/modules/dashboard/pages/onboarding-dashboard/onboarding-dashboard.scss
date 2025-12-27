@@ -1,68 +1,262 @@
-
-
-.onboarding-dashboard {
-  max-width: 900px; // Limit width for better readability
-  margin: 1rem auto; // Center and add some margin
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
+.page-container.onboarding-page {
+  padding: 40px 20px;
+  min-height: 100vh;
+  // Usamos el fondo global
+  background-color: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Centrado horizontal para enfoque
 }
 
+// ============================================
+// HEADER DE BIENVENIDA
+// ============================================
 .welcome-header {
   text-align: center;
-  margin-bottom: 2.5rem;
-  padding: 1rem;
-  background-color: var(--color-primary-light); // Light background highlight
-  border-radius: var(--border-radius);
+  margin-bottom: 40px;
+  max-width: 700px;
+
+  .brand-icon-wrapper {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    // Gradiente dinámico usando tus variables
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), 0.3); // Sombra con color de marca
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
+  }
 
   h1 {
-    color: var(--color-primary-dark);
-    margin: 0 0 0.5rem 0;
+    font-family: var(--font-family-base);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
   }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+// ============================================
+// TARJETA DEL STEPPER
+// ============================================
+.onboarding-card {
+  width: 100%;
+  max-width: 800px; // Ancho limitado para lectura cómoda
+  background: var(--color-surface);
+  border-radius: var(--border-radius-lg); // 16px desde tus globals
+  border: 1px solid var(--color-border);
+  padding: 32px;
+  // Sombra suave global
+  box-shadow: var(--shadow-lg);
+
+  @media (max-width: 600px) {
+    padding: 16px;
+  }
+}
+
+// ============================================
+// STEPPER PERSONALIZADO (CSS VARS)
+// ============================================
+::ng-deep .dynamic-stepper {
+  background: transparent;
+
+  // Cabecera del paso
+  .mat-step-header {
+    border-radius: var(--border-radius);
+    transition: background 0.2s;
+
+    &:hover {
+      background-color: var(--color-surface-variant);
+    }
+
+    // Icono seleccionado/editado (Usa color primario dinámico)
+    .mat-step-icon-selected,
+    .mat-step-icon-state-edit {
+      background-color: var(--color-primary) !important;
+      color: white !important;
+    }
+
+    // Texto del label
+    .mat-step-label {
+      font-family: var(--font-family-base);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+
+      &.mat-step-label-active {
+        color: var(--color-primary); // Texto activo con color de marca
+      }
+    }
+  }
+
+  // Línea conectora
+  .mat-stepper-vertical-line::before {
+    border-left-color: var(--color-border);
+  }
+}
+
+// Cuerpo del paso
+.step-body {
+  padding: 16px 0 32px 28px; // Espacio a la izquierda para alinear
+  margin-left: 12px; // Alinear con la línea vertical
+  border-left: 1px solid var(--color-border-light); // Guía visual sutil
+
+  .description {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0 0 24px;
+  }
+
+  .actions-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    // Ajuste específico para el botón dentro del stepper
+    .action-btn {
+      border-radius: var(--border-radius);
+      border-color: var(--color-primary-subtle);
+
+      mat-icon {
+        margin-left: 8px;
+        font-size: 18px;
+      }
+    }
+
+    .text-success {
+      color: var(--color-success);
+      font-weight: 600;
+    }
+  }
+}
+
+// Etiqueta tachada al completar
+.completed-label {
+  text-decoration: line-through;
+  color: var(--color-text-muted) !important;
+}
+
+// ============================================
+// PASO FINAL (CELEBRACIÓN)
+// ============================================
+.final-step {
+  border-left: none; // Quitar borde en el último paso
+  text-align: center;
+  padding: 40px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 12px;
+    font-family: var(--font-family-base);
+  }
+
   p {
     color: var(--color-text-secondary);
+    margin-bottom: 32px;
     font-size: 1.1rem;
   }
-}
 
-// Stepper Styling
-::ng-deep .mat-stepper-vertical-line::before {
-  border-left-color: var(--color-primary-light); // Match theme color
-}
-::ng-deep .mat-step-header .mat-step-icon-selected,
-::ng-deep .mat-step-header .mat-step-icon-state-edit {
-  background-color: var(--color-primary); // Match theme color
-}
-
-// Label styling
-.mat-step-label {
-  font-weight: 500;
-  font-size: 1.1rem;
-  transition: color 0.3s ease; // Smooth transition
-}
-.task-complete {
-   text-decoration: line-through; // Cross out completed task titles
-   color: var(--color-text-secondary);
-}
-
-// Content within each step
-.step-content {
-  padding: 1rem 0 1.5rem 1.5rem; // Padding inside step
-  border-left: 2px solid var(--color-primary-light); // Left border matching stepper line
-  margin-left: 12px; // Align with stepper icon center
-  margin-bottom: 1rem;
-
-  p {
-    margin: 0 0 1rem 0;
-    color: var(--color-text-secondary);
+  .btn-large {
+    height: 48px;
+    padding: 0 32px;
+    font-size: 1rem;
+    border-radius: 24px; // Pill shape grande
   }
 }
 
-.step-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem; // Space between button/checkbox
+// ============================================
+// ESTADOS (LOADING / EMPTY)
+// ============================================
+.loading-state {
+  text-align: center;
+  margin-top: 60px;
+
+  p {
+    margin-top: 16px;
+    color: var(--color-text-muted);
+  }
 }
 
-// Style for the final confirmation step
-.final-step {
-   text-align: center;
-   font-weight: 500;
+.empty-state {
+  text-align: center;
+  padding: 60px 40px;
+  background: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border);
+  max-width: 600px;
+  width: 100%;
+
+  .icon-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--color-surface-variant);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    margin: 0 0 24px;
+  }
 }

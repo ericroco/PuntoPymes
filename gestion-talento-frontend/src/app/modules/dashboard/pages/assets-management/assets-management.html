@@ -1,139 +1,172 @@
-<div class="assets-page-container">
+<div class="page-container assets-page">
 
-    <div class="page-header">
-        <div>
-            <h1>Gestión de Activos y Equipos</h1>
+    <!-- HEADER -->
+    <header class="page-header">
+        <div class="header-text">
+            <h2>Gestión de Activos</h2>
             <p class="subtitle">Inventario de hardware, mobiliario y asignaciones.</p>
         </div>
 
         <button *ngIf="canManageAssets" mat-flat-button color="primary" (click)="openAssetDialog()">
             <mat-icon>add</mat-icon> Nuevo Activo
         </button>
-    </div>
+    </header>
 
+    <!-- BARRA DE FILTROS -->
     <div class="filters-bar">
-        <mat-form-field appearance="outline" class="search-field">
-            <mat-icon matPrefix>search</mat-icon>
-            <mat-label>Buscar por nombre, serial o tipo...</mat-label>
-            <input matInput [formControl]="searchControl">
+
+        <mat-form-field appearance="outline" class="custom-field search-field" subscriptSizing="dynamic">
+            <mat-icon matIconPrefix>search</mat-icon>
+            <input matInput [formControl]="searchControl" placeholder="Buscar por nombre, serial o tipo...">
+            <button *ngIf="searchControl.value" matIconSuffix mat-icon-button aria-label="Limpiar"
+                (click)="searchControl.setValue('')">
+                <mat-icon>close</mat-icon>
+            </button>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="status-field">
-            <mat-label>Estado</mat-label>
-            <mat-select [formControl]="statusFilterControl">
+        <mat-form-field appearance="outline" class="custom-field status-field" subscriptSizing="dynamic">
+            <mat-icon matIconPrefix>filter_list</mat-icon>
+            <mat-select [formControl]="statusFilterControl" placeholder="Estado">
+                <mat-option [value]="null">Todos los Estados</mat-option>
                 <mat-option *ngFor="let status of statusOptions" [value]="status">
                     {{ status | titlecase }}
                 </mat-option>
             </mat-select>
         </mat-form-field>
+
     </div>
 
-    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+    <!-- LOADING BAR -->
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="page-progress"></mat-progress-bar>
 
-    <div class="table-container mat-elevation-z2">
-        <table mat-table [dataSource]="dataSource">
+    <!-- TABLA -->
+    <div class="table-wrapper mat-elevation-z2">
+        <table mat-table [dataSource]="dataSource" class="custom-table assets-table">
 
+            <!-- COLUMNA: Imagen -->
             <ng-container matColumnDef="imageUrl">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let asset">
-                    <img [src]="asset.imageUrl || 'https://cdn-icons-png.flaticon.com/512/2888/2888703.png'"
-                        class="asset-thumb" alt="Foto" #img
-                        (error)="img.src='https://cdn-icons-png.flaticon.com/512/2888/2888703.png'">
+                <th mat-header-cell *matHeaderCellDef class="col-image"></th>
+                <td mat-cell *matCellDef="let asset" class="col-image">
+                    <div class="img-wrapper">
+                        <img [src]="asset.imageUrl || 'https://cdn-icons-png.flaticon.com/512/2888/2888703.png'"
+                            class="asset-thumb" alt="Activo" #img
+                            (error)="img.src='https://cdn-icons-png.flaticon.com/512/2888/2888703.png'">
+                    </div>
                 </td>
             </ng-container>
 
+            <!-- COLUMNA: Info (Nombre + Descripción) -->
             <ng-container matColumnDef="info">
-                <th mat-header-cell *matHeaderCellDef> Equipo / Activo </th>
+                <th mat-header-cell *matHeaderCellDef>Equipo / Activo</th>
                 <td mat-cell *matCellDef="let asset">
                     <div class="asset-info">
-                        <span class="asset-name">{{ asset.nombre }}</span>
-                        <span class="asset-desc" *ngIf="asset.descripcion">
-                            {{ asset.descripcion | slice:0:40 }}...
+                        <span class="name">{{ asset.nombre }}</span>
+                        <span class="desc text-muted">
+                            {{ asset.descripcion | slice:0:50 }}<span *ngIf="asset.descripcion?.length > 50">...</span>
                         </span>
                     </div>
                 </td>
             </ng-container>
 
+            <!-- COLUMNA: Categoría -->
             <ng-container matColumnDef="categoria">
-                <th mat-header-cell *matHeaderCellDef> Categoría </th>
-                <td mat-cell *matCellDef="let asset"> {{ asset.tipo }} </td>
+                <th mat-header-cell *matHeaderCellDef>Categoría</th>
+                <td mat-cell *matCellDef="let asset">
+                    <span class="category-badge">{{ asset.tipo }}</span>
+                </td>
             </ng-container>
 
+            <!-- COLUMNA: Serial -->
             <ng-container matColumnDef="serial">
-                <th mat-header-cell *matHeaderCellDef> Serial / Cód </th>
+                <th mat-header-cell *matHeaderCellDef>Serial</th>
                 <td mat-cell *matCellDef="let asset">
-                    <span class="serial-badge">{{ asset.serial || 'S/N' }}</span>
+                    <code class="serial-code">{{ asset.serial || 'N/A' }}</code>
                 </td>
             </ng-container>
 
+            <!-- COLUMNA: Estado -->
             <ng-container matColumnDef="estado">
-                <th mat-header-cell *matHeaderCellDef> Estado </th>
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
                 <td mat-cell *matCellDef="let asset">
-                    <span class="status-badge" [ngClass]="getStatusClass(asset.estado)">
-                        {{ asset.estado }}
-                    </span>
+                    <div class="status-container">
+                        <span class="status-pill" [ngClass]="getStatusClass(asset.estado)">
+                            {{ asset.estado | titlecase }}
+                        </span>
 
-                    <mat-icon *ngIf="asset.estado === AssetStatus.ASIGNADO" class="info-icon"
-                        [matTooltip]="'Asignado a: ' + (asset.asignadoA?.nombreEmpleado || 'Desconocido')">
-                        info
-                    </mat-icon>
+                        <mat-icon *ngIf="asset.estado === 'ASIGNADO'" class="info-icon"
+                            [matTooltip]="'Asignado a: ' + (asset.asignadoA?.nombreEmpleado || 'Desconocido')">
+                            info
+                        </mat-icon>
+                    </div>
                 </td>
             </ng-container>
 
+            <!-- COLUMNA: Valor -->
             <ng-container matColumnDef="valor">
-                <th mat-header-cell *matHeaderCellDef> Valor </th>
+                <th mat-header-cell *matHeaderCellDef>Valor</th>
                 <td mat-cell *matCellDef="let asset">
-                    {{ asset.valor ? (asset.valor | currency) : '-' }}
+                    <span class="value-text">{{ asset.valor ? (asset.valor | currency:'USD':'symbol':'1.0-0') : '-'
+                        }}</span>
                 </td>
             </ng-container>
 
+            <!-- COLUMNA: Acciones -->
             <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let asset" class="actions-cell">
-
-                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                <th mat-header-cell *matHeaderCellDef class="col-actions"></th>
+                <td mat-cell *matCellDef="let asset" class="col-actions">
+                    <button mat-icon-button [matMenuTriggerFor]="menu" class="action-btn">
                         <mat-icon>more_vert</mat-icon>
                     </button>
 
-                    <mat-menu #menu="matMenu">
-
+                    <mat-menu #menu="matMenu" xPosition="before">
                         <button mat-menu-item *ngIf="canManageAssets" (click)="openAssetDialog(asset)">
-                            <mat-icon>edit</mat-icon> Editar
+                            <mat-icon>edit</mat-icon>
+                            <span>Editar</span>
                         </button>
 
-                        <button mat-menu-item *ngIf="canAssignAssets && asset.estado === AssetStatus.DISPONIBLE"
+                        <button mat-menu-item *ngIf="canAssignAssets && asset.estado === 'DISPONIBLE'"
                             (click)="openAssignDialog(asset)">
-                            <mat-icon>person_add</mat-icon> Asignar a Empleado
+                            <mat-icon>person_add</mat-icon>
+                            <span>Asignar</span>
                         </button>
 
-                        <button mat-menu-item *ngIf="canAssignAssets && asset.estado === AssetStatus.ASIGNADO"
+                        <button mat-menu-item *ngIf="canAssignAssets && asset.estado === 'ASIGNADO'"
                             (click)="openReturnDialog(asset)">
                             <mat-icon color="warn">assignment_return</mat-icon>
-                            <span>Registrar Devolución</span>
+                            <span>Devolver</span>
                         </button>
 
                         <button mat-menu-item (click)="openHistoryDialog(asset)">
-                            <mat-icon>history</mat-icon> Historial
+                            <mat-icon>history</mat-icon>
+                            <span>Historial</span>
                         </button>
 
                         <mat-divider *ngIf="canManageAssets"></mat-divider>
 
-                        <button mat-menu-item *ngIf="canManageAssets" (click)="deleteAsset(asset)">
-                            <mat-icon color="warn">delete</mat-icon> <span class="warn-text">Dar de Baja</span>
+                        <button mat-menu-item *ngIf="canManageAssets" (click)="deleteAsset(asset)"
+                            class="menu-item-danger">
+                            <mat-icon color="warn">delete</mat-icon>
+                            <span>Dar de Baja</span>
                         </button>
                     </mat-menu>
-
                 </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <!-- FILAS -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></tr>
 
+            <!-- ESTADO VACÍO -->
             <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
-                    No se encontraron activos con ese criterio.
+                    <div class="empty-state-table">
+                        <mat-icon>search_off</mat-icon>
+                        <p>No se encontraron activos con ese criterio.</p>
+                    </div>
                 </td>
             </tr>
+
         </table>
     </div>
+
 </div>

@@ -200,7 +200,7 @@ export class Goals implements OnInit {
     if (goal.progreso === 100) return;
 
     const dialogRef = this.dialog.open(UpdateProgressDialog, {
-      width: '450px',
+      width: '600px',
       disableClose: true,
       data: {
         currentProgress: goal.progreso,

@@ -8,6 +8,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatSpinner } from '@angular/material/progress-spinner';
 
 import { ExpensesService } from '../../services/expenses';
 import { AuthService } from '../../../auth/services/auth';
@@ -18,7 +20,7 @@ import { CreateExpenseReportDialogComponent } from '../../components/create-expe
   standalone: true,
   imports: [
     CommonModule, MatTableModule, MatButtonModule,
-    MatIconModule, MatChipsModule, MatDialogModule, MatTooltipModule
+    MatIconModule, MatChipsModule, MatDialogModule, MatTooltipModule, MatProgressBar, MatSpinner
   ],
   templateUrl: './my-expenses.html',
   styleUrls: ['./my-expenses.scss']

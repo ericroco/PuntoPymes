@@ -1,593 +1,591 @@
-/* ==========================================================================
-   ESTILOS PARA LA PÁGINA DE METAS (goals.scss) - VERSIÓN MEJORADA
-   ========================================================================== */
+// ============================================
+// VARIABLES (CONECTADAS AL BRANDING GLOBAL)
+// ============================================
+// No definimos colores fijos aquí, usamos las vars globales
+$bg-page: var(--color-background, #F9FAFB);
+$border-color: var(--color-border, #E5E7EB);
+$text-dark: var(--color-text-primary, #1F2937);
+$text-muted: var(--color-text-secondary, #6B7280);
+$radius-card: 16px;
 
-// --- Contenedor Principal ---
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
 .page-container.goals-page {
-  padding: 1.5rem;
+  padding: 24px;
+  background-color: $bg-page;
+  min-height: 100vh;
   max-width: 1400px;
   margin: 0 auto;
-  width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden; // Evita scroll horizontal
+
+  @media (min-width: 768px) {
+    padding: 40px;
+  }
 }
 
-// --- Estilos Globales Reutilizables ---
+// ============================================
+// HEADER
+// ============================================
 .page-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: var(--font-family-base);
-
-  svg {
-    width: 20px;
-    height: 20px;
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  &.btn-primary {
-    background-color: var(--color-primary);
+  .header-text {
+    h2 {
+      font-family: var(--font-family-base, 'Poppins', sans-serif);
+      font-size: 28px;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0 0 4px 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: $text-muted;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .cycle-warning {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background-color: #FFF7ED;
+      color: #C2410C;
+      border: 1px solid #FFEDD5;
+      font-size: 0.85rem;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  // 🔥 BOTÓN PRINCIPAL (BRANDING CORRECTO)
+  // Usamos las variables globales para el gradiente
+  button[mat-flat-button][color="primary"] {
+    border-radius: 24px;
+    height: 44px;
+    padding: 0 24px;
+    font-weight: 600;
+    font-family: var(--font-family-base, 'Poppins', sans-serif);
+
+    // Gradiente dinámico basado en tu tema global
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); // Sombra neutra o usar --color-primary-rgb si existe
     color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: none;
+
+    mat-icon {
+      margin-right: 8px;
+    }
 
     &:hover {
-      background-color: var(--color-primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+      filter: brightness(1.1); // Efecto de brillo genérico
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    &:disabled {
+      background: $border-color !important;
+      color: $text-muted !important;
+      box-shadow: none;
+      transform: none;
     }
   }
 }
 
-.no-data-placeholder {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  font-size: 1rem;
-  background-color: var(--color-background);
-  border-radius: var(--border-radius);
-  margin: 2rem 0;
-}
+// ============================================
+// TABS
+// ============================================
+.custom-tabs {
+  margin-top: 1rem;
 
-.dept-goal {
-  border-left-color: #ff4081 !important; // Rosa/Accent para diferenciar
-
-  .dept-icon {
-    background: #fce4ec;
-    color: #c2185b;
+  .tab-label-content {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    margin-right: 15px;
-  }
+    gap: 8px;
+    font-weight: 500;
 
-  mat-card-header {
-    display: flex;
-    align-items: center;
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: $text-muted;
+    }
   }
-}
-
-.cycle-warning {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.9rem;
-  color: #d32f2f;
-  background: #ffebee;
-  padding: 6px 12px;
-  border-radius: 4px;
-  margin-left: 15px;
 }
 
 .tab-content-wrapper {
   padding-top: 24px;
 }
 
-.description {
-  color: var(--color-text-secondary);
-  margin-bottom: 2rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  max-width: 700px;
-}
-
-::ng-deep app-subpage-header {
-  width: 100%;
-  margin-bottom: 1.5rem;
-}
-
-mat-progress-bar {
-  --mat-progress-bar-active-indicator-color: var(--color-primary);
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-// --- Estilos Vista Empleado ---
+// ============================================
+// GRID DE TARJETAS (Metas)
+// ============================================
 .goals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+  gap: 24px;
 }
 
 .goal-card {
+  background: var(--color-surface, white);
+  border-radius: $radius-card;
+  border: 1px solid $border-color;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
   overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 5px solid transparent;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
   }
 
-  mat-card-header {
-    padding: 1.5rem 1.5rem 0.75rem;
+  // Variantes de Estado (Colores semánticos)
+  &.status-complete {
+    border-left-color: var(--color-success, #10B981);
   }
 
-  mat-card-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--color-text-primary);
+  &.status-progress {
+    border-left-color: var(--color-primary);
   }
 
-  mat-card-subtitle {
-    color: var(--color-text-secondary);
-    font-weight: 400;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
+  // Usa el color de marca
+  &.type-dept {
+    border-left-color: #EC4899;
   }
 
-  mat-card-content {
-    flex-grow: 1;
-    padding: 1rem 1.5rem 1.5rem;
+  // Rosa distintivo para Depto
+
+  // Header Card
+  .card-header {
+    padding: 20px 24px;
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      .date-badge {
+        font-size: 0.75rem;
+        color: $text-muted;
+        background: #F3F4F6;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 500;
+      }
+    }
+
+    // Badge Depto
+    .dept-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #9D174D;
+      background: #FCE7F3;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: $text-dark;
+      line-height: 1.4;
+      font-family: var(--font-family-base, 'Poppins', sans-serif);
+    }
   }
 
-  .progress-area {
-    margin-top: auto;
+  // Body Card
+  .card-body {
+    padding: 0 24px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    .progress-section {
+      .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 8px;
+
+        .percent {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: $text-dark;
+          font-family: var(--font-family-base, 'Poppins', sans-serif);
+        }
+
+        .status-text {
+          font-size: 0.85rem;
+          color: $text-muted;
+          font-weight: 500;
+        }
+      }
+
+      mat-progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #F3F4F6;
+
+        // La barra por defecto usa el color primary del tema de Angular Material
+        // Si es completa, forzamos verde
+        &.bar-complete {
+          ::ng-deep .mdc-linear-progress__bar-inner {
+            border-color: var(--color-success, #10B981) !important;
+          }
+        }
+      }
+    }
   }
 
-  .progress-text {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    display: block;
-    margin-bottom: 0.5rem;
-  }
+  // Footer Card (Botonera)
+  .card-footer {
+    padding: 16px 24px;
+    border-top: 1px solid $bg-page;
+    background: var(--color-surface, white);
 
-  mat-card-actions {
-    padding: 0 1rem 1rem;
-    margin: 0;
-    border-top: 1px solid var(--color-border);
-    padding-top: 1rem;
-
-    button {
+    .full-width-btn {
       width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-family: var(--font-family-base, 'Poppins', sans-serif);
+      transition: all 0.2s;
+
+      // Estilo Stroked Primary
+      &.mat-mdc-outlined-button {
+        border: 1px solid $border-color;
+        color: $text-dark;
+
+        &:not(:disabled):hover {
+          background-color: var(--color-surface-variant, #F9FAFB);
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+        }
+
+        &:disabled {
+          color: $text-muted;
+          border-color: $border-color;
+          opacity: 0.7;
+        }
+      }
+
+      // Estilo Accent (Para Depto)
+      &[color="accent"] {
+        color: #EC4899;
+        border-color: rgba(236, 72, 153, 0.3);
+
+        &:hover {
+          background-color: #FDF2F8;
+        }
+      }
     }
-  }
-
-  // Estado completado
-  &.status-completada {
-    border-left: 4px solid var(--color-success);
-
-    mat-progress-bar {
-      --mat-progress-bar-active-indicator-color: var(--color-success);
-    }
-  }
-
-  &.status-pendiente {
-    border-left: 4px solid var(--color-warning);
-
-    mat-progress-bar {
-      --mat-progress-bar-active-indicator-color: var(--color-secondary-light);
-    }
-  }
-
-  &.status-en-progreso {
-    border-left: 4px solid var(--color-info);
   }
 }
 
-// --- Estilos Vista Administrador ---
-.admin-goals-view {
-  width: 100%;
-  overflow-x: hidden;
-
-  mat-tab-group {
-    margin-top: 1.5rem;
-  }
-}
-
-.report-tab-content {
-  padding: 2rem 0;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-// Cuadrícula para KPIs de Resumen
-.report-widget-grid.kpi-summary {
+// ============================================
+// ADMIN DASHBOARD (KPIs)
+// ============================================
+.kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  align-items: stretch;
-  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
-// Sección de performance con mejor distribución
-.performance-section {
-  margin-top: 2.5rem;
-  width: 100%;
-  overflow-x: hidden;
-
-  h3 {
-    margin-bottom: 1.5rem;
-  }
-
-  // Contenedor para gráficos de performance
-  .performance-charts {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    width: 100%;
-
-    // Si hay múltiples gráficos de performance
-    &.has-multiple {
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    }
-  }
-}
-
-// Estilo para tarjetas de KPI
-.overview-widget.simple-kpi {
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  padding: 1.75rem 1.5rem;
+.kpi-card {
+  background: var(--color-surface, white);
+  border-radius: $radius-card;
+  padding: 24px;
+  border: 1px solid $border-color;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  mat-card-header {
-    padding-bottom: 0.5rem;
-  }
-
-  mat-card-title {
-    font-size: 0.9rem;
+  .kpi-label {
+    font-size: 0.85rem;
+    color: $text-muted;
     font-weight: 600;
-    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .kpi-value {
+    font-size: 2.5rem;
+    color: $text-dark;
+    font-weight: 700;
+    font-family: var(--font-family-base, 'Poppins', sans-serif);
+    line-height: 1;
+  }
+
+  .kpi-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -15px;
+    font-size: 90px;
+    width: 90px;
+    height: 90px;
+    color: $border-color;
+    opacity: 0.4;
+    transform: rotate(-15deg);
+  }
+
+  // Variantes de color KPI
+  &.success .kpi-value {
+    color: var(--color-success, #10B981);
+  }
+
+  &.info .kpi-value {
+    color: var(--color-primary);
+  }
+}
+
+.chart-section {
+  background: var(--color-surface, white);
+  border-radius: $radius-card;
+  border: 1px solid $border-color;
+  padding: 32px;
+
+  .section-header {
+    margin-bottom: 24px;
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $text-dark;
+      font-family: var(--font-family-base, 'Poppins', sans-serif);
+    }
+  }
+
+  .chart-container {
+    height: 400px;
     width: 100%;
-    color: var(--color-text-secondary);
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// ============================================
+// ADMIN LIST (Pseudo-Tabla)
+// ============================================
+.list-wrapper {
+  background: var(--color-surface, white);
+  border-radius: $radius-card;
+  border: 1px solid $border-color;
+  overflow: hidden;
+  margin-top: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+
+  // Estructura Grid
+  .list-header,
+  .list-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 50px;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 24px;
+  }
+
+  .list-header {
+    background: #FAFAFA;
+    border-bottom: 1px solid $border-color;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $text-muted;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  mat-card-content {
-    text-align: center;
-    padding-top: 0 !important;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  .list-row {
+    border-bottom: 1px solid $border-color;
+    transition: background 0.1s ease;
+
+    &:hover {
+      background: #F9FAFB;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .font-500 {
+      font-weight: 600;
+      color: $text-dark;
+      font-family: var(--font-family-base, 'Poppins', sans-serif);
+    }
   }
 
-  .kpi-main-value {
-    font-size: 3rem;
+  // Componentes Internos
+  .user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: $text-dark;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: $text-muted;
+    }
+
+    &.is-dept {
+      color: #EC4899;
+      font-weight: 500;
+
+      mat-icon {
+        color: #EC4899;
+      }
+    }
+  }
+
+  .progress-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    mat-progress-bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+    }
+
+    span {
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-width: 35px;
+      text-align: right;
+      color: $text-muted;
+    }
+  }
+
+  .status-pill {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
-    display: block;
-    line-height: 1;
-    margin-top: 0.5rem;
+    text-transform: uppercase;
+    display: inline-block;
 
-    &.success {
-      color: var(--color-success-dark);
+    &.status-aprobado {
+      background: #ECFDF5;
+      color: var(--color-success, #047857);
     }
 
-    &.warning {
-      color: var(--color-warning);
-    }
-
-    &.info {
-      color: var(--color-info);
-    }
-
-    &:not(.success):not(.warning):not(.info) {
+    &.status-pendiente {
+      background: #EEF2FF;
       color: var(--color-primary);
     }
   }
 }
 
-// Divider entre secciones
-mat-divider {
-  margin: 2.5rem 0 2rem;
-}
-
-// Títulos de secciones
-h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 1.5rem;
-  margin-top: 0;
-}
-
-// --- Cuadrícula para Gráficos ---
-.report-widget-grid {
-  display: grid;
-  gap: 1.5rem;
-
-  &:not(.kpi-summary) {
-    margin-top: 1.5rem;
-    // Por defecto, los gráficos ocupan todo el ancho disponible
-    grid-template-columns: 1fr;
-  }
-
-  // Si hay múltiples gráficos, se distribuyen en 2 columnas
-  &.multi-chart {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  }
-}
-
-// Contenedor base para .report-container (usado por gráficos)
-.report-container {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  padding: 1.5rem;
-  width: 100%;
-  box-sizing: border-box;
-  overflow: hidden; // Evita que el contenido se desborde
-
-  mat-card-header {
-    padding-bottom: 1rem;
-  }
-
-  mat-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-align: center;
-    width: 100%;
-    color: var(--color-text-primary);
-  }
-
-  mat-card-content {
-    flex-grow: 1;
-    padding-top: 0;
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-
-// Estilo para el contenedor del gráfico
-.chart-widget.report-container {
-  mat-card-content.chart-container {
-    min-height: 400px; // Altura aumentada para mejor visualización
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 1rem !important;
-    overflow: hidden; // Evita scroll dentro del contenedor
-
-    // Asegura que ngx-charts se adapte al contenedor
-    ::ng-deep {
-
-      ngx-charts-bar-vertical,
-      ngx-charts-pie-chart,
-      .ngx-charts {
-        width: 100% !important;
-        max-width: 100%;
-
-        svg {
-          max-width: 100%;
-          height: auto;
-        }
-      }
-    }
-  }
-
-  // Para gráficos que ocupan todo el ancho
-  &.full-width {
-    mat-card-content.chart-container {
-      min-height: 450px;
-    }
-  }
-}
-
-// --- Estilos para la Tabla de Gestión de Metas ---
-.list-container {
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  overflow: hidden;
-  margin-top: 1.5rem;
-}
-
-.list-item {
-  display: grid;
-  grid-template-columns: 2.5fr 1.5fr 1.5fr 1fr 1fr;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-  transition: background-color 0.15s ease;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:not(.header):hover {
-    background-color: var(--color-background);
-  }
-
-  &.header {
-    background-color: var(--color-background);
-    font-weight: 700;
-    color: var(--color-text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--color-border);
-  }
-}
-
-.goal-title {
-  font-weight: 600;
-  color: var(--color-text-primary);
-  font-size: 0.95rem;
-}
-
-.progress-cell-container {
-  mat-progress-bar {
-    height: 6px;
-  }
-}
-
-.status-badge {
-  padding: 0.375rem 0.875rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: white;
-  text-transform: capitalize;
+// ============================================
+// EMPTY STATES
+// ============================================
+.empty-state {
   text-align: center;
-  white-space: nowrap;
-  display: inline-block;
+  padding: 80px 20px;
 
-  &.status-en-progreso {
-    background-color: var(--color-info);
+  .icon-wrapper {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #F3F4F6;
+    color: $text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
   }
 
-  &.status-completada {
-    background-color: var(--color-success);
+  h3 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text-dark;
+    font-family: var(--font-family-base, 'Poppins', sans-serif);
   }
 
-  &.status-pendiente {
-    background-color: var(--color-warning);
+  p {
+    color: $text-muted;
+    margin: 0;
+    font-size: 1rem;
   }
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
+.empty-state-table {
+  padding: 60px;
+  text-align: center;
+  color: $text-muted;
 
-// --- Responsive Design ---
-@media (max-width: 1200px) {
-  .report-widget-grid.kpi-summary {
-    grid-template-columns: repeat(2, 1fr);
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+    opacity: 0.4;
   }
 
-  .performance-section .performance-charts.has-multiple {
-    grid-template-columns: 1fr;
+  p {
+    margin: 0;
   }
 }
 
+// ============================================
+// RESPONSIVE
+// ============================================
 @media (max-width: 768px) {
-  .page-container.goals-page {
-    padding: 1rem;
-  }
+  .list-wrapper {
+    overflow-x: auto;
 
-  .goals-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .report-widget-grid.kpi-summary {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .report-widget-grid.multi-chart {
-    grid-template-columns: 1fr;
-  }
-
-  .performance-section .performance-charts {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-widget.report-container {
-    mat-card-content.chart-container {
-      min-height: 300px;
+    .list-header,
+    .list-row {
+      min-width: 800px;
     }
   }
-
-  .list-item {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    padding: 1rem;
-
-    &.header {
-      display: none;
-    }
-
-    &:not(.header) {
-      span {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        &::before {
-          content: attr(data-label);
-          font-weight: 600;
-          color: var(--color-text-secondary);
-          font-size: 0.75rem;
-          text-transform: uppercase;
-        }
-      }
-    }
-  }
-
-  .overview-widget.simple-kpi {
-    .kpi-main-value {
-      font-size: 2.5rem;
-    }
-  }
-}
-
-// --- Animaciones suaves ---
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.goal-card,
-.overview-widget {
-  animation: fadeIn 0.3s ease-out;
 }

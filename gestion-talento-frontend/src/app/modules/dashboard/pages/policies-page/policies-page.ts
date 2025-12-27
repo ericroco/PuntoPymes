@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSpinner } from '@angular/material/progress-spinner';
 
 // Servicios y Componentes
 import { DocumentsService, DocumentoEmpresa } from '../../../../core/services/documents'; // Ajusta ruta
@@ -15,7 +16,7 @@ import { PERMISSIONS } from '../../../../shared/constants/permissions';
 @Component({
   selector: 'app-policies-page',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSpinner],
   templateUrl: './policies-page.html',
   styleUrls: ['./policies-page.scss'],
 })
@@ -85,5 +86,9 @@ export class PoliciesPageComponent implements OnInit {
     if (confirm('¿Seguro deseas eliminar este documento normativo?')) {
       this.docsService.deleteDocument(id).subscribe(() => this.loadPolicies());
     }
+  }
+
+  isPdf(filename: string): boolean {
+    return filename?.toLowerCase().endsWith('.pdf');
   }
 }

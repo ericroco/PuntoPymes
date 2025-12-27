@@ -1,77 +1,304 @@
-.page-container {
+// ============================================
+// VARIABLES (BRANDING)
+// ============================================
+$bg-page: var(--color-background, #F9FAFB);
+$border-color: var(--color-border, #E5E7EB);
+$text-dark: var(--color-text-primary, #1F2937);
+$text-muted: var(--color-text-secondary, #6B7280);
+$radius-card: 16px;
+
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
+.page-container.expenses-page {
     padding: 24px;
+    background-color: $bg-page;
+    min-height: 100vh;
+    max-width: 1400px; // 🔥 Clave para que no se sienta "vacío" en monitores grandes
+    margin: 0 auto; // 🔥 Centra todo el contenido en la pantalla
+
+    @media (min-width: 768px) {
+        padding: 40px;
+    }
 }
 
+// ============================================
+// HEADER
+// ============================================
 .page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
 
-    h1 {
-        margin: 0;
+    @media (min-width: 768px) {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    .subtitle {
-        margin: 5px 0 0;
-        color: #666;
+    .header-text {
+        flex: 1;
+        min-width: 0;
+
+        h2 {
+            font-family: var(--font-family-base, 'Poppins', sans-serif);
+            font-size: 28px;
+            font-weight: 700;
+            color: $text-dark;
+            margin: 0 0 4px 0;
+
+            @media (min-width: 768px) {
+                font-size: 32px;
+            }
+        }
+
+        .subtitle {
+            margin: 0;
+            color: $text-muted;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+    }
+
+    // Botón Principal (Pill Shaped)
+    .btn-primary {
+        border-radius: 24px !important;
+        height: 44px;
+        padding: 0 24px !important;
+        font-weight: 600;
+        font-family: var(--font-family-base, 'Poppins', sans-serif);
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+        color: white;
+        border: none;
+
+        mat-icon {
+            margin-right: 8px;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
     }
 }
 
-.report-info {
+// ============================================
+// TABLA
+// ============================================
+.table-wrapper {
+    background: var(--color-surface, white);
+    border-radius: $radius-card;
+    border: 1px solid $border-color;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); // Sombra suave para dar profundidad
+}
+
+.custom-table {
+    width: 100%;
+
+    // Header
+    thead th {
+        background-color: #FAFBFC;
+        color: $text-muted;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 16px 20px;
+        border-bottom: 2px solid $border-color;
+        font-family: var(--font-family-base, 'Poppins', sans-serif);
+    }
+
+    // Body
+    tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid $border-color;
+        color: $text-dark;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+
+    // Hover
+    .hover-row {
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background-color: #F8F9FA;
+        }
+    }
+
+    // Info del reporte
+    .report-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .title {
+            font-weight: 600;
+            color: $text-dark;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .desc {
+            font-size: 0.85rem;
+            color: $text-muted;
+            line-height: 1.3;
+        }
+    }
+
+    .date-text {
+        color: $text-muted;
+        font-size: 0.9rem;
+    }
+
+    .amount-text {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: $text-dark;
+        font-family: var(--font-family-base, 'Poppins', sans-serif);
+    }
+
+    // Status Pills
+    .status-pill {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+
+        &.status-borrador {
+            background-color: #F3F4F6;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+        }
+
+        &.status-pendiente {
+            background-color: #FEF3C7;
+            color: #D97706;
+        }
+
+        &.status-aprobado {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        &.status-rechazado {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+    }
+
+    // Acciones
+    .col-actions {
+        width: 60px;
+        text-align: right;
+        padding-right: 16px !important;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        color: $text-muted;
+        transition: all 0.2s;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--color-primary);
+        }
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+// ============================================
+// LOADING & EMPTY STATES
+// ============================================
+.loading-state {
     display: flex;
     flex-direction: column;
-    padding: 8px 0;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: $text-muted;
 
-    .title {
-        font-weight: 500;
-        font-size: 14px;
+    mat-spinner {
+        margin-bottom: 20px;
     }
 
-    .desc {
-        font-size: 12px;
-        color: #888;
-    }
-}
-
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: bold;
-
-    &.status-draft {
-        background: #eeeeee;
-        color: #616161;
-        border: 1px solid #e0e0e0;
-    }
-
-    &.status-pending {
-        background: #fff3e0;
-        color: #ef6c00;
-    }
-
-    &.status-approved {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    &.status-rejected {
-        background: #ffebee;
-        color: #c62828;
+    p {
+        margin: 0;
+        font-size: 1rem;
     }
 }
 
 .empty-state {
     text-align: center;
-    padding: 40px;
-    color: #999;
+    padding: 80px 20px;
+    max-width: 500px;
+    margin: 0 auto; // Centrado perfecto
 
-    mat-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        margin-bottom: 10px;
-        opacity: 0.3;
+    .icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+
+        mat-icon {
+            font-size: 40px;
+            width: 40px;
+            height: 40px;
+            color: $text-muted;
+        }
+    }
+
+    h3 {
+        margin: 0 0 12px;
+        font-size: 22px;
+        font-weight: 600;
+        color: $text-dark;
+        font-family: var(--font-family-base, 'Poppins', sans-serif);
+    }
+
+    p {
+        color: $text-muted;
+        margin: 0 0 28px;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    // Usamos el mismo estilo de botón primario
+    .btn-primary {
+        @extend .btn-primary; // Reutiliza estilo del header
+    }
+}
+
+// Mobile
+@media (max-width: 768px) {
+    .page-header .btn-primary {
+        width: 100%;
+    }
+
+    .custom-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        min-width: 600px;
     }
 }

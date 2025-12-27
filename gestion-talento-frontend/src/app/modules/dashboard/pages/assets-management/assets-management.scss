@@ -1,168 +1,497 @@
-.assets-page-container {
-    padding: 24px;
-    max-width: 1400px;
+// ============================================
+// VARIABLES
+// ============================================
+$max-width-page: 1400px;
+$radius-card: 16px;
+$radius-input: 12px;
+
+// ============================================
+// CONTENEDOR DE PÁGINA
+// ============================================
+.page-container.assets-page {
+    padding: var(--spacing-md);
+    max-width: 100%;
     margin: 0 auto;
+    min-height: 80vh;
+
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
 }
 
-// --- CABECERA ---
+// ============================================
+// HEADER
+// ============================================
 .page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
     margin-bottom: 2rem;
+    max-width: $max-width-page;
+    margin-left: auto;
+    margin-right: auto;
 
-    h1 {
-        font-size: 1.8rem;
-        font-weight: 500;
-        margin: 0 0 0.5rem 0;
-        color: #333;
+    @media (min-width: 768px) {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    h2 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-size: 1.5rem;
+        margin: 0;
+
+        @media (min-width: 768px) {
+            font-size: 1.75rem;
+        }
     }
 
     .subtitle {
-        color: #666;
-        margin: 0;
+        margin: 4px 0 0;
+        color: var(--color-text-secondary);
+        font-size: 0.95rem;
+    }
+
+    // Botón Primario
+    button[mat-flat-button] {
+        border-radius: 24px !important;
+        height: 44px;
+        padding: 0 24px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+        box-shadow: 0 4px 12px var(--color-primary-rgb);
+        white-space: nowrap;
+
+        mat-icon {
+            margin-right: 8px;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            box-shadow: 0 6px 16px var(--color-primary-rgb);
+            transform: translateY(-2px);
+        }
     }
 }
 
-// --- FILTROS ---
+// ============================================
+// BARRA DE FILTROS (REFACTORIZADA)
+// ============================================
 .filters-bar {
     display: flex;
     gap: 1rem;
-    margin-bottom: 1rem;
-    background: white;
+    margin-bottom: 1.5rem;
+    background: var(--color-surface);
     padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: $radius-card;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-border);
+    max-width: $max-width-page;
+    margin-left: auto;
+    margin-right: auto;
 
-    .search-field {
-        flex: 1;
-    }
-
-    .status-field {
-        width: 200px;
-    }
-}
-
-// --- TABLA ---
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-
-    table {
-        width: 100%;
-
-        th.mat-header-cell {
-            background: #f9fafb;
-            color: #555;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-        }
-
-        // Miniatura de imagen
-        .asset-thumb {
-            width: 40px;
-            height: 40px;
-            border-radius: 6px;
-            object-fit: cover;
-            border: 1px solid #eee;
-        }
-
-        // Info Nombre
-        .asset-info {
-            display: flex;
-            flex-direction: column;
-
-            .asset-name {
-                font-weight: 500;
-                color: #2c3e50;
-            }
-
-            .asset-desc {
-                font-size: 0.8rem;
-                color: #95a5a6;
-            }
-        }
-
-        // Serial Badge
-        .serial-badge {
-            font-family: monospace;
-            background: #f1f1f1;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            color: #555;
-        }
-
-        // Actions
-        .actions-cell {
-            width: 60px;
-            text-align: right;
-        }
-    }
-
-    .no-data {
-        text-align: center;
-        padding: 3rem;
-        color: #999;
-        font-style: italic;
-    }
-}
-
-// --- BADGES DE ESTADO (COLORES) ---
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-
-    &.status-available {
-        background-color: #e6f4ea; // Verde claro
-        color: #1e8e3e;
-    }
-
-    &.status-assigned {
-        background-color: #e8f0fe; // Azul claro
-        color: #1967d2;
-    }
-
-    &.status-maintenance {
-        background-color: #fef7e0; // Amarillo claro
-        color: #f9ab00;
-    }
-
-    &.status-down {
-        background-color: #fce8e6; // Rojo claro
-        color: #d93025;
-    }
-}
-
-.info-icon {
-    font-size: 16px;
-    height: 16px;
-    width: 16px;
-    color: #1967d2;
-    margin-left: 5px;
-    cursor: help;
-    vertical-align: middle;
-}
-
-.warn-text {
-    color: #d93025;
-}
-
-// Mobile responsive básico
-@media (max-width: 768px) {
-    .filters-bar {
+    @media (max-width: 768px) {
         flex-direction: column;
-        gap: 0;
+        gap: 1rem;
     }
 
-    .status-field {
-        width: 100%;
+    // 🔥 Campo de búsqueda (70% del espacio disponible)
+    .search-field {
+        flex: 0 0 calc(70% - 0.5rem); // 70% menos la mitad del gap
+        min-width: 0; // Permite compresión si es necesario
+
+        @media (max-width: 768px) {
+            flex: 1 1 100%;
+        }
+    }
+
+    // 🔥 Filtro de estado (30% del espacio disponible)
+    .filter-field {
+        flex: 0 0 calc(30% - 0.5rem); // 30% menos la mitad del gap
+        min-width: 0; // Permite compresión si es necesario
+
+        @media (max-width: 768px) {
+            flex: 1 1 100%;
+        }
+    }
+}
+
+// ============================================
+// INPUTS SUAVES (IDENTIDAD VISUAL)
+// ============================================
+::ng-deep .custom-field {
+    width: 100%;
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: $radius-input !important;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        height: 44px;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+    }
+
+    .mdc-notched-outline__notch {
+        max-width: calc(100% - 50px) !important;
+    }
+
+    .mdc-floating-label {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    // Iconos
+    .mat-icon {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    // Focus
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary);
+        }
+
+        .mat-icon {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+    }
+
+    // Placeholder
+    input::placeholder {
+        color: var(--color-text-secondary);
+        opacity: 0.6;
+    }
+}
+
+// ============================================
+// PROGRESS BAR
+// ============================================
+.page-progress {
+    margin-bottom: 1rem;
+    max-width: $max-width-page;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 4px;
+}
+
+// ============================================
+// TABLA
+// ============================================
+.table-wrapper {
+    background: var(--color-surface);
+    border-radius: $radius-card;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    max-width: $max-width-page;
+    margin: 0 auto;
+}
+
+.custom-table.assets-table {
+    width: 100%;
+
+    // Header
+    thead th {
+        background-color: #FAFBFC;
+        color: var(--color-text-secondary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 16px;
+        border-bottom: 2px solid var(--color-border);
+        white-space: nowrap;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    // Body
+    tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+
+    // Hover
+    .hover-row {
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background-color: #F8F9FA;
+        }
+    }
+
+    // ============================================
+    // COLUMNAS ESPECÍFICAS
+    // ============================================
+
+    // Columna de imagen
+    .col-image {
+        width: 70px;
+        padding-right: 8px !important;
+    }
+
+    .img-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #F3F4F6;
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img.asset-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    // Info del activo
+    .asset-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .name {
+            font-weight: 600;
+            color: var(--color-text-primary);
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .desc {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            line-height: 1.3;
+        }
+    }
+
+    // Badge de categoría
+    .category-badge {
+        display: inline-block;
+        background: #EEF2FF;
+        color: #4F46E5;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    // Código serial
+    .serial-code {
+        font-family: 'Courier New', monospace;
+        background: #F3F4F6;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        display: inline-block;
+    }
+
+    // Container de estado
+    .status-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    // Pills de estado
+    .status-pill {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+
+        &.DISPONIBLE {
+            background-color: #DCFCE7;
+            color: #166534;
+        }
+
+        &.ASIGNADO {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        &.MANTENIMIENTO {
+            background-color: #FEF9C3;
+            color: #854D0E;
+        }
+
+        &.BAJA {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+    }
+
+    // Icono de info
+    .info-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--color-text-secondary);
+        cursor: help;
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--color-primary);
+        }
+    }
+
+    // Valor monetario
+    .value-text {
+        font-weight: 600;
+        color: var(--color-text-primary);
+        font-size: 0.95rem;
+    }
+
+    // Columna de acciones
+    .col-actions {
+        width: 60px;
+        text-align: right;
+        padding-right: 16px !important;
+    }
+
+    // Botón de acciones
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        color: var(--color-text-secondary);
+        transition: all 0.2s;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--color-text-primary);
+        }
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    // Estado sin datos
+    .no-data {
+        border-bottom: none !important;
+    }
+}
+
+// ============================================
+// EMPTY STATE
+// ============================================
+.empty-state-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--color-text-secondary);
+
+    mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        opacity: 0.3;
+        margin-bottom: 16px;
+    }
+
+    p {
+        margin: 0;
+        font-style: italic;
+        font-size: 0.95rem;
+    }
+}
+
+// ============================================
+// MENÚ DE ACCIONES
+// ============================================
+::ng-deep .mat-mdc-menu-panel {
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+::ng-deep .mat-mdc-menu-item {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    height: 44px;
+
+    mat-icon {
+        margin-right: 12px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &.menu-item-danger {
+        color: var(--color-danger);
+
+        mat-icon {
+            color: var(--color-danger);
+        }
+
+        &:hover {
+            background-color: rgba(239, 68, 68, 0.08);
+        }
+    }
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+.text-right {
+    text-align: right;
+}
+
+.text-muted {
+    color: var(--color-text-secondary);
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+@media (max-width: 768px) {
+    .page-header {
+        button[mat-flat-button] {
+            width: 100%;
+        }
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .custom-table.assets-table {
+        min-width: 800px;
     }
 }

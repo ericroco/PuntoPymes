@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProductivityService } from '../../services/productivity';
 import { AuthService } from '../../../auth/services/auth';
 import { PERMISSIONS } from '../../../../shared/constants/permissions';
+import { MatSpinner } from '@angular/material/progress-spinner';
 // Asumiremos que crearemos un dialogo simple después
 import { CreateAnnouncementDialogComponent } from '../../components/create-announcement-dialog/create-announcement-dialog';
 
@@ -22,7 +23,8 @@ import { CreateAnnouncementDialogComponent } from '../../components/create-annou
     MatIconModule,
     MatCardModule,
     MatChipsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSpinner
   ],
   templateUrl: './announcements.html',
   styleUrls: ['./announcements.scss']

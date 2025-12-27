@@ -1,137 +1,324 @@
-.page-container {
-    padding: 24px;
+// ============================================
+// VARIABLES
+// ============================================
+$max-width-page: 1200px;
+$radius-card: 16px;
+
+// ============================================
+// CONTENEDOR DE PÁGINA
+// ============================================
+.page-container.approvals-page {
+    padding: var(--spacing-md);
+    max-width: 100%;
+    margin: 0 auto;
+    min-height: 80vh;
+
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
 }
 
+// ============================================
+// HEADER ESTÁNDAR
+// ============================================
 .page-header {
-    margin-bottom: 24px;
+    margin-bottom: 2rem;
+    max-width: $max-width-page;
+    margin-left: auto;
+    margin-right: auto;
 
-    h1 {
+    h2 {
+        font-family: var(--font-family-base);
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-size: 1.5rem;
         margin: 0;
-        font-size: 24px;
-        font-weight: 500;
+
+        @media (min-width: 768px) {
+            font-size: 1.75rem;
+        }
     }
 
     .subtitle {
-        margin: 5px 0 0;
-        color: #666;
+        margin: 4px 0 0;
+        color: var(--color-text-secondary);
+        font-size: 0.95rem;
     }
 }
 
-/* Estilos de Tabs */
-.tab-icon {
-    margin-right: 8px;
+// ============================================
+// TABS & CONTENIDO
+// ============================================
+.approvals-content {
+    max-width: $max-width-page;
+    margin: 0 auto;
 }
 
-.badge-count {
-    background: #f44336;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 11px;
-    margin-left: 8px;
-    vertical-align: middle;
+// Estilo de Tabs Personalizado
+::ng-deep .custom-tabs {
+    .mat-mdc-tab-header {
+        border-bottom: 1px solid var(--color-border-light);
+        margin-bottom: 0;
+    }
+
+    .tab-label-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .badge-count {
+            background-color: var(--color-danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    }
 }
 
-/* Tabla */
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
+// Wrapper de Tabla (Card effect)
+.table-wrapper {
+    background: var(--color-surface);
+    border-radius: $radius-card;
+    overflow: hidden; // Para bordes redondeados
+    border: 1px solid var(--color-border-light);
+    margin-top: 1rem;
 }
 
-table {
+// ============================================
+// TABLA ESTÁNDAR
+// ============================================
+.custom-table {
     width: 100%;
-}
 
-/* Celda de Usuario con Avatar */
-.user-cell {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 0;
+    // Header
+    thead th {
+        background-color: #FAFAFA;
+        color: var(--color-text-secondary);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        padding: 16px;
+        border-bottom: 1px solid var(--color-border);
 
-    .avatar-placeholder {
-        width: 32px;
-        height: 32px;
-        background: #e0e0e0;
-        border-radius: 50%;
+        &.text-right {
+            text-align: right;
+        }
+    }
+
+    // Filas
+    tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--color-border-light);
+        color: var(--color-text-primary);
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+
+    .hover-row:hover {
+        background-color: #F8FAFC; // Color suave al hover
+    }
+
+    // User Cell
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary-light), #E3F2FD);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+
+            .name {
+                font-weight: 600;
+                color: var(--color-text-primary);
+            }
+
+            .role {
+                font-size: 0.8rem;
+                color: var(--color-text-secondary);
+            }
+        }
+    }
+
+    // Badges de Tipo (Solicitud)
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+        }
+
+        &.vacation {
+            background-color: #E3F2FD;
+            color: #1565C0;
+        }
+
+        // Azul
+        &.expense {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        // Verde
+    }
+
+    // Badges de Estado
+    .status-pill {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+
+        &.APROBADA {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        &.RECHAZADA {
+            background-color: #FFEBEE;
+            color: #C62828;
+        }
+
+        &.PENDIENTE {
+            background-color: #FFF3E0;
+            color: #E65100;
+        }
+    }
+
+    // Texto Secundario
+    .text-muted {
+        color: var(--color-text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .detail-text {
+        font-weight: 500;
+        color: var(--color-text-primary);
+    }
+
+    .fw-500 {
+        font-weight: 500;
+    }
+
+    .simple-badge {
+        background-color: #F5F5F5;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    // Acciones
+    .actions-cell {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        color: #555;
-    }
+        border-radius: 50%;
+        transition: all 0.2s;
 
-    .user-info {
-        display: flex;
-        flex-direction: column;
-
-        .name {
-            font-weight: 500;
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
         }
 
-        .role {
-            font-size: 11px;
-            color: #888;
+        &.approve {
+            color: var(--color-success);
+            background-color: rgba(34, 197, 94, 0.1);
+
+            &:hover {
+                background-color: var(--color-success);
+                color: white;
+            }
+        }
+
+        &.reject {
+            color: var(--color-danger);
+            background-color: rgba(239, 68, 68, 0.1);
+
+            &:hover {
+                background-color: var(--color-danger);
+                color: white;
+            }
         }
     }
 }
 
-/* Botones de Acción */
-.btn-approve {
-    color: #2e7d32;
-}
-
-.btn-reject {
-    color: #c62828;
-}
-
-/* Badges de Estado */
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-
-    &.status-approved {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    &.status-rejected {
-        background: #ffebee;
-        color: #c62828;
-    }
-
-    &.status-pending {
-        background: #fff3e0;
-        color: #ef6c00;
-    }
-}
-
+// ============================================
+// EMPTY STATE
+// ============================================
 .empty-state {
     text-align: center;
-    padding: 60px 20px;
-    color: #999;
+    padding: 4rem 1rem;
 
-    mat-icon {
-        font-size: 64px;
-        width: 64px;
-        height: 64px;
-        margin-bottom: 16px;
-        opacity: 0.2;
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #F0FDF4; // Verde muy suave
+        color: var(--color-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+
+        mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+        }
     }
 
+    h3 {
+        margin: 0 0 0.5rem;
+        color: var(--color-text-primary);
+        font-weight: 600;
+    }
 
+    p {
+        margin: 0;
+        color: var(--color-text-secondary);
+    }
 }
 
-/* approvals.page.scss */
-.chip-vacation {
-    --mdc-chip-elevated-container-color: #e3f2fd; // Azulito
-    --mdc-chip-label-text-color: #1565c0;
-}
-
-.chip-expense {
-    --mdc-chip-elevated-container-color: #e8f5e9; // Verdecito
-    --mdc-chip-label-text-color: #2e7d32;
+// Mobile Adjustments
+@media (max-width: 768px) {
+    .custom-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap; // Scroll horizontal en móvil
+    }
 }

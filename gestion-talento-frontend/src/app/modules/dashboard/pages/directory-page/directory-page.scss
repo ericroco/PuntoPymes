@@ -1,160 +1,307 @@
-$primary: #3f51b5;
-$bg-light: #f3f4f6;
-$text-dark: #1f2937;
-$text-muted: #6b7280;
+// ============================================
+// VARIABLES
+// ============================================
+$primary: #6366F1; // Indigo moderno
+$primary-dark: #4F46E5;
+$bg-page: #F9FAFB;
+$text-dark: #1F2937;
+$text-muted: #6B7280;
+$border-color: #E5E7EB;
+$radius-card: 16px;
+$radius-input: 12px;
 
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
 .page-container {
     padding: 24px;
-    background-color: $bg-light;
-    min-height: 100%;
+    background-color: $bg-page;
+    min-height: 100vh;
+    box-sizing: border-box; // Vital para evitar desbordes
+
+    @media (min-width: 768px) {
+        padding: 40px;
+    }
 }
 
-// Header
+// ============================================
+// HEADER SECTION
+// ============================================
 .header-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 40px;
-    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    width: 100%;
 
     .title-block {
-        margin-bottom: 20px;
+        text-align: center;
+        margin-bottom: 32px;
 
         h1 {
             font-size: 28px;
             font-weight: 700;
             color: $text-dark;
-            margin: 0;
+            margin: 0 0 8px 0;
+            font-family: 'Poppins', sans-serif;
+
+            @media (min-width: 768px) {
+                font-size: 32px;
+            }
         }
 
         p {
             color: $text-muted;
-            margin-top: 5px;
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.5;
         }
     }
 
-    .search-block {
+    // BARRA DE FILTROS (FIX GRID)
+    .filters-bar {
+        display: grid;
+        grid-template-columns: 1fr; // Móvil: Columna única
+        gap: 16px;
+        max-width: 800px;
+        margin: 0 auto;
         width: 100%;
-        max-width: 500px;
 
-        .search-field {
+        @media (min-width: 768px) {
+            grid-template-columns: 2fr 1fr; // PC: Buscador ancho, Sucursal estrecha
+        }
+
+        // Aseguramos que los mat-form-field ocupen el espacio de la celda
+        mat-form-field {
             width: 100%;
         }
-
-        ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-            display: none;
-        }
-
-        // Ocultar espacio de error
     }
 }
 
-// GRID SYSTEM
-.directory-grid {
-    display: grid;
-    // Responsive: Columnas automáticas de mínimo 280px
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
+// ============================================
+// INPUTS PERSONALIZADOS (FIX SUPERPOSICIÓN)
+// ============================================
+// Aplicar estilos específicos para evitar colisiones globales
+::ng-deep .filters-bar {
+
+    .mat-mdc-form-field {
+        width: 100%; // Ocupar todo el ancho del grid cell
+
+        // Wrapper del input
+        .mat-mdc-text-field-wrapper {
+            background-color: white !important;
+            border-radius: $radius-input !important;
+            border: 1px solid $border-color !important;
+            padding: 0 12px !important;
+            height: 50px !important; // Altura fija para evitar colapsos
+            display: flex;
+            align-items: center; // Centrar contenido verticalmente
+        }
+
+        // Quitar bordes y fondos nativos que causan doble borde
+        .mdc-line-ripple,
+        .mdc-notched-outline {
+            display: none !important;
+        }
+
+        // Iconos (Prefix/Suffix)
+        .mat-mdc-form-field-icon-prefix,
+        .mat-mdc-form-field-icon-suffix {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px 0 0; // Espacio derecho para el prefix
+
+            mat-icon {
+                color: $text-muted;
+            }
+        }
+
+        .mat-mdc-form-field-icon-suffix {
+            padding: 0 0 0 8px; // Espacio izquierdo para suffix
+        }
+
+        // Input Texto
+        input.mat-mdc-input-element {
+            height: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            // Importante: vertical align middle
+        }
+
+        // Select
+        .mat-mdc-select-trigger {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        // Label flotante (Lo ocultamos o ajustamos si quieres placeholder)
+        // Aquí asumimos que usas placeholder, así que ocultamos label flotante para evitar choque
+        .mdc-floating-label {
+            display: none !important;
+        }
+
+        // Estado Focus
+        &.mat-focused .mat-mdc-text-field-wrapper {
+            border-color: $primary !important;
+            box-shadow: 0 0 0 3px rgba($primary, 0.1);
+        }
+
+        // Espacio de error (subscript) eliminado para layout compacto
+        .mat-mdc-form-field-subscript-wrapper {
+            display: none !important;
+        }
+    }
 }
 
-// TARJETA DE EMPLEADO
+// ============================================
+// GRID DE EMPLEADOS
+// ============================================
+.directory-grid {
+    display: grid;
+    // Responsive fluido: mínimo 280px por tarjeta
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+// ============================================
+// TARJETA DE EMPLEADO (FIX OVERFLOW)
+// ============================================
 .employee-card {
     background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-radius: $radius-card;
+    overflow: hidden; // Vital para esquinas redondeadas
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    border: 1px solid $border-color;
+    height: 100%; // Para igualar alturas en grid
 
     &:hover {
         transform: translateY(-4px);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        border-color: rgba($primary, 0.3);
     }
 
-    // Decoración Superior
+    // Banda decorativa
     .card-header-bg {
-        height: 60px;
-        background: linear-gradient(135deg, $primary 0%, lighten($primary, 20%) 100%);
+        height: 80px;
+        background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+        width: 100%;
     }
 
-    // Avatar (superpuesto)
+    // Avatar
     .avatar-container {
-        width: 80px;
-        height: 80px;
-        margin: -40px auto 10px; // Sube la imagen para que pise el fondo
+        width: 96px;
+        height: 96px;
+        margin: -48px auto 16px; // Subir mitad del tamaño
         border-radius: 50%;
         border: 4px solid white;
         background: white;
-        overflow: hidden;
+        position: relative; // Para z-index
+        z-index: 2;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+            color: $primary-dark;
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
     }
 
+    // Cuerpo
     .card-body {
-        padding: 0 16px 16px;
+        padding: 0 24px 24px;
         text-align: center;
-        flex-grow: 1;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
 
         .emp-name {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: $text-dark;
             margin: 0 0 4px;
+            font-family: 'Poppins', sans-serif;
         }
 
         .emp-position {
-            font-size: 14px;
+            font-size: 0.9rem;
             color: $primary;
             font-weight: 500;
-            margin-bottom: 12px;
+            margin: 0 0 16px;
         }
 
-        // Chips de Dept/Sede
+        // Tags / Chips
         .emp-tags {
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin-bottom: 16px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
 
             .tag {
-                font-size: 11px;
-                padding: 2px 8px;
-                border-radius: 10px;
+                font-size: 0.75rem;
+                padding: 4px 10px;
+                border-radius: 12px;
                 font-weight: 600;
-
-                &.dept {
-                    background: #f3f4f6;
-                    color: #4b5563;
-                }
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
 
                 &.branch {
-                    background: #eff6ff;
-                    color: #2563eb;
+                    background: #EEF2FF;
+                    color: $primary-dark;
+
+                    mat-icon {
+                        font-size: 14px;
+                        width: 14px;
+                        height: 14px;
+                    }
                 }
             }
         }
 
+        // Contact Info
         .contact-info {
             text-align: left;
-            margin-top: 10px;
+            margin-top: auto; // Empujar al fondo si sobra espacio
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
 
             .info-row {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                padding: 6px;
-                border-radius: 6px;
-                cursor: pointer;
+                gap: 12px;
+                padding: 8px 12px;
+                border-radius: 8px;
                 transition: background 0.2s;
+                cursor: pointer;
+                background-color: #F9FAFB; // Fondo sutil por defecto
 
                 &:hover {
-                    background: #f9fafb;
+                    background: #EEF2FF;
                 }
 
                 mat-icon {
@@ -165,7 +312,7 @@ $text-muted: #6b7280;
                 }
 
                 span {
-                    font-size: 13px;
+                    font-size: 0.85rem;
                     color: $text-dark;
                     white-space: nowrap;
                     overflow: hidden;
@@ -175,48 +322,63 @@ $text-muted: #6b7280;
         }
     }
 
+    // Acciones
     .card-actions {
-        padding: 16px;
-        border-top: 1px solid #f3f4f6;
+        padding: 16px 24px;
+        border-top: 1px solid $border-color;
+        background-color: #FAFAFA;
 
         .full-btn {
             width: 100%;
+            height: 44px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+            box-shadow: 0 4px 6px rgba($primary, 0.2);
+            transition: all 0.2s;
+
+            mat-icon {
+                margin-right: 8px;
+            }
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 12px rgba($primary, 0.3);
+            }
         }
     }
 }
 
-// Empty State
+// ============================================
+// ESTADOS (LOADING / EMPTY)
+// ============================================
+.loading-state,
 .empty-state {
     text-align: center;
-    padding: 60px;
+    padding: 60px 20px;
+    width: 100%;
+}
 
+.empty-state {
     mat-icon {
         font-size: 64px;
         height: 64px;
         width: 64px;
-        color: #d1d5db;
+        color: #D1D5DB;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: $text-dark;
+        margin: 0 0 8px;
     }
 
     p {
+        margin-bottom: 24px;
         color: $text-muted;
-        margin-top: 10px;
-    }
-}
-
-.filters-bar {
-    display: flex;
-    gap: 16px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-
-    .search-field {
-        flex: 2;
-        min-width: 280px;
-    }
-
-    .branch-field {
-        flex: 1;
-        min-width: 200px;
     }
 }
 
@@ -224,16 +386,4 @@ $text-muted: #6b7280;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-
-    mat-icon {
-        font-size: 64px;
-        height: 64px;
-        width: 64px;
-        color: #ccc;
-    }
 }

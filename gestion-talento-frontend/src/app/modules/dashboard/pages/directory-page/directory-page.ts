@@ -9,13 +9,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EmployeesService, Employee, DirectorioEmpleado } from '../../services/employees';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-directory-page',
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatIconModule, MatButtonModule,
-    MatInputModule, MatFormFieldModule, MatCardModule, MatTooltipModule, MatSelectModule
+    MatInputModule, MatFormFieldModule, MatCardModule, MatTooltipModule, MatSelectModule, MatSpinner
   ],
   templateUrl: './directory-page.html',
   styleUrls: ['./directory-page.scss']
@@ -86,5 +87,12 @@ export class DirectoryPageComponent implements OnInit {
 
   sendMail(email: string) {
     window.location.href = `mailto:${email}`;
+  }
+
+  // Agregar este método en tu componente
+  getInitials(nombre: string, apellido: string): string {
+    const firstInitial = nombre?.charAt(0)?.toUpperCase() || '';
+    const lastInitial = apellido?.charAt(0)?.toUpperCase() || '';
+    return `${firstInitial}${lastInitial}` || '??';
   }
 }

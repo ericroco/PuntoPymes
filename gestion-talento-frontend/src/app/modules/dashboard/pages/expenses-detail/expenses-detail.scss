@@ -1,94 +1,332 @@
-.page-container {
+// ============================================
+// VARIABLES
+// ============================================
+$primary: #6366F1;
+$bg-page: #F9FAFB;
+$text-dark: #1F2937;
+$text-muted: #6B7280;
+$border-color: #E5E7EB;
+$radius-card: 16px;
+
+// ============================================
+// CONTENEDOR
+// ============================================
+.page-container.detail-page {
     padding: 24px;
-    max-width: 900px;
+    background-color: $bg-page;
+    min-height: 100vh;
+    max-width: 1000px; // Un poco más ancho para la tabla
     margin: 0 auto;
+
+    @media (min-width: 768px) {
+        padding: 40px;
+    }
 }
 
-.detail-header {
+// ============================================
+// HEADER
+// ============================================
+.page-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
     gap: 16px;
-    margin-bottom: 24px;
 
-    .header-info {
-        flex: 1;
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
 
-        h1 {
-            margin: 0;
-            font-size: 24px;
+        .back-btn {
+            background: white;
+            border: 1px solid $border-color;
+            color: $text-dark;
+            transition: all 0.2s;
+
+            &:hover {
+                background: #F3F4F6;
+            }
         }
 
-        p {
-            margin: 0;
-            color: #666;
+        .header-info {
+            h1 {
+                font-size: 24px;
+                font-weight: 700;
+                color: $text-dark;
+                margin: 0;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .subtitle {
+                margin: 4px 0 0;
+                color: $text-muted;
+                font-size: 0.95rem;
+            }
+        }
+    }
+
+    // STATUS PILL (Consistente con tablas)
+    .status-pill {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &.status-borrador {
+            background-color: #F3F4F6;
+            color: #4B5563;
+        }
+
+        &.status-pendiente {
+            background-color: #FFF7ED;
+            color: #C2410C;
+        }
+
+        &.status-aprobado {
+            background-color: #ECFDF5;
+            color: #047857;
+        }
+
+        &.status-rechazado {
+            background-color: #FEF2F2;
+            color: #B91C1C;
         }
     }
 }
 
+// ============================================
+// SUMMARY CARD (Estilo Moderno)
+// ============================================
 .summary-card {
     background: white;
-    padding: 24px;
-    border-radius: 8px;
+    border-radius: $radius-card;
+    padding: 24px 32px;
+    border: 1px solid $border-color;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    border-left: 5px solid #2196f3;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+    gap: 20px;
 
-    .total-section {
+    .total-block {
         display: flex;
         flex-direction: column;
 
         .label {
-            font-size: 12px;
+            font-size: 0.85rem;
             text-transform: uppercase;
-            color: #666;
+            color: $text-muted;
+            font-weight: 600;
             letter-spacing: 1px;
+            margin-bottom: 4px;
         }
 
         .amount {
-            font-size: 32px;
-            font-weight: bold;
-            color: #333;
+            font-size: 36px;
+            font-weight: 700;
+            color: $text-dark;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1;
+        }
+    }
+
+    // BOTÓN DE ACCIÓN (Pill Gradient)
+    .submit-btn {
+        border-radius: 24px;
+        padding: 0 28px;
+        height: 48px;
+        font-weight: 600;
+        background: linear-gradient(135deg, $primary 0%, darken($primary, 10%) 100%);
+        box-shadow: 0 4px 10px rgba($primary, 0.3);
+        transition: transform 0.2s;
+
+        mat-icon {
+            margin-right: 8px;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba($primary, 0.4);
         }
     }
 }
 
-.table-toolbar {
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+// ============================================
+// TABLA DE GASTOS
+// ============================================
+.table-wrapper {
+    background: white;
+    border-radius: $radius-card;
+    border: 1px solid $border-color;
+    overflow: hidden;
 
-    h3 {
-        margin: 0;
+    &.disabled-table {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .table-header {
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid $border-color;
+
+        h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: $text-dark;
+        }
+
+        // Botón Secundario (Stroked pero redondeado)
+        button {
+            border-radius: 12px;
+            font-weight: 600;
+            border: 1.5px solid rgba($primary, 0.5);
+            color: $primary;
+
+            mat-icon {
+                margin-right: 6px;
+            }
+
+            &:hover {
+                background-color: #EEF2FF;
+            }
+        }
     }
 }
 
-.items-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
+.custom-table {
+    width: 100%;
+
+    thead th {
+        background-color: #FAFAFA;
+        color: $text-muted;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        padding: 16px 24px;
+        border-bottom: 1px solid $border-color;
+    }
+
+    tbody td {
+        padding: 16px 24px;
+        border-bottom: 1px solid $border-color;
+        color: $text-dark;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+
+    .hover-row:hover {
+        background-color: #F9FAFB;
+    }
+
+    // Celdas Específicas
+    .category-badge {
+        background-color: #F3F4F6;
+        color: $text-dark;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .text-dark {
+        color: $text-dark;
+    }
+
+    .font-500 {
+        font-weight: 500;
+    }
+
+    .amount-text {
+        font-size: 1rem;
+        color: $text-dark;
+    }
+
+    // Acciones (Icon Buttons circulares)
+    .actions-cell {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+
+            &.view {
+                color: $primary;
+
+                &:hover {
+                    background-color: #EEF2FF;
+                }
+            }
+
+            &.delete {
+                color: #EF4444;
+
+                &:hover {
+                    background-color: #FEF2F2;
+                }
+            }
+        }
+    }
+}
+
+// ============================================
+// EMPTY & LOADING
+// ============================================
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: $text-muted;
+    gap: 16px;
 }
 
 .empty-items {
-    padding: 40px;
     text-align: center;
-    color: #999;
-    font-style: italic;
-}
+    padding: 60px 20px;
 
-.status-borrador {
-    background-color: #eee;
-    color: #555;
-}
+    .icon-box {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background-color: #F3F4F6;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
 
-.status-pendiente {
-    background-color: #fff3e0;
-    color: #ef6c00;
-}
+        mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+        }
+    }
 
-.status-aprobado {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    p {
+        margin-bottom: 24px;
+        color: $text-muted;
+    }
 }

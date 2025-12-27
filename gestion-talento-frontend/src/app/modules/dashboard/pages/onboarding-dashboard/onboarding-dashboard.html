@@ -1,56 +1,72 @@
-<div class="page-container onboarding-dashboard">
+<div class="page-container onboarding-page">
 
   <header class="welcome-header">
-    <h1>¡Bienvenido/a a Punto Pymes!</h1>
-    <p>Completa estos pasos iniciales para configurar tu cuenta y empezar.</p>
+    <div class="brand-icon-wrapper">
+      <mat-icon>rocket_launch</mat-icon>
+    </div>
+    <h1>¡Bienvenido a Punto Pymes!</h1>
+    <p class="subtitle">Completa estos pasos para configurar tu cuenta y despegar.</p>
   </header>
 
-  <div *ngIf="isLoading" class="loading-container" style="display: flex; justify-content: center; padding: 50px;">
-    <mat-spinner diameter="50"></mat-spinner>
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50" color="primary"></mat-spinner>
+    <p>Preparando tu experiencia...</p>
   </div>
 
-  <mat-stepper orientation="vertical" linear #stepper *ngIf="!isLoading && onboardingTasks.length > 0">
+  <div class="onboarding-card mat-elevation-z2" *ngIf="!isLoading && onboardingTasks.length > 0">
 
-    <mat-step *ngFor="let task of onboardingTasks; let i = index" [completed]="task.isComplete">
-      <ng-template matStepLabel>
-        <span [class.task-complete]="task.isComplete">{{ task.title }}</span>
-      </ng-template>
+    <mat-stepper orientation="vertical" linear #stepper class="dynamic-stepper">
 
-      <div class="step-content">
-        <p>{{ task.description }}</p>
+      <mat-step *ngFor="let task of onboardingTasks; let i = index" [completed]="task.isComplete">
 
-        <div class="step-actions"
-          style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 10px;">
+        <ng-template matStepLabel>
+          <span [class.completed-label]="task.isComplete">{{ task.title }}</span>
+        </ng-template>
 
-          <a *ngIf="task.link" mat-stroked-button color="primary" [routerLink]="task.link">
-            Ir a la sección <mat-icon>arrow_forward</mat-icon>
-          </a>
+        <div class="step-body">
+          <p class="description">{{ task.description }}</p>
 
-          <mat-checkbox [(ngModel)]="task.isComplete" (ngModelChange)="toggleTaskCompletion(task)" color="primary">
-            {{ task.isComplete ? 'Completada' : 'Marcar como completada' }}
-          </mat-checkbox>
+          <div class="actions-row">
+            <a *ngIf="task.link" mat-stroked-button color="primary" [routerLink]="task.link" class="action-btn">
+              Ir a configurar <mat-icon>arrow_forward</mat-icon>
+            </a>
 
+            <mat-checkbox [(ngModel)]="task.isComplete" (ngModelChange)="toggleTaskCompletion(task)" color="primary">
+              <span [class.text-success]="task.isComplete">
+                {{ task.isComplete ? '¡Listo!' : 'Marcar como completado' }}
+              </span>
+            </mat-checkbox>
+          </div>
         </div>
-      </div>
-    </mat-step>
 
-    <mat-step label="¡Todo Listo!">
-      <div class="step-content final-step">
-        <p>Has completado todos los pasos iniciales. ¡Bienvenido/a al equipo!</p>
-        <br>
-        <button mat-flat-button color="primary" routerLink="/dashboard/overview">
-          Ir al Dashboard Principal
-        </button>
-      </div>
-    </mat-step>
+      </mat-step>
 
-  </mat-stepper>
+      <mat-step label="¡Todo Listo!">
+        <div class="step-body final-step">
+          <div class="success-icon">
+            <mat-icon>verified</mat-icon>
+          </div>
+          <h3>¡Configuración Completada!</h3>
+          <p>Ya eres parte oficial del equipo. Accede a tu panel principal para comenzar.</p>
 
-  <div *ngIf="!isLoading && onboardingTasks.length === 0" class="empty-state"
-    style="text-align: center; padding: 40px; color: #666;">
-    <mat-icon style="font-size: 48px; width: 48px; height: 48px;">sentiment_satisfied</mat-icon>
+          <button mat-flat-button color="primary" routerLink="/dashboard/overview" class="btn-large">
+            Ir al Dashboard
+          </button>
+        </div>
+      </mat-step>
+
+    </mat-stepper>
+  </div>
+
+  <div *ngIf="!isLoading && onboardingTasks.length === 0" class="empty-state">
+    <div class="icon-placeholder">
+      <mat-icon>check_circle_outline</mat-icon>
+    </div>
     <h3>¡Todo al día!</h3>
     <p>No tienes tareas de inducción pendientes.</p>
+    <button mat-stroked-button color="primary" routerLink="/dashboard/overview">
+      Volver al Inicio
+    </button>
   </div>
 
 </div>

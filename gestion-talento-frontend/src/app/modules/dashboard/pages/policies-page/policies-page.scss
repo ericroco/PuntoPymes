@@ -1,157 +1,261 @@
-// Variables de color (ajustadas a tu identidad visual probable)
-$primary-color: #3f51b5; // Azul Material
-$text-dark: #1f2937;
-$text-muted: #6b7280;
-$bg-light: #f3f4f6;
-$border-color: #e5e7eb;
+// ============================================
+// VARIABLES (BRANDING)
+// ============================================
+$bg-page: var(--color-background, #F9FAFB);
+$border-color: var(--color-border, #E5E7EB);
+$text-dark: var(--color-text-primary, #1F2937);
+$text-muted: var(--color-text-secondary, #6B7280);
+$radius-card: 16px;
 
-// Contenedor Principal
-.page-container {
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
+.page-container.policies-page {
     padding: 24px;
-    background-color: $bg-light;
-    min-height: 100%; // Asegura que cubra la pantalla
-    box-sizing: border-box;
+    background-color: $bg-page;
+    min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    @media (min-width: 768px) {
+        padding: 40px;
+    }
 }
 
-// Encabezado (Título y Botón)
-.header-section {
+// ============================================
+// HEADER
+// ============================================
+.page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
 
-    .title-group {
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
+    @media (min-width: 768px) {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-text {
+        h2 {
+            font-family: var(--font-family-base, 'Poppins', sans-serif);
+            font-size: 28px;
+            font-weight: 700;
             color: $text-dark;
-            margin: 0 0 4px 0;
+            margin: 0;
         }
 
-        p {
-            font-size: 14px;
+        .subtitle {
+            margin: 4px 0 0;
             color: $text-muted;
-            margin: 0;
+            font-size: 1rem;
         }
     }
 
-    // Si usamos botones mat-flat-button, ya tienen estilo, 
-    // pero aseguramos alineación aquí si fuera necesario.
+    // Botón Principal
+    button[mat-flat-button] {
+        border-radius: 24px;
+        height: 44px;
+        padding: 0 24px;
+        font-weight: 600;
+        font-family: var(--font-family-base);
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        color: white;
+
+        mat-icon {
+            margin-right: 8px;
+        }
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+        }
+    }
 }
 
-// Contenedor de la Tabla (Card style)
-.table-container {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-    overflow: hidden; // Para que el border-radius corte las esquinas de la tabla
+// ============================================
+// TABLA
+// ============================================
+.table-wrapper {
+    background: var(--color-surface, white);
+    border-radius: $radius-card;
+    border: 1px solid $border-color;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-// Estilos específicos de la Tabla Material
-table {
+.custom-table {
     width: 100%;
 
-    th.mat-header-cell {
-        background-color: #f9fafb; // Gris muy suave para cabecera
-        color: #374151;
-        font-weight: 600;
-        font-size: 13px;
+    // Header
+    thead th {
+        background-color: #FAFAFA;
+        color: $text-muted;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 16px;
+        font-weight: 600;
+        padding: 16px 24px;
         border-bottom: 1px solid $border-color;
     }
 
-    td.mat-cell {
-        padding: 16px;
+    // Filas
+    tbody td {
+        padding: 16px 24px;
+        border-bottom: 1px solid $border-color;
         color: $text-dark;
-        border-bottom: 1px solid lighten($border-color, 5%);
-        font-size: 14px;
-
-        // Íconos dentro de la celda
-        mat-icon {
-            vertical-align: middle;
-
-            &.icon-pdf {
-                color: #ef4444;
-            }
-
-            // Rojo para PDFs
-            &.icon-doc {
-                color: #3b82f6;
-            }
-
-            // Azul para Docs
-        }
+        font-size: 0.95rem;
+        vertical-align: middle;
     }
 
-    // Efecto Hover en las filas
-    tr.mat-row {
-        transition: background-color 0.2s ease;
+    .hover-row:hover {
+        background-color: #F9FAFB;
+    }
 
-        &:hover {
-            background-color: #f3f4f6;
+    // --- CELDAS ESPECÍFICAS ---
+
+    // Icono Documento
+    .col-icon {
+        width: 60px;
+        text-align: center;
+    }
+
+    .doc-icon {
+        color: var(--color-primary); // Default (Word/Doc)
+
+        &.pdf {
+            color: #EF4444;
+        }
+
+        // Rojo específico para PDF
+    }
+
+    // Nombre Documento
+    .doc-name {
+        font-weight: 500;
+        color: $text-dark;
+    }
+
+    // Chips de Categoría
+    .category-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        background-color: #F3F4F6;
+        color: $text-dark;
+        border: 1px solid #E5E7EB;
+        letter-spacing: 0.5px;
+    }
+
+    .text-muted {
+        color: $text-muted;
+        font-size: 0.9rem;
+    }
+
+    // Acciones
+    .text-right {
+        text-align: right;
+    }
+
+    .actions-group {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        transition: all 0.2s;
+
+        &.view {
+            color: var(--color-primary);
+
+            &:hover {
+                background-color: var(--color-surface-variant, #F3F4F6);
+            }
+        }
+
+        &.delete {
+            color: #EF4444;
+
+            &:hover {
+                background-color: #FEF2F2;
+            }
         }
     }
 }
 
-// CHIPS DE CATEGORÍA (Pills)
-// Estilo visual para las etiquetas: "POLÍTICA", "REGLAMENTO"
-.category-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    // Estilo por defecto (Azul corporativo suave)
-    background-color: #eff6ff;
-    color: #1e40af;
-    border: 1px solid #dbeafe;
-
-    // Variaciones opcionales si quisieras diferenciar por tipo
-    &.type-reglamento {
-        background-color: #fef2f2;
-        color: #991b1b;
-        border-color: #fee2e2;
-    }
-}
-
-// Estado Vacío (Empty State)
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
+// ============================================
+// EMPTY & LOADING
+// ============================================
+.loading-state {
+    padding: 60px;
     text-align: center;
+    color: $text-muted;
 
-    mat-icon {
-        font-size: 64px;
-        height: 64px;
-        width: 64px;
-        color: #d1d5db; // Gris claro
-        margin-bottom: 16px;
+    mat-spinner {
+        margin: 0 auto 16px;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+
+    .icon-wrapper {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background-color: #F3F4F6;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+
+        mat-icon {
+            font-size: 36px;
+            width: 36px;
+            height: 36px;
+        }
+    }
+
+    h3 {
+        margin: 0 0 8px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: $text-dark;
     }
 
     p {
-        font-size: 16px;
         color: $text-muted;
-        max-width: 300px;
-        margin: 0;
+        margin: 0 0 24px;
+    }
+
+    // Botón secundario (Stroked con color primario)
+    button[mat-stroked-button] {
+        border-radius: 12px;
+        font-weight: 600;
+        border: 1.5px solid var(--color-primary);
+        color: var(--color-primary);
+
+        &:hover {
+            background-color: var(--color-surface-variant);
+        }
     }
 }
 
-// Botones de acción (Icon buttons)
-.action-btn {
-    opacity: 0.7;
-    transition: opacity 0.2s;
-
-    &:hover {
-        opacity: 1;
-        background-color: rgba(0, 0, 0, 0.04);
+// Mobile
+@media (max-width: 768px) {
+    .custom-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap; // Scroll horizontal
     }
 }

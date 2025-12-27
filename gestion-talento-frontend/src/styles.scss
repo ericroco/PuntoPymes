@@ -946,3 +946,69 @@ mat-progress-spinner {
   // Opcional: Si quieres asegurarte que no haya mezclas de color extrañas
   background-image: none !important;
 }
+
+
+/* ============================================================
+   GLOBAL FIX: FORZAR FONDOS BLANCOS (CORRECCIÓN DE TINTE ROJO)
+   ============================================================ */
+
+// 1. TABLAS (El problema principal de tu imagen)
+// Forza que la tabla y sus celdas tengan fondo blanco
+.mat-mdc-table,
+table.mat-table {
+  background-color: #ffffff !important;
+}
+
+// Asegura que las filas no sean transparentes (heredando el rojo del padre)
+.mat-mdc-row,
+.mat-mdc-header-row {
+  background-color: #ffffff;
+}
+
+// 2. CALENDARIOS (Datepicker)
+// El contenedor flotante del calendario y el calendario en sí
+.mat-datepicker-content {
+  background-color: #ffffff !important;
+
+  // Arregla el fondo del calendario interno
+  .mat-calendar {
+    background-color: #ffffff !important;
+  }
+}
+
+// 3. TARJETAS Y DIÁLOGOS
+// Asegura que la superficie de los diálogos y cards sea blanca pura
+.mat-mdc-card,
+.mdc-card {
+  background-color: #ffffff !important;
+}
+
+.mdc-dialog__surface {
+  background-color: #ffffff !important;
+}
+
+// 4. PANELES FLOTANTES (Selects, Menús, Autocomplete)
+// Para que las opciones desplegables no se vean rojas
+.mat-mdc-select-panel,
+.mat-mdc-menu-panel,
+.mat-mdc-autocomplete-panel {
+  background-color: #ffffff !important;
+}
+
+// 5. PAGINADORES (Debajo de las tablas)
+.mat-mdc-paginator {
+  background-color: #ffffff !important;
+}
+
+/* ============================================================
+   FIX OPCIONAL: CONTENEDORES PROPIOS
+   ============================================================ */
+
+// Si usas clases como .table-container o .table-wrapper en tu HTML,
+// asegúrate de que también sean blancos para evitar bordes rosados.
+.table-container,
+.table-wrapper,
+.mat-elevation-z2,
+.mat-elevation-z8 {
+  background-color: #ffffff !important;
+}

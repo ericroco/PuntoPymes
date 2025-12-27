@@ -1,122 +1,654 @@
-.selector-container {
+// ============================================
+// 1. VARIABLES - CONTINUIDAD CON LOGIN
+// ============================================
+$primary: #E74C3C;
+$primary-dark: #C0392B;
+$primary-light: #FF6B5A;
+$text-main: #2C3E50;
+$text-light: #7F8C8D;
+$success: #2ECC71;
+
+// Colores workspace
+$bg-light: #F5F7FA;
+$bg-white: #FFFFFF;
+$border-subtle: #E2E8F0;
+$text-muted: #64748B;
+
+// ============================================
+// 2. CONTENEDOR PRINCIPAL
+// ============================================
+.hub-container {
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f5f7fa;
-    padding: 20px;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    background: $bg-white;
+    position: relative;
 }
 
-.selector-content {
-    background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+// ============================================
+// 3. HERO HEADER CON GRADIENTE ROJO (ESTILO LOGIN)
+// ============================================
+.hub-visual-bg {
+    position: relative;
+    z-index: 5;
     width: 100%;
-    max-width: 600px;
-    text-align: center;
+    background: radial-gradient(circle at 20% 30%, #ff7e5f 0%, $primary 30%, $primary-dark 70%);
+    padding: 2.5rem 2rem 8rem;
+    overflow: hidden;
 
-    .header {
-        margin-bottom: 40px;
+    @media (max-width: 768px) {
+        padding: 2rem 1.5rem 6rem;
+    }
 
-        .logo mat-icon {
-            font-size: 48px;
-            width: 48px;
-            height: 48px;
-            color: #3f51b5;
-            margin-bottom: 10px;
+    // Textura de ruido (igual que login)
+    .texture-overlay {
+        position: absolute;
+        inset: 0;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        pointer-events: none;
+    }
+
+    // Círculos decorativos (igual que login)
+    .circle {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+        filter: blur(60px);
+
+        &.c1 {
+            width: 450px;
+            height: 450px;
+            top: -150px;
+            right: -150px;
+            opacity: 0.5;
         }
 
+        &.c2 {
+            width: 600px;
+            height: 600px;
+            bottom: -300px;
+            left: -200px;
+            opacity: 0.35;
+        }
+
+        &.c3 {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            right: 15%;
+            opacity: 0.25;
+            background: radial-gradient(circle, rgba(255, 126, 95, 0.3) 0%, transparent 70%);
+        }
+    }
+}
+
+// ============================================
+// 4. HEADER DENTRO DEL HERO ROJO
+// ============================================
+.hub-header {
+    position: relative;
+    z-index: 10;
+    max-width: 1280px;
+    margin: 0 auto 3.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+
+    @media (max-width: 768px) {
+        margin-bottom: 2.5rem;
+        gap: 16px;
+    }
+
+    .brand-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(20px);
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s;
+
+        mat-icon {
+            color: white;
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+    }
+
+    .user-greeting {
+        flex: 1;
+        text-align: center;
+
         h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin: 0;
+            color: white;
+            letter-spacing: -1.2px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
         p {
-            color: #666;
+            margin: 12px 0 0;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 1.1rem;
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 768px) {
+            order: 3;
+            width: 100%;
+            text-align: left;
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 0.95rem;
+                max-width: 100%;
+            }
         }
     }
-}
 
-.company-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.company-card {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-
-    &:hover {
-        border-color: #3f51b5;
-        background-color: #f8f9ff;
-        transform: translateX(5px);
-    }
-
-    .card-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
+    .user-profile-widget {
         display: flex;
         align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 800;
-        font-size: 1.5rem;
-        margin-right: 20px;
-    }
+        gap: 14px;
+        background: rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(20px);
+        padding: 10px 10px 10px 20px;
+        border-radius: 50px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s;
 
-    .card-info {
-        flex: 1;
-
-        h3 {
-            margin: 0 0 5px 0;
-            font-size: 1.1rem;
-            font-weight: 600;
+        .avatar-circle {
+            width: 44px;
+            height: 44px;
+            background: white;
+            color: $primary;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .role-badge {
-            background: #e3f2fd;
-            color: #1565c0;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-right: 8px;
+        .user-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin-right: 10px;
+
+            .status-indicator {
+                width: 8px;
+                height: 8px;
+                background: $success;
+                border-radius: 50%;
+                display: inline-block;
+                box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+                animation: pulse 2s ease-in-out infinite;
+            }
+
+            .active-text {
+                font-size: 0.7rem;
+                color: rgba(255, 255, 255, 0.9);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+            }
         }
 
-        .detail {
-            color: #999;
-            font-size: 0.85rem;
+        button {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.2s;
+
+            &:hover {
+                color: white;
+                transform: scale(1.1);
+            }
         }
-    }
-
-    .card-action {
-        color: #ccc;
-    }
-
-    /* Estilo para la tarjeta de crear */
-    .create-card {
-        border-style: dashed;
-        background-color: #f9f9f9;
 
         &:hover {
-            border-color: var(--color-primary, #3f51b5);
-            background-color: #fff;
+            background: rgba(255, 255, 255, 0.25);
+        }
+    }
+}
+
+// ============================================
+// 5. ZONA DE CONTENIDO (ELEVADA SOBRE ROJO)
+// ============================================
+.hub-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1280px;
+    width: 100%;
+    margin: -5rem auto 0;
+    padding: 0 2rem 3rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+
+    // Patrón de puntos que se extiende por TODO el viewport
+    &::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 1.5px, transparent 1.5px);
+        background-size: 20px 20px;
+        background-position: 0 0;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    @media (max-width: 768px) {
+        margin-top: -3.5rem;
+        padding: 0 1.5rem 2rem;
+    }
+}
+
+// ============================================
+// 6. GRID DE TARJETAS BLANCAS PREMIUM
+// ============================================
+.workspaces-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 28px;
+    margin-bottom: 3rem;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+.workspace-card {
+    background: white;
+    border: 1px solid $border-subtle;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 8px 32px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+
+    // Borde superior con color dinámico
+    .card-glow {
+        height: 5px;
+        width: 100%;
+        opacity: 0.85;
+        transition: all 0.3s;
+    }
+
+    // Cuerpo de la tarjeta
+    .card-body {
+        padding: 32px;
+        flex-grow: 1;
+        background: white;
+
+        .company-brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 32px;
+
+            .company-avatar {
+                width: 64px;
+                height: 64px;
+                border-radius: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1.8rem;
+                font-weight: 900;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                position: relative;
+                transition: all 0.3s;
+
+                // Brillo sutil
+                &::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 18px;
+                    background: linear-gradient(135deg,
+                            rgba(255, 255, 255, 0.3) 0%,
+                            transparent 50%);
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                }
+            }
+
+            .company-meta {
+                flex: 1;
+
+                h3 {
+                    margin: 0 0 8px;
+                    font-size: 1.3rem;
+                    font-weight: 800;
+                    color: $text-main;
+                    line-height: 1.2;
+                    letter-spacing: -0.5px;
+                }
+
+                .role-tag {
+                    display: inline-block;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    background: #EEF2FF;
+                    color: #4F46E5;
+                    padding: 5px 12px;
+                    border-radius: 8px;
+                    letter-spacing: 0.3px;
+                }
+            }
         }
 
-        .add-icon {
-            background-color: #eee;
-            color: #666;
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+
+            .detail-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: $text-light;
+                font-size: 0.95rem;
+                font-weight: 500;
+                transition: color 0.2s;
+
+                mat-icon {
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    opacity: 0.7;
+                }
+            }
+        }
+    }
+
+    // Footer de la tarjeta
+    .card-footer {
+        padding: 20px 32px;
+        background: rgba(0, 0, 0, 0.02);
+        border-top: 1px solid $border-subtle;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+
+        .enter-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: $text-light;
+            transition: all 0.2s;
+        }
+
+        .arrow-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            color: $text-light;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+    }
+
+    // Hover Effect Premium
+    &:hover {
+        transform: translateY(-12px);
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.06),
+            0 20px 60px rgba(0, 0, 0, 0.15);
+        border-color: rgba(0, 0, 0, 0.08);
+
+        .company-brand .company-avatar {
+            transform: scale(1.08) rotate(-3deg);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+
+            &::after {
+                opacity: 1;
+            }
+        }
+
+        .card-details .detail-row {
+            color: $text-main;
+        }
+
+        .card-footer {
+            background: rgba(0, 0, 0, 0.04);
+
+            .enter-text {
+                color: $text-main;
+            }
+
+            .arrow-icon {
+                transform: translateX(8px);
+                color: $primary;
+            }
+        }
+
+        .card-glow {
+            opacity: 1;
+            height: 6px;
+            box-shadow: 0 2px 8px currentColor;
+        }
+    }
+
+    &:active {
+        transform: translateY(-8px);
+    }
+}
+
+// ============================================
+// 7. TARJETA "CREAR NUEVA"
+// ============================================
+.create-card {
+    border: 2px dashed rgba(0, 0, 0, 0.15);
+    background: white;
+
+    .card-glow {
+        background: linear-gradient(90deg,
+                rgba($primary, 0.7) 0%,
+                rgba(99, 102, 241, 0.7) 100%) !important;
+        opacity: 0.6;
+    }
+
+    .card-body.centered {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 48px 32px;
+        background: white;
+
+        .add-icon-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: $bg-light;
+            color: $text-light;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.06),
+                inset 0 -2px 8px rgba(0, 0, 0, 0.03);
+            border: 2px solid $border-subtle;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+
+            mat-icon {
+                font-size: 36px;
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        h3 {
+            margin: 0 0 12px;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: $text-main;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: $text-light;
+            font-weight: 400;
+            line-height: 1.6;
+            max-width: 280px;
+        }
+    }
+
+    &:hover {
+        border-color: $primary;
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.06),
+            0 20px 60px rgba($primary, 0.2);
+
+        .add-icon-circle {
+            background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+            color: white;
+            transform: scale(1.15) rotate(90deg);
+            box-shadow: 0 12px 32px rgba($primary, 0.35);
+            border-color: transparent;
+        }
+
+        .card-glow {
+            opacity: 1;
+            height: 6px;
+        }
+    }
+}
+
+// ============================================
+// 8. FOOTER MINIMALISTA
+// ============================================
+.hub-footer {
+    text-align: center;
+    margin-top: auto;
+    padding: 3rem 0 1.5rem;
+    border-top: 1px solid $border-subtle;
+
+    p {
+        color: rgba($text-light, 0.7);
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+}
+
+// ============================================
+// 9. ANIMACIONES FLUIDAS
+// ============================================
+.animate-fade-down {
+    animation: fadeDown 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+}
+
+.animate-fade-up {
+    animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+// ============================================
+// 10. RESPONSIVE AJUSTES
+// ============================================
+@media (max-width: 600px) {
+    .workspaces-grid {
+        gap: 16px;
+    }
+
+    .workspace-card {
+        border-radius: 20px;
+
+        .card-body {
+            padding: 24px;
+
+            .company-brand {
+                margin-bottom: 24px;
+
+                .company-avatar {
+                    width: 56px;
+                    height: 56px;
+                    font-size: 1.5rem;
+                }
+            }
+        }
+
+        .card-footer {
+            padding: 16px 24px;
         }
     }
 }

@@ -1,69 +1,81 @@
-<div class="page-container">
+<div class="page-container policies-page">
 
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Políticas y Normativas</h1>
-            <p class="text-gray-500">Documentación oficial y reglamentos de la empresa.</p>
+    <header class="page-header">
+        <div class="header-text">
+            <h2>Políticas y Normativas</h2>
+            <p class="subtitle">Documentación oficial y reglamentos de la empresa.</p>
         </div>
 
         <button *ngIf="canManagePolicies" mat-flat-button color="primary" (click)="openUploadDialog()">
             <mat-icon>add</mat-icon> Nueva Política
         </button>
-    </div>
+    </header>
 
-    <div class="mat-elevation-z2 rounded-lg overflow-hidden bg-white">
-        <table mat-table [dataSource]="dataSource">
+    <div class="table-wrapper mat-elevation-z2">
+
+        <table mat-table [dataSource]="dataSource" *ngIf="dataSource.length > 0" class="custom-table">
 
             <ng-container matColumnDef="icon">
-                <th mat-header-cell *matHeaderCellDef> Tipo </th>
-                <td mat-cell *matCellDef="let doc">
-                    <mat-icon class="text-red-600">gavel</mat-icon>
+                <th mat-header-cell *matHeaderCellDef class="col-icon"> Tipo </th>
+                <td mat-cell *matCellDef="let doc" class="col-icon">
+                    <mat-icon class="doc-icon" [class.pdf]="isPdf(doc.nombre)">
+                        {{ isPdf(doc.nombre) ? 'picture_as_pdf' : 'description' }}
+                    </mat-icon>
                 </td>
             </ng-container>
 
             <ng-container matColumnDef="nombre">
                 <th mat-header-cell *matHeaderCellDef> Documento </th>
                 <td mat-cell *matCellDef="let doc">
-                    <div class="flex flex-col py-2">
-                        <span class="font-medium">{{ doc.nombre }}</span>
-                    </div>
+                    <span class="doc-name">{{ doc.nombre }}</span>
                 </td>
             </ng-container>
 
             <ng-container matColumnDef="categoria">
                 <th mat-header-cell *matHeaderCellDef> Categoría </th>
                 <td mat-cell *matCellDef="let doc">
-                    <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs border border-gray-200 font-bold">
-                        {{ doc.categoria }}
-                    </span>
+                    <span class="category-chip">{{ doc.categoria }}</span>
                 </td>
             </ng-container>
 
             <ng-container matColumnDef="fecha">
                 <th mat-header-cell *matHeaderCellDef> Publicado </th>
-                <td mat-cell *matCellDef="let doc"> {{ doc.fechaSubida | date:'mediumDate' }} </td>
+                <td mat-cell *matCellDef="let doc" class="text-muted">
+                    {{ doc.fechaSubida | date:'mediumDate' }}
+                </td>
             </ng-container>
 
             <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let doc">
-                    <button mat-icon-button color="primary" (click)="download(doc.url)" matTooltip="Leer Documento">
-                        <mat-icon>visibility</mat-icon>
-                    </button>
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let doc" class="text-right">
+                    <div class="actions-group">
+                        <button mat-icon-button class="action-btn view" (click)="download(doc.url)"
+                            matTooltip="Leer Documento">
+                            <mat-icon>visibility</mat-icon>
+                        </button>
 
-                    <button *ngIf="canManagePolicies" mat-icon-button color="warn" (click)="deleteDoc(doc.id)">
-                        <mat-icon>delete</mat-icon>
-                    </button>
+                        <button *ngIf="canManagePolicies" mat-icon-button class="action-btn delete"
+                            (click)="deleteDoc(doc.id)" matTooltip="Eliminar">
+                            <mat-icon>delete_outline</mat-icon>
+                        </button>
+                    </div>
                 </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50 transition"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></tr>
         </table>
 
-        <div *ngIf="dataSource.length === 0" class="p-10 text-center">
-            <mat-icon class="text-6xl text-gray-300 mb-2">policy</mat-icon>
-            <p class="text-gray-500">No hay políticas publicadas en este momento.</p>
+        <div *ngIf="dataSource.length === 0" class="empty-state">
+            <div class="icon-wrapper">
+                <mat-icon>policy</mat-icon>
+            </div>
+            <h3>Sin documentos</h3>
+            <p>No hay políticas publicadas en este momento.</p>
+            <button *ngIf="canManagePolicies" mat-stroked-button color="primary" (click)="openUploadDialog()">
+                Subir el primero
+            </button>
         </div>
+
     </div>
 </div>

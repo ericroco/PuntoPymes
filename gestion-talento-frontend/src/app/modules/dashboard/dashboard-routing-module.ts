@@ -52,7 +52,7 @@ const routes: Routes = [
   },
   {
     path: 'organization-chart',
-    loadComponent: () => import('./pages/organization-chart/organization-chart').then(c => c.OrganizationChart)
+    loadComponent: () => import('./pages/organization-chart/organization-chart').then(c => c.OrganizationChartComponent)
   },
   {
     path: 'courses',
