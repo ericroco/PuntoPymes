@@ -182,7 +182,7 @@
             <mat-label>{{ calculationType === 'fijo' ? 'Monto' : 'Porcentaje' }}</mat-label>
             <input matInput type="number" [(ngModel)]="newItemValue" min="0">
 
-            <span matPrefix *ngIf="calculationType === 'fijo'">$ &nbsp;</span>
+            <span matSuffix *ngIf="calculationType === 'fijo'">$ &nbsp;</span>
             <span matSuffix *ngIf="calculationType === 'porcentaje'">%</span>
           </mat-form-field>
 

@@ -1,376 +1,280 @@
 /* ==========================================================================
-   SPRINT DETAIL PAGE STYLES (Includes Kanban & Expandable Details)
+   TALENTRACK - SPRINT BOARD (KANBAN STYLE)
    ========================================================================== */
 
-// --- Reusable Button Styles (Copied for completeness) ---
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
-  font-family: var(--font-family-base);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-out;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container.sprint-board {
+  padding: var(--spacing-xl);
+  height: calc(100vh - 64px); // Ajuste para ocupar pantalla completa menos navbar
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // El scroll lo manejan las columnas
 }
 
-.btn.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.btn.btn-secondary {
-  background-color: var(--color-surface);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  font-weight: 500;
-
-  &:hover {
-    background-color: var(--color-background);
-    border-color: #dcdcdc;
-    color: var(--color-text-primary);
-  }
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-  vertical-align: middle;
-  line-height: 1;
-  color: var(--color-text-secondary);
-
-  svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-  }
-
-  &:hover {
-    background-color: var(--color-border);
-    color: var(--color-text-primary); // Make icon darker on hover
-  }
-}
-
-// --- Sprint Header Styles ---
+// --- 2. HEADER DEL SPRINT ---
 .sprint-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; // Align top if description wraps
-  margin-bottom: 2rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-}
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0; // No encoger el header
 
-.sprint-info {
-  h1 {
-    font-size: 2rem;
-    margin: 0 0 0.5rem 0;
-    color: var(--color-text-primary);
-  }
-
-  p {
-    margin: 0 0 1rem 0; // Add margin below description
-    color: var(--color-text-secondary);
-    max-width: 600px;
-  }
-}
-
-.sprint-actions {
-  display: flex;
-  gap: 1rem;
-  flex-shrink: 0; // Prevent buttons from shrinking
-}
-
-/* STYLES FOR ASSIGNED TEAM DISPLAY */
-.assigned-team {
-  margin-top: 1rem; // Adjusted space
-
-  h4 {
-    font-size: 0.85rem; // Slightly smaller title
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    margin: 0 0 0.5rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-}
-
-.team-avatars {
-  display: flex;
-  align-items: center;
-
-  .avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 2px solid var(--color-surface); // White border for overlap
-    margin-left: -8px; // Overlap effect
-    transition: transform 0.2s ease;
-    cursor: pointer; // Indicate hoverable
-
-    &:first-child {
-      margin-left: 0;
+  .sprint-info {
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      color: var(--color-text-primary);
     }
 
-    &:hover {
-      transform: translateY(-3px);
-      z-index: 1;
+    p {
+      margin: 0 0 0.5rem 0;
+      color: var(--color-text-secondary);
+      max-width: 600px;
+      font-size: 0.95rem;
     }
+
+    .sprint-dates-header {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+    }
+  }
+
+  // Equipo Asignado (Avatares)
+  .assigned-team {
+    margin-top: 1rem;
+
+    h4 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      margin: 0 0 0.5rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .team-avatars {
+      display: flex; align-items: center;
+
+      .avatar {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        border: 2px solid white; // Borde blanco para separar al superponer
+        margin-left: -10px; // Superposición
+        object-fit: cover;
+        transition: transform 0.2s ease, z-index 0s;
+        cursor: help;
+        position: relative;
+
+        &:first-child { margin-left: 0; }
+        &:hover { transform: translateY(-4px) scale(1.1); z-index: 10; }
+      }
+    }
+
+    .no-team-text { font-size: 0.85rem; color: var(--color-text-muted); font-style: italic; }
+  }
+
+  // Acciones del Header
+  .sprint-actions {
+    display: flex; gap: 12px; align-items: center;
   }
 }
 
-.no-team-text {
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
+// --- 3. BOTONES (PILL SHAPE) ---
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 20px; height: 40px;
+  border: none;
+  border-radius: 999px; // Pill Shape
+  font-weight: 600; font-size: 0.9rem; font-family: var(--font-family-base);
+  cursor: pointer; text-decoration: none;
+  transition: all 0.2s ease-out;
+  box-shadow: var(--shadow-sm);
+
+  svg { width: 18px; height: 18px; }
+
+  // Variantes
+  &.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3); }
+  }
+
+  &.btn-secondary {
+    background-color: white; color: var(--color-text-secondary); border: 1px solid var(--color-border);
+    box-shadow: none;
+    &:hover { background-color: var(--color-surface-variant); color: var(--color-text-primary); border-color: var(--color-text-primary); }
+  }
+
+  &.btn-success {
+    background-color: var(--color-success); color: white;
+    &:hover { background-color: #059669; transform: translateY(-2px); }
+  }
+
+  &.btn-warning {
+    background-color: var(--color-warning); color: #78350F; // Texto oscuro para contraste
+    &:hover { background-color: #D97706; transform: translateY(-2px); }
+  }
 }
 
-
-// --- Kanban Board Styles ---
+// --- 4. TABLERO KANBAN (COLUMNAS) ---
 .board-columns {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); // 3 equal columns
-  gap: 1.5rem; // Space between columns
-  // Adjust height based on viewport minus header/navbar etc.
-  height: calc(100vh - 250px); // Example height, adjust as needed
-  overflow-x: auto; // Allow horizontal scroll if needed
+  grid-template-columns: repeat(3, 1fr); // 3 Columnas fijas
+  gap: 1.5rem;
+  height: 100%;
+  overflow-x: auto; // Scroll horizontal si la pantalla es muy pequeña
+  padding-bottom: 1rem;
 }
 
 .board-column {
-  background-color: var(--color-background); // Light background for columns
-  border-radius: var(--border-radius);
+  background-color: #F3F4F6; // Gris de fondo de columna (Kanban style)
+  border-radius: 16px;
   padding: 1rem;
-  display: flex;
-  flex-direction: column; // Stack title and list
-  height: 100%; // Fill grid row height
-  overflow: hidden; // Hide overflow within column itself
+  display: flex; flex-direction: column;
+  height: 100%;
+  min-width: 280px; // Ancho mínimo para que no se aplaste
+  border: 1px solid var(--color-border-light);
+
+  .column-title {
+    font-size: 1rem; font-weight: 700; color: var(--color-text-secondary);
+    padding: 0 0.5rem 1rem; margin: 0;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
 }
 
-.column-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  padding: 0 0.5rem 1rem;
-  margin: 0;
-  border-bottom: 2px solid var(--color-border);
-  text-transform: capitalize;
-  display: flex; // To align title and count
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0; // Prevent title from shrinking
-}
-
+// --- 5. LISTA DE TAREAS (DROP ZONE) ---
 .task-list {
-  flex-grow: 1; // Allow list to take remaining space
-  min-height: 100px; // Minimum drop zone height
-  overflow-y: auto; // Scroll tasks vertically
-  padding: 1rem 0.5rem; // Padding inside the list
+  flex-grow: 1;
+  overflow-y: auto; // Scroll vertical independiente por columna
+  padding: 1rem 4px; // Padding lateral pequeño
+  min-height: 100px;
 
-  // Optional: Scrollbar styling
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
+  // Scrollbar fino
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background-color: #D1D5DB; border-radius: 10px; }
+  &::-webkit-scrollbar-track { background: transparent; }
 
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 10px;
-  }
-
-  -ms-overflow-style: none;
-  scrollbar-width: thin; // Use thin scrollbar for Firefox
-  scrollbar-color: var(--color-border) transparent; // Track and thumb color for Firefox
-
-  // Drag styles
+  // Estilo al arrastrar sobre la lista
   &.cdk-drop-list-dragging .task-card:not(.cdk-drag-placeholder) {
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
   }
 }
 
+// --- 6. TARJETA DE TAREA (CARD) ---
 .task-card {
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1rem;
+  background-color: white;
+  border-radius: 12px; // Bordes suaves
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Sombra sutil inicial
+  margin-bottom: 12px;
+  border: 1px solid var(--color-border-light);
   cursor: grab;
-  overflow: hidden; // Keep for animation
-  transition: box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    z-index: 2;
   }
 
-  // CDK Drag Styles
+  // Estados de Drag & Drop (CDK)
   &.cdk-drag-preview {
-    // Style of the card being dragged
-    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-      0 8px 10px 1px rgba(0, 0, 0, 0.14),
-      0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    background: white;
   }
 
   &.cdk-drag-placeholder {
-    // Style of the placeholder where card will drop
-    opacity: 0.3;
-    background-color: var(--color-primary-light);
-    border: 2px dashed var(--color-primary);
-    min-height: 80px; // Ensure placeholder has height
+    opacity: 0.4;
+    background: #E5E7EB;
+    border: 2px dashed #9CA3AF;
+    box-shadow: none;
   }
 
   &.cdk-drag-animating {
-    // Style while card animates back after drop
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
   }
 }
 
-// Main visible part of the task card
+// Estructura Interna de la Tarjeta
 .task-card-main {
-  display: flex; // Use flexbox to arrange elements
-  align-items: flex-start; // Align priority bar and content top
-  padding: 1rem; // Padding for the main area
+  display: flex; align-items: stretch; padding: 0; // Padding 0 para que la barra de prioridad toque el borde
 }
 
-// Priority indicator bar
+// Barra de Prioridad Lateral
 .task-priority {
-  width: 8px;
-  min-height: 40px; // Ensure it has some height
-  border-radius: 4px;
-  margin-right: 1rem;
-  flex-shrink: 0; // Prevent it from shrinking
-
-  &.priority-alta {
-    background-color: var(--color-primary);
-  }
-
-  &.priority-media {
-    background-color: #FFA726;
-  }
-
-  &.priority-baja {
-    background-color: #66BB6A;
-  }
+  width: 6px; flex-shrink: 0;
+  
+  &.priority-alta { background-color: var(--color-danger); }
+  &.priority-media { background-color: var(--color-warning); }
+  &.priority-baja { background-color: var(--color-success); }
 }
 
-// Content area (Title + Meta)
 .task-content {
-  flex-grow: 1; // Allow content to take available space
-  // Remove min-width if previously added
-  overflow: hidden; // Prevent long titles from breaking layout
-}
+  flex-grow: 1; padding: 12px 12px 12px 8px; overflow: hidden;
 
-.task-title {
-  font-weight: 500;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.4;
-  color: var(--color-text-primary);
-  // Ensure long titles don't overflow inappropriately
-  white-space: normal; // Allow wrapping if needed
-  word-break: break-word; // Break long words
-}
-
-.task-meta {
-  display: flex; // Arrange assignee and date side-by-side
-  justify-content: space-between; // Push them apart
-  align-items: center; // Vertically align them
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-  flex-wrap: wrap; // Allow wrapping on small cards if needed
-  gap: 0.5rem; // Add gap if they wrap
-}
-
-.due-date {
-  font-weight: 500;
-  white-space: nowrap; // Prevent date wrapping
-  flex-shrink: 0; // Prevent date shrinking
-}
-
-// Container for action buttons on the card
-.task-card-actions {
-  display: flex; // Arrange buttons horizontally
-  align-items: center; // Align buttons vertically
-  margin-left: 0.5rem; // Space between content and actions
-  flex-shrink: 0; // Prevent buttons shrinking
-
-  .btn-icon {
-    padding: 0.3rem;
+  .task-title {
+    font-weight: 600; font-size: 0.95rem; margin: 0 0 6px 0;
+    color: var(--color-text-primary); line-height: 1.4;
   }
 
-  .task-expand svg {
-    width: 18px;
-    height: 18px;
-    transition: transform 0.2s ease-in-out;
-
-    &.rotated {
-      transform: rotate(180deg);
+  .task-meta {
+    font-size: 0.8rem; color: var(--color-text-secondary);
+    display: flex; align-items: center; gap: 8px;
+    
+    span {
+      background-color: #F3F4F6; padding: 2px 8px; border-radius: 4px; font-weight: 500;
     }
   }
 }
 
-// Section for expanded details
-.task-details-expanded {
-  // Styles applied by animation: height, opacity
-  padding: 0 1rem 1rem calc(1rem + 8px + 1rem); // Indent to align with title (card padding + priority width + priority margin)
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  word-break: break-word; // Allow long descriptions to wrap
+// Acciones de Tarjeta
+.task-card-actions {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  padding: 8px 4px;
+  border-left: 1px solid var(--color-border-light);
+  background-color: #FAFAFA;
 
+  .btn-icon {
+    width: 28px; height: 28px; padding: 4px;
+    color: var(--color-text-secondary);
+    border-radius: 4px; // Cuadrado redondeado
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer;
+
+    &:hover { background-color: #E5E7EB; color: var(--color-primary); }
+    
+    // Icono expandir
+    &.task-expand svg {
+      transition: transform 0.3s ease;
+      &.rotated { transform: rotate(180deg); }
+    }
+  }
+}
+
+// Detalles Expandidos
+.task-details-expanded {
+  background-color: #FAFAFA;
+  border-top: 1px solid var(--color-border-light);
+  padding: 12px 16px;
+  font-size: 0.85rem; color: var(--color-text-secondary); line-height: 1.5;
+  
   p { margin: 0; }
 }
 
-// Placeholder text when a list is empty
 .empty-list-placeholder {
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  padding: 2rem;
-}
-.sprint-dates-header {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-.btn.btn-success {
-  background-color: #2ECC71; // Green
-  color: white;
-  &:hover {
-    background-color: #27ae60; // Darker Green
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
+  text-align: center; color: var(--color-text-muted); font-style: italic; padding: 2rem 0;
 }
 
-.btn.btn-warning {
-  background-color: #F1C40F; // Yellow/Orange
-  color: #333; // Dark text for yellow bg
-  &:hover {
-    background-color: #f39c12; // Darker Yellow/Orange
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

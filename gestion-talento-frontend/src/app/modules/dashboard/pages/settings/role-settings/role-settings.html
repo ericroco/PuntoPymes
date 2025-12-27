@@ -40,11 +40,7 @@
       </span>
 
       <span class="permissions-summary" style="flex: 2;">
-        <mat-chip-set>
-          <mat-chip class="small-chip">
-            {{ countActivePermissions(role.permisos) }} accesos activos
-          </mat-chip>
-        </mat-chip-set>
+        {{ countActivePermissions(role.permisos) }} accesos activos
       </span>
 
       <div class="actions" style="flex: 1; text-align: right;">

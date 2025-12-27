@@ -1,93 +1,14 @@
 /* ==========================================================================
-   STYLES FOR ATTENDANCE SETTINGS SUB-PAGE (attendance-settings.scss)
+   TALENTRACK - ATTENDANCE SETTINGS (CARD STYLE)
    ========================================================================== */
 
-// --- Reusable Button Styles (Defined Locally) ---
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
-  font-family: var(--font-family-base);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-out;
-
-  svg, mat-icon { // Include mat-icon here
-    width: 20px;
-    height: 20px;
-  }
-}
-
-.btn.btn-primary { // Assuming MatButton with color="primary" is used
-  // Styles might be handled by Material Theme, but you can override
-  background-color: var(--color-primary);
-  color: white;
-  &:hover {
-    background-color: var(--color-primary-dark);
-  }
-}
-
-.btn.btn-secondary {
-  background-color: var(--color-surface);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  font-weight: 500;
-  padding: 0.6rem 1.2rem; // Slightly smaller
-
-  &:hover {
-    background-color: var(--color-background);
-    border-color: #dcdcdc;
-    color: var(--color-text-primary);
-  }
-}
-
-.btn-icon, button[mat-icon-button] { // Include Material's icon button selector
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-  vertical-align: middle;
-  line-height: 1;
-  color: var(--color-text-secondary);
-
-  // Styles for Material Icon specifically
-  mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-    line-height: 20px;
-    display: block; // Or inline-flex if needed
-  }
-   // Styles for SVG icons if used within btn-icon
-   svg {
-     width: 20px;
-     height: 20px;
-     display: block;
-   }
-
-  &:hover {
-    background-color: var(--color-border);
-    color: var(--color-text-primary);
-  }
-
-  // Specific hover for danger/warn color
-  &[color="warn"]:hover {
-      background-color: var(--color-primary-light); // Use primary light for red hover bg
-      color: var(--color-primary-dark); // Use primary dark for red icon hover color
-  }
-}
-
-// --- Basic container styles ---
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
 .settings-subpage-container {
-    padding: 2rem;
+  padding: var(--spacing-xl);
+  max-width: 900px; // Un poco más ancho para las tarjetas
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 120px;
 }
 
 .description {
@@ -95,130 +16,203 @@
   margin-bottom: 2rem;
   font-size: 0.95rem;
   max-width: 700px;
+  line-height: 1.5;
 }
 
-// --- Section styling ---
-.setting-section {
-  padding: 1.5rem 0;
+// --- 2. TARJETAS DE CONFIGURACIÓN (EL CAMBIO PRINCIPAL) ---
+.settings-card {
+  background-color: var(--color-surface);
+  border-radius: 16px; // Bordes redondeados
+  padding: 24px;
+  margin-bottom: 24px; // Espacio entre tarjetas
+  box-shadow: var(--shadow-sm); // Sombra suave para elevación
+  border: 1px solid var(--color-border-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  h4 {
-    margin: 0 0 1.5rem 0; // Increased bottom margin
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--color-text-primary);
+  &:hover {
+    box-shadow: var(--shadow-md); // Efecto sutil al pasar el mouse
+  }
+
+  // Encabezado de la tarjeta (Icono + Título)
+ // Encabezado de la tarjeta (Icono + Título)
+  .card-header {
+    display: flex;
+    align-items: center;
+    
+    // FIX: Alineación a la izquierda (Inicio) para juntar icono y texto
+    justify-content: flex-start; 
+    
+    gap: 16px; // Espacio entre icono y texto
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: 16px;
+
+    .card-icon {
+      color: var(--color-primary);
+      background-color: var(--color-primary-light);
+      padding: 8px;
+      border-radius: 8px;
+      width: 40px; height: 40px; // Ligeramente más grande
+      font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      
+      // Asegura que el icono no se deforme
+      flex-shrink: 0; 
+    }
+
+    h4 {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--color-text-primary);
+      
+      // Asegura alineación de texto a la izquierda
+      text-align: left; 
+    }
   }
 }
 
-// Row for side-by-side fields
+// --- 3. INPUTS SOFT UI (Global) ---
+::ng-deep .mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    background-color: #F3F4F6 !important;
+    border-radius: 12px !important;
+    height: 48px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    display: flex; align-items: center;
+
+    .mdc-notched-outline,
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing { border: none !important; }
+  }
+
+  &.mat-focused .mat-mdc-text-field-wrapper {
+    background-color: white !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px var(--color-primary-subtle);
+  }
+
+  .mat-mdc-form-field-flex {
+    height: 100%;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+
+  // Centrado de Labels
+  .mdc-floating-label:not(.mdc-floating-label--float-above) {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin-bottom: 0 !important;
+  }
+
+  .mat-mdc-form-field-subscript-wrapper { margin-top: 4px; }
+}
+
 .form-row {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start; // Align top
-
-  // Ensure Material fields take up space correctly
-  mat-form-field {
-     flex: 1; // Share space equally
-  }
+  display: flex; gap: 1.5rem; align-items: flex-start;
+  .form-field { flex: 1; max-width: 250px; }
+  @media (max-width: 600px) { flex-direction: column; .form-field { max-width: 100%; width: 100%; } }
 }
 
-// Specific field widths if needed
-.tolerance-field {
-   max-width: 300px;
-}
+.tolerance-field { width: 100%; max-width: 300px; }
 
-// Checkbox options layout
+// --- 4. OPCIONES DE RESTRICCIÓN ---
 .restriction-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem; // Increased gap
-  margin-bottom: 1.5rem;
+  display: flex; flex-direction: column; gap: 12px; margin-bottom: 1rem;
 
-  // Style the map link button
-  a[mat-button] {
-     margin-left: 20px; // Indent slightly below checkbox
-     color: var(--color-primary);
-     text-decoration: none;
-     font-weight: 500; // Make link text bolder
-     padding: 0; // Reset default button padding
-     min-width: auto; // Reset default button min-width
-     line-height: normal; // Reset default button line-height
-
-     mat-icon {
-        font-size: 18px; width: 18px; height: 18px;
-        vertical-align: text-bottom; // Align icon better with text
-        margin-right: 4px;
-     }
-     &:hover {
-        text-decoration: underline;
-     }
+  .checkbox-row {
+    display: flex; align-items: center; flex-wrap: wrap;
+    
+    .link-btn {
+      color: var(--color-primary); margin-left: 12px; font-weight: 600;
+      mat-icon { font-size: 18px; margin-right: 4px; }
+    }
   }
 }
 
-// Wi-Fi List Container
-.wifi-list-container {
-  margin-top: 2rem; // More space above Wi-Fi list
-  padding-left: 20px; // Indent Wi-Fi section under the checkbox
-  max-width: 500px;
+// --- 5. SECCIÓN WIFI ANIDADA ---
+.wifi-nested-section {
+  background-color: #F9FAFB; // Gris muy claro para diferenciar dentro de la tarjeta blanca
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--color-border-light);
+  margin-top: 10px;
 
   h5 {
-    font-weight: 600; // Bolder heading
-    color: var(--color-text-secondary);
-    margin: 0 0 1rem 0; // More space below heading
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 700; color: var(--color-text-secondary); margin: 0 0 12px 0; font-size: 0.85rem; text-transform: uppercase;
   }
 
-  mat-list { // Remove default padding from mat-list
-     padding-top: 0;
+  .wifi-list-box {
+    background: white; // Lista blanca sobre fondo gris
+    border: 1px solid var(--color-border-light);
+    border-radius: 12px;
+    overflow: hidden; // Para recortar bordes de items
   }
+
+  mat-list { padding-top: 0; }
 
   mat-list-item {
-     height: 48px !important; // Consistent height
-     // Remove default padding if needed, apply custom
-     // ::ng-deep .mdc-list-item__content { padding: 0 !important; }
+    height: 56px !important;
+    border-bottom: 1px solid #E5E7EB; // Línea gris visible
+    
+    &:last-child { border-bottom: none; }
 
-     // Style the text within the list item
-     span[matListItemTitle] {
-        font-size: 0.95rem;
-        color: var(--color-text-primary);
-     }
-  }
-
-  .empty-list {
-     font-style: italic;
-     color: var(--color-text-secondary);
-     padding: 1rem 0;
+    span[matListItemTitle] { font-size: 0.95rem; font-weight: 500; }
+    
+    button[mat-icon-button] {
+      color: var(--color-text-secondary);
+      &:hover { background-color: #FEE2E2; color: #EF4444; }
+    }
   }
 }
 
-// Form to add Wi-Fi
+// Formulario Añadir WiFi
 .add-wifi-form {
-  display: flex;
-  align-items: center; // Vertically align input and button
-  gap: 1rem;
-  margin-top: 1rem;
+  display: flex; align-items: center; gap: 1rem; margin-top: 1rem;
+
+  .condensed-field { flex-grow: 1; }
 }
 
-// Reduce padding/margin for form fields inside lists/tight spaces
-.condensed-field {
-   flex-grow: 1; // Take available space
-  // Remove bottom space
-  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
-  // Adjust vertical padding for density
-  ::ng-deep .mat-mdc-form-field-flex { padding-top: 8px !important; padding-bottom: 8px !important; }
+// --- 6. BOTONES (PILL SHAPE) ---
+button[mat-flat-button], 
+button[mat-stroked-button] {
+  border-radius: 999px !important;
+  height: 44px;
+  padding: 0 24px;
+  font-weight: 600;
+  font-family: var(--font-family-base);
+  
+  mat-icon { margin-right: 6px; }
 }
 
-// Divider styling
-mat-divider {
-  margin: 1.5rem 0; // Increase margin around dividers
+button[color="primary"][mat-flat-button] {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  &:hover { box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4); }
 }
 
-// --- Action Footer ---
+button[mat-stroked-button] {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  background: white;
+  &:hover { border-color: var(--color-primary); color: var(--color-primary); background: #F3F4F6; }
+}
+
+// Footer Sticky
 .actions-footer {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: flex-end; // Align button(s) to the right
+  padding: 1rem 2rem;
+  display: flex; justify-content: flex-end;
+  z-index: 90;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  @media (min-width: 1024px) { padding-left: calc(280px + 2rem); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

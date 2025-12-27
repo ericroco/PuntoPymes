@@ -1,162 +1,174 @@
-// Import reusable styles if needed
-// @import '../../../../styles/mixins';
+/* ==========================================================================
+   TALENTRACK - ROLE SETTINGS (FINAL STYLE)
+   ========================================================================== */
 
-// Basic container styles
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
 .settings-subpage-container {
-  width: 100%;
+  padding: var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 100px;
 }
 
 .description {
   color: var(--color-text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-2xl);
   font-size: 0.95rem;
-  max-width: 700px;
+  max-width: 800px;
+  line-height: 1.5;
 }
 
-// Role List Styles
+// --- 2. CONTENEDOR DE LISTA (TARJETA) ---
 .roles-list {
   background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
+  border: 1px solid var(--color-border-light);
   margin-top: 1.5rem;
 }
 
+// --- 3. ITEMS DE LA LISTA (FILAS) ---
 .role-item {
   display: grid;
-  // Adjust columns for role data
-  grid-template-columns: 1.5fr 3fr 1fr 1fr 1fr; // Name, Desc, Users, Type, Actions
+  // Nombre | Tipo | Permisos | Acciones
+  grid-template-columns: 2fr 1fr 2fr 120px; 
   align-items: center;
   gap: 1.5rem;
-  padding: 1.25rem 1.5rem; // Consistent padding
-  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color 0.2s ease;
 
-  &:last-child {
-    border-bottom: none;
+  &:last-child { border-bottom: none; }
+
+  &:not(.header):hover {
+    background-color: #F9FAFB;
   }
 
   &.header {
-    background-color: var(--color-background);
-    font-weight: 600;
+    background-color: #F9FAFB;
+    font-weight: 700;
     color: var(--color-text-secondary);
     text-transform: uppercase;
-    font-size: 0.8rem;
-    padding: 0.75rem 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 1.5rem;
   }
 }
+
+// --- 4. ESTILOS DE CONTENIDO ---
 
 .role-name {
-  font-weight: 600;
-}
-
-.role-description {
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-count {
-  display: flex;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  display: flex; 
   align-items: center;
-  gap: 0.25rem; // Space between count and view button
-  font-weight: 500;
+  gap: 8px;
 
-  .view-users-btn {
-    // Make the view button small
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-
-    mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-    }
-  }
+  strong { font-weight: 600; }
 }
 
-.role-type {
-  font-style: italic;
-  font-size: 0.85rem;
+.default-badge-icon {
+  font-size: 18px; height: 18px; width: 18px;
+  color: var(--color-info);
+  vertical-align: middle;
+}
+
+// Badges de Tipo
+.badge-auto, 
+.badge-manual {
+  padding: 4px 10px;
+  border-radius: 12px; // Pill
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+}
+
+.badge-auto {
+  background-color: var(--color-info-light);
+  color: var(--color-info);
+}
+
+.badge-manual {
+  background-color: #F3F4F6;
   color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
 }
 
+// CAMBIO: Estilo de texto simple para Permisos
+.permissions-summary {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary); // Gris texto secundario
+  font-weight: 400;
+}
+
+// --- 5. ACCIONES ---
 .actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 4px;
   justify-content: flex-end;
 
   button[mat-icon-button] {
-    // Ensure consistent button size
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
+    width: 36px; height: 36px; padding: 6px;
+    color: var(--color-text-secondary);
+    
+    mat-icon { font-size: 20px; width: 20px; height: 20px; }
 
-    mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
+    &:hover {
+      background-color: var(--color-surface-variant);
+      color: var(--color-primary);
     }
-  }
 
-  // Placeholder to align actions when delete is hidden
-  .action-placeholder {
-    width: 36px;
-    height: 36px;
+    &[color="warn"]:hover {
+      background-color: #FEE2E2;
+      color: #EF4444;
+    }
+    
+    &:disabled { opacity: 0.3; cursor: not-allowed; }
   }
 }
 
+// --- 6. BOTÓN "NUEVO ROL" ---
+::ng-deep app-subpage-header button[mat-flat-button] {
+  border-radius: 999px !important;
+  height: 44px;
+  padding: 0 24px;
+  font-weight: 600;
+  font-family: var(--font-family-base);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  
+  mat-icon { margin-right: 8px; }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+  }
+}
+
+// --- 7. ESTADOS ---
+.loading-state,
 .empty-list-placeholder {
   text-align: center;
   padding: 3rem;
   color: var(--color-text-secondary);
   font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  mat-icon {
+    font-size: 48px; width: 48px; height: 48px;
+    opacity: 0.3;
+    margin-bottom: 8px;
+  }
 }
 
-// Ensure subpage header actions align
-::ng-deep app-subpage-header .subpage-actions button {
-  // Adjust if needed
-}
-
-.default-badge-icon {
-  font-size: 18px;
-  height: 18px;
-  width: 18px;
-  color: #1976d2;
-  /* Azul */
-  vertical-align: middle;
-  margin-left: 8px;
-}
-
-.badge-auto {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.badge-manual {
-  background-color: #f5f5f5;
-  color: #616161;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-.small-chip {
-  font-size: 0.75rem !important;
-  min-height: 24px !important;
-}
-
-.loading-state {
-  padding: 20px;
-  text-align: center;
-  color: #666;
-  font-style: italic;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

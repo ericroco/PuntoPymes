@@ -1,95 +1,132 @@
 /* ==========================================================================
-   STYLES FOR THE MAIN SETTINGS PAGE (Card Grid Version)
+   TALENTRACK - SETTINGS DASHBOARD (FINAL STYLE)
    ========================================================================== */
 
-// --- Reusable Button Styles ---
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
-  border: none; border-radius: var(--border-radius); font-weight: 600; font-size: 0.95rem;
-  font-family: var(--font-family-base); cursor: pointer; text-decoration: none; transition: all 0.2s ease-out;
-  svg { width: 20px; height: 20px; }
-}
-.btn.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-}
-.btn.btn-secondary {
-  background-color: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border); font-weight: 500;
-  padding: 0.6rem 1.2rem; // Slightly smaller for card buttons
-  &:hover { background-color: var(--color-background); border-color: #dcdcdc; color: var(--color-text-primary); }
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container {
+  padding: var(--spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 100px;
 }
 
-// --- Page Header ---
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
 }
 
-// --- Settings Grid Layout ---
+// --- 2. GRID DE AJUSTES ---
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); // Responsive columns
-  gap: 1.5rem; // Space between cards
+  // Columnas responsivas: mínimo 300px
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+  gap: 1.5rem;
 }
 
-// --- Setting Card Styling ---
+// --- 3. TARJETA DE CONFIGURACIÓN ---
 .setting-card {
   background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  border-radius: 16px; // Bordes redondeados (Soft UI)
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; // Align content left
-  gap: 0.75rem; // Space between icon, h3, p, buttons
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  height: 100%; // Para igualar alturas en la fila
 
+  // Efecto Hover (Lift)
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-light);
   }
 
+  // Icono Circular (Contenedor de Emoji)
   .card-icon {
-    font-size: 2rem; // Emoji/Icon size
-    margin-bottom: 0.5rem;
-    background-color: var(--color-primary-light);
-    color: var(--color-primary);
+    width: 56px; 
+    height: 56px;
     border-radius: 50%;
-    padding: 0.75rem;
-    width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+    background-color: var(--color-surface-variant); // O var(--color-primary-light) si prefieres color
+    color: var(--color-text-primary);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 1.8rem; // Tamaño del emoji
+    margin-bottom: 0.5rem;
+    transition: background 0.3s ease;
+  }
+
+  // Hover en la tarjeta ilumina el icono
+  &:hover .card-icon {
+    background-color: var(--color-primary-light);
   }
 
   h3 {
     margin: 0;
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-primary);
   }
 
   p {
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     line-height: 1.5;
-    flex-grow: 1; // Pushes buttons down
-    min-height: 4.5em; // Reserve space for text
+    flex-grow: 1; // Empuja los botones hacia abajo (Sticky Bottom)
   }
 
-  // Style buttons within the card
+  // --- BOTONES DENTRO DE LA TARJETA ---
   .btn {
-     margin-top: 0.5rem;
-     // If multiple buttons, add styles for spacing
-     &:not(:last-child) {
-        margin-right: 0.5rem; // Example spacing
-     }
+    width: 100%; // Botones de ancho completo en tarjetas se ven mejor
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    // REGLA DE ORO: Pill Shape
+    border-radius: 999px; 
+    
+    // Estilo Secundario
+    &.btn-secondary {
+      background-color: white;
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+
+      &:hover {
+        background-color: var(--color-surface-variant);
+        color: var(--color-text-primary);
+        border-color: var(--color-text-primary);
+      }
+    }
+
+    // Si hay más de un botón, separarlos verticalmente
+    + .btn {
+      margin-top: 0.5rem;
+    }
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

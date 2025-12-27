@@ -1,342 +1,249 @@
 /* ==========================================================================
-   STYLES FOR REPORTS PAGE (reports.scss) - CORRECCIÓN FLEXBOX Y CENTRADO
+   TALENTRACK - REPORTS & ANALYTICS DASHBOARD (FINAL STYLE)
    ========================================================================== */
 
-// --- Estilos Globales para la Página ---
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container {
+  padding: var(--spacing-xl);
+  max-width: 100%;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 100px;
 }
 
-// Estilos de Botones (copiados para que no falte nada)
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
+// --- 2. HEADER Y BOTONES ---
+.page-header { // Aunque Reports usa subpage-header, mantenemos esto por consistencia
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+}
+
+// Botones Pill Shape
+button[mat-flat-button], 
+button[mat-stroked-button] {
+  border-radius: 999px !important; // Pill Shape Obligatorio
+  height: 44px;
+  padding: 0 24px;
   font-family: var(--font-family-base);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-out;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+  
+  mat-icon { margin-right: 8px; font-size: 20px; width: 20px; height: 20px; }
 }
 
-.btn.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
+// Botón Primario
+button[color="primary"][mat-flat-button] {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  
   &:hover {
-    background-color: var(--color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
   }
 }
 
-.btn.btn-secondary {
-  background-color: var(--color-surface);
+// Botón Secundario (Stroked)
+button[mat-stroked-button] {
+  border-color: var(--color-border);
   color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  font-weight: 500;
-
+  
   &:hover {
-    background-color: var(--color-background);
-    border-color: #dcdcdc;
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
+    background-color: var(--color-surface-variant);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
   }
 }
 
-.no-data-placeholder {
-  text-align: center;
-  padding: 3rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  font-size: 1rem;
-  width: 100%;
-}
-
-// --- Estilos de Filtros Globales ---
+// --- 3. FILTROS GLOBALES (CORREGIDO) ---
 .global-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
+  display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem;
+  background-color: white; padding: 16px; border-radius: 16px; border: 1px solid var(--color-border-light);
 
   .filter-field {
-    min-width: 200px;
+    min-width: 220px; flex-grow: 1;
 
-    ::ng-deep .mat-mdc-form-field-flex {
-      padding-top: 10px !important;
-      padding-bottom: 10px !important;
+    // Estilo Input Soft UI (Wrapper principal)
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: #F3F4F6 !important; // Gris suave
+      border-radius: 12px !important;
+      height: 48px; // Altura fija
+      padding: 0 12px;
+      border: 1px solid transparent;
+      // display: flex; align-items: center; // <-- ELIMINADO: Esto causaba conflictos
+
+      // Quitar bordes outline
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing { border: none !important; }
+    }
+
+    // Centrar el contenido interno (inputs e iconos)
+    ::ng-deep .mat-mdc-form-field-flex { 
+      height: 100%; 
+      align-items: center !important; // Esto centra los inputs verticalmente
+      padding: 0 !important; 
+    }
+    
+    // Ocultar espacio de subíndice (errores/hints)
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none !important; }
+
+    // --- FIX: ALINEACIÓN DE ETIQUETAS (LABELS) ---
+    // Esto sube las etiquetas "Departamento" y "Rango de Fechas"
+
+    // Apuntar a la etiqueta cuando NO está flotando (estado inicial)
+    ::ng-deep .mdc-floating-label:not(.mdc-floating-label--float-above) {
+      top: 50% !important; // Posicionar en la mitad del contenedor
+      transform: translateY(-50%) !important; // Mover hacia arriba exactamente la mitad de su altura para centrar
+      margin-bottom: 0 !important; // Resetear márgenes que puedan interferir
+    }
+
+    // Ajuste fino específico para el Date Range si es necesario (a veces queda un pixel diferente)
+    &.date-range-field ::ng-deep .mat-date-range-input-container {
+       align-items: center; // Asegura que los inputs de fecha internos también estén centrados
+    }
+    // --------------------------------------------
+  }
+
+  .date-range-field { min-width: 280px; max-width: 350px; }
+  
+  .apply-filter-btn { height: 48px; border-width: 1.5px; }
+}
+
+// --- 4. TABS ---
+.report-tabs {
+  margin-top: 1rem;
+  ::ng-deep .mat-mdc-tab-header { border-bottom: 1px solid var(--color-border-light); margin-bottom: 1.5rem; }
+  ::ng-deep .mat-mdc-tab-label { opacity: 0.7; font-weight: 600; &.mdc-tab--active { opacity: 1; color: var(--color-primary); } }
+}
+
+.report-tab-content { padding: 0.5rem 0 2rem; }
+
+// --- 5. GRID DE WIDGETS ---
+.report-widget-grid {
+  display: grid;
+  // Responsive Grid: 3 columnas en escritorio grande, 2 en laptop, 1 en móvil
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  align-items: start; // Evita estiramientos raros
+}
+
+// Estilo Base de Tarjeta (Report Container)
+.report-container {
+  display: flex; flex-direction: column;
+  background-color: var(--color-surface);
+  border-radius: 16px; // Bordes suaves
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  height: 100%;
+
+  mat-card-header {
+    padding: 1.25rem 1.5rem 0.5rem;
+    
+    mat-card-title {
+      font-size: 1.1rem; font-weight: 700; color: var(--color-text-primary);
+      text-align: left; width: 100%;
     }
   }
 
-  .date-range-field {
-    min-width: 280px;
-    flex-grow: 1;
-    max-width: 350px;
-  }
-
-  .apply-filter-btn {
-    margin-top: 8px;
-    height: 48px;
-  }
+  mat-card-content { flex-grow: 1; padding: 1.5rem; }
 }
 
-// --- Estilos de Pestañas (Tabs) ---
-.report-tabs {
-  margin-top: 1rem;
-
-  ::ng-deep .mat-mdc-tab-body-wrapper {
-    background-color: var(--color-background);
-  }
-}
-
-.report-tab-content {
-  padding: 2rem 0.5rem;
-}
-
-// --- Contenedor de Widgets (FLEXBOX) ---
-.report-widget-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  // align-items: stretch; // (Por defecto) Estira tarjetas, lo cual es correcto
-}
-
-// Estilo base para TODOS los widgets (MatCard)
-.overview-widget,
-.report-container {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-
-  mat-card-header {
-    padding-bottom: 0.5rem;
-  }
-
-  // --- CORRECCIÓN 1: Centrar Títulos ---
-  mat-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-align: center; // Centra el texto del título
-    width: 100%; // Asegura que ocupe todo el ancho
-  }
-
-  mat-card-subtitle {
-    text-align: center; // Centra el subtítulo también
-    width: 100%;
-  }
-
-  // --- FIN CORRECCIÓN 1 ---
-
-  mat-card-content {
-    flex-grow: 1; // Permite que el contenido crezca
-    padding-top: 0;
-  }
-}
-
-// --- Estilos Específicos de Widgets ---
-
-// Tarjetas de KPI y Gráficos (las "pequeñas")
-.simple-kpi,
-.chart-widget {
-  flex: 1 1 350px;
-  min-width: 300px;
-  max-width: 100%;
-
-  @media (min-width: 900px) {
-    max-width: calc(50% - 0.75rem);
-  }
-
-  @media (min-width: 1300px) {
-    max-width: calc(33.33% - 1rem);
-  }
-}
-
-// Tarjeta de Tabla (la "grande")
-.data-table-widget {
-  flex: 1 1 100%; // Ocupa toda la fila
-}
-
-// --- Contenido de Widgets (Correcciones de Altura y Centrado) ---
-
-// --- CORRECCIÓN 2: Centrar KPI Simple ---
+// --- 6. KPI WIDGETS (Tarjetas de Número Grande) ---
 .simple-kpi.report-container {
-  height: 100%; // Asegura que la tarjeta tome la altura de la fila
-
   mat-card-content {
-    // Usa Flexbox para centrar vertical y horizontalmente
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding-top: 1rem !important;
-    height: 100%; // Asegura que el contenido llene la tarjeta
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
   }
-
-  // --- FIN CORRECCIÓN 2 ---
 
   .kpi-main-value {
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    display: block;
-    line-height: 1.1;
+    font-size: 3.5rem; font-weight: 800; color: var(--color-primary); line-height: 1; margin-bottom: 0.5rem;
   }
 
   .kpi-sub-values {
-    display: flex;
-    justify-content: space-around;
-    gap: 1rem;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
+    display: flex; gap: 1.5rem; font-size: 0.9rem; font-weight: 600; color: var(--color-text-secondary);
 
-    span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .success {
-      color: var(--color-success-dark);
-    }
-
-    .danger {
-      color: var(--color-danger-dark);
-    }
+    span { display: flex; align-items: center; gap: 4px; }
+    .success { color: var(--color-success); }
+    .danger { color: var(--color-danger); }
+    
+    mat-icon { font-size: 18px; width: 18px; height: 18px; }
   }
 }
 
+// --- 7. CHART WIDGETS ---
 .chart-widget.report-container {
   mat-card-content.chart-container {
-    min-height: 300px; // Altura mínima para gráficos
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 1rem !important;
+    height: 350px; // Altura fija para gráficos
+    display: flex; justify-content: center; align-items: center;
+    padding: 0 1rem 1rem !important;
 
-    &.pie-chart {
-      min-height: auto; // Deja que el pastel crezca con su leyenda
-      margin-bottom: 1rem;
-    }
+    &.pie-chart { height: auto; min-height: 300px; margin-bottom: 1rem; }
   }
 
+  // Estilos profundos para ngx-charts (Tooltip y Leyenda)
   ::ng-deep {
-
-    // Estilo para el Tooltip (la caja que aparece al pasar el mouse)
     .ngx-charts-tooltip-content {
-      font-family: var(--font-family-base) !important; // ¡Aplica tu fuente Poppins!
-      font-size: 0.85rem !important;
-      background-color: var(--color-secondary) !important; // Fondo gris oscuro
-      color: white !important; // Texto blanco
-      border-radius: var(--border-radius) !important;
-      box-shadow: var(--box-shadow) !important;
+      font-family: var(--font-family-base) !important;
+      background-color: var(--color-text-primary) !important; // Tooltip oscuro
+      color: white !important;
+      border-radius: 8px !important;
+      padding: 8px 12px !important;
     }
-
-    // Estilo para la Leyenda (ej. en el gráfico de pastel)
+    
     .chart-legend .legend-label-text {
-      font-family: var(--font-family-base) !important; // ¡Aplica tu fuente Poppins!
-      font-size: 0.9rem !important; // Asegura tamaño legible
-      color: var(--color-text-secondary) !important; // Usa tu color de texto secundario
+      font-family: var(--font-family-base) !important;
+      font-size: 0.85rem !important;
+      color: var(--color-text-secondary) !important;
     }
 
-    // Estilo para el texto de los ejes (ej. en el gráfico de barras)
-    .ngx-charts .axis-text,
-    .ngx-charts .x-axis-label,
-    .ngx-charts .y-axis-label {
-      font-family: var(--font-family-base) !important; // ¡Aplica tu fuente Poppins!
-      fill: var(--color-text-secondary) !important; // Color del texto del eje
-    }
-
-    // Opcional: Color de las líneas de los ejes
-    .ngx-charts .x-axis .tick line,
-    .ngx-charts .y-axis .tick line {
-      stroke: var(--color-border) !important;
-    }
+    text { font-family: var(--font-family-base) !important; fill: var(--color-text-secondary) !important; }
   }
 }
 
+// --- 8. DATA TABLE WIDGET (Estilo Limpio) ---
 .data-table-widget.report-container {
+  grid-column: 1 / -1; // Ocupa todo el ancho si es posible
+
   mat-card-content.table-content-padding-fix {
     padding: 0 !important;
-    flex-grow: 1;
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
+    width: 100%; border-collapse: collapse;
 
-    th,
-    td {
-      padding: 0.75rem 1rem; // Padding más ajustado para la tabla
-      text-align: left;
-      border-bottom: 1px solid var(--color-border);
+    th, td {
+      padding: 1rem 1.5rem; text-align: left;
+      border-bottom: 1px solid var(--color-border-light);
       font-size: 0.9rem;
     }
 
     thead th {
-      font-weight: 600;
+      background-color: #F9FAFB; // Gris muy claro (Header neutro)
       color: var(--color-text-secondary);
-      font-size: 0.8rem;
-      background-color: var(--color-background);
-      text-transform: uppercase;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem;
     }
 
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
+    tbody tr:hover { background-color: #F3F4F6; } // Hover suave
+    tbody tr:last-child td { border-bottom: none; }
 
-    .text-success {
-      color: var(--color-success-dark);
-      font-weight: 600;
-    }
+    .text-success { color: var(--color-success); font-weight: 600; }
+    .text-danger { color: var(--color-danger); font-weight: 600; }
 
-    .text-danger {
-      color: var(--color-danger-dark);
-      font-weight: 600;
-    }
-
-    // Insignias de estado (reutilizamos/definimos)
+    // Badges de Estado en Tabla
     .status-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: 1rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
+      padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: white;
 
-      &.status-aprobado {
-        background-color: var(--color-success);
-      }
-
-      &.status-pendiente {
-        background-color: var(--color-warning);
-      }
-
-      &.status-rechazado {
-        background-color: var(--color-danger);
-      }
+      &.status-aprobado { background-color: var(--color-success); }
+      &.status-pendiente { background-color: var(--color-warning); color: var(--color-warning-dark); } // Warning suele ser amarillo, texto oscuro
+      &.status-rechazado { background-color: var(--color-danger); }
     }
   }
+}
+
+.no-data-placeholder {
+  text-align: center; padding: 4rem; color: var(--color-text-muted); font-style: italic;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

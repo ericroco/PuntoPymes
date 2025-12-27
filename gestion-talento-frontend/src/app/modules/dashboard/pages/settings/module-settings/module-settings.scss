@@ -1,178 +1,174 @@
 /* ==========================================================================
-   STYLES FOR MODULE SETTINGS SUB-PAGE
+   TALENTRACK - MODULE SETTINGS (FINAL STYLE - FIXED COLORS)
    ========================================================================== */
 
-// --- Reusable Button Styles (Include if needed globally or define here) ---
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    font-size: 0.95rem;
-    font-family: var(--font-family-base);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease-out;
-
-    svg {
-        width: 20px;
-        height: 20px;
-    }
-}
-
-.btn.btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-    &:hover {
-        background-color: var(--color-primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-}
-
-.btn.btn-secondary {
-    background-color: var(--color-surface);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    font-weight: 500;
-    padding: 0.6rem 1.2rem; // Slightly smaller for card buttons
-
-    &:hover {
-        background-color: var(--color-background);
-        border-color: #dcdcdc;
-        color: var(--color-text-primary);
-    }
-}
-
-.btn-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-    vertical-align: middle;
-    line-height: 1;
-
-    svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    &:hover {
-        background-color: var(--color-border);
-    }
-}
-.config-placeholder {
-  width: 36px; // Mismo ancho que el botón mat-icon-button
-  height: 36px;
-  flex-shrink: 0; // Evita que se encoja
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.settings-subpage-container {
+  padding: var(--spacing-xl);
+  max-width: 800px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 120px;
 }
 
 .description {
-    color: var(--color-text-secondary);
-    margin-bottom: 2rem; // Space below description
-    font-size: 0.95rem;
-    max-width: 700px; // Limit width for readability
-    line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2xl);
+  font-size: 0.95rem;
+  max-width: 750px;
+  line-height: 1.5;
 }
 
-// --- List container for the toggles ---
+// --- 2. LISTA DE MÓDULOS ---
 .module-toggle-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem; // Space between items
-    max-width: 800px; // Limit width of the toggle section
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-// --- Styling for each toggle item row ---
+// Tarjeta Individual
 .module-item {
-    display: flex;
-    align-items: center; // Vertically align items
-    justify-content: space-between; // Push info and config button apart
-    padding: 1rem 0; // Vertical padding for spacing
-    border-bottom: 1px solid var(--color-border); // Separator line
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 
-    &:last-child {
-        border-bottom: none; // No border on the last item
-    }
+  &:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-light);
+  }
 }
 
-// --- Left side content (Toggle + Hint) ---
+// --- 3. CONTENIDO DEL MÓDULO ---
 .module-info {
-    display: flex;
-    flex-direction: column; // Stack toggle and hint vertically
-    gap: 0.25rem; // Small gap between toggle and hint
-    flex-grow: 1; // Allow this section to take available space
-    padding-right: 1rem; // Add space before the config button
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+  padding-right: 1rem;
 
-    // Style the slide toggle component
-    mat-slide-toggle {
-        margin-bottom: 0.25rem; // Ensure hint aligns correctly below
-
-        // Style the label text within the toggle
-        // Using ::ng-deep might be necessary but use cautiously
-        ::ng-deep .mdc-label {
-            font-weight: 500 !important;
-            color: var(--color-text-primary) !important;
-            font-size: 1rem !important; // Slightly larger label
-        }
+  // === FIX: ESTILOS DE TOGGLE (COLORES) ===
+  mat-slide-toggle {
+    
+    // Label Text
+    ::ng-deep .mdc-label {
+      font-weight: 600 !important;
+      color: var(--color-text-primary) !important;
+      font-size: 1rem !important;
+      font-family: var(--font-family-base) !important;
     }
 
-    // Style for disabled toggle label
-    mat-slide-toggle.mat-disabled {
-        ::ng-deep .mdc-label {
-            color: var(--color-text-secondary) !important; // Grey out label when disabled
-            cursor: not-allowed;
-        }
+    // --- 1. ESTADO ACTIVO (CHECKED) ---
+    &.mat-mdc-slide-toggle-checked {
+      // Track (Fondo claro marca)
+      ::ng-deep .mdc-switch__track::after {
+        background-color: var(--color-primary-light) !important;
+        border-color: var(--color-primary-light) !important;
+      }
+      // Handle (Bolita color marca)
+      ::ng-deep .mdc-switch__handle::after {
+        background-color: var(--color-primary) !important;
+      }
+      // Icono (Checkmark) -> FORZAR BLANCO
+      ::ng-deep .mdc-switch__icon {
+        color: white !important;
+        fill: white !important; 
+        --mdc-switch-selected-icon-color: white !important;
+      }
     }
 
-    // Hint text styling
-    .module-hint {
-        font-size: 0.8rem; // Smaller hint text
-        color: var(--color-text-secondary);
-        // Indent hint text to align roughly with the start of the label text
-        // Adjust padding-left based on your toggle's visual size
-        padding-left: 45px;
+    // --- 2. ESTADO DESHABILITADO (DISABLED) ---
+    // Aquí quitamos el rojo/rosa y ponemos gris neutro
+    &.mat-disabled {
+      opacity: 0.6; 
+
+      // Track (Fondo) -> Gris Claro
+      ::ng-deep .mdc-switch__track::after,
+      ::ng-deep .mdc-switch__track::before {
+        background-color: #E5E7EB !important; // Gris neutro
+        border-color: #E5E7EB !important;
+      }
+
+      // Handle (Bolita) -> Gris Medio
+      ::ng-deep .mdc-switch__handle::after {
+        background-color: #9CA3AF !important; // Gris acero
+      }
+
+      // Icono dentro del disabled -> Gris claro o blanco
+      ::ng-deep .mdc-switch__icon {
+        color: white !important;
+        fill: white !important;
+      }
+
+      // Texto Label -> Gris
+      ::ng-deep .mdc-label {
+        color: var(--color-text-secondary) !important;
+      }
     }
+  }
+
+  .module-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-left: 52px;
+    line-height: 1.4;
+  }
 }
 
-// --- Right side content (Config Button) ---
+// --- 4. BOTÓN CONFIGURACIÓN ---
 .config-button {
-    color: var(--color-text-secondary); // Default color
-    width: 36px;
-    height: 36px;
-    line-height: 36px; // Size
-    flex-shrink: 0; // Prevent button from shrinking
+  color: var(--color-text-secondary);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
 
-    mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
-    }
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
 
-    // Icon size
-
-    &:hover {
-        color: var(--color-primary); // Highlight on hover
-        background-color: var(--color-primary-light); // Background on hover
-    }
+  &:hover {
+    color: var(--color-primary);
+    background-color: var(--color-surface-variant);
+  }
 }
 
-// --- Footer with action buttons ---
+.config-placeholder { width: 40px; height: 40px; flex-shrink: 0; }
+
+// --- 5. FOOTER FIJO ---
 .actions-footer {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--color-border); // Separator line above footer
-    display: flex;
-    justify-content: flex-end; // Align buttons to the right
-    gap: 1rem; // Space between buttons
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 1rem 2rem;
+  display: flex; justify-content: flex-end;
+  z-index: 90;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+
+  @media (min-width: 1024px) { padding-left: calc(280px + 2rem); }
+
+  button[mat-flat-button] {
+    border-radius: 999px !important; // Pill Shape
+    height: 44px;
+    padding: 0 32px;
+    font-weight: 600;
+    font-family: var(--font-family-base);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

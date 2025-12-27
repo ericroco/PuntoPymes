@@ -1,276 +1,356 @@
-// ==========================================
-// VARIABLES & MIXINS
-// ==========================================
-$spacing-unit: 1.5rem;
-$border-radius: 12px; // Coincide con tu identidad visual moderna
-$text-secondary: #666;
-$bg-subtle: #f8f9fa;
-$border-color: #e0e0e0;
+/* ==========================================================================
+   TALENTRACK - PAYROLL SETTINGS (FINAL STYLE - FIXED)
+   ========================================================================== */
 
-// Colores Semánticos (Material Palette 500/50/700)
-$success-bg: #e8f5e9;
-$success-text: #2e7d32;
-$danger-bg: #ffebee;
-$danger-text: #c62828;
-
-// ==========================================
-// LAYOUT GENERAL
-// ==========================================
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
 .settings-subpage-container {
-  padding: 2rem;
-  max-width: 1000px; // Evita que se estire demasiado en monitores grandes
+  padding: var(--spacing-xl);
+  max-width: 1000px;
   margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+  padding-bottom: 120px;
 }
 
 .description {
-  color: $text-secondary;
-  margin-bottom: 2rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2xl);
   font-size: 0.95rem;
+  max-width: 800px;
   line-height: 1.5;
-  max-width: 700px;
 }
 
-mat-divider {
-  margin: 2.5rem 0;
-}
-
-// ==========================================
-// SECCIONES DE CONFIGURACIÓN
-// ==========================================
+// --- 2. TARJETAS DE SECCIÓN ---
 .setting-section {
-  margin-bottom: 2rem;
-
+  background-color: var(--color-surface);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  
   h4 {
     margin: 0 0 0.5rem 0;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.1rem;
-    color: var(--color-text-primary, #333);
+    color: var(--color-text-primary);
   }
 
-  .section-hint {
-    font-size: 0.85rem;
-    color: $text-secondary;
+  .section-header {
     margin-bottom: 1.5rem;
+    h4 { margin-bottom: 4px; }
+    .section-hint { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
   }
 }
 
-// Grid de 2 columnas para configuración general
+// --- 3. INPUTS SOFT UI (FIXED - LABEL FLOTANTE FUERA DEL RECUADRO) ---
+::ng-deep .mat-mdc-form-field {
+  
+  // Wrapper principal (Caja gris)
+  .mat-mdc-text-field-wrapper {
+    background-color: #F3F4F6 !important;
+    border-radius: 12px !important;
+    height: 48px; // Altura más compacta ya que el label estará fuera
+    padding: 0 12px;
+    border: 1px solid transparent;
+    display: flex; align-items: center;
+    margin-top: 12px; // Más espacio para el label flotante
+
+    .mdc-notched-outline,
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing { border: none !important; }
+  }
+
+  // Estado Focus
+  &.mat-focused .mat-mdc-text-field-wrapper {
+    background-color: white !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px var(--color-primary-subtle);
+  }
+
+  // Flex interno
+  .mat-mdc-form-field-flex {
+    height: 100%;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+
+  // Input Nativo - Ahora centrado verticalmente
+  input.mat-mdc-input-element {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  // Etiqueta Flotante - FUERA del recuadro (cuando hay texto o focus)
+  .mdc-floating-label--float-above {
+    transform: translateY(-50px) scale(0.85) !important; // Sube más alto fuera del box
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--color-text-primary) !important;
+    background: transparent !important;
+  }
+
+  // Etiqueta en reposo - Centrada dentro del box
+  .mdc-floating-label:not(.mdc-floating-label--float-above) {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.95rem !important;
+    color: var(--color-text-secondary) !important;
+  }
+
+  // Color del label cuando está en focus
+  &.mat-focused .mdc-floating-label--float-above {
+    color: var(--color-primary) !important;
+  }
+
+  // FIX: PREFIJO ($) - Ahora centrado
+  .mat-mdc-form-field-text-prefix, 
+  [matPrefix] {
+    margin-right: 6px;
+    color: var(--color-text-secondary);
+    display: flex; 
+    align-items: center;
+  }
+
+  // FIX: SUFIJO (%) - Ahora centrado
+  .mat-mdc-form-field-text-suffix,
+  [matSuffix] {
+    margin-left: 6px;
+    color: var(--color-text-secondary);
+  }
+
+  .mat-mdc-form-field-subscript-wrapper { margin-top: 4px; }
+}
+
 .form-row-2-col {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   align-items: start;
-
-  mat-form-field {
-    width: 100%;
-  }
+  margin-top: 1rem;
 }
 
-// ==========================================
-// CONTENEDOR DE ITEMS (LISTA + FORMULARIO)
-// ==========================================
-.payroll-items-container {
-  border: 1px solid $border-color;
-  border-radius: $border-radius;
-  overflow: hidden; // Para que el borde redondeado corte el contenido
-  background: white;
-}
-
-// --- LISTA DE ITEMS ---
-mat-list {
-  padding-top: 0;
-}
-
-.concept-item {
-  height: auto !important; // Permitir altura variable si es necesario
-  padding-top: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid lighten($border-color, 8%);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  // Icono principal (Flecha arriba/abajo)
-  mat-icon {
-    background-color: $bg-subtle;
-    padding: 8px;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 16px;
-
-    &.text-success {
-      color: $success-text;
-      background-color: $success-bg;
-    }
-
-    &.text-danger {
-      color: $danger-text;
-      background-color: $danger-bg;
-    }
-  }
-
-  .item-title {
-    font-weight: 500;
-    font-size: 1rem;
-    color: var(--color-text-primary, #333);
-  }
-
-  .item-meta {
-    display: flex;
-    align-items: center;
-    margin-top: 4px;
-    font-size: 0.85rem;
-    color: $text-secondary;
-
-    .separator {
-      margin: 0 8px;
-      color: #ccc;
-    }
-  }
-}
-
-// Badges (Etiquetas de color)
-.badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  &.badge-ingreso {
-    background-color: $success-bg;
-    color: $success-text;
-  }
-
-  &.badge-egreso {
-    background-color: $danger-bg;
-    color: $danger-text;
-  }
-}
-
-// Estado Vacío
-.empty-state {
-  padding: 3rem;
-  text-align: center;
-  color: $text-secondary;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-
-  mat-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    opacity: 0.5;
-  }
-}
-
-// ==========================================
-// FORMULARIO DE AGREGAR ITEM (ÁREA GRIS)
-// ==========================================
+// --- 4. FORMULARIO AÑADIR (INLINE) ---
 .add-item-form {
-  background-color: $bg-subtle;
-  padding: 1.5rem;
-  border-top: 1px solid $border-color;
+  background-color: #F9FAFB;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--color-border-light);
+  margin-top: 20px;
 
   h4 {
-    margin-bottom: 1rem;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: $text-secondary;
-  }
-}
-
-.add-controls-row {
-  display: flex;
-  align-items: center; // Alinea verticalmente inputs y botón
-  gap: 1rem;
-  flex-wrap: wrap; // Responsive
-
-  // Input Nombre
-  .item-name-field {
-    flex: 2; // Ocupa más espacio
-    min-width: 250px;
-  }
-
-  // Select Tipo
-  .item-type-field {
-    flex: 1;
-    min-width: 150px;
-  }
-
-  // Checkbox y Botón
-  .checkbox-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding-bottom: 18px; // Ajuste fino para alinear con la línea base de los inputs Material
-
-    .info-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: #999;
-      cursor: help;
-      transition: color 0.2s;
-
-      &:hover {
-        color: var(--color-primary);
-      }
-    }
-  }
-
-  .btn-add {
-    height: 50px; // Altura para igualar inputs Material Appearance Outline
-    margin-bottom: 22px; // Ajuste para alinear con inputs (compensa el espacio de error/hint)
-    padding: 0 24px;
-  }
-}
-
-// ==========================================
-// FOOTER
-// ==========================================
-.actions-footer {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid $border-color;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-// ==========================================
-// RESPONSIVE
-// ==========================================
-@media (max-width: 768px) {
-  .settings-subpage-container {
-    padding: 1rem;
-  }
-
-  .form-row-2-col {
-    grid-template-columns: 1fr;
+    font-size: 0.85rem; text-transform: uppercase; color: var(--color-text-secondary); letter-spacing: 0.5px; margin-bottom: 1rem;
   }
 
   .add-controls-row {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;
 
-    .checkbox-wrapper,
-    .btn-add {
-      margin-bottom: 0;
-      padding-bottom: 0;
+    mat-form-field { flex: 1; min-width: 180px; }
+    
+    .checkbox-wrapper {
+      display: flex; align-items: center; height: 60px; // Altura ajustada para compensar el label flotante
+      padding: 0 8px;
+      margin-top: 12px; // Alineado con los inputs
     }
 
     .btn-add {
-      margin-top: 10px;
+      height: 48px; // Misma altura que el input box
+      margin-top: 12px; // Alineado con los inputs (compensa el espacio del label)
     }
   }
+}
+
+// --- 5. LISTAS (FIXED ALIGNMENT) ---
+.payroll-items-container {
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  margin-top: 20px;
+
+  mat-list { padding-top: 0; }
+  
+  div[mat-subheader] {
+    background-color: #F9FAFB;
+    color: var(--color-text-secondary);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  mat-list-item {
+    height: 80px !important; // Más altura para mejor espaciado
+    border-bottom: 1px solid var(--color-border-light);
+    
+    &:last-child { border-bottom: none; }
+
+    // --- FIX: ALINEACIÓN VERTICAL DE CONTENIDO ---
+    ::ng-deep .mdc-list-item__content {
+      display: flex;
+      align-items: center; // Centrado vertical
+      height: 100%;
+      justify-content: space-between; // Separa contenido izquierdo y botón derecho
+    }
+
+    // Icono Principal - Mejor alineación
+    mat-icon[matListItemIcon] {
+      background-color: #F3F4F6;
+      padding: 10px;
+      border-radius: 50%;
+      width: 44px; 
+      height: 44px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      margin-right: 16px;
+      flex-shrink: 0; // Evita que se comprima
+      
+      &.text-success { color: var(--color-success); background-color: var(--color-success-light); }
+      &.text-danger { color: var(--color-danger); background-color: var(--color-danger-light); }
+      &.text-secondary { color: var(--color-text-secondary); }
+    }
+
+    // Contenedor de textos - TODO ALINEADO A LA IZQUIERDA
+    ::ng-deep .mdc-list-item__primary-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      align-items: flex-start; // Alineado a la izquierda
+    }
+
+    // Textos
+    .item-title { 
+      font-weight: 600; 
+      font-size: 0.95rem; 
+      color: var(--color-text-primary);
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    // Línea Secundaria (Fechas + Badge) - ALINEADO A LA IZQUIERDA
+    div[matListItemLine] {
+      display: flex;
+      align-items: center;
+      gap: 12px; // Espacio entre fecha y badge
+      line-height: 1.4;
+      color: var(--color-text-secondary);
+      font-size: 0.9rem;
+      width: 100%; // Ocupa todo el ancho disponible
+    }
+
+    .item-meta {
+      display: flex; 
+      align-items: center; 
+      gap: 8px;
+      
+      .separator { 
+        color: var(--color-text-muted); 
+        font-size: 10px; 
+      }
+      
+      .recurrence-info { 
+        font-size: 0.85rem; 
+        color: var(--color-text-secondary); 
+      }
+    }
+
+    // Botón de eliminar - Centrado verticalmente en el item
+    button[mat-icon-button] {
+      color: var(--color-text-secondary);
+      flex-shrink: 0; // Evita que se comprima
+      align-self: center !important; // Forzar centrado vertical
+      position: relative;
+      top: 0; // Resetear cualquier posicionamiento
+      
+      &:hover { 
+        background-color: #FEE2E2; 
+        color: #EF4444; 
+      }
+      
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+    
+    // Asegurar que el matListItemMeta esté centrado también
+    ::ng-deep [matListItemMeta] {
+      align-self: center !important;
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+// --- 6. BADGES ---
+.badge {
+  padding: 6px 14px; // Más padding para hacerlo más grande
+  border-radius: 16px; // Más redondeado
+  font-weight: 700;
+  font-size: 0.75rem; // Texto un poco más grande
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex; // Flex para mejor centrado
+  align-items: center;
+  line-height: 1;
+  white-space: nowrap; // Evita que se parta en líneas
+
+  &.badge-ingreso { 
+    background-color: var(--color-success-light); 
+    color: var(--color-success-dark); 
+  }
+  
+  &.badge-egreso { 
+    background-color: var(--color-danger-light); 
+    color: var(--color-danger-dark); 
+  }
+}
+
+// --- 7. BOTONES ---
+button[mat-flat-button], 
+button[mat-stroked-button] {
+  border-radius: 999px !important;
+  height: 44px;
+  padding: 0 24px;
+  font-weight: 600;
+  font-family: var(--font-family-base);
+  mat-icon { margin-right: 6px; }
+}
+
+button[color="primary"][mat-flat-button] {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  color: white !important; // Texto blanco
+  
+  &:hover { box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4); }
+  
+  mat-icon { color: white !important; } // Iconos blancos
+}
+
+// Footer Sticky
+.actions-footer {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 1rem 2rem;
+  display: flex; justify-content: flex-end; gap: 1rem;
+  z-index: 90;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  @media (min-width: 1024px) { padding-left: calc(280px + 2rem); }
+}
+
+.empty-state {
+  padding: 3rem; text-align: center; color: var(--color-text-secondary); display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; opacity: 0.4; }
+}
+
+mat-divider { display: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

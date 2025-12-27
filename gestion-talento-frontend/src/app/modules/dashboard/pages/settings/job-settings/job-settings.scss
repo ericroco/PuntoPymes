@@ -29,13 +29,13 @@
     }
 }
 
-// --- Contenedor de la Lista (Tabla) ---
+// --- 4. CONTENEDOR DE LISTA (La "Tabla") ---
 .list-container {
-    background-color: var(--color-surface);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    overflow: hidden;
-    border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  border-radius: 16px; // Bordes redondeados (Soft UI)
+  box-shadow: var(--shadow-sm);
+  overflow: hidden; // Para que los hijos no rompan el radio
+  border: 1px solid var(--color-border-light);
 }
 
 // --- Filas de la Lista (Grid Genérico) ---
@@ -98,12 +98,12 @@
 }
 
 .dept-desc {
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    /* Cortar texto largo con ... */
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; // Cortar con "..."
+  max-width: 100%;
 }
 
 .salary {
