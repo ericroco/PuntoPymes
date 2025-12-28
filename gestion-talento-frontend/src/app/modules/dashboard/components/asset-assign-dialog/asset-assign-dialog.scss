@@ -16,7 +16,7 @@ $padding-modal: 1.5rem;
     width: 100%;
     height: auto !important;
     box-sizing: border-box !important;
-    max-width: 500px !important; // Ancho ideal
+    max-width: 500px !important;
 }
 
 .dialog-container {
@@ -81,8 +81,8 @@ $padding-modal: 1.5rem;
 
 // Tarjeta de Resumen del Activo
 .asset-summary {
-    background-color: #FAFAFA; // Fondo muy suave
-    margin: 1.5rem 1.5rem 0 1.5rem; // Margen superior y lateral
+    background-color: #FAFAFA;
+    margin: 1.5rem 1.5rem 0 1.5rem;
     padding: 1rem;
     border-radius: $radius-input;
     border: 1px solid var(--color-border);
@@ -161,7 +161,7 @@ $padding-modal: 1.5rem;
 }
 
 // ============================================
-// INPUTS SUAVES (Identidad Visual)
+// INPUTS SUAVES - VERSIÓN DEFINITIVA
 // ============================================
 .full-width {
     width: 100%;
@@ -171,36 +171,55 @@ $padding-modal: 1.5rem;
     width: 100%;
     display: block;
 
+    // Contenedor del input con fondo suave
     .mat-mdc-text-field-wrapper {
         background-color: #F3F4F6 !important;
         border-radius: $radius-input !important;
-        border: 1px solid transparent;
         transition: all 0.2s ease;
-        padding-right: 8px;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-        border: none !important;
+    // Quitar bordes del outline (usamos fondo en su lugar)
+    .mdc-notched-outline {
+
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border: none !important;
+        }
     }
 
-    // Label Fix
+    // Permitir que el notch tenga espacio suficiente
     .mdc-notched-outline__notch {
-        max-width: calc(100% - 40px) !important;
-        padding: 0 8px;
+        border: none !important;
+        padding-left: 0;
+        padding-right: 0;
     }
 
+    // Label flotante - SIN restricciones de ancho
     .mdc-floating-label {
         font-family: 'Poppins', sans-serif;
-        max-width: 100% !important;
+        left: 16px !important;
     }
 
-    // Iconos
+    // Input interno
+    .mat-mdc-input-element {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    // Iconos suffix - centrados
     .mat-icon[matSuffix] {
         color: var(--color-text-secondary);
         opacity: 0.7;
-        margin-right: 8px;
+        margin-left: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .mat-datepicker-toggle {
@@ -208,18 +227,140 @@ $padding-modal: 1.5rem;
         opacity: 0.7;
     }
 
-    // FOCUS
+    // ⭐ FIX: Placeholder visible solo cuando label está arriba
+    .mat-mdc-input-element::placeholder {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    &.mat-focused .mat-mdc-input-element::placeholder,
+    &.mat-form-field-should-float .mat-mdc-input-element::placeholder {
+        opacity: 0.6;
+        transition-delay: 0.1s;
+    }
+
+    // ESTADO FOCUS
     &.mat-focused {
         .mat-mdc-text-field-wrapper {
             background-color: var(--color-surface) !important;
             box-shadow: 0 0 0 3px var(--color-primary-light);
-            border-color: var(--color-primary);
+            border: 1px solid var(--color-primary);
         }
 
         .mat-icon[matSuffix],
         .mat-datepicker-toggle {
             color: var(--color-primary);
             opacity: 1;
+        }
+    }
+
+    // ESTADO CON ERROR
+    &.mat-form-field-invalid {
+        .mat-mdc-text-field-wrapper {
+            background-color: rgba(239, 68, 68, 0.05) !important;
+            border: 1px solid var(--color-danger);
+        }
+    }
+
+    // Hints y errores
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-error-wrapper {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .mat-mdc-form-field-hint {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+    }
+
+    .mat-mdc-form-field-error {
+        font-size: 0.75rem;
+    }
+}
+
+// ============================================
+// 🔥 FIX CRÍTICO: TEXTAREA CON ALTURA AUTOMÁTICA
+// ============================================
+::ng-deep .custom-field.mat-mdc-form-field-type-mat-input {
+
+    // Solo aplicar a textareas
+    &:has(textarea) {
+
+        // Wrapper crece con el contenido
+        .mat-mdc-text-field-wrapper {
+            padding-top: 16px !important;
+            padding-bottom: 16px !important;
+            min-height: auto !important;
+            height: auto !important;
+        }
+
+        // Textarea sin restricciones de altura
+        textarea.mat-mdc-input-element {
+            resize: vertical !important; // Permitir redimensionar manualmente
+            min-height: 72px !important; // Altura mínima (3 rows aprox)
+            max-height: 200px !important; // Altura máxima
+            overflow-y: auto !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.5;
+
+            // Scrollbar del textarea
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: var(--color-border);
+                border-radius: 4px;
+            }
+        }
+
+        // 🔥 Ícono arriba alineado con el label
+        .mat-icon[matSuffix] {
+            align-self: flex-start !important;
+            margin-top: 18px !important;
+            margin-left: 8px !important;
+        }
+
+        // Ajustar el infix para que el textarea tenga espacio
+        .mat-mdc-form-field-infix {
+            padding-top: 16px !important;
+            padding-bottom: 16px !important;
+            min-height: auto !important;
+        }
+    }
+}
+
+// ============================================
+// FIX ESPECÍFICO PARA AUTOCOMPLETE
+// ============================================
+::ng-deep .custom-field {
+
+    // Cuando hay autocomplete, asegurar espacio para el icono de búsqueda
+    &.mat-mdc-form-field-has-icon-suffix {
+        .mat-mdc-text-field-wrapper {
+            padding-right: 48px !important;
+        }
+    }
+}
+
+// Panel del autocomplete
+::ng-deep .mat-mdc-autocomplete-panel {
+    border-radius: $radius-input !important;
+    margin-top: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+
+    .mat-mdc-option {
+        padding: 12px 16px;
+        min-height: 56px;
+
+        &:hover {
+            background-color: var(--color-primary-light) !important;
+        }
+
+        &.mat-selected {
+            background-color: var(--color-primary-subtle) !important;
         }
     }
 }
@@ -256,11 +397,18 @@ $padding-modal: 1.5rem;
         &.btn-save {
             background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
             color: white;
-            box-shadow: 0 4px 12px var(--color-primary-rgb);
+            box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
 
             mat-icon {
                 margin-right: 6px;
                 font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+
+            &:hover:not(:disabled) {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
             }
 
             &:disabled {
@@ -276,50 +424,21 @@ $padding-modal: 1.5rem;
 // MOBILE
 // ============================================
 @media (max-width: 600px) {
+    .asset-summary {
+        margin: 1rem 1rem 0 1rem;
+        padding: 0.75rem;
+    }
+
+    .simple-form {
+        padding: 1rem;
+    }
+
     .dialog-footer {
         flex-direction: column;
+        padding: 1rem;
 
         button {
             width: 100%;
         }
-    }
-}
-
-// ============================================
-// FIX: Label flotante que se sale - SOLUCIÓN
-// ============================================
-::ng-deep .custom-field {
-
-    // Controlar el outline notch (la ranura donde va el label)
-    .mdc-notched-outline__notch {
-        max-width: calc(100% - 24px) !important; // Limitar ancho del notch
-        padding: 0 8px; // Padding interno
-    }
-
-    // Label flotante controlado
-    .mdc-floating-label {
-        max-width: 100% !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    // Cuando está flotando arriba (focused o con valor)
-    .mdc-floating-label--float-above {
-        // Escalar más pequeño si es necesario
-        transform: translateY(-27.25px) scale(0.75) !important;
-        max-width: calc(133% - 32px) !important; // Dar espacio pero limitado
-    }
-
-    // Iconos a la derecha
-    .mat-icon[matSuffix] {
-        color: var(--color-text-secondary);
-        opacity: 0.7;
-        margin-right: 8px;
-    }
-
-    &.mat-focused .mat-icon[matSuffix] {
-        color: var(--color-primary);
-        opacity: 1;
     }
 }

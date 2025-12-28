@@ -10,12 +10,14 @@
 // Fuente Poppins (Identidad Visual)
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
-// Tema Base de Material (Estructura interna)
+$custom-typography: mat.m2-define-typography-config($font-family: 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  );
+
 html {
   @include mat.theme((color: (primary: mat.$red-palette,
         tertiary: mat.$orange-palette,
       ),
-      typography: Roboto, // Se sobrescribe con Poppins abajo
+      typography: $custom-typography,
       density: 0,
     ));
 }
@@ -150,7 +152,7 @@ html {
 }
 
 body {
-  font-family: var(--font-family-base) !important;
+  font-family: var(--font-family-base);
   background-color: var(--color-background);
   color: var(--color-text-primary);
   line-height: 1.6;
@@ -195,7 +197,7 @@ mat-label,
 .mat-mdc-tab,
 .mat-mdc-dialog-title,
 .mat-mdc-dialog-content {
-  font-family: var(--font-family-base) !important;
+  font-family: var(--font-family-base);
 }
 
 /* ==========================================================================
@@ -1030,35 +1032,4 @@ mat-progress-bar {
 /* Refuerzo para asegurar que el elemento interno del track tome el color */
 .mdc-linear-progress__buffer-bar {
   background-color: #E0E0E0 !important;
-}
-
-/* ============================================================
-   FIX GLOBAL: MAT-SLIDE-TOGGLE DISABLED STATE (GRIS NEUTRO)
-   ============================================================ */
-mat-slide-toggle.mat-disabled {
-  opacity: 0.6 !important;
-
-  // 1. Track (Fondo del toggle) -> Gris claro neutral
-  .mdc-switch__track::after,
-  .mdc-switch__track::before {
-    background-color: #E5E7EB !important;
-    border-color: #E5E7EB !important;
-  }
-
-  // 2. Handle (Bolita) -> Gris medio/acero
-  .mdc-switch__handle::after {
-    background-color: #9CA3AF !important;
-  }
-
-  // 3. Icono interno -> Blanco para contraste
-  .mdc-switch__icon {
-    color: white !important;
-    fill: white !important;
-    --mdc-switch-selected-icon-color: white !important;
-  }
-
-  // 4. Label text -> Gris secundario
-  .mdc-label {
-    color: var(--color-text-secondary) !important;
-  }
 }

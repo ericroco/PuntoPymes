@@ -1,261 +1,237 @@
-// ============================================
-// VARIABLES (BRANDING)
-// ============================================
-$bg-page: var(--color-background, #F9FAFB);
-$border-color: var(--color-border, #E5E7EB);
-$text-dark: var(--color-text-primary, #1F2937);
-$text-muted: var(--color-text-secondary, #6B7280);
-$radius-card: 16px;
+/* ==========================================================================
+   TALENTRACK - POLICIES TABLE (MISMO ESTILO QUE SURVEYS)
+   ========================================================================== */
 
-// ============================================
-// CONTENEDOR PRINCIPAL
-// ============================================
-.page-container.policies-page {
-    padding: 24px;
-    background-color: $bg-page;
-    min-height: 100vh;
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container {
+    padding: var(--spacing-xl);
     max-width: 1200px;
     margin: 0 auto;
-
-    @media (min-width: 768px) {
-        padding: 40px;
-    }
+    animation: fadeIn 0.4s ease-out;
+    padding-bottom: 100px;
 }
 
-// ============================================
-// HEADER
-// ============================================
+// --- 2. HEADER Y BOTONES ---
 .page-header {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 32px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
 
-    @media (min-width: 768px) {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .header-text {
-        h2 {
-            font-family: var(--font-family-base, 'Poppins', sans-serif);
-            font-size: 28px;
-            font-weight: 700;
-            color: $text-dark;
-            margin: 0;
-        }
-
-        .subtitle {
-            margin: 4px 0 0;
-            color: $text-muted;
-            font-size: 1rem;
-        }
-    }
-
-    // Botón Principal
-    button[mat-flat-button] {
-        border-radius: 24px;
-        height: 44px;
-        padding: 0 24px;
-        font-weight: 600;
+    h2 {
+        margin: 0;
         font-family: var(--font-family-base);
-        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        color: white;
-
-        mat-icon {
-            margin-right: 8px;
-        }
-
-        &:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
-        }
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
     }
 }
 
-// ============================================
-// TABLA
-// ============================================
-.table-wrapper {
-    background: var(--color-surface, white);
-    border-radius: $radius-card;
-    border: 1px solid $border-color;
+// Botón General (Pill Shape)
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0 24px;
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-family: var(--font-family-base);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-out;
+    box-shadow: var(--shadow-sm);
+
+    mat-icon {
+        width: 20px;
+        height: 20px;
+        font-size: 20px;
+    }
+}
+
+// Botón Primario
+.btn.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+    }
+}
+
+// --- 3. CONTENEDOR DE LISTA (TARJETA) ---
+.table-list {
+    background-color: var(--color-surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--color-border-light);
+    margin-top: 1.5rem;
 }
 
-.custom-table {
-    width: 100%;
+// --- 4. ITEMS DE LA TABLA (FILAS) ---
+.table-item {
+    display: grid;
+    // Icono | Nombre (Flexible) | Categoría | Fecha | Acciones
+    grid-template-columns: 80px 2fr 1.2fr 1.2fr 120px;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border-light);
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
 
-    // Header
-    thead th {
-        background-color: #FAFAFA;
-        color: $text-muted;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        font-weight: 600;
-        padding: 16px 24px;
-        border-bottom: 1px solid $border-color;
+    &:last-child {
+        border-bottom: none;
     }
 
-    // Filas
-    tbody td {
-        padding: 16px 24px;
-        border-bottom: 1px solid $border-color;
-        color: $text-dark;
-        font-size: 0.95rem;
-        vertical-align: middle;
-    }
-
-    .hover-row:hover {
+    // Hover en filas de datos
+    &:not(.header):hover {
         background-color: #F9FAFB;
     }
 
-    // --- CELDAS ESPECÍFICAS ---
-
-    // Icono Documento
-    .col-icon {
-        width: 60px;
-        text-align: center;
-    }
-
-    .doc-icon {
-        color: var(--color-primary); // Default (Word/Doc)
-
-        &.pdf {
-            color: #EF4444;
-        }
-
-        // Rojo específico para PDF
-    }
-
-    // Nombre Documento
-    .doc-name {
-        font-weight: 500;
-        color: $text-dark;
-    }
-
-    // Chips de Categoría
-    .category-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 0.75rem;
+    // --- HEADER DE LA TABLA ---
+    &.header {
+        background-color: #F9FAFB;
         font-weight: 700;
+        color: var(--color-text-secondary);
         text-transform: uppercase;
-        background-color: #F3F4F6;
-        color: $text-dark;
-        border: 1px solid #E5E7EB;
+        font-size: 0.75rem;
         letter-spacing: 0.5px;
+        padding: 0.85rem 1.5rem;
     }
+}
 
-    .text-muted {
-        color: $text-muted;
-        font-size: 0.9rem;
+// --- 5. ESTILOS DE CONTENIDO ---
+
+// Wrapper del icono de documento
+.doc-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// Icono de documento
+.doc-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: var(--color-primary); // Default (Word/Doc)
+
+    &.pdf {
+        color: #EF4444; // Rojo para PDF
     }
+}
 
-    // Acciones
-    .text-right {
-        text-align: right;
-    }
+// Nombre del documento
+.doc-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+}
 
-    .actions-group {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-    }
+// Badge de Categoría (Pill)
+.category-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-block;
+    white-space: nowrap;
+    background-color: #F3F4F6;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
 
-    .action-btn {
+// Texto muted (fechas, etc)
+.text-muted {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+// --- 6. ACCIONES (BOTONES ICONO) ---
+.actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+
+    .btn-icon {
+        background: transparent;
+        border: none;
+        cursor: pointer;
         width: 36px;
         height: 36px;
-        transition: all 0.2s;
-
-        &.view {
-            color: var(--color-primary);
-
-            &:hover {
-                background-color: var(--color-surface-variant, #F3F4F6);
-            }
-        }
-
-        &.delete {
-            color: #EF4444;
-
-            &:hover {
-                background-color: #FEF2F2;
-            }
-        }
-    }
-}
-
-// ============================================
-// EMPTY & LOADING
-// ============================================
-.loading-state {
-    padding: 60px;
-    text-align: center;
-    color: $text-muted;
-
-    mat-spinner {
-        margin: 0 auto 16px;
-    }
-}
-
-.empty-state {
-    text-align: center;
-    padding: 80px 20px;
-
-    .icon-wrapper {
-        width: 72px;
-        height: 72px;
         border-radius: 50%;
-        background-color: #F3F4F6;
-        color: $text-muted;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 20px;
+        transition: all 0.2s ease;
+        color: var(--color-text-secondary);
+        padding: 0;
 
         mat-icon {
-            font-size: 36px;
-            width: 36px;
-            height: 36px;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
         }
-    }
-
-    h3 {
-        margin: 0 0 8px;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: $text-dark;
-    }
-
-    p {
-        color: $text-muted;
-        margin: 0 0 24px;
-    }
-
-    // Botón secundario (Stroked con color primario)
-    button[mat-stroked-button] {
-        border-radius: 12px;
-        font-weight: 600;
-        border: 1.5px solid var(--color-primary);
-        color: var(--color-primary);
 
         &:hover {
             background-color: var(--color-surface-variant);
+            color: var(--color-primary);
+            transform: scale(1.1);
+        }
+
+        &.btn-danger:hover {
+            background-color: #FEE2E2;
+            color: #EF4444;
         }
     }
 }
 
-// Mobile
+// --- 7. ANIMACIONES ---
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// --- 8. RESPONSIVE ---
 @media (max-width: 768px) {
-    .custom-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap; // Scroll horizontal
+    .table-item {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 1rem;
+
+        &.header {
+            display: none; // Ocultar header en móvil
+        }
+
+        .doc-icon-wrapper {
+            justify-content: flex-start;
+        }
+
+        .doc-name {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .actions {
+            justify-content: flex-start;
+            margin-top: 0.5rem;
+        }
     }
 }

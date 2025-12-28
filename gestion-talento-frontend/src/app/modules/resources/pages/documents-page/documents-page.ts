@@ -19,12 +19,7 @@ import { AddDocumentDialog } from '../../../dashboard/components/add-document-di
     MatChipsModule, MatDialogModule, MatTooltipModule
   ],
   templateUrl: './documents-page.html',
-  styles: [`
-    .page-container { padding: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .scope-chip { font-size: 11px; padding: 0px 8px; min-height: 24px; }
-    .global-row { background-color: #fcfcfc; }
-  `]
+  styleUrl: './documents-page.scss'
 })
 export class DocumentsPageComponent implements OnInit {
   private docsService = inject(DocumentsService);

@@ -4,6 +4,7 @@ import { trigger, transition, query, style, stagger, animate } from '@angular/an
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Para feedback
 import { RouterModule } from '@angular/router'; // Para navegar a editar/crear
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
 
 // 👇 Importamos el servicio y la interfaz
 import { ProductivityService, Encuesta } from '../../services/productivity';
@@ -12,7 +13,7 @@ import { CreateSurveyDialogComponent } from '../../components/create-survey-dial
 @Component({
   selector: 'app-surveys',
   standalone: true,
-  imports: [CommonModule, MatSnackBarModule, RouterModule, MatDialogModule],
+  imports: [CommonModule, MatSnackBarModule, RouterModule, MatDialogModule, MatIcon],
   templateUrl: './surveys.html',
   styleUrls: ['./surveys.scss'],
   animations: [
