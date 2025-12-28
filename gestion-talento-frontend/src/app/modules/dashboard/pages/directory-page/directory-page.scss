@@ -1,12 +1,14 @@
 // ============================================
-// VARIABLES
+// VARIABLES (CONECTADAS AL BRANDING)
 // ============================================
-$primary: #6366F1; // Indigo moderno
-$primary-dark: #4F46E5;
-$bg-page: #F9FAFB;
-$text-dark: #1F2937;
-$text-muted: #6B7280;
-$border-color: #E5E7EB;
+// Mapeamos las variables SASS a las Variables CSS globales
+$primary: var(--color-primary);
+$primary-dark: var(--color-primary-dark);
+$bg-page: var(--color-background, #F9FAFB);
+$surface: var(--color-surface, #FFFFFF);
+$text-dark: var(--color-text-primary, #1F2937);
+$text-muted: var(--color-text-secondary, #6B7280);
+$border-color: var(--color-border, #E5E7EB);
 $radius-card: 16px;
 $radius-input: 12px;
 
@@ -17,7 +19,7 @@ $radius-input: 12px;
     padding: 24px;
     background-color: $bg-page;
     min-height: 100vh;
-    box-sizing: border-box; // Vital para evitar desbordes
+    box-sizing: border-box;
 
     @media (min-width: 768px) {
         padding: 40px;
@@ -41,7 +43,7 @@ $radius-input: 12px;
             font-weight: 700;
             color: $text-dark;
             margin: 0 0 8px 0;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--font-family-base, 'Poppins', sans-serif);
 
             @media (min-width: 768px) {
                 font-size: 32px;
@@ -56,20 +58,19 @@ $radius-input: 12px;
         }
     }
 
-    // BARRA DE FILTROS (FIX GRID)
+    // BARRA DE FILTROS
     .filters-bar {
         display: grid;
-        grid-template-columns: 1fr; // Móvil: Columna única
+        grid-template-columns: 1fr;
         gap: 16px;
         max-width: 800px;
         margin: 0 auto;
         width: 100%;
 
         @media (min-width: 768px) {
-            grid-template-columns: 2fr 1fr; // PC: Buscador ancho, Sucursal estrecha
+            grid-template-columns: 2fr 1fr;
         }
 
-        // Aseguramos que los mat-form-field ocupen el espacio de la celda
         mat-form-field {
             width: 100%;
         }
@@ -77,38 +78,34 @@ $radius-input: 12px;
 }
 
 // ============================================
-// INPUTS PERSONALIZADOS (FIX SUPERPOSICIÓN)
+// INPUTS PERSONALIZADOS (DINÁMICOS)
 // ============================================
-// Aplicar estilos específicos para evitar colisiones globales
 ::ng-deep .filters-bar {
 
     .mat-mdc-form-field {
-        width: 100%; // Ocupar todo el ancho del grid cell
+        width: 100%;
 
-        // Wrapper del input
         .mat-mdc-text-field-wrapper {
-            background-color: white !important;
+            background-color: $surface !important;
             border-radius: $radius-input !important;
             border: 1px solid $border-color !important;
             padding: 0 12px !important;
-            height: 50px !important; // Altura fija para evitar colapsos
+            height: 50px !important;
             display: flex;
-            align-items: center; // Centrar contenido verticalmente
+            align-items: center;
         }
 
-        // Quitar bordes y fondos nativos que causan doble borde
         .mdc-line-ripple,
         .mdc-notched-outline {
             display: none !important;
         }
 
-        // Iconos (Prefix/Suffix)
         .mat-mdc-form-field-icon-prefix,
         .mat-mdc-form-field-icon-suffix {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 8px 0 0; // Espacio derecho para el prefix
+            padding: 0 8px 0 0;
 
             mat-icon {
                 color: $text-muted;
@@ -116,37 +113,41 @@ $radius-input: 12px;
         }
 
         .mat-mdc-form-field-icon-suffix {
-            padding: 0 0 0 8px; // Espacio izquierdo para suffix
+            padding: 0 0 0 8px;
         }
 
-        // Input Texto
         input.mat-mdc-input-element {
             height: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
-            // Importante: vertical align middle
+            color: $text-dark !important;
+            caret-color: $primary !important;
         }
 
-        // Select
         .mat-mdc-select-trigger {
             height: 100%;
             display: flex;
             align-items: center;
+
+            .mat-mdc-select-value {
+                color: $text-dark;
+            }
+
+            .mat-mdc-select-arrow {
+                color: $text-muted;
+            }
         }
 
-        // Label flotante (Lo ocultamos o ajustamos si quieres placeholder)
-        // Aquí asumimos que usas placeholder, así que ocultamos label flotante para evitar choque
         .mdc-floating-label {
             display: none !important;
         }
 
-        // Estado Focus
+        // Estado Focus (Usando variable primaria)
         &.mat-focused .mat-mdc-text-field-wrapper {
             border-color: $primary !important;
-            box-shadow: 0 0 0 3px rgba($primary, 0.1);
+            box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
         }
 
-        // Espacio de error (subscript) eliminado para layout compacto
         .mat-mdc-form-field-subscript-wrapper {
             display: none !important;
         }
@@ -158,7 +159,6 @@ $radius-input: 12px;
 // ============================================
 .directory-grid {
     display: grid;
-    // Responsive fluido: mínimo 280px por tarjeta
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
     max-width: 1200px;
@@ -167,26 +167,26 @@ $radius-input: 12px;
 }
 
 // ============================================
-// TARJETA DE EMPLEADO (FIX OVERFLOW)
+// TARJETA DE EMPLEADO (DINÁMICA)
 // ============================================
 .employee-card {
-    background: white;
+    background: $surface;
     border-radius: $radius-card;
-    overflow: hidden; // Vital para esquinas redondeadas
+    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
     border: 1px solid $border-color;
-    height: 100%; // Para igualar alturas en grid
+    height: 100%;
 
     &:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        border-color: rgba($primary, 0.3);
+        border-color: rgba(var(--color-primary-rgb), 0.3); // Borde brillante al hover
     }
 
-    // Banda decorativa
+    // Banda decorativa (Gradiente Branding)
     .card-header-bg {
         height: 80px;
         background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
@@ -197,11 +197,11 @@ $radius-input: 12px;
     .avatar-container {
         width: 96px;
         height: 96px;
-        margin: -48px auto 16px; // Subir mitad del tamaño
+        margin: -48px auto 16px;
         border-radius: 50%;
-        border: 4px solid white;
-        background: white;
-        position: relative; // Para z-index
+        border: 4px solid $surface;
+        background: $surface;
+        position: relative;
         z-index: 2;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         display: flex;
@@ -215,11 +215,12 @@ $radius-input: 12px;
             border-radius: 50%;
         }
 
+        // Placeholder con Branding Suave
         .avatar-placeholder {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
-            color: $primary-dark;
+            background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.1) 0%, rgba(var(--color-primary-rgb), 0.2) 100%);
+            color: $primary;
             font-size: 32px;
             font-weight: 700;
             display: flex;
@@ -242,17 +243,17 @@ $radius-input: 12px;
             font-weight: 700;
             color: $text-dark;
             margin: 0 0 4px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--font-family-base, 'Poppins', sans-serif);
         }
 
         .emp-position {
             font-size: 0.9rem;
-            color: $primary;
+            color: $primary; // Color primario
             font-weight: 500;
             margin: 0 0 16px;
         }
 
-        // Tags / Chips
+        // Tags / Chips Dinámicos
         .emp-tags {
             display: flex;
             justify-content: center;
@@ -270,7 +271,8 @@ $radius-input: 12px;
                 gap: 4px;
 
                 &.branch {
-                    background: #EEF2FF;
+                    // Fondo tintado del color primario
+                    background: rgba(var(--color-primary-rgb), 0.08);
                     color: $primary-dark;
 
                     mat-icon {
@@ -285,7 +287,7 @@ $radius-input: 12px;
         // Contact Info
         .contact-info {
             text-align: left;
-            margin-top: auto; // Empujar al fondo si sobra espacio
+            margin-top: auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -298,10 +300,10 @@ $radius-input: 12px;
                 border-radius: 8px;
                 transition: background 0.2s;
                 cursor: pointer;
-                background-color: #F9FAFB; // Fondo sutil por defecto
+                background-color: var(--color-surface-variant, #F9FAFB);
 
                 &:hover {
-                    background: #EEF2FF;
+                    background: rgba(var(--color-primary-rgb), 0.05); // Tinte suave al hover
                 }
 
                 mat-icon {
@@ -326,16 +328,19 @@ $radius-input: 12px;
     .card-actions {
         padding: 16px 24px;
         border-top: 1px solid $border-color;
-        background-color: #FAFAFA;
+        background-color: var(--color-surface-variant, #FAFAFA);
 
         .full-btn {
             width: 100%;
             height: 44px;
             border-radius: 12px;
             font-weight: 600;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--font-family-base, 'Poppins', sans-serif);
+
+            // Gradiente Branding
             background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
-            box-shadow: 0 4px 6px rgba($primary, 0.2);
+            color: white;
+            box-shadow: 0 4px 6px rgba(var(--color-primary-rgb), 0.2);
             transition: all 0.2s;
 
             mat-icon {
@@ -344,7 +349,7 @@ $radius-input: 12px;
 
             &:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 6px 12px rgba($primary, 0.3);
+                box-shadow: 0 6px 12px rgba(var(--color-primary-rgb), 0.3);
             }
         }
     }
@@ -365,7 +370,7 @@ $radius-input: 12px;
         font-size: 64px;
         height: 64px;
         width: 64px;
-        color: #D1D5DB;
+        color: $border-color;
         margin-bottom: 16px;
     }
 
@@ -379,6 +384,12 @@ $radius-input: 12px;
     p {
         margin-bottom: 24px;
         color: $text-muted;
+    }
+
+    // Botón de limpiar filtros (Stroked)
+    button {
+        border-color: $primary !important;
+        color: $primary !important;
     }
 }
 

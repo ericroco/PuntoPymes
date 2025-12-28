@@ -3,6 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment'; // Asegúrate de tener tu environment
 
+
+// 1. NUEVA INTERFAZ PARA VACACIONES (Esto es lo que faltaba)
+export interface ConfiguracionVacaciones {
+    diasPorAnio?: number;
+    diasMaximoAcumulables?: number;
+    requiereAprobacion?: boolean;
+}
 // --- INTERFACES (Espejo del Backend) ---
 export interface ConfiguracionModulos {
     reclutamiento?: boolean;
@@ -36,6 +43,7 @@ export interface ConfiguracionEmpresa {
     modulos?: ConfiguracionModulos;
     asistencia?: ConfiguracionAsistencia;
     nomina?: ConfiguracionNomina;
+    vacaciones?: ConfiguracionVacaciones;
     // ... resto
 }
 

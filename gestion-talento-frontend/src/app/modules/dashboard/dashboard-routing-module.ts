@@ -119,6 +119,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/settings/job-settings/job-settings').then(c => c.JobSettings)
   },
   {
+    path: 'settings/vacation',
+    loadComponent: () => import('./pages/settings/vacation-settings/vacation-settings').then(c => c.VacationSettingsComponent)
+  },
+  {
     path: 'onboarding',
     loadComponent: () => import('./pages/onboarding-dashboard/onboarding-dashboard').then(c => c.OnboardingDashboard)
   },

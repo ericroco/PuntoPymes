@@ -19,6 +19,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 // Components & Services
 import { SubpageHeader } from '../../../../../shared/components/subpage-header/subpage-header';
 import { PayrollService, ConceptoNomina, PeriodoNomina } from '../../../services/payroll'; // Asegúrate de la ruta
+import { CompanyConfigService } from '../../../services/company-config';
 
 @Component({
   selector: 'app-payroll-settings',
@@ -35,6 +36,7 @@ import { PayrollService, ConceptoNomina, PeriodoNomina } from '../../../services
 export class PayrollSettings implements OnInit {
   private payrollService = inject(PayrollService);
   private snackBar = inject(MatSnackBar);
+  private configService = inject(CompanyConfigService);
 
   periodos: PeriodoNomina[] = [];
   newPeriodStart: Date = new Date();
@@ -73,28 +75,39 @@ export class PayrollSettings implements OnInit {
     this.loadConcepts();
     this.loadPeriodos();
 
-    // 1. CARGAR CONFIGURACIÓN REAL AL INICIAR
-    this.payrollService.getGlobalSettings().subscribe({
+    this.configService.getConfig().subscribe({
       next: (config) => {
-        if (config) {
-          this.settings.payFrequency = config.frecuenciaPago || 'mensual';
-          this.settings.overtimeMultiplier = config.multiplicadorHorasExtra || 1.5;
-          this.calculateNextPeriodDates();
-        }
+        // Leemos la sección 'nomina' del JSON
+        const nominaConfig = config.nomina || {};
+
+        // Asignamos a las variables locales, con valores por defecto si es null
+        // OJO: Hay que castear 'payFrequency' porque en la config viene string genérico
+        this.settings.payFrequency = (nominaConfig.frecuenciaPago as string) || 'mensual';
+        this.settings.overtimeMultiplier = nominaConfig.multiplicadorHorasExtra || 1.5;
+
+        // Recalculamos fechas con la data cargada
+        this.calculateNextPeriodDates();
       },
-      error: (err) => console.error('Error cargando configuración global', err)
+      error: (err) => console.error('Error cargando configuración de empresa', err)
     });
   }
 
+  // 👇 4. GUARDAMOS EN LA TABLA EMPRESAS (Auth Microservice)
   savePayrollSettings(): void {
+
+    // Armamos el objeto parcial que espera el servicio updateConfig
     const configToSend = {
-      frecuenciaPago: this.settings.payFrequency,
-      multiplicadorHorasExtra: this.settings.overtimeMultiplier
+      nomina: {
+        frecuenciaPago: this.settings.payFrequency as 'mensual' | 'quincenal' | 'semanal',
+        multiplicadorHorasExtra: this.settings.overtimeMultiplier
+      }
     };
 
-    this.payrollService.updateGlobalSettings(configToSend).subscribe({
+    this.configService.updateConfig(configToSend).subscribe({
       next: () => {
-        this.snackBar.open('Configuración global guardada correctamente', 'Cerrar', { duration: 3000 });
+        this.snackBar.open('Configuración de nómina guardada', 'Cerrar', { duration: 3000 });
+        // Recalcular fechas por si cambió la frecuencia
+        this.calculateNextPeriodDates();
       },
       error: (err) => {
         console.error(err);

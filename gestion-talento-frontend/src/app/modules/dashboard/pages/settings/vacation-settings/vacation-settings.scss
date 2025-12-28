@@ -1,0 +1,391 @@
+/* vacation-settings.component.scss */
+
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.page-container {
+    padding: var(--spacing-xl);
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+    padding-bottom: 100px;
+
+    @media (max-width: 768px) {
+        padding: var(--spacing-md);
+    }
+}
+
+// --- 2. HEADER ---
+.page-header {
+    margin-bottom: var(--spacing-xl);
+
+    .header-content {
+        h2 {
+            margin: 0 0 4px 0;
+            font-family: var(--font-family-base);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+    }
+}
+
+// --- 3. CARDS DE CONFIGURACIÓN ---
+.settings-card {
+    background: var(--color-surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--color-border-light);
+        background: var(--color-surface-variant);
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-subtle));
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            mat-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            font-family: var(--font-family-base);
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            line-height: 1.4;
+        }
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+}
+
+// --- 4. GRID DEL FORMULARIO ---
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+}
+
+// --- 5. INPUTS SUAVES ---
+::ng-deep .custom-field {
+    width: 100%;
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #F3F4F6 !important;
+        border-radius: 12px !important;
+        transition: all 0.2s ease;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    .mdc-notched-outline {
+
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border: none !important;
+        }
+    }
+
+    .mdc-floating-label {
+        font-family: var(--font-family-base);
+        left: 16px !important;
+    }
+
+    .mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    textarea.mat-mdc-input-element {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        resize: vertical !important;
+        min-height: 80px !important;
+    }
+
+    .mat-icon[matSuffix] {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+        margin-left: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border: 1px solid var(--color-primary);
+        }
+
+        .mat-icon[matSuffix] {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+    }
+
+    &.mat-form-field-invalid {
+        .mat-mdc-text-field-wrapper {
+            background-color: rgba(239, 68, 68, 0.05) !important;
+            border: 1px solid var(--color-danger);
+        }
+    }
+
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-error-wrapper {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+// --- 6. SECCIÓN DE SWITCHES ---
+.switches-section {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.5rem;
+
+    .switch-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--color-surface-variant);
+        border-radius: 12px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: var(--color-primary-subtle);
+        }
+
+        .switch-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex: 1;
+
+            mat-icon {
+                color: var(--color-primary);
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+                margin-top: 2px;
+            }
+
+            h4 {
+                margin: 0 0 4px 0;
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: var(--color-text-primary);
+                font-family: var(--font-family-base);
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.85rem;
+                color: var(--color-text-secondary);
+                line-height: 1.4;
+            }
+        }
+    }
+}
+
+// --- 7. ÚLTIMA ACTUALIZACIÓN ---
+.last-update {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 1rem;
+    background: var(--color-surface-variant);
+    border-radius: 12px;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// --- 8. BARRA DE ACCIONES ---
+.actions-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border-light);
+
+    @media (max-width: 640px) {
+        flex-direction: column;
+    }
+
+    button {
+        height: 44px;
+        padding: 0 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-family: var(--font-family-base);
+        text-transform: none;
+
+        mat-icon {
+            margin-right: 6px;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    .btn-reset {
+        border: 1.5px solid var(--color-border);
+        color: var(--color-text-primary);
+
+        &:hover:not(:disabled) {
+            background-color: var(--color-background);
+        }
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
+
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
+        }
+
+        &:disabled {
+            background: var(--color-border) !important;
+            box-shadow: none;
+            color: var(--color-text-secondary) !important;
+        }
+    }
+}
+
+// --- 9. ANIMACIONES ---
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// --- 10. ESTILOS PARA MOCKUPS ---
+.mockup-card {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+    user-select: none;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 0, 0, 0.02) 10px,
+                rgba(0, 0, 0, 0.02) 20px);
+        pointer-events: none;
+        border-radius: 16px;
+    }
+
+    .card-header {
+        position: relative;
+
+        .mockup-icon {
+            opacity: 0.5;
+        }
+    }
+}
+
+.coming-soon-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    color: #92400E;
+    margin-left: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mockup-field {
+    opacity: 0.6;
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+        cursor: not-allowed;
+    }
+}
+
+.mockup-switch {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    ::ng-deep .mat-mdc-slide-toggle {
+        pointer-events: none;
+    }
+}

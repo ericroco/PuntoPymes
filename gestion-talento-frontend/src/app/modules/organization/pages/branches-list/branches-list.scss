@@ -1,108 +1,376 @@
+/* ==========================================================================
+   TALENTRACK - BRANCHES (SUCURSALES) - ESTILO MODERNO
+   ========================================================================== */
+
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
 .page-container {
-    padding: 24px;
+    padding: var(--spacing-xl);
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+    padding-bottom: 100px;
+
+    @media (max-width: 768px) {
+        padding: var(--spacing-md);
+    }
 }
 
+// --- 2. HEADER Y BOTONES ---
 .header-actions-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: var(--spacing-xl);
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    // Botón Primario (Pill Shape)
+    button[mat-flat-button] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0 24px;
+        height: 44px;
+        border: none;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-family: var(--font-family-base);
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+        color: white !important;
+        transition: all 0.2s ease-out;
+
+        mat-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 20px;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+        }
+    }
 }
 
+// --- 3. GRID DE TARJETAS ---
 .branches-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+    }
 }
 
+// --- 4. TARJETAS DE SUCURSALES ---
 .branch-card {
     position: relative;
     overflow: hidden;
+    border-radius: 16px !important;
+    border: 1px solid var(--color-border-light) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--color-surface) !important;
 
+    &:hover {
+        box-shadow: var(--shadow-md) !important;
+        transform: translateY(-4px);
+        border-color: var(--color-primary-light) !important;
+    }
+
+    // Barra de estado lateral
     .card-status-strip {
         position: absolute;
         top: 0;
         left: 0;
         width: 4px;
         height: 100%;
-        background-color: #ccc; // Inactivo
+        background-color: #E5E7EB;
+        transition: all 0.3s ease;
 
         &.active {
-            background-color: #4caf50; // Verde activo
+            background: linear-gradient(180deg, var(--color-primary), var(--color-primary-dark));
+            box-shadow: 0 0 12px rgba(var(--color-primary-rgb), 0.4);
+        }
+    }
+
+    // Header de la tarjeta
+    ::ng-deep mat-card-header {
+        padding: 1.25rem 1.5rem 1rem 1.5rem;
+        margin-bottom: 0 !important;
+
+        .mat-mdc-card-avatar {
+            margin-bottom: 0 !important;
         }
     }
 
     .branch-icon {
-        background-color: #e3f2fd;
-        color: #1976d2;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-subtle));
+        color: var(--color-primary);
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-right: 16px !important;
+
+        mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
     }
 
+    // Títulos
+    ::ng-deep .mat-mdc-card-title {
+        font-family: var(--font-family-base);
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--color-text-primary);
+        margin-bottom: 4px !important;
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+        font-family: var(--font-family-base);
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        line-height: 1.4;
+    }
+
+    // Contenido
+    ::ng-deep mat-card-content {
+        padding: 0 1.5rem 1rem 1.5rem !important;
+    }
+
+    // Fila de información
     .info-row {
         display: flex;
         align-items: center;
-        gap: 8px;
-        color: #666;
-        margin-top: 8px;
+        gap: 10px;
+        color: var(--color-text-secondary);
+        margin-top: 12px;
+        font-size: 0.9rem;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            color: var(--color-text-muted);
+        }
     }
 
+    // Divider personalizado
+    ::ng-deep mat-divider {
+        border-top-color: var(--color-border-light);
+        margin: 16px 0 !important;
+    }
+
+    // Información del gerente
     .manager-info {
         small {
-            color: #888;
+            color: var(--color-text-muted);
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
         }
 
         .manager-profile {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-weight: 500;
+            color: var(--color-text-primary);
+            background: var(--color-surface-variant);
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: var(--color-primary-subtle);
+            }
 
             .avatar,
             .avatar-placeholder {
-                width: 32px;
-                height: 32px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 object-fit: cover;
+                flex-shrink: 0;
+            }
+
+            .avatar {
+                border: 2px solid white;
+                box-shadow: var(--shadow-sm);
             }
 
             .avatar-placeholder {
-                background: #3f51b5;
+                background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
                 color: white;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 12px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                border: 2px solid white;
+                box-shadow: var(--shadow-sm);
+            }
+
+            span {
+                font-size: 0.9rem;
             }
         }
 
         .no-manager {
             display: flex;
             align-items: center;
-            gap: 6px;
-            color: #999;
+            gap: 8px;
+            color: var(--color-text-muted);
             font-style: italic;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            background: var(--color-surface-variant);
+            border-radius: 8px;
+
+            mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
         }
+    }
+
+    // Acciones
+    ::ng-deep mat-card-actions {
+        padding: 0.75rem 1.5rem !important;
+        border-top: 1px solid var(--color-border-light);
+        background: var(--color-surface-variant);
+        margin: 0 !important;
+
+        button[mat-icon-button] {
+            color: var(--color-text-secondary);
+            transition: all 0.2s ease;
+
+            &:hover {
+                background-color: var(--color-surface);
+                color: var(--color-primary);
+                transform: scale(1.1);
+            }
+        }
+    }
+}
+
+// --- 5. MENÚ DE ACCIONES ---
+::ng-deep .mat-mdc-menu-panel {
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid var(--color-border-light);
+}
+
+::ng-deep .mat-mdc-menu-item {
+    font-family: var(--font-family-base);
+    font-size: 0.9rem;
+    height: 44px;
+
+    mat-icon {
+        margin-right: 12px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &.danger-text {
+        color: var(--color-danger);
+
+        mat-icon {
+            color: var(--color-danger);
+        }
+
+        &:hover {
+            background-color: var(--color-danger-light);
+        }
+    }
+}
+
+// --- 6. ESTADOS DE CARGA Y VACÍO ---
+.loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 20px;
+    color: var(--color-text-secondary);
+
+    p {
+        margin: 0;
+        font-size: 1rem;
+        font-style: italic;
     }
 }
 
 .empty-state {
     text-align: center;
-    padding: 40px;
-    color: #666;
+    padding: 80px 20px;
+    max-width: 500px;
+    margin: 0 auto;
 
     mat-icon {
-        font-size: 48px;
-        height: 48px;
-        width: 48px;
-        margin-bottom: 16px;
-        color: #ccc;
+        font-size: 64px;
+        height: 64px;
+        width: 64px;
+        margin-bottom: 24px;
+        color: var(--color-border-dark);
+        opacity: 0.5;
+    }
+
+    h3 {
+        margin: 0 0 12px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: var(--font-family-base);
+    }
+
+    p {
+        color: var(--color-text-secondary);
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.6;
     }
 }
 
-.danger-text {
-    color: #f44336;
+// --- 7. ANIMACIONES ---
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Animación escalonada para las tarjetas
+.branch-card {
+    animation: fadeIn 0.5s ease-out;
+    animation-fill-mode: both;
+
+    @for $i from 1 through 12 {
+        &:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.05}s;
+        }
+    }
 }

@@ -4,13 +4,27 @@
         <app-subpage-header title="Gestión de Sucursales"></app-subpage-header>
 
         <button mat-flat-button color="primary" (click)="openCreateDialog()">
-            <mat-icon>add_business</mat-icon> Nueva Sucursal
+            <mat-icon>add_business</mat-icon>
+            <span>Nueva Sucursal</span>
         </button>
     </div>
 
-    <div class="branches-grid">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <p>Cargando sucursales...</p>
+    </div>
 
-        <mat-card *ngFor="let branch of branches" class="branch-card">
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && branches.length === 0" class="empty-state">
+        <mat-icon>domain_disabled</mat-icon>
+        <h3>No hay sucursales registradas</h3>
+        <p>Crea la primera para comenzar a expandir tu organización.</p>
+    </div>
+
+    <!-- Grid de Tarjetas -->
+    <div class="branches-grid" *ngIf="!isLoading && branches.length > 0">
+
+        <mat-card *ngFor="let branch of branches; let i = index" class="branch-card">
             <div class="card-status-strip" [class.active]="branch.activa"></div>
 
             <mat-card-header>
@@ -27,12 +41,13 @@
                     <span>{{ branch.telefono || '---' }}</span>
                 </div>
 
-                <mat-divider style="margin: 12px 0;"></mat-divider>
+                <mat-divider></mat-divider>
 
                 <div class="manager-info">
-                    <small>Gerente de Sede:</small>
+                    <small>Gerente de Sede</small>
                     <div class="manager-profile" *ngIf="branch.jefe; else noManager">
-                        <img [src]="branch.jefe.fotoUrl" class="avatar" onerror="this.style.display='none'">
+                        <img [src]="branch.jefe.fotoUrl" class="avatar" onerror="this.style.display='none'"
+                            *ngIf="branch.jefe.fotoUrl">
                         <div class="avatar-placeholder" *ngIf="!branch.jefe.fotoUrl">
                             {{ getInitials(branch.jefe.nombre, branch.jefe.apellido) }}
                         </div>
@@ -41,7 +56,8 @@
 
                     <ng-template #noManager>
                         <div class="no-manager">
-                            <mat-icon>person_off</mat-icon> Sin asignar
+                            <mat-icon>person_off</mat-icon>
+                            <span>Sin asignar</span>
                         </div>
                     </ng-template>
                 </div>
@@ -54,10 +70,12 @@
 
                 <mat-menu #menu="matMenu">
                     <button mat-menu-item (click)="openEditDialog(branch)">
-                        <mat-icon>edit</mat-icon> Editar
+                        <mat-icon>edit</mat-icon>
+                        <span>Editar</span>
                     </button>
                     <button mat-menu-item (click)="deleteBranch(branch)" class="danger-text">
-                        <mat-icon color="warn">delete</mat-icon> Eliminar
+                        <mat-icon color="warn">delete</mat-icon>
+                        <span>Eliminar</span>
                     </button>
                 </mat-menu>
             </mat-card-actions>
@@ -65,13 +83,4 @@
 
     </div>
 
-    <div *ngIf="isLoading" class="loading-state">
-        <p>Cargando sucursales...</p>
-    </div>
-
-    <div *ngIf="!isLoading && branches.length === 0" class="empty-state">
-        <mat-icon>domain_disabled</mat-icon>
-        <h3>No hay sucursales registradas</h3>
-        <p>Crea la primera para comenzar a expandir tu organización.</p>
-    </div>
 </div>

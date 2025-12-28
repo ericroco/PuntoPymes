@@ -1,0 +1,159 @@
+<!-- vacation-settings.component.html -->
+<div class="page-container">
+    <header class="page-header">
+        <div class="header-content">
+            <h2>Política de Vacaciones</h2>
+            <p class="subtitle">Configura los días de vacaciones anuales para tu organización.</p>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" style="padding: 80px 20px; text-align: center;">
+        <mat-spinner diameter="40" style="margin: 0 auto 20px;"></mat-spinner>
+        <p style="color: #888; margin: 0;">Cargando configuración...</p>
+    </div>
+
+    <!-- Formulario -->
+    <form [formGroup]="policyForm" (ngSubmit)="onSave()" *ngIf="!isLoading">
+
+        <!-- Card Principal - FUNCIONAL -->
+        <div class="settings-card">
+            <div class="card-header">
+                <div class="header-icon">
+                    <mat-icon>beach_access</mat-icon>
+                </div>
+                <div>
+                    <h3>Días de Vacaciones Anuales</h3>
+                    <p>Define la cantidad de días que cada empleado tiene por año</p>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="form-grid">
+
+                    <!-- ✅ CAMPO FUNCIONAL -->
+                    <mat-form-field appearance="outline" class="custom-field full-width">
+                        <mat-label>Días de Vacaciones por Año</mat-label>
+                        <input matInput type="number" formControlName="diasPorAnio" placeholder="15">
+                        <mat-icon matSuffix>event_available</mat-icon>
+                        <mat-hint>Cantidad de días que recibe cada empleado anualmente</mat-hint>
+                        <mat-error *ngIf="policyForm.get('diasPorAnio')?.hasError('required')">
+                            Este campo es obligatorio
+                        </mat-error>
+                        <mat-error *ngIf="policyForm.get('diasPorAnio')?.hasError('min')">
+                            Mínimo 1 día
+                        </mat-error>
+                        <mat-error *ngIf="policyForm.get('diasPorAnio')?.hasError('max')">
+                            Máximo 365 días
+                        </mat-error>
+                    </mat-form-field>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Próximamente - MOCKUP -->
+        <div class="settings-card mockup-card">
+            <div class="card-header">
+                <div class="header-icon mockup-icon">
+                    <mat-icon>rule</mat-icon>
+                </div>
+                <div>
+                    <h3>Reglas de Aprobación</h3>
+                    <p>Configura los requisitos para solicitar vacaciones</p>
+                    <span class="coming-soon-badge">Próximamente</span>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="form-grid">
+
+                    <!-- Días máximos acumulables - MOCKUP -->
+                    <mat-form-field appearance="outline" class="custom-field mockup-field">
+                        <mat-label>Días Máximos Acumulables</mat-label>
+                        <input matInput type="number" formControlName="diasMaximoAcumulables" placeholder="30">
+                        <mat-icon matSuffix>inventory</mat-icon>
+                        <mat-hint>Límite de días que se pueden acumular sin usar</mat-hint>
+                    </mat-form-field>
+
+                    <!-- Días mínimos de anticipación - MOCKUP -->
+                    <mat-form-field appearance="outline" class="custom-field mockup-field">
+                        <mat-label>Días Mínimos de Anticipación</mat-label>
+                        <input matInput type="number" formControlName="diasMinimosAnticipacion" placeholder="7">
+                        <mat-icon matSuffix>schedule</mat-icon>
+                        <mat-hint>Con cuántos días de anticipación debe solicitarse</mat-hint>
+                    </mat-form-field>
+
+                    <!-- Switches - MOCKUP -->
+                    <div class="switches-section">
+
+                        <div class="switch-item mockup-switch">
+                            <div class="switch-info">
+                                <mat-icon>approval</mat-icon>
+                                <div>
+                                    <h4>Requiere Aprobación</h4>
+                                    <p>Las solicitudes deben ser aprobadas por un supervisor</p>
+                                </div>
+                            </div>
+                            <mat-slide-toggle formControlName="requiereAprobacion" color="primary"></mat-slide-toggle>
+                        </div>
+
+                        <div class="switch-item mockup-switch">
+                            <div class="switch-info">
+                                <mat-icon>access_time</mat-icon>
+                                <div>
+                                    <h4>Permitir Medios Días</h4>
+                                    <p>Los empleados pueden solicitar medio día de vacaciones</p>
+                                </div>
+                            </div>
+                            <mat-slide-toggle formControlName="permiteMediasDias" color="primary"></mat-slide-toggle>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Observaciones - MOCKUP -->
+        <div class="settings-card mockup-card">
+            <div class="card-header">
+                <div class="header-icon mockup-icon">
+                    <mat-icon>notes</mat-icon>
+                </div>
+                <div>
+                    <h3>Notas Adicionales</h3>
+                    <p>Información complementaria sobre la política</p>
+                    <span class="coming-soon-badge">Próximamente</span>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <mat-form-field appearance="outline" class="custom-field full-width mockup-field">
+                    <mat-label>Observaciones</mat-label>
+                    <textarea matInput formControlName="observaciones" rows="4"
+                        placeholder="Ej: Los días no utilizados se pierden al final del año..."></textarea>
+                    <mat-icon matSuffix style="align-self: start; margin-top: 16px;">description</mat-icon>
+                    <mat-hint>Información adicional sobre tu política de vacaciones</mat-hint>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="actions-bar">
+            <button type="button" mat-stroked-button class="btn-reset" (click)="onReset()" [disabled]="isSaving">
+                <mat-icon>refresh</mat-icon>
+                Restablecer
+            </button>
+
+            <button type="submit" mat-flat-button color="primary" class="btn-save"
+                [disabled]="policyForm.get('diasPorAnio')?.invalid || isSaving">
+                <mat-spinner *ngIf="isSaving" diameter="20"
+                    style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                <mat-icon *ngIf="!isSaving">save</mat-icon>
+                {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+        </div>
+
+    </form>
+</div>

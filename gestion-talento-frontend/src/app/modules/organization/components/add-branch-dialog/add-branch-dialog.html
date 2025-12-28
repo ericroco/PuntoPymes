@@ -1,64 +1,90 @@
-<h2 mat-dialog-title>
-    <mat-icon class="title-icon">{{ data?.branch ? 'edit' : 'add_business' }}</mat-icon>
-    {{ data?.branch ? 'Editar' : 'Nueva' }} Sucursal
-</h2>
+<div class="dialog-container">
 
-<form [formGroup]="branchForm" (ngSubmit)="onSave()">
-    <mat-dialog-content class="dialog-content">
-
-        <div class="form-grid">
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nombre de la Sede</mat-label>
-                <input matInput formControlName="nombre" placeholder="Ej: Sede Norte">
-                <mat-error *ngIf="branchForm.get('nombre')?.hasError('required')">
-                    El nombre es obligatorio
-                </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Dirección</mat-label>
-                <input matInput formControlName="direccion" placeholder="Ej: Av. Principal 123">
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Teléfono</mat-label>
-                <input matInput formControlName="telefono" placeholder="Ej: 02 222 3333">
-            </mat-form-field>
-
-            <mat-divider style="margin: 1rem 0;"></mat-divider>
-
-            <div class="manager-section">
-                <h3>Asignar Gerencia</h3>
-                <p class="hint-text">Selecciona al responsable de esta sede.</p>
-
-                <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Gerente de Sucursal</mat-label>
-                    <mat-select formControlName="jefeId">
-                        <mat-option [value]="null">-- Sin Gerente Asignado --</mat-option>
-
-                        <mat-option *ngFor="let emp of employees" [value]="emp.id">
-                            <div class="option-row">
-                                <img [src]="emp.fotoUrl || 'assets/default-avatar.png'" class="mini-avatar"
-                                    onerror="this.style.display='none'">
-                                <span>{{ emp.nombre }} {{ emp.apellido }}</span>
-                                <span class="tiny-role">({{ emp.cargo?.nombre || 'Sin cargo' }})</span>
-                            </div>
-                        </mat-option>
-                    </mat-select>
-                    <mat-hint class="warning-hint">
-                        <mat-icon>info</mat-icon>
-                        Este empleado recibirá el rol de "Gerente de Sucursal" automáticamente.
-                    </mat-hint>
-                </mat-form-field>
-            </div>
-        </div>
-
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end">
-        <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-        <button mat-flat-button color="primary" type="submit" [disabled]="branchForm.invalid">
-            {{ data?.branch ? 'Actualizar' : 'Crear Sede' }}
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            {{ data?.branch ? 'Editar Sucursal' : 'Nueva Sucursal' }}
+        </h2>
+        <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+            <mat-icon>close</mat-icon>
         </button>
-    </mat-dialog-actions>
-</form>
+    </div>
+
+    <form [formGroup]="branchForm" (ngSubmit)="onSave()">
+        <mat-dialog-content class="branch-dialog-content">
+
+            <div class="form-grid">
+
+                <mat-form-field appearance="outline" class="full-width custom-field">
+                    <mat-label>Nombre de la Sede</mat-label>
+                    <input matInput formControlName="nombre" placeholder="Ej: Sede Norte">
+                    <mat-icon matSuffix>store</mat-icon>
+                    <mat-error *ngIf="branchForm.get('nombre')?.hasError('required')">
+                        El nombre es obligatorio
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width custom-field">
+                    <mat-label>Dirección</mat-label>
+                    <input matInput formControlName="direccion" placeholder="Ej: Av. Principal 123">
+                    <mat-icon matSuffix>location_on</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width custom-field">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput formControlName="telefono" placeholder="Ej: 02 222 3333">
+                    <mat-icon matSuffix>phone</mat-icon>
+                </mat-form-field>
+
+                <div class="manager-section">
+                    <div class="section-header">
+                        <mat-icon>supervisor_account</mat-icon>
+                        <div>
+                            <h3>Asignar Gerencia</h3>
+                            <p class="hint-text">Selecciona al responsable de esta sede.</p>
+                        </div>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="full-width custom-field">
+                        <mat-label>Gerente de Sucursal</mat-label>
+                        <mat-select formControlName="jefeId">
+                            <mat-option [value]="null">-- Sin Gerente Asignado --</mat-option>
+
+                            <mat-option *ngFor="let emp of employees" [value]="emp.id">
+                                <div class="option-row">
+                                    <img [src]="emp.fotoUrl || 'assets/default-avatar.png'" class="mini-avatar"
+                                        onerror="this.style.display='none'" *ngIf="emp.fotoUrl">
+                                    <div class="avatar-placeholder" *ngIf="!emp.fotoUrl">
+                                        {{ getInitials(emp.nombre, emp.apellido) }}
+                                    </div>
+                                    <div class="option-info">
+                                        <span class="name">{{ emp.nombre }} {{ emp.apellido }}</span>
+                                        <span class="role">{{ emp.cargo?.nombre || 'Sin cargo' }}</span>
+                                    </div>
+                                </div>
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix>person</mat-icon>
+
+                        <mat-hint class="warning-hint">
+                            <mat-icon>info</mat-icon>
+                            Este empleado recibirá el rol de "Gerente de Sucursal" automáticamente.
+                        </mat-hint>
+                    </mat-form-field>
+                </div>
+
+            </div>
+
+        </mat-dialog-content>
+
+        <div class="dialog-footer">
+            <button mat-stroked-button type="button" (click)="onCancel()" class="btn-cancel">
+                Cancelar
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="branchForm.invalid" class="btn-save">
+                <mat-icon>{{ data?.branch ? 'save' : 'add_business' }}</mat-icon>
+                {{ data?.branch ? 'Actualizar' : 'Crear Sede' }}
+            </button>
+        </div>
+    </form>
+
+</div>

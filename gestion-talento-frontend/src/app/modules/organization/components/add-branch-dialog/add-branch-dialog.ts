@@ -8,7 +8,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDivider } from '@angular/material/divider';
 // Servicios
 import { EmployeesService } from '../../../dashboard/services/employees';
 import { Branch } from '../../services/branches';
@@ -19,7 +18,7 @@ import { Branch } from '../../services/branches';
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule,
     MatButtonModule, MatFormFieldModule, MatInputModule,
-    MatSelectModule, MatIconModule, MatDivider
+    MatSelectModule, MatIconModule
   ],
   templateUrl: './add-branch-dialog.html',
   styleUrls: ['./add-branch-dialog.scss']
@@ -73,5 +72,10 @@ export class AddBranchDialogComponent implements OnInit {
 
   onCancel() {
     this.dialogRef.close();
+  }
+
+  // Helper para iniciales (si no hay foto)
+  getInitials(name: string, lastname: string): string {
+    return (name?.charAt(0) || '') + (lastname?.charAt(0) || '');
   }
 }
