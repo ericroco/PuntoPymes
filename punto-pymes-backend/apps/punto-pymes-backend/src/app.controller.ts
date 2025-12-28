@@ -2744,4 +2744,17 @@ export class AppController {
       }
     );
   }
+
+  // ============================================================
+  // 1. OBTENER SALDO (GET /nomina/vacaciones/saldo/:id)
+  // ============================================================
+  @UseGuards(JwtAuthGuard)
+  @Get('nomina/vacaciones/saldo/:empleadoId')
+  async getSaldoVacaciones(@Param('empleadoId') empleadoId: string) {
+    // Enviamos mensaje al microservicio de nómina
+    return this.nominaService.send(
+      { cmd: 'get_saldo_vacaciones' }, // El comando
+      { empleadoId }                   // El payload
+    );
+  }
 }

@@ -359,6 +359,9 @@ let NominaController = class NominaController {
     responderSolicitud(data) {
         return this.nominaService.responderSolicitud(data);
     }
+    async getSaldoVacaciones(data) {
+        return this.nominaService.consultarSaldo(data.empleadoId);
+    }
 };
 exports.NominaController = NominaController;
 __decorate([
@@ -606,6 +609,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], NominaController.prototype, "responderSolicitud", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_saldo_vacaciones' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NominaController.prototype, "getSaldoVacaciones", null);
 exports.NominaController = NominaController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [nomina_service_1.NominaService])
@@ -658,7 +669,7 @@ exports.NominaModule = NominaModule = __decorate([
                 database_1.ConceptoNomina,
                 database_1.SolicitudVacaciones,
                 database_1.NovedadNomina,
-                database_1.Empresa
+                database_1.Empresa, database_1.SaldoVacaciones
             ]),
         ],
         controllers: [nomina_controller_1.NominaController],
@@ -711,7 +722,8 @@ let NominaService = class NominaService {
     solicitudRepo;
     novedadNominaRepo;
     empresaRepository;
-    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager, solicitudRepo, novedadNominaRepo, empresaRepository) {
+    saldoRepo;
+    constructor(contratoRepository, empleadoRepository, beneficioRepository, beneficioAsignadoRepository, periodoNominaRepository, nominaEmpleadoRepository, rubroNominaRepository, conceptoNominaRepository, entityManager, solicitudRepo, novedadNominaRepo, empresaRepository, saldoRepo) {
         this.contratoRepository = contratoRepository;
         this.empleadoRepository = empleadoRepository;
         this.beneficioRepository = beneficioRepository;
@@ -724,6 +736,7 @@ let NominaService = class NominaService {
         this.solicitudRepo = solicitudRepo;
         this.novedadNominaRepo = novedadNominaRepo;
         this.empresaRepository = empresaRepository;
+        this.saldoRepo = saldoRepo;
     }
     async getContratosByEmpleado(empresaId, empleadoId) {
         console.log(`Microservicio NOMINA: Buscando contratos para empleado ${empleadoId}`);
@@ -1161,15 +1174,38 @@ let NominaService = class NominaService {
         });
     }
     async solicitarVacaciones(empresaId, dto) {
-        const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+        const empleado = await this.empleadoRepository.findOne({
+            where: { id: dto.empleadoId, empresaId },
+            relations: ['empresa']
+        });
         if (!empleado)
             throw new common_1.NotFoundException('Empleado no válido.');
         const inicio = new Date(dto.fechaInicio);
         const fin = new Date(dto.fechaFin);
         if (fin < inicio)
             throw new common_1.BadRequestException('La fecha fin debe ser posterior al inicio.');
-        const diffTime = Math.abs(fin.getTime() - inicio.getTime());
-        const diasSolicitados = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const diasSolicitados = this.calcularDiasHabiles(inicio, fin);
+        if (diasSolicitados <= 0)
+            throw new common_1.BadRequestException('Debes seleccionar al menos un día hábil.');
+        const anioActual = inicio.getFullYear();
+        let saldo = await this.saldoRepo.findOneBy({
+            empleadoId: dto.empleadoId,
+            anio: anioActual
+        });
+        if (!saldo) {
+            const diasPolitica = empleado.empresa?.configuracion?.vacaciones?.diasPorAnio || 15;
+            saldo = this.saldoRepo.create({
+                empleadoId: dto.empleadoId,
+                anio: anioActual,
+                diasTotales: diasPolitica,
+                diasUsados: 0
+            });
+            await this.saldoRepo.save(saldo);
+        }
+        const diasDisponibles = saldo.diasTotales - saldo.diasUsados;
+        if (diasDisponibles < diasSolicitados) {
+            throw new common_1.BadRequestException(`Saldo insuficiente. Tienes ${diasDisponibles} días disponibles y solicitaste ${diasSolicitados}.`);
+        }
         const solicitud = this.solicitudRepo.create({
             empleadoId: dto.empleadoId,
             fechaInicio: inicio,
@@ -1342,6 +1378,9 @@ let NominaService = class NominaService {
         });
         if (!solicitud)
             throw new common_1.NotFoundException('Solicitud no encontrada.');
+        if (solicitud.estado !== database_1.EstadoSolicitud.PENDIENTE) {
+            throw new common_1.BadRequestException(`Esta solicitud ya fue procesada. Estado actual: ${solicitud.estado}`);
+        }
         const rol = usuario.role ? usuario.role.toLowerCase() : '';
         const esSuperAdmin = rol.includes('admin') || rol.includes('root');
         if (!esSuperAdmin) {
@@ -1351,10 +1390,77 @@ let NominaService = class NominaService {
                 }
             }
         }
+        if (dto.estado === database_1.EstadoSolicitud.APROBADA) {
+            const fechaObj = new Date(solicitud.fechaInicio);
+            const anio = fechaObj.getFullYear();
+            const saldo = await this.saldoRepo.findOneBy({
+                empleadoId: solicitud.empleadoId,
+                anio
+            });
+            if (!saldo)
+                throw new common_1.NotFoundException(`Error crítico: No existe saldo para el año ${anio}.`);
+            console.log('--- PROCESANDO APROBACIÓN ---');
+            console.log(`Días Totales: ${saldo.diasTotales}`);
+            console.log(`Días Usados (Antes): ${saldo.diasUsados}`);
+            console.log(`Días Solicitados: ${solicitud.diasSolicitados}`);
+            const diasTotales = Number(saldo.diasTotales);
+            const diasUsados = Number(saldo.diasUsados);
+            const diasSolicitados = Number(solicitud.diasSolicitados);
+            const disponibles = diasTotales - diasUsados;
+            if (disponibles < diasSolicitados) {
+                throw new common_1.ConflictException(`Saldo insuficiente. Tiene ${disponibles}, pide ${diasSolicitados}.`);
+            }
+            saldo.diasUsados = diasUsados + diasSolicitados;
+            console.log(`Días Usados (Nuevo): ${saldo.diasUsados}`);
+            await this.saldoRepo.save(saldo);
+        }
         solicitud.estado = dto.estado;
         solicitud.comentariosRespuesta = dto.comentarios || null;
         solicitud.fechaRespuesta = new Date();
         return this.solicitudRepo.save(solicitud);
+    }
+    async consultarSaldo(empleadoId) {
+        const anioActual = new Date().getFullYear();
+        let saldo = await this.saldoRepo.findOneBy({ empleadoId, anio: anioActual });
+        if (!saldo) {
+            const empleado = await this.empleadoRepository.findOne({
+                where: { id: empleadoId },
+                relations: ['empresa']
+            });
+            if (!empleado)
+                throw new common_1.NotFoundException('Empleado no encontrado');
+            const diasPolitica = Number(empleado.empresa?.configuracion?.vacaciones?.diasPorAnio) || 15;
+            saldo = this.saldoRepo.create({
+                empleadoId,
+                anio: anioActual,
+                diasTotales: diasPolitica,
+                diasUsados: 0
+            });
+            await this.saldoRepo.save(saldo);
+        }
+        const totales = Number(saldo.diasTotales);
+        const usados = Number(saldo.diasUsados);
+        return {
+            anio: saldo.anio,
+            diasTotales: totales,
+            diasUsados: usados,
+            diasDisponibles: totales - usados
+        };
+    }
+    calcularDiasHabiles(inicio, fin) {
+        let count = 0;
+        let current = new Date(inicio);
+        current.setHours(0, 0, 0, 0);
+        const endDate = new Date(fin);
+        endDate.setHours(0, 0, 0, 0);
+        while (current <= endDate) {
+            const dayOfWeek = current.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                count++;
+            }
+            current.setDate(current.getDate() + 1);
+        }
+        return count;
     }
 };
 exports.NominaService = NominaService;
@@ -1371,6 +1477,7 @@ exports.NominaService = NominaService = __decorate([
     __param(9, (0, typeorm_1.InjectRepository)(database_1.SolicitudVacaciones)),
     __param(10, (0, typeorm_1.InjectRepository)(database_1.NovedadNomina)),
     __param(11, (0, typeorm_1.InjectRepository)(database_1.Empresa)),
+    __param(12, (0, typeorm_1.InjectRepository)(database_1.SaldoVacaciones)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -1380,6 +1487,7 @@ exports.NominaService = NominaService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.EntityManager,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository])
@@ -3839,6 +3947,7 @@ __exportStar(__webpack_require__(/*! ./documento-empresa.entity */ "./libs/datab
 __exportStar(__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./saldo-vacaciones.entity */ "./libs/database/src/entities/saldo-vacaciones.entity.ts"), exports);
 
 
 /***/ }),
@@ -5009,6 +5118,71 @@ exports.RubroNomina = RubroNomina = __decorate([
     (0, typeorm_1.Entity)({ name: 'rubros_nomina' }),
     (0, typeorm_1.Index)(['nominaEmpleadoId'])
 ], RubroNomina);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/saldo-vacaciones.entity.ts":
+/*!***************************************************************!*\
+  !*** ./libs/database/src/entities/saldo-vacaciones.entity.ts ***!
+  \***************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SaldoVacaciones = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+let SaldoVacaciones = class SaldoVacaciones extends base_entity_1.BaseEntity {
+    empleado;
+    empleadoId;
+    anio;
+    diasTotales;
+    diasUsados;
+    get diasDisponibles() {
+        return this.diasTotales - this.diasUsados;
+    }
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, anio: { required: true, type: () => Number }, diasTotales: { required: true, type: () => Number }, diasUsados: { required: true, type: () => Number } };
+    }
+};
+exports.SaldoVacaciones = SaldoVacaciones;
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], SaldoVacaciones.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], SaldoVacaciones.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int' }),
+    __metadata("design:type", Number)
+], SaldoVacaciones.prototype, "anio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 15 }),
+    __metadata("design:type", Number)
+], SaldoVacaciones.prototype, "diasTotales", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], SaldoVacaciones.prototype, "diasUsados", void 0);
+exports.SaldoVacaciones = SaldoVacaciones = __decorate([
+    (0, typeorm_1.Entity)({ name: 'saldos_vacaciones' }),
+    (0, typeorm_1.Index)(['empleadoId', 'anio'], { unique: true })
+], SaldoVacaciones);
 
 
 /***/ }),

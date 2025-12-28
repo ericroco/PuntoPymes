@@ -83,6 +83,7 @@ export class Overview implements OnInit {
   viewingAsAdmin: boolean = false;
   isLoading: boolean = true;
   leaveRequestForm: FormGroup;
+  availableLeaveDays: number = 0;
 
   // Datos
   adminKPIs: AdminKPI[] = [];
@@ -124,10 +125,6 @@ export class Overview implements OnInit {
     { date: '2025-11-05', description: 'Revisión Política Teletrabajo' }
   ];
 
-  get availableLeaveDays(): number {
-    const kpi = this.employeeKPIs.find(k => k.title.includes('Vacaciones'));
-    return kpi ? kpi.value : 0;
-  }
 
   constructor(private fb: FormBuilder) {
     this.leaveRequestForm = this.fb.group({
@@ -138,16 +135,46 @@ export class Overview implements OnInit {
 
   ngOnInit(): void {
     this.loadEncuestas();
+
+    // Verificar rol
     this.viewingAsAdmin = this.authService.isAdmin();
     console.log('¿Es Admin?', this.viewingAsAdmin);
 
     if (this.viewingAsAdmin) {
+      // Si es admin, cargamos datos globales y aprobaciones
       this.loadDashboardData();
       this.loadPendingApprovals();
     } else {
-      // Aquí podrías cargar datos específicos del empleado
+      // Si es empleado, cargamos sus datos y SU SALDO de vacaciones
       this.isLoading = false;
       this.loadEmployeeData();
+
+      // 🔥 NUEVO: Cargar el saldo real de vacaciones al iniciar
+      this.loadVacationBalance();
+    }
+  }
+
+
+  loadVacationBalance(): void {
+    const currentUser = this.authService.getUser();
+
+    if (currentUser && currentUser.empleadoId) {
+      this.vacationService.getVacationBalance(currentUser.empleadoId).subscribe({
+        next: (saldo) => {
+          console.log('💰 Saldo recibido del backend:', saldo); // Debug para ver qué año trae
+
+          // Asignamos el valor
+          this.availableLeaveDays = saldo ? saldo.diasDisponibles : 0;
+
+          // 🔥 FIX: Avisar a Angular que actualice el HTML
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error cargando saldo de vacaciones:', err);
+          this.availableLeaveDays = 0;
+          this.cdr.markForCheck(); // También aquí por si acaso
+        }
+      });
     }
   }
 
@@ -223,13 +250,16 @@ export class Overview implements OnInit {
     });
   }
 
+  // ============================================================
+  // 3. SOLICITAR VACACIONES (Lógica completa)
+  // ============================================================
   requestLeave(): void {
     if (this.leaveRequestForm.invalid) {
       this.leaveRequestForm.markAllAsTouched();
       return;
     }
 
-    // 1. Obtener el usuario actual para sacar su ID
+    // 1. Obtener el usuario actual
     const currentUser = this.authService.getUser();
 
     if (!currentUser || !currentUser.empleadoId) {
@@ -239,36 +269,42 @@ export class Overview implements OnInit {
 
     const { startDate, endDate } = this.leaveRequestForm.value;
 
-    // Helper para fechas
+    // Helper interno para formatear fechas a YYYY-MM-DD
     const formatDate = (date: Date) => {
       const d = new Date(date);
       d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
       return d.toISOString().split('T')[0];
     };
 
-    // 2. Construir el Payload COMPLETO (Incluyendo empleadoId)
+    // 2. Construir Payload
     const payload = {
-      empleadoId: currentUser.empleadoId, // <--- ¡ESTO FALTABA!
+      empleadoId: currentUser.empleadoId,
       fechaInicio: formatDate(startDate),
       fechaFin: formatDate(endDate),
-      comentario: 'Solicitud desde Dashboard' // Opcional, puedes agregar un campo en el form si quieres
+      comentario: 'Solicitud desde Dashboard'
     };
 
     console.log('Enviando solicitud:', payload);
 
+    // 3. Llamada al Servicio
     this.vacationService.requestLeave(payload).subscribe({
       next: () => {
         this.snackBar.open('Solicitud enviada con éxito', 'Cerrar', { duration: 3000 });
         this.leaveRequestForm.reset();
 
-        // Recargar la lista de pendientes si soy admin
+        // Refrescamos el saldo (por si acaso hubiera lógica de bloqueo inmediato)
+        this.loadVacationBalance();
+
+        // Si soy admin y estoy probando mi propio sistema, recargo la lista de pendientes
         if (this.viewingAsAdmin) {
           this.loadPendingApprovals();
         }
       },
       error: (err) => {
         console.error('Error backend:', err);
-        this.snackBar.open('Error al solicitar vacaciones', 'Cerrar', { duration: 3000 });
+        // Manejo de errores específicos (ej: saldo insuficiente)
+        const msg = err.error?.message || 'Error al solicitar vacaciones';
+        this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
       }
     });
   }

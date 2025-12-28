@@ -3872,6 +3872,9 @@ let AppController = class AppController {
             config: dto
         });
     }
+    async getSaldoVacaciones(empleadoId) {
+        return this.nominaService.send({ cmd: 'get_saldo_vacaciones' }, { empleadoId });
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -5626,6 +5629,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, update_configuracion_dto_1.UpdateConfiguracionEmpresaDto]),
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "updateEmpresaConfig", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('nomina/vacaciones/saldo/:empleadoId'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Param)('empleadoId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getSaldoVacaciones", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -8546,6 +8558,7 @@ __exportStar(__webpack_require__(/*! ./documento-empresa.entity */ "./libs/datab
 __exportStar(__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/entities/anuncio.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./saldo-vacaciones.entity */ "./libs/database/src/entities/saldo-vacaciones.entity.ts"), exports);
 
 
 /***/ }),
@@ -9716,6 +9729,71 @@ exports.RubroNomina = RubroNomina = __decorate([
     (0, typeorm_1.Entity)({ name: 'rubros_nomina' }),
     (0, typeorm_1.Index)(['nominaEmpleadoId'])
 ], RubroNomina);
+
+
+/***/ }),
+
+/***/ "./libs/database/src/entities/saldo-vacaciones.entity.ts":
+/*!***************************************************************!*\
+  !*** ./libs/database/src/entities/saldo-vacaciones.entity.ts ***!
+  \***************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SaldoVacaciones = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
+const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+let SaldoVacaciones = class SaldoVacaciones extends base_entity_1.BaseEntity {
+    empleado;
+    empleadoId;
+    anio;
+    diasTotales;
+    diasUsados;
+    get diasDisponibles() {
+        return this.diasTotales - this.diasUsados;
+    }
+    static _OPENAPI_METADATA_FACTORY() {
+        return { empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, anio: { required: true, type: () => Number }, diasTotales: { required: true, type: () => Number }, diasUsados: { required: true, type: () => Number } };
+    }
+};
+exports.SaldoVacaciones = SaldoVacaciones;
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => empleado_entity_1.Empleado),
+    (0, typeorm_1.JoinColumn)({ name: 'empleadoId' }),
+    __metadata("design:type", empleado_entity_1.Empleado)
+], SaldoVacaciones.prototype, "empleado", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], SaldoVacaciones.prototype, "empleadoId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int' }),
+    __metadata("design:type", Number)
+], SaldoVacaciones.prototype, "anio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 15 }),
+    __metadata("design:type", Number)
+], SaldoVacaciones.prototype, "diasTotales", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], SaldoVacaciones.prototype, "diasUsados", void 0);
+exports.SaldoVacaciones = SaldoVacaciones = __decorate([
+    (0, typeorm_1.Entity)({ name: 'saldos_vacaciones' }),
+    (0, typeorm_1.Index)(['empleadoId', 'anio'], { unique: true })
+], SaldoVacaciones);
 
 
 /***/ }),

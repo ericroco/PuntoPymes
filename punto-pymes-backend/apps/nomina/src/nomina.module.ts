@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   DatabaseModule, Contrato, Empleado, Rol, Beneficio,
   BeneficioAsignado, PeriodoNomina, NominaEmpleado, RubroNomina,
-  ConceptoNomina, SolicitudVacaciones, EstadoSolicitud, NovedadNomina, Empresa
+  ConceptoNomina, SolicitudVacaciones, EstadoSolicitud, NovedadNomina, Empresa, SaldoVacaciones
 } from 'default/database';
 import { NominaController } from './nomina.controller';
 import { NominaService } from './nomina.service';
@@ -29,7 +29,7 @@ import { NominaService } from './nomina.service';
       ConceptoNomina,
       SolicitudVacaciones,
       NovedadNomina,
-      Empresa
+      Empresa, SaldoVacaciones
     ]),
   ],
   controllers: [NominaController],

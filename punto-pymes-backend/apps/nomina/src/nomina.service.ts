@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   Contrato, Empleado, Beneficio, BeneficioAsignado, PeriodoNomina, NominaEmpleado,
   RubroNomina, ConceptoNomina, SolicitudVacaciones, EstadoSolicitud, NovedadNomina,
-  EstadoNovedad, Empresa, TipoBeneficio, IndicadorNomina
+  EstadoNovedad, Empresa, TipoBeneficio, IndicadorNomina, SaldoVacaciones
 } from 'default/database';
 import { Repository, Not, LessThanOrEqual, MoreThanOrEqual, EntityManager } from 'typeorm';
 import {
@@ -60,6 +60,7 @@ export class NominaService {
     @InjectRepository(NovedadNomina)
     private novedadNominaRepo: Repository<NovedadNomina>,
     @InjectRepository(Empresa) private readonly empresaRepository: Repository<Empresa>,
+    @InjectRepository(SaldoVacaciones) private readonly saldoRepo: Repository<SaldoVacaciones>,
   ) { }
 
   /**
@@ -868,27 +869,65 @@ export class NominaService {
       return { message: 'Nómina procesada correctamente', count: contratos.length };
     });
   }
-  async solicitarVacaciones(empresaId: string, dto: CreateSolicitudDto): Promise<SolicitudVacaciones> {
-    // 1. Validar Empleado
-    const empleado = await this.empleadoRepository.findOneBy({ id: dto.empleadoId, empresaId });
+  // ============================================================
+  // 3. SOLICITAR VACACIONES (CORREGIDO Y ROBUSTO)
+  // ============================================================
+  async solicitarVacaciones(empresaId: string, dto: any): Promise<SolicitudVacaciones> {
+
+    // 1. Validar Empleado y traer su empresa (para la política de vacaciones)
+    const empleado = await this.empleadoRepository.findOne({
+      where: { id: dto.empleadoId, empresaId },
+      relations: ['empresa'] // 👈 Necesario para leer la config si hay que crear saldo
+    });
+
     if (!empleado) throw new NotFoundException('Empleado no válido.');
 
-    // 2. Calcular días (Simplificado: Diferencia de fechas)
     const inicio = new Date(dto.fechaInicio);
     const fin = new Date(dto.fechaFin);
 
     if (fin < inicio) throw new BadRequestException('La fecha fin debe ser posterior al inicio.');
 
-    const diffTime = Math.abs(fin.getTime() - inicio.getTime());
-    const diasSolicitados = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 para incluir el día final
+    // 2. Calcular días hábiles
+    const diasSolicitados = this.calcularDiasHabiles(inicio, fin);
+    if (diasSolicitados <= 0) throw new BadRequestException('Debes seleccionar al menos un día hábil.');
 
-    // 3. Crear Solicitud
+    // 3. VERIFICAR Y OBTENER SALDO
+    const anioActual = inicio.getFullYear();
+
+    let saldo = await this.saldoRepo.findOneBy({
+      empleadoId: dto.empleadoId,
+      anio: anioActual
+    });
+
+    // 🔥 FIX CRÍTICO: Si no existe el saldo, LO CREAMOS AQUÍ MISMO.
+    // Ya no lanzamos error, sino que lo inicializamos para que pueda pedir.
+    if (!saldo) {
+      const diasPolitica = empleado.empresa?.configuracion?.vacaciones?.diasPorAnio || 15;
+
+      saldo = this.saldoRepo.create({
+        empleadoId: dto.empleadoId,
+        anio: anioActual,
+        diasTotales: diasPolitica,
+        diasUsados: 0
+      });
+      await this.saldoRepo.save(saldo);
+    }
+
+    // Ahora sí, validamos disponibilidad
+    const diasDisponibles = saldo.diasTotales - saldo.diasUsados;
+
+    if (diasDisponibles < diasSolicitados) {
+      throw new BadRequestException(`Saldo insuficiente. Tienes ${diasDisponibles} días disponibles y solicitaste ${diasSolicitados}.`);
+    }
+
+    // 4. Crear Solicitud
     const solicitud = this.solicitudRepo.create({
       empleadoId: dto.empleadoId,
       fechaInicio: inicio,
       fechaFin: fin,
       diasSolicitados,
       comentario: dto.comentario,
+      // Asegúrate de que EstadoSolicitud esté importado arriba
       estado: EstadoSolicitud.PENDIENTE
     });
 
@@ -1099,7 +1138,6 @@ export class NominaService {
     });
   }
 
-  // 👇 NUEVO MÉTODO PARA APROBAR/RECHAZAR 👇
   async responderSolicitud(data: {
     empresaId: string,
     solicitudId: string,
@@ -1110,7 +1148,6 @@ export class NominaService {
     const { empresaId, solicitudId, dto, usuario } = data;
 
     // 1. Buscar la solicitud
-    // Es vital el relations: ['empleado'] para poder validar la sucursal del empleado
     const solicitud = await this.solicitudRepo.findOne({
       where: { id: solicitudId, empleado: { empresaId } },
       relations: ['empleado']
@@ -1118,13 +1155,16 @@ export class NominaService {
 
     if (!solicitud) throw new NotFoundException('Solicitud no encontrada.');
 
-    // 2. SEGURIDAD: ¿Quién está intentando aprobar esto?
+    // Validar estado
+    if (solicitud.estado !== EstadoSolicitud.PENDIENTE) {
+      throw new BadRequestException(`Esta solicitud ya fue procesada. Estado actual: ${solicitud.estado}`);
+    }
+
+    // 2. SEGURIDAD (Tu lógica original)
     const rol = usuario.role ? usuario.role.toLowerCase() : '';
     const esSuperAdmin = rol.includes('admin') || rol.includes('root');
 
-    // Si NO es Super Admin, validamos que sea el jefe de la MISMA sucursal
     if (!esSuperAdmin) {
-      // Si el empleado tiene sucursal y el jefe tiene sucursal, deben coincidir
       if (usuario.sucursalId && solicitud.empleado.sucursalId) {
         if (usuario.sucursalId !== solicitud.empleado.sucursalId) {
           throw new UnauthorizedException('No puedes gestionar solicitudes de otra sucursal.');
@@ -1132,11 +1172,113 @@ export class NominaService {
       }
     }
 
-    // 3. Actualizar Datos
+    // 3. LÓGICA DE APROBACIÓN
+    if (dto.estado === EstadoSolicitud.APROBADA) {
+
+      // Fix Fecha: Convertir string a Date
+      const fechaObj = new Date(solicitud.fechaInicio);
+      const anio = fechaObj.getFullYear();
+
+      // Buscar Saldo
+      const saldo = await this.saldoRepo.findOneBy({
+        empleadoId: solicitud.empleadoId,
+        anio
+      });
+
+      if (!saldo) throw new NotFoundException(`Error crítico: No existe saldo para el año ${anio}.`);
+
+      // --- DEBUG LOGS (Míralos en la consola del backend) ---
+      console.log('--- PROCESANDO APROBACIÓN ---');
+      console.log(`Días Totales: ${saldo.diasTotales}`);
+      console.log(`Días Usados (Antes): ${saldo.diasUsados}`);
+      console.log(`Días Solicitados: ${solicitud.diasSolicitados}`);
+
+      // 🔥 FIX MATEMÁTICO: Forzar conversión a Number
+      const diasTotales = Number(saldo.diasTotales);
+      const diasUsados = Number(saldo.diasUsados);
+      const diasSolicitados = Number(solicitud.diasSolicitados);
+
+      // Verificación
+      const disponibles = diasTotales - diasUsados;
+      if (disponibles < diasSolicitados) {
+        throw new ConflictException(`Saldo insuficiente. Tiene ${disponibles}, pide ${diasSolicitados}.`);
+      }
+
+      // Actualizar Saldo (Suma aritmética segura)
+      saldo.diasUsados = diasUsados + diasSolicitados;
+
+      console.log(`Días Usados (Nuevo): ${saldo.diasUsados}`); // Debería salir la suma correcta
+
+      await this.saldoRepo.save(saldo);
+    }
+
+    // 4. Actualizar Solicitud
     solicitud.estado = dto.estado;
     solicitud.comentariosRespuesta = dto.comentarios || null;
     solicitud.fechaRespuesta = new Date();
 
     return this.solicitudRepo.save(solicitud);
+  }
+
+  // nomina.service.ts
+
+  async consultarSaldo(empleadoId: string) {
+    const anioActual = new Date().getFullYear();
+
+    let saldo = await this.saldoRepo.findOneBy({ empleadoId, anio: anioActual });
+
+    // Si no existe, creamos uno nuevo (Tu lógica lazy loading)
+    if (!saldo) {
+      const empleado = await this.empleadoRepository.findOne({
+        where: { id: empleadoId },
+        relations: ['empresa']
+      });
+
+      if (!empleado) throw new NotFoundException('Empleado no encontrado');
+
+      // Forzamos Number aquí también
+      const diasPolitica = Number(empleado.empresa?.configuracion?.vacaciones?.diasPorAnio) || 15;
+
+      saldo = this.saldoRepo.create({
+        empleadoId,
+        anio: anioActual,
+        diasTotales: diasPolitica,
+        diasUsados: 0
+      });
+
+      await this.saldoRepo.save(saldo);
+    }
+
+    // 🔥 FIX RETORNO: Asegurar que devolvemos números al frontend
+    const totales = Number(saldo.diasTotales);
+    const usados = Number(saldo.diasUsados);
+
+    return {
+      anio: saldo.anio,
+      diasTotales: totales,
+      diasUsados: usados,
+      diasDisponibles: totales - usados // Resta aritmética segura
+    };
+  }
+  // ============================================================
+  // 2. HELPER: DÍAS HÁBILES (Privado)
+  // ============================================================
+  private calcularDiasHabiles(inicio: Date, fin: Date): number {
+    let count = 0;
+    let current = new Date(inicio);
+    // Normalizar horas
+    current.setHours(0, 0, 0, 0);
+    const endDate = new Date(fin);
+    endDate.setHours(0, 0, 0, 0);
+
+    while (current <= endDate) {
+      const dayOfWeek = current.getDay();
+      // 0 = Domingo, 6 = Sábado
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
   }
 }

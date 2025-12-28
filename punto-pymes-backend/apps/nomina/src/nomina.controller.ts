@@ -288,4 +288,11 @@ export class NominaController {
   responderSolicitud(@Payload() data: any) {
     return this.nominaService.responderSolicitud(data);
   }
+
+  // 1. Escuchar petición de saldo
+  @MessagePattern({ cmd: 'get_saldo_vacaciones' })
+  async getSaldoVacaciones(@Payload() data: { empleadoId: string }) {
+    // Llama a la lógica pura del servicio
+    return this.nominaService.consultarSaldo(data.empleadoId);
+  }
 }
