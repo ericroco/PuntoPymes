@@ -544,7 +544,7 @@ __decorate([
 ], NominaController.prototype, "obtenerNovedadesPorEmpleado", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'get_configuracion_nomina' }),
-    openapi.ApiResponse({ status: 200 }),
+    openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -552,7 +552,7 @@ __decorate([
 ], NominaController.prototype, "getConfig", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'update_configuracion_nomina' }),
-    openapi.ApiResponse({ status: 200 }),
+    openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -3474,7 +3474,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     vacantes;
     sucursales;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, configuracion: { required: true, type: () => Object }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
+        return { nombre: { required: true, type: () => String }, planSuscripcion: { required: true, type: () => String }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }) }, configuracion: { required: true, type: () => Object, description: "AQU\u00CD GUARDAMOS TODA LA CONFIGURACI\u00D3N\nUsamos la interfaz 'ConfiguracionEmpresa' definida arriba" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)] }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)] }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)] }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)] }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)] }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)] }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)] }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)] }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
     }
 };
 exports.Empresa = Empresa;
@@ -3506,7 +3506,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'jsonb',
         nullable: true,
-        comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+        comment: 'Configuraciones globales (Módulos, Nomina, Asistencia, etc)',
     }),
     __metadata("design:type", Object)
 ], Empresa.prototype, "configuracion", void 0);
@@ -3519,45 +3519,39 @@ __decorate([
     __metadata("design:type", Array)
 ], Empresa.prototype, "roles", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => departamento_entity_1.Departamento, (departamento) => departamento.empresa, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => departamento_entity_1.Departamento, (d) => d.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "departamentos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => proyecto_entity_1.Proyecto, (proyecto) => proyecto.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => proyecto_entity_1.Proyecto, (p) => p.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "proyectos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => curso_entity_1.Curso, (curso) => curso.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => curso_entity_1.Curso, (c) => c.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "cursos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => activo_entity_1.Activo, (activo) => activo.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => activo_entity_1.Activo, (a) => a.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "activos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => beneficio_entity_1.Beneficio, (beneficio) => beneficio.empresa, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => beneficio_entity_1.Beneficio, (b) => b.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "beneficios", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => periodoNomina_entity_1.PeriodoNomina, (periodo) => periodo.empresa, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => periodoNomina_entity_1.PeriodoNomina, (p) => p.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "periodosNomina", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => cicloEvaluacion_entity_1.CicloEvaluacion, (ciclo) => ciclo.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => cicloEvaluacion_entity_1.CicloEvaluacion, (c) => c.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "ciclosEvaluacion", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => vacante_entity_1.Vacante, (vacante) => vacante.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => vacante_entity_1.Vacante, (v) => v.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "vacantes", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => sucursal_entity_1.Sucursal, (sucursal) => sucursal.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => sucursal_entity_1.Sucursal, (s) => s.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "sucursales", void 0);
 exports.Empresa = Empresa = __decorate([

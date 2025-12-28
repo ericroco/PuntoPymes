@@ -123,6 +123,210 @@ __decorate([
 
 /***/ }),
 
+/***/ "./apps/auth/src/dto/update-configuracion.dto.ts":
+/*!*******************************************************!*\
+  !*** ./apps/auth/src/dto/update-configuracion.dto.ts ***!
+  \*******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.UpdateConfiguracionEmpresaDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+const class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
+class ConfigModulosDto {
+    reclutamiento;
+    onboarding;
+    desempeno;
+    proyectos;
+    kpis;
+    asistencia;
+    hojasTiempo;
+    nomina;
+    beneficios;
+    capacitacion;
+    documentos;
+    activos;
+    reportes;
+    comunicacion;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { reclutamiento: { required: false, type: () => Boolean }, onboarding: { required: false, type: () => Boolean }, desempeno: { required: false, type: () => Boolean }, proyectos: { required: false, type: () => Boolean }, kpis: { required: false, type: () => Boolean }, asistencia: { required: false, type: () => Boolean }, hojasTiempo: { required: false, type: () => Boolean }, nomina: { required: false, type: () => Boolean }, beneficios: { required: false, type: () => Boolean }, capacitacion: { required: false, type: () => Boolean }, documentos: { required: false, type: () => Boolean }, activos: { required: false, type: () => Boolean }, reportes: { required: false, type: () => Boolean }, comunicacion: { required: false, type: () => Boolean } };
+    }
+}
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "reclutamiento", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "onboarding", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "desempeno", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "proyectos", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "kpis", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "asistencia", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "hojasTiempo", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "nomina", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "beneficios", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "capacitacion", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "documentos", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "activos", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "reportes", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigModulosDto.prototype, "comunicacion", void 0);
+class ConfigAsistenciaDto {
+    horaEntrada;
+    horaSalida;
+    toleranciaRetraso;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { horaEntrada: { required: false, type: () => String, pattern: "/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/" }, horaSalida: { required: false, type: () => String, pattern: "/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/" }, toleranciaRetraso: { required: false, type: () => Number, minimum: 0 } };
+    }
+}
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: 'La hora debe ser HH:mm' }),
+    __metadata("design:type", String)
+], ConfigAsistenciaDto.prototype, "horaEntrada", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: 'La hora debe ser HH:mm' }),
+    __metadata("design:type", String)
+], ConfigAsistenciaDto.prototype, "horaSalida", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], ConfigAsistenciaDto.prototype, "toleranciaRetraso", void 0);
+class ConfigNominaDto {
+    frecuenciaPago;
+    multiplicadorHorasExtra;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { frecuenciaPago: { required: false, type: () => Object }, multiplicadorHorasExtra: { required: false, type: () => Number, minimum: 1 } };
+    }
+}
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(['mensual', 'quincenal', 'semanal']),
+    __metadata("design:type", String)
+], ConfigNominaDto.prototype, "frecuenciaPago", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], ConfigNominaDto.prototype, "multiplicadorHorasExtra", void 0);
+class ConfigVacacionesDto {
+    diasPorAnio;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { diasPorAnio: { required: false, type: () => Number, minimum: 0 } };
+    }
+}
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], ConfigVacacionesDto.prototype, "diasPorAnio", void 0);
+class UpdateConfiguracionEmpresaDto {
+    modulos;
+    asistencia;
+    nomina;
+    vacaciones;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { modulos: { required: false, type: () => ConfigModulosDto }, asistencia: { required: false, type: () => ConfigAsistenciaDto }, nomina: { required: false, type: () => ConfigNominaDto }, vacaciones: { required: false, type: () => ConfigVacacionesDto } };
+    }
+}
+exports.UpdateConfiguracionEmpresaDto = UpdateConfiguracionEmpresaDto;
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => ConfigModulosDto),
+    __metadata("design:type", ConfigModulosDto)
+], UpdateConfiguracionEmpresaDto.prototype, "modulos", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => ConfigAsistenciaDto),
+    __metadata("design:type", ConfigAsistenciaDto)
+], UpdateConfiguracionEmpresaDto.prototype, "asistencia", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => ConfigNominaDto),
+    __metadata("design:type", ConfigNominaDto)
+], UpdateConfiguracionEmpresaDto.prototype, "nomina", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => ConfigVacacionesDto),
+    __metadata("design:type", ConfigVacacionesDto)
+], UpdateConfiguracionEmpresaDto.prototype, "vacaciones", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/nomina/src/dto/create-beneficio.dto.ts":
 /*!*****************************************************!*\
   !*** ./apps/nomina/src/dto/create-beneficio.dto.ts ***!
@@ -2801,6 +3005,7 @@ const create_anuncio_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/
 const create_encuesta_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/create-encuesta.dto */ "./apps/productividad/src/dto/create-encuesta.dto.ts");
 const vote_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/vote.dto */ "./apps/productividad/src/dto/vote.dto.ts");
 const responder_solicitud_dto_1 = __webpack_require__(/*! apps/nomina/src/dto/responder-solicitud.dto */ "./apps/nomina/src/dto/responder-solicitud.dto.ts");
+const update_configuracion_dto_1 = __webpack_require__(/*! apps/auth/src/dto/update-configuracion.dto */ "./apps/auth/src/dto/update-configuracion.dto.ts");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
 const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
 let AppController = class AppController {
@@ -3654,6 +3859,17 @@ let AppController = class AppController {
             vacanteId,
             candidatoId,
             motivo: body.motivo
+        });
+    }
+    async getEmpresaConfig(req) {
+        const { empresaId } = req.user;
+        return this.authService.send({ cmd: 'get_company_config' }, { empresaId });
+    }
+    async updateEmpresaConfig(req, dto) {
+        const { empresaId } = req.user;
+        return this.authService.send({ cmd: 'update_company_config' }, {
+            empresaId,
+            config: dto
         });
     }
 };
@@ -5391,6 +5607,25 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "rechazarCandidato", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('empresas/configuracion'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getEmpresaConfig", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('empresas/configuracion'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_configuracion_dto_1.UpdateConfiguracionEmpresaDto]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "updateEmpresaConfig", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -7946,7 +8181,7 @@ let Empresa = class Empresa extends base_entity_1.BaseEntity {
     vacantes;
     sucursales;
     static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String, description: "Nombre de la empresa cliente\nMapea: string nombre \"Nombre empresa cliente\"" }, planSuscripcion: { required: true, type: () => String, description: "Plan de suscripci\u00F3n de la empresa (RNF22)\nMapea: string planSuscripcion \"Basico Pro Enterprise\"" }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }), description: "Configuraci\u00F3n de branding (logo y colores) (RNF24)\nMapea: json branding \"Logo y colores personalizados\"" }, configuracion: { required: true, type: () => Object }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)], description: "Relaci\u00F3n: Una Empresa define muchos Roles." }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)], description: "Relaci\u00F3n: Una Empresa organiza muchos Departamentos." }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)], description: "Relaci\u00F3n: Una Empresa gestiona muchos Proyectos." }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)], description: "Relaci\u00F3n: Una Empresa ofrece muchos Cursos." }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)], description: "Relaci\u00F3n: Una Empresa posee muchos Activos." }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)], description: "Relaci\u00F3n: Una Empresa provee muchos Beneficios." }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)], description: "Relaci\u00F3n: Una Empresa procesa muchos Periodos de N\u00F3mina." }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)], description: "Relaci\u00F3n: Una Empresa ejecuta muchos Ciclos de Evaluaci\u00F3n." }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
+        return { nombre: { required: true, type: () => String }, planSuscripcion: { required: true, type: () => String }, branding: { required: true, type: () => ({ logoUrl: { required: false, type: () => String, nullable: true }, color: { required: false, type: () => String, nullable: true }, primaryColor: { required: false, type: () => String, nullable: true } }) }, configuracion: { required: true, type: () => Object, description: "AQU\u00CD GUARDAMOS TODA LA CONFIGURACI\u00D3N\nUsamos la interfaz 'ConfiguracionEmpresa' definida arriba" }, empleados: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }, roles: { required: true, type: () => [(__webpack_require__(/*! ./rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)] }, departamentos: { required: true, type: () => [(__webpack_require__(/*! ./departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)] }, proyectos: { required: true, type: () => [(__webpack_require__(/*! ./proyecto.entity */ "./libs/database/src/entities/proyecto.entity.ts").Proyecto)] }, cursos: { required: true, type: () => [(__webpack_require__(/*! ./curso.entity */ "./libs/database/src/entities/curso.entity.ts").Curso)] }, activos: { required: true, type: () => [(__webpack_require__(/*! ./activo.entity */ "./libs/database/src/entities/activo.entity.ts").Activo)] }, beneficios: { required: true, type: () => [(__webpack_require__(/*! ./beneficio.entity */ "./libs/database/src/entities/beneficio.entity.ts").Beneficio)] }, periodosNomina: { required: true, type: () => [(__webpack_require__(/*! ./periodoNomina.entity */ "./libs/database/src/entities/periodoNomina.entity.ts").PeriodoNomina)] }, ciclosEvaluacion: { required: true, type: () => [(__webpack_require__(/*! ./cicloEvaluacion.entity */ "./libs/database/src/entities/cicloEvaluacion.entity.ts").CicloEvaluacion)] }, vacantes: { required: true, type: () => [(__webpack_require__(/*! ./vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }, sucursales: { required: true, type: () => [(__webpack_require__(/*! ./sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] } };
     }
 };
 exports.Empresa = Empresa;
@@ -7978,7 +8213,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'jsonb',
         nullable: true,
-        comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+        comment: 'Configuraciones globales (Módulos, Nomina, Asistencia, etc)',
     }),
     __metadata("design:type", Object)
 ], Empresa.prototype, "configuracion", void 0);
@@ -7991,45 +8226,39 @@ __decorate([
     __metadata("design:type", Array)
 ], Empresa.prototype, "roles", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => departamento_entity_1.Departamento, (departamento) => departamento.empresa, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => departamento_entity_1.Departamento, (d) => d.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "departamentos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => proyecto_entity_1.Proyecto, (proyecto) => proyecto.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => proyecto_entity_1.Proyecto, (p) => p.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "proyectos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => curso_entity_1.Curso, (curso) => curso.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => curso_entity_1.Curso, (c) => c.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "cursos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => activo_entity_1.Activo, (activo) => activo.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => activo_entity_1.Activo, (a) => a.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "activos", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => beneficio_entity_1.Beneficio, (beneficio) => beneficio.empresa, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => beneficio_entity_1.Beneficio, (b) => b.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "beneficios", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => periodoNomina_entity_1.PeriodoNomina, (periodo) => periodo.empresa, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => periodoNomina_entity_1.PeriodoNomina, (p) => p.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "periodosNomina", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => cicloEvaluacion_entity_1.CicloEvaluacion, (ciclo) => ciclo.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => cicloEvaluacion_entity_1.CicloEvaluacion, (c) => c.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "ciclosEvaluacion", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => vacante_entity_1.Vacante, (vacante) => vacante.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => vacante_entity_1.Vacante, (v) => v.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "vacantes", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => sucursal_entity_1.Sucursal, (sucursal) => sucursal.empresa, { cascade: true }),
+    (0, typeorm_1.OneToMany)(() => sucursal_entity_1.Sucursal, (s) => s.empresa, { cascade: true }),
     __metadata("design:type", Array)
 ], Empresa.prototype, "sucursales", void 0);
 exports.Empresa = Empresa = __decorate([

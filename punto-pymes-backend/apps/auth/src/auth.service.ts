@@ -9,7 +9,7 @@ import {
   Empleado,
   Departamento,
   Cargo, Contrato,
-  Sucursal,
+  Sucursal, ConfiguracionEmpresa
 } from 'default/database';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -17,6 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 import { RpcException } from '@nestjs/microservices';
+import { UpdateConfiguracionEmpresaDto } from './dto/update-configuracion.dto';
 
 
 @Injectable()
@@ -827,5 +828,48 @@ export class AuthService {
     };
 
     return this.empresaRepository.save(empresa);
+  }
+
+  // --- LÓGICA DE ACTUALIZACIÓN DE CONFIGURACIÓN ---
+  async updateCompanyConfig(empresaId: string, updateDto: UpdateConfiguracionEmpresaDto) {
+    const empresa = await this.empresaRepository.findOneBy({ id: empresaId });
+    if (!empresa) throw new NotFoundException('Empresa no encontrada');
+
+    // 1. Obtener config actual o iniciar vacía
+    const configActual = empresa.configuracion || {};
+
+    // 2. MERGE MANUAL (Deep Merge)
+    // Esto es crucial: Si mandas solo 'asistencia', mantienes 'nomina' intacta.
+    const nuevaConfig: ConfiguracionEmpresa = {
+      ...configActual, // Copia base
+
+      modulos: {
+        ...configActual.modulos,
+        ...updateDto.modulos,
+      },
+      asistencia: {
+        ...configActual.asistencia,
+        ...updateDto.asistencia,
+      },
+      nomina: {
+        ...configActual.nomina,
+        ...updateDto.nomina,
+      },
+      vacaciones: {
+        ...configActual.vacaciones,
+        ...updateDto.vacaciones,
+      }
+    };
+
+    empresa.configuracion = nuevaConfig;
+    return await this.empresaRepository.save(empresa);
+  }
+
+  async getCompanyConfig(empresaId: string) {
+    const empresa = await this.empresaRepository.findOne({
+      where: { id: empresaId },
+      select: ['configuracion'] // Solo traemos el JSON
+    });
+    return empresa?.configuracion || {};
   }
 }

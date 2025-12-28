@@ -8,6 +8,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { SwitchCompanyDto } from './dto/switch-company.dto';
 import { RpcException } from '@nestjs/microservices';
+import { UpdateConfiguracionEmpresaDto } from './dto/update-configuracion.dto';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -83,5 +84,16 @@ export class AuthController {
   @MessagePattern({ cmd: 'update_company_branding' })
   async updateBranding(@Payload() data: { empresaId: string, branding: any }) {
     return this.authService.updateCompanyBranding(data.empresaId, data.branding);
+  }
+
+  @MessagePattern({ cmd: 'get_company_config' })
+  async getCompanyConfig(@Payload() data: { empresaId: string }) {
+    return this.authService.getCompanyConfig(data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'update_company_config' })
+  async updateCompanyConfig(@Payload() data: { empresaId: string, config: any }) {
+    // data.config es el DTO que mandaste desde el Gateway
+    return this.authService.updateCompanyConfig(data.empresaId, data.config);
   }
 }

@@ -12,21 +12,52 @@ import { CicloEvaluacion } from './cicloEvaluacion.entity';
 import { Vacante } from './vacante.entity';
 import { Sucursal } from './sucursal.entity';
 
+// --- INTERFACES DE CONFIGURACIÓN (JSONB) ---
 
-export interface ConfiguracionEmpresa {
-  nomina?: {
-    frecuenciaPago?: string;      // 'quincenal', 'mensual'
-    multiplicadorHorasExtra?: number; // 1.5, 2.0
-  };
-  // A futuro puedes agregar: asistencia?: { ... }, etc.
+export interface ConfiguracionModulos {
+  reclutamiento?: boolean;
+  onboarding?: boolean;
+  desempeno?: boolean;
+  proyectos?: boolean;
+  kpis?: boolean;
+  asistencia?: boolean;
+  hojasTiempo?: boolean;
+  nomina?: boolean;
+  beneficios?: boolean;
+  capacitacion?: boolean;
+  documentos?: boolean;
+  activos?: boolean;
+  reportes?: boolean;
+  comunicacion?: boolean;
 }
+
+export interface ConfiguracionAsistencia {
+  horaEntrada?: string;       // Formato "HH:mm" ej: "09:00"
+  horaSalida?: string;        // Formato "HH:mm" ej: "18:00"
+  toleranciaRetraso?: number; // Minutos, ej: 15
+}
+
+export interface ConfiguracionNomina {
+  frecuenciaPago?: 'mensual' | 'quincenal' | 'semanal';
+  multiplicadorHorasExtra?: number; // ej: 1.5
+}
+
+export interface ConfiguracionVacaciones {
+  diasPorAnio?: number; // Mínimo legal
+}
+
+// La Interfaz Maestra que agrupa todo
+export interface ConfiguracionEmpresa {
+  modulos?: ConfiguracionModulos;
+  asistencia?: ConfiguracionAsistencia;
+  nomina?: ConfiguracionNomina;
+  vacaciones?: ConfiguracionVacaciones;
+}
+
+// --- ENTIDAD ---
 
 @Entity({ name: 'empresas' })
 export class Empresa extends BaseEntity {
-  /**
-   * Nombre de la empresa cliente
-   * Mapea: string nombre "Nombre empresa cliente"
-   */
   @Column({
     type: 'varchar',
     length: 255,
@@ -34,10 +65,6 @@ export class Empresa extends BaseEntity {
   })
   nombre: string;
 
-  /**
-   * Plan de suscripción de la empresa (RNF22)
-   * Mapea: string planSuscripcion "Basico Pro Enterprise"
-   */
   @Column({
     type: 'varchar',
     length: 50,
@@ -45,95 +72,56 @@ export class Empresa extends BaseEntity {
   })
   planSuscripcion: string;
 
-  /**
-   * Configuración de branding (logo y colores) (RNF24)
-   * Mapea: json branding "Logo y colores personalizados"
-   */
   @Column({
-    type: 'jsonb', // jsonb es más eficiente para consultas en Postgres
+    type: 'jsonb',
     nullable: true,
     comment: 'Logo y colores personalizados (RNF24)',
   })
   branding: { logoUrl?: string | null; color?: string | null; primaryColor?: string | null };
 
+  /**
+   * AQUÍ GUARDAMOS TODA LA CONFIGURACIÓN
+   * Usamos la interfaz 'ConfiguracionEmpresa' definida arriba
+   */
   @Column({
     type: 'jsonb',
     nullable: true,
-    comment: 'Configuraciones globales de la empresa (Nomina, Asistencia, etc)',
+    comment: 'Configuraciones globales (Módulos, Nomina, Asistencia, etc)',
   })
   configuracion: ConfiguracionEmpresa;
-  // ---
-  // RELACIONES (Una Empresa TIENE MUCHOS...)
-  // ---
 
-  /**
-   * Relación: Una Empresa tiene muchos Empleados.
-   * 'cascade: true' asegura que si se borra una Empresa,
-   * se borran todos sus empleados (consistencia de datos).
-   */
+  // --- RELACIONES ---
+
   @OneToMany(() => Empleado, (empleado) => empleado.empresa, { cascade: true })
   empleados: Empleado[];
 
-  /**
-   * Relación: Una Empresa define muchos Roles.
-   */
   @OneToMany(() => Rol, (rol) => rol.empresa, { cascade: true })
   roles: Rol[];
 
-  /**
-   * Relación: Una Empresa organiza muchos Departamentos.
-   */
-  @OneToMany(() => Departamento, (departamento) => departamento.empresa, {
-    cascade: true,
-  })
+  @OneToMany(() => Departamento, (d) => d.empresa, { cascade: true })
   departamentos: Departamento[];
 
-  /**
-   * Relación: Una Empresa gestiona muchos Proyectos.
-   */
-  @OneToMany(() => Proyecto, (proyecto) => proyecto.empresa, { cascade: true })
+  @OneToMany(() => Proyecto, (p) => p.empresa, { cascade: true })
   proyectos: Proyecto[];
 
-  /**
-   * Relación: Una Empresa ofrece muchos Cursos.
-   */
-  @OneToMany(() => Curso, (curso) => curso.empresa, { cascade: true })
+  @OneToMany(() => Curso, (c) => c.empresa, { cascade: true })
   cursos: Curso[];
 
-  /**
-   * Relación: Una Empresa posee muchos Activos.
-   */
-  @OneToMany(() => Activo, (activo) => activo.empresa, { cascade: true })
+  @OneToMany(() => Activo, (a) => a.empresa, { cascade: true })
   activos: Activo[];
 
-  /**
-   * Relación: Una Empresa provee muchos Beneficios.
-   */
-  @OneToMany(() => Beneficio, (beneficio) => beneficio.empresa, {
-    cascade: true,
-  })
+  @OneToMany(() => Beneficio, (b) => b.empresa, { cascade: true })
   beneficios: Beneficio[];
 
-  /**
-   * Relación: Una Empresa procesa muchos Periodos de Nómina.
-   */
-  @OneToMany(() => PeriodoNomina, (periodo) => periodo.empresa, {
-    cascade: true,
-  })
+  @OneToMany(() => PeriodoNomina, (p) => p.empresa, { cascade: true })
   periodosNomina: PeriodoNomina[];
 
-  /**
-   * Relación: Una Empresa ejecuta muchos Ciclos de Evaluación.
-   */
-  @OneToMany(
-    () => CicloEvaluacion,
-    (ciclo) => ciclo.empresa,
-    { cascade: true },
-  )
+  @OneToMany(() => CicloEvaluacion, (c) => c.empresa, { cascade: true })
   ciclosEvaluacion: CicloEvaluacion[];
-  @OneToMany(() => Vacante, (vacante) => vacante.empresa, { cascade: true })
+
+  @OneToMany(() => Vacante, (v) => v.empresa, { cascade: true })
   vacantes: Vacante[];
 
-  @OneToMany(() => Sucursal, (sucursal) => sucursal.empresa, { cascade: true })
+  @OneToMany(() => Sucursal, (s) => s.empresa, { cascade: true })
   sucursales: Sucursal[];
 }

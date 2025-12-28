@@ -84,6 +84,7 @@ import { CreateAnuncioDto } from 'apps/productividad/src/dto/create-anuncio.dto'
 import { CreateEncuestaDto } from 'apps/productividad/src/dto/create-encuesta.dto';
 import { VoteDto } from 'apps/productividad/src/dto/vote.dto';
 import { ResponderSolicitudDto, EstadoSolicitud } from 'apps/nomina/src/dto/responder-solicitud.dto';
+import { UpdateConfiguracionEmpresaDto } from 'apps/auth/src/dto/update-configuracion.dto';
 
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 import { lastValueFrom } from 'rxjs';
@@ -2707,6 +2708,40 @@ export class AppController {
         candidatoId,
         motivo: body.motivo
       },
+    );
+  }
+
+  // 1. OBTENER CONFIGURACIÓN (GET /empresas/configuracion)
+  // Sirve para pintar los toggles y formularios en el Front
+  @UseGuards(JwtAuthGuard)
+  @Get('empresas/configuracion')
+  async getEmpresaConfig(@Request() req) {
+    const { empresaId } = req.user;
+
+    // Enviamos al microservicio de Auth (donde vive la Empresa)
+    return this.authService.send(
+      { cmd: 'get_company_config' },
+      { empresaId }
+    );
+  }
+
+  // 2. GUARDAR CONFIGURACIÓN (PATCH /empresas/configuracion)
+  // Sirve para el botón "Guardar Cambios" de Módulos, Asistencia, etc.
+  @UseGuards(JwtAuthGuard)
+  @Patch('empresas/configuracion')
+  async updateEmpresaConfig(
+    @Request() req,
+    @Body() dto: UpdateConfiguracionEmpresaDto // Validación con el DTO que creamos
+  ) {
+    const { empresaId } = req.user;
+
+    // Enviamos al microservicio de Auth
+    return this.authService.send(
+      { cmd: 'update_company_config' },
+      {
+        empresaId,
+        config: dto // Pasamos el objeto validado dentro del payload
+      }
     );
   }
 }
