@@ -126,10 +126,25 @@
       <div class="header-text">
         <h2>Gestión de Metas</h2>
         <p class="subtitle">Administración global de objetivos y KPIs.</p>
+
+        <div *ngIf="!activeCycleId" class="cycle-warning"
+          style="display: inline-flex; align-items: center; gap: 8px; color: #b91c1c; background: #fef2f2; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; margin-top: 8px;">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px;">error_outline</mat-icon>
+          <span>No hay ciclo activo. Crea uno para comenzar.</span>
+        </div>
       </div>
-      <button mat-flat-button color="primary" (click)="openCreateGoalDialog()">
-        <mat-icon>add</mat-icon> Asignar Meta
-      </button>
+
+      <div class="header-actions" style="display: flex; gap: 12px;">
+
+        <button mat-stroked-button color="primary" (click)="openCreateCycleDialog()">
+          <mat-icon>event_repeat</mat-icon> Nuevo Ciclo
+        </button>
+
+        <button mat-flat-button color="primary" (click)="openCreateGoalDialog()" [disabled]="!activeCycleId">
+          <mat-icon>add</mat-icon> Asignar Meta
+        </button>
+      </div>
+
     </header>
 
     <mat-tab-group animationDuration="0ms" class="custom-tabs">

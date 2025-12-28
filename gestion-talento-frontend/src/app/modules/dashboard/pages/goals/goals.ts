@@ -25,6 +25,7 @@ import { PerformanceService, Objetivo } from '../../services/performance';
 import { EmployeesService, Employee } from '../../services/employees';
 import { CatalogService, Department } from '../../services/catalog';
 import { PERMISSIONS } from '../../../../shared/constants/permissions';
+import { CreateCycleDialogComponent } from '../../components/create-cycle-dialog/create-cycle-dialog';
 
 // Interfaces Locales
 interface AdminGoal {
@@ -108,6 +109,7 @@ export class Goals implements OnInit {
   loadData() {
     this.isLoading = true;
     const user = this.authService.getUser();
+    this.loadActiveCycle();
 
     this.performanceService.getActiveCycle().subscribe({
       next: (cycle) => {
@@ -284,5 +286,40 @@ export class Goals implements OnInit {
       progreso: adminGoal.progress
     };
     this.openUpdateProgressDialog(goal);
+  }
+
+  openCreateCycleDialog() {
+    // Aquí abriremos el modal para crear { nombre, fechaInicio, fechaFin }
+    const dialogRef = this.dialog.open(CreateCycleDialogComponent, {
+      width: '500px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadActiveCycle(); // Recargar para detectar el nuevo ciclo
+      }
+    });
+  }
+
+  loadActiveCycle() {
+    this.performanceService.getActiveCycle().subscribe({
+      next: (cycle) => {
+        if (cycle && cycle.id) {
+          console.log('Ciclo activo encontrado:', cycle.nombre);
+          this.activeCycleId = cycle.id;
+
+          // Opcional: Si ya tenías lógica para cargar metas, 
+          // puedes llamarla aquí ahora que sabes que hay un ciclo.
+          // Ej: this.loadMyGoals(); 
+        } else {
+          console.warn('No hay ciclo activo.');
+          this.activeCycleId = null;
+        }
+      },
+      error: (err) => {
+        console.error('Error buscando ciclo activo:', err);
+        this.activeCycleId = null;
+      }
+    });
   }
 }

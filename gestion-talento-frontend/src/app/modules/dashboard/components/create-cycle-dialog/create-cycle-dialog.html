@@ -1,0 +1,64 @@
+<div class="dialog-container">
+
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Nuevo Ciclo de Evaluación</h2>
+        <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content class="custom-content">
+        <form [formGroup]="cycleForm" class="form-content">
+
+            <p class="description">
+                Define el periodo de evaluación. Durante estas fechas, los empleados y departamentos podrán gestionar
+                sus objetivos.
+            </p>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Nombre del Ciclo</mat-label>
+                <input matInput formControlName="nombre" placeholder="Ej: Evaluación Q1 2024" required>
+                <mat-icon matSuffix>event_note</mat-icon>
+                <mat-error *ngIf="cycleForm.get('nombre')?.hasError('required')">Requerido.</mat-error>
+                <mat-error *ngIf="cycleForm.get('nombre')?.hasError('minlength')">Mínimo 5 caracteres.</mat-error>
+            </mat-form-field>
+
+            <div class="form-row">
+
+                <mat-form-field appearance="outline" class="form-field custom-field">
+                    <mat-label>Fecha Inicio</mat-label>
+                    <input matInput [matDatepicker]="pickerStart" formControlName="fechaInicio" required>
+                    <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerStart></mat-datepicker>
+                    <mat-error>Requerido.</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field custom-field">
+                    <mat-label>Fecha Fin</mat-label>
+                    <input matInput [matDatepicker]="pickerEnd" formControlName="fechaFin" required>
+                    <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerEnd></mat-datepicker>
+                    <mat-error>Requerido.</mat-error>
+                </mat-form-field>
+
+            </div>
+
+        </form>
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button (click)="onCancel()" class="btn-cancel" [disabled]="isLoading">
+            Cancelar
+        </button>
+
+        <button mat-flat-button color="primary" (click)="onSave()" [disabled]="cycleForm.invalid || isLoading"
+            class="btn-save">
+
+            <span *ngIf="!isLoading">Crear Ciclo</span>
+            <span *ngIf="isLoading" class="loading-content">
+                <mat-icon class="spin">sync</mat-icon> Creando...
+            </span>
+        </button>
+    </div>
+
+</div>
