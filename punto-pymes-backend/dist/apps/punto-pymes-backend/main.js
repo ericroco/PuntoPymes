@@ -3647,6 +3647,15 @@ let AppController = class AppController {
         }));
         return solicitud;
     }
+    rechazarCandidato(req, vacanteId, candidatoId, body) {
+        const { empresaId } = req.user;
+        return this.personalService.send({ cmd: 'rechazar_candidato' }, {
+            empresaId,
+            vacanteId,
+            candidatoId,
+            motivo: body.motivo
+        });
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -5369,6 +5378,19 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, responder_solicitud_dto_1.ResponderSolicitudDto]),
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "responderSolicitudVacaciones", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permission_guard_1.PermissionGuard),
+    (0, permission_decorator_1.RequirePermission)('reclutamiento.gestion'),
+    (0, common_1.Patch)('reclutamiento/vacantes/:vacanteId/candidatos/:candidatoId/rechazar'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('vacanteId')),
+    __param(2, (0, common_1.Param)('candidatoId')),
+    __param(3, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, Object]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "rechazarCandidato", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),

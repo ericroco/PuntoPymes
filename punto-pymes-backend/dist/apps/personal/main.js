@@ -447,6 +447,10 @@ let PersonalController = class PersonalController {
     getOrganigramaData(data) {
         return this.personalService.getOrganigramaData(data.empresaId);
     }
+    rechazar(data) {
+        console.log('✅ Payload recibido correctamente:', data);
+        return this.personalService.rechazarCandidato(data.candidatoId, data.motivo);
+    }
 };
 exports.PersonalController = PersonalController;
 __decorate([
@@ -838,6 +842,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PersonalController.prototype, "getOrganigramaData", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'rechazar_candidato' }),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PersonalController.prototype, "rechazar", null);
 exports.PersonalController = PersonalController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [personal_service_1.PersonalService,
@@ -1006,6 +1018,7 @@ const common_3 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const bulk_import_response_dto_1 = __webpack_require__(/*! ./dto/bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
 const typeorm_3 = __webpack_require__(/*! typeorm */ "typeorm");
+const microservices_2 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 let PersonalService = PersonalService_1 = class PersonalService {
     empleadoRepository;
     rolRepository;
@@ -1759,7 +1772,10 @@ let PersonalService = PersonalService_1 = class PersonalService {
             throw new common_1.NotFoundException('Vacante no encontrada o no tienes acceso.');
         }
         return this.candidatoRepository.find({
-            where: { vacanteId },
+            where: {
+                vacanteId,
+                estado: (0, typeorm_2.Not)(database_1.EstadoCandidato.RECHAZADO)
+            },
             order: {
                 aiScore: 'DESC',
                 fechaPostulacion: 'DESC'
@@ -2102,6 +2118,19 @@ let PersonalService = PersonalService_1 = class PersonalService {
             },
             relations: ['cargo']
         });
+    }
+    async rechazarCandidato(candidatoId, motivo) {
+        console.log('🛑 DEBUG rechazarCandidato -> ID:', candidatoId, 'Motivo:', motivo);
+        if (!candidatoId) {
+            throw new microservices_2.RpcException(new common_1.BadRequestException('El ID del candidato es obligatorio y llegó vacío'));
+        }
+        const resultado = await this.candidatoRepository.update({ id: candidatoId }, {
+            estado: database_1.EstadoCandidato.RECHAZADO,
+        });
+        if (resultado.affected === 0) {
+            throw new microservices_2.RpcException(new common_1.BadRequestException('No se encontró el candidato para rechazar'));
+        }
+        return { success: true, id: candidatoId, estado: database_1.EstadoCandidato.RECHAZADO };
     }
 };
 exports.PersonalService = PersonalService;

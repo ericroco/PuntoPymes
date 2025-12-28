@@ -1,14 +1,14 @@
 /* ==========================================================================
-   TALENTRACK - SPRINT BOARD (KANBAN STYLE)
+   TALENTRACK - SPRINT BOARD (DRAG & DROP OPTIMIZADO)
    ========================================================================== */
 
 // --- 1. CONFIGURACIÓN DE PÁGINA ---
 .page-container.sprint-board {
   padding: var(--spacing-xl);
-  height: calc(100vh - 64px); // Ajuste para ocupar pantalla completa menos navbar
+  height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  overflow: hidden; // El scroll lo manejan las columnas
+  overflow: hidden;
 }
 
 // --- 2. HEADER DEL SPRINT ---
@@ -19,7 +19,7 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--color-border-light);
-  flex-shrink: 0; // No encoger el header
+  flex-shrink: 0;
 
   .sprint-info {
     h1 {
@@ -40,11 +40,12 @@
       font-size: 0.85rem;
       color: var(--color-text-muted);
       font-weight: 500;
-      display: flex; align-items: center; gap: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
   }
 
-  // Equipo Asignado (Avatares)
   .assigned-team {
     margin-top: 1rem;
 
@@ -58,138 +59,217 @@
     }
 
     .team-avatars {
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
 
       .avatar {
-        width: 32px; height: 32px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        border: 2px solid white; // Borde blanco para separar al superponer
-        margin-left: -10px; // Superposición
+        border: 2px solid white;
+        margin-left: -10px;
         object-fit: cover;
         transition: transform 0.2s ease, z-index 0s;
         cursor: help;
         position: relative;
 
-        &:first-child { margin-left: 0; }
-        &:hover { transform: translateY(-4px) scale(1.1); z-index: 10; }
+        &:first-child {
+          margin-left: 0;
+        }
+
+        &:hover {
+          transform: translateY(-4px) scale(1.1);
+          z-index: 10;
+        }
       }
     }
 
-    .no-team-text { font-size: 0.85rem; color: var(--color-text-muted); font-style: italic; }
+    .no-team-text {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
   }
 
-  // Acciones del Header
   .sprint-actions {
-    display: flex; gap: 12px; align-items: center;
+    display: flex;
+    gap: 12px;
+    align-items: center;
   }
 }
 
 // --- 3. BOTONES (PILL SHAPE) ---
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 0 20px; height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 40px;
   border: none;
-  border-radius: 999px; // Pill Shape
-  font-weight: 600; font-size: 0.9rem; font-family: var(--font-family-base);
-  cursor: pointer; text-decoration: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  text-decoration: none;
   transition: all 0.2s ease-out;
   box-shadow: var(--shadow-sm);
 
-  svg { width: 18px; height: 18px; }
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 
-  // Variantes
   &.btn-primary {
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: white;
-    &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3); }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+    }
   }
 
   &.btn-secondary {
-    background-color: white; color: var(--color-text-secondary); border: 1px solid var(--color-border);
+    background-color: white;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
     box-shadow: none;
-    &:hover { background-color: var(--color-surface-variant); color: var(--color-text-primary); border-color: var(--color-text-primary); }
+
+    &:hover {
+      background-color: var(--color-surface-variant);
+      color: var(--color-text-primary);
+      border-color: var(--color-text-primary);
+    }
   }
 
   &.btn-success {
-    background-color: var(--color-success); color: white;
-    &:hover { background-color: #059669; transform: translateY(-2px); }
+    background-color: var(--color-success);
+    color: white;
+
+    &:hover {
+      background-color: #059669;
+      transform: translateY(-2px);
+    }
   }
 
   &.btn-warning {
-    background-color: var(--color-warning); color: #78350F; // Texto oscuro para contraste
-    &:hover { background-color: #D97706; transform: translateY(-2px); }
+    background-color: var(--color-warning);
+    color: #78350F;
+
+    &:hover {
+      background-color: #D97706;
+      transform: translateY(-2px);
+    }
   }
 }
 
 // --- 4. TABLERO KANBAN (COLUMNAS) ---
 .board-columns {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); // 3 Columnas fijas
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   height: 100%;
-  overflow-x: auto; // Scroll horizontal si la pantalla es muy pequeña
+  overflow-x: auto;
   padding-bottom: 1rem;
 }
 
 .board-column {
-  background-color: #F3F4F6; // Gris de fondo de columna (Kanban style)
+  background-color: #F3F4F6;
   border-radius: 16px;
   padding: 1rem;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  min-width: 280px; // Ancho mínimo para que no se aplaste
+  min-width: 280px;
   border: 1px solid var(--color-border-light);
 
   .column-title {
-    font-size: 1rem; font-weight: 700; color: var(--color-text-secondary);
-    padding: 0 0.5rem 1rem; margin: 0;
-    border-bottom: 2px solid rgba(0,0,0,0.05);
-    text-transform: uppercase; letter-spacing: 0.5px;
-    display: flex; justify-content: space-between; align-items: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    padding: 0 0.5rem 1rem;
+    margin: 0;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 
-// --- 5. LISTA DE TAREAS (DROP ZONE) ---
+// --- 5. LISTA DE TAREAS (DROP ZONE OPTIMIZADA) ---
 .task-list {
   flex-grow: 1;
-  overflow-y: auto; // Scroll vertical independiente por columna
-  padding: 1rem 4px; // Padding lateral pequeño
+  overflow-y: auto;
+  padding: 1rem 4px;
   min-height: 100px;
 
-  // Scrollbar fino
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background-color: #D1D5DB; border-radius: 10px; }
-  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
 
-  // Estilo al arrastrar sobre la lista
+  &::-webkit-scrollbar-thumb {
+    background-color: #D1D5DB;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  // 🚀 OPTIMIZACIÓN 1: Transición más rápida y solo en transform
   &.cdk-drop-list-dragging .task-card:not(.cdk-drag-placeholder) {
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
   }
 }
 
-// --- 6. TARJETA DE TAREA (CARD) ---
+// --- 6. TARJETA DE TAREA (OPTIMIZADA) ---
 .task-card {
   background-color: white;
-  border-radius: 12px; // Bordes suaves
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Sombra sutil inicial
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   margin-bottom: 12px;
   border: 1px solid var(--color-border-light);
   cursor: grab;
   position: relative;
   overflow: hidden;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-sizing: border-box; // 🚀 IMPORTANTE
+
+  // 🚀 OPTIMIZACIÓN 2: Solo transiciona propiedades GPU-aceleradas
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  // 🚀 OPTIMIZACIÓN 3: Prepara capas GPU
+  will-change: transform;
 
   &:hover {
+    // 🚀 Solo transform (no cambios de layout)
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
     z-index: 2;
   }
 
-  // Estados de Drag & Drop (CDK)
+  // === PREVIEW OPTIMIZADO ===
   &.cdk-drag-preview {
+    box-sizing: border-box;
+    overflow: hidden !important; // 🚀 Elimina scrollbars
+
+    // 🚀 OPTIMIZACIÓN 4: Sin transiciones durante drag
+    transition: none !important;
+
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     background: white;
+
+    // 🚀 OPTIMIZACIÓN 5: Fuerza GPU
+    transform: scale(1.05) translateZ(0);
+    backface-visibility: hidden;
+
+    // 🚀 OPTIMIZACIÓN 6: Dimensiones fijas
+    width: 280px !important;
+    max-height: 200px !important;
   }
 
   &.cdk-drag-placeholder {
@@ -197,65 +277,115 @@
     background: #E5E7EB;
     border: 2px dashed #9CA3AF;
     box-shadow: none;
+
+    // 🚀 OPTIMIZACIÓN 7: Sin transiciones en placeholder
+    transition: none !important;
   }
 
   &.cdk-drag-animating {
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    // 🚀 OPTIMIZACIÓN 8: Transición más rápida para el drop
+    transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
+
+    // 🚀 OPTIMIZACIÓN 9: Deshabilita interacciones
+    pointer-events: none;
   }
 }
 
 // Estructura Interna de la Tarjeta
 .task-card-main {
-  display: flex; align-items: stretch; padding: 0; // Padding 0 para que la barra de prioridad toque el borde
+  display: flex;
+  align-items: stretch;
+  padding: 0;
 }
 
 // Barra de Prioridad Lateral
 .task-priority {
-  width: 6px; flex-shrink: 0;
-  
-  &.priority-alta { background-color: var(--color-danger); }
-  &.priority-media { background-color: var(--color-warning); }
-  &.priority-baja { background-color: var(--color-success); }
+  width: 6px;
+  flex-shrink: 0;
+
+  &.priority-alta {
+    background-color: var(--color-danger);
+  }
+
+  &.priority-media {
+    background-color: var(--color-warning);
+  }
+
+  &.priority-baja {
+    background-color: var(--color-success);
+  }
 }
 
 .task-content {
-  flex-grow: 1; padding: 12px 12px 12px 8px; overflow: hidden;
+  flex-grow: 1;
+  padding: 12px 12px 12px 8px;
+  overflow: hidden;
 
   .task-title {
-    font-weight: 600; font-size: 0.95rem; margin: 0 0 6px 0;
-    color: var(--color-text-primary); line-height: 1.4;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0 0 6px 0;
+    color: var(--color-text-primary);
+    line-height: 1.4;
+
+    // 🚀 OPTIMIZACIÓN 10: Evita text-wrapping complejo durante drag
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .task-meta {
-    font-size: 0.8rem; color: var(--color-text-secondary);
-    display: flex; align-items: center; gap: 8px;
-    
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
     span {
-      background-color: #F3F4F6; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+      background-color: #F3F4F6;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
     }
   }
 }
 
 // Acciones de Tarjeta
 .task-card-actions {
-  display: flex; flex-direction: column; justify-content: flex-start;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   padding: 8px 4px;
   border-left: 1px solid var(--color-border-light);
   background-color: #FAFAFA;
 
   .btn-icon {
-    width: 28px; height: 28px; padding: 4px;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
     color: var(--color-text-secondary);
-    border-radius: 4px; // Cuadrado redondeado
-    display: flex; align-items: center; justify-content: center;
-    background: transparent; border: none; cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
 
-    &:hover { background-color: #E5E7EB; color: var(--color-primary); }
-    
-    // Icono expandir
+    // 🚀 OPTIMIZACIÓN 11: Transición más rápida
+    transition: background-color 0.1s ease, color 0.1s ease;
+
+    &:hover {
+      background-color: #E5E7EB;
+      color: var(--color-primary);
+    }
+
     &.task-expand svg {
-      transition: transform 0.3s ease;
-      &.rotated { transform: rotate(180deg); }
+      transition: transform 0.2s ease; // 🚀 Más rápida
+
+      &.rotated {
+        transform: rotate(180deg);
+      }
     }
   }
 }
@@ -265,16 +395,35 @@
   background-color: #FAFAFA;
   border-top: 1px solid var(--color-border-light);
   padding: 12px 16px;
-  font-size: 0.85rem; color: var(--color-text-secondary); line-height: 1.5;
-  
-  p { margin: 0; }
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+
+  p {
+    margin: 0;
+  }
 }
 
 .empty-list-placeholder {
-  text-align: center; color: var(--color-text-muted); font-style: italic; padding: 2rem 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+// 🚀 OPTIMIZACIÓN GLOBAL 12: Desactiva transiciones durante drag
+.cdk-drag-animating * {
+  transition: none !important;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

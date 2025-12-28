@@ -452,4 +452,15 @@ export class PersonalController {
     return this.personalService.getOrganigramaData(data.empresaId);
   }
 
+  // 1. CORRECCIÓN DEL PATRÓN: Debe coincidir con { cmd: ... } del Gateway
+  @MessagePattern({ cmd: 'rechazar_candidato' })
+  rechazar(@Payload() data: { candidatoId: string; motivo?: string; vacanteId: string }) {
+
+    console.log('✅ Payload recibido correctamente:', data);
+
+    // 2. CORRECCIÓN DE VARIABLE: Usamos 'candidatoId' (Español) que viene del Gateway
+    // data.candidateId daba undefined porque en el JSON venía como "candidatoId"
+    return this.personalService.rechazarCandidato(data.candidatoId, data.motivo);
+  }
+
 }

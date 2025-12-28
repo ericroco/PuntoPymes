@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { map } from 'rxjs';
 
 // --- INTERFACES QUE NECESITAS ---
 export interface Vacancy {
@@ -50,6 +51,7 @@ export class RecruitmentService {
   }
 
   getCandidates(vacancyId: string): Observable<Candidate[]> {
+    // Ya vienen filtrados desde el servidor, no hacemos nada extra aquí
     return this.http.get<Candidate[]>(`${this.apiUrl}/${vacancyId}/candidatos`);
   }
 
@@ -73,5 +75,13 @@ export class RecruitmentService {
   updateVacancy(id: string, data: any) {
     // Esto llamará a tu endpoint existente: PATCH /vacantes/:id
     return this.http.patch(`${this.apiUrl}/${id}`, data);
+  }
+
+  rejectCandidate(vacancyId: string, candidateId: string, motivo?: string): Observable<any> {
+    // Usamos PATCH porque es una actualización parcial de estado
+    return this.http.patch(
+      `${this.apiUrl}/${vacancyId}/candidatos/${candidateId}/rechazar`,
+      { motivo } // Enviamos el motivo en el body
+    );
   }
 }

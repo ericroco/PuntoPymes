@@ -60,6 +60,7 @@ import { CreateEvaluacionDto } from 'apps/productividad/src/dto/create-evaluacio
 import { UpdateEvaluacionDto } from 'apps/productividad/src/dto/update-evaluacion.dto';
 import { CreateCursoDto } from 'apps/productividad/src/dto/create-curso.dto';
 import { UpdateCursoDto } from 'apps/productividad/src/dto/update-curso.dto';
+import { RechazarCandidatoDto } from 'apps/personal/src/dto/rechazar-candidato.dto';
 import { CreateInscripcionDto } from 'apps/productividad/src/dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from 'apps/productividad/src/dto/update-inscripcion.dto';
 import { CheckInDto } from 'apps/productividad/src/dto/check-in.dto';
@@ -2683,5 +2684,29 @@ export class AppController {
     );
 
     return solicitud;
+  }
+
+  // 5. RECHAZAR CANDIDATO (PATCH /reclutamiento/vacantes/:vacanteId/candidatos/:candidatoId/rechazar)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermission('reclutamiento.gestion')
+  @Patch('reclutamiento/vacantes/:vacanteId/candidatos/:candidatoId/rechazar')
+  rechazarCandidato(
+    @Request() req,
+    @Param('vacanteId') vacanteId: string,
+    @Param('candidatoId') candidatoId: string,
+    @Body() body: { motivo?: string }, // Recibimos el motivo opcional del body
+  ) {
+    const { empresaId } = req.user;
+
+    // Enviamos al microservicio
+    return this.personalService.send(
+      { cmd: 'rechazar_candidato' },
+      {
+        empresaId,
+        vacanteId,
+        candidatoId,
+        motivo: body.motivo
+      },
+    );
   }
 }

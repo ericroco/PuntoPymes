@@ -5,6 +5,7 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 // Tu import ya incluye 'Contrato', lo cual es perfecto.
@@ -26,6 +27,7 @@ import { CreateVacanteDto } from './dto/create-vacante.dto';
 import { UpdateVacanteDto } from './dto/update-vacante.dto';
 import { UpdateCandidatoAIDto } from './dto/update-candidato-ai.dto';
 import { CreateSucursalDto } from './dto/create-sucursal.dto';
+import { RechazarCandidatoDto } from './dto/rechazar-candidato.dto';
 import { UpdateSucursalDto } from './dto/update-sucursal.dto';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Sucursal } from 'default/database';
@@ -42,6 +44,8 @@ import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 import { IsNull } from 'typeorm';
 import { CreateDocumentoEmpresaDto } from './dto/create-documento-empresa.dto';
 import { DeepPartial } from 'typeorm';
+import { RpcException } from '@nestjs/microservices';
+
 
 
 @Injectable()
@@ -1252,20 +1256,21 @@ export class PersonalService {
    * 2. Fecha de postulación (Más recientes)
    */
   async getCandidatos(empresaId: string, vacanteId: string): Promise<Candidato[]> {
-    // 1. Validar que la vacante exista y pertenezca a la empresa (Seguridad Multi-tenant)
     const vacante = await this.vacanteRepository.findOneBy({ id: vacanteId, empresaId });
 
     if (!vacante) {
       throw new NotFoundException('Vacante no encontrada o no tienes acceso.');
     }
 
-    // 2. Buscar candidatos
     return this.candidatoRepository.find({
-      where: { vacanteId },
-      // ¡Aquí está el truco! Los ordenamos por el puntaje de la IA
+      where: {
+        vacanteId,
+        // 👇 2. USA EL ENUM DENTRO DEL NOT
+        estado: Not(EstadoCandidato.RECHAZADO)
+      },
       order: {
-        aiScore: 'DESC',        // Los de mejor puntaje primero
-        fechaPostulacion: 'DESC' // Desempate por fecha
+        aiScore: 'DESC',
+        fechaPostulacion: 'DESC'
       },
     });
   }
@@ -1790,4 +1795,28 @@ export class PersonalService {
     });
   }
 
+  async rechazarCandidato(candidatoId: string, motivo?: string): Promise<any> {
+    // 1. DEBUG: Mira qué está llegando en la consola del microservicio
+    console.log('🛑 DEBUG rechazarCandidato -> ID:', candidatoId, 'Motivo:', motivo);
+
+    // 2. VALIDACIÓN: Si no hay ID, lanzamos error antes de tocar la DB
+    if (!candidatoId) {
+      throw new RpcException(new BadRequestException('El ID del candidato es obligatorio y llegó vacío'));
+    }
+
+    // 3. UPDATE: Usamos la sintaxis de objeto para el criteria { id: ... } que es más segura
+    const resultado = await this.candidatoRepository.update(
+      { id: candidatoId }, // Criteria
+      {
+        estado: EstadoCandidato.RECHAZADO,
+        // motivoRechazo: motivo // Descomenta si tienes la columna
+      }
+    );
+
+    if (resultado.affected === 0) {
+      throw new RpcException(new BadRequestException('No se encontró el candidato para rechazar'));
+    }
+
+    return { success: true, id: candidatoId, estado: EstadoCandidato.RECHAZADO };
+  }
 }

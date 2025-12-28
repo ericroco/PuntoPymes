@@ -190,9 +190,19 @@ export class VacancyPipeline implements OnInit {
       }
     });
   }
+  // En pipeline.component.ts
 
-  // Modificar la firma para aceptar 'any' o 'null' en el evento
   handleRejectCandidate(candidate: Candidate, event: CdkDragDrop<Candidate[]> | null) {
+
+    // 1. VALIDACIÓN SEGURA: Usamos 'this.vacancyId' que ya obtuviste en el ngOnInit
+    if (!this.vacancyId) {
+      console.error('Error crítico: No se encontró el ID de la vacante.');
+      return;
+    }
+
+    // Guardamos el ID en una constante para asegurar que no sea null dentro del subscribe
+    const idParaRechazar = this.vacancyId;
+
     const dialogRef = this.dialog.open(RejectCandidateDialog, {
       width: '500px',
       data: { candidateName: candidate.nombre }
@@ -200,30 +210,35 @@ export class VacancyPipeline implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Lógica de borrado visual
-        if (event) {
-          // Si vino de Drag & Drop, CDK ya movió el item visualmente, solo limpiamos el origen si es necesario
-          // Pero con transferArrayItem suele bastar.
-          // Si usas transferArrayItem en dropOnRejectZone, ya se movió a la lista 'basura'.
-        } else {
-          // Si vino del botón, tenemos que buscarlo y borrarlo manualmente de la lista
-          this.removeCandidateFromList(candidate);
-        }
+        const motivo = typeof result === 'string' ? result : result.motivo;
 
-        // TODO: Llamar API backend para cambiar estado a 'RECHAZADO'
-        // this.recruitmentService.updateStatus(...)
+        // 2. Usamos 'idParaRechazar' en lugar de 'this.vacancy.id'
+        this.recruitmentService.rejectCandidate(idParaRechazar, candidate.id, motivo)
+          .subscribe({
+            next: () => {
+              this.snackBar.open('Candidato rechazado correctamente', 'Cerrar', { duration: 3000 });
 
-        this.snackBar.open('Candidato rechazado', 'Cerrar', { duration: 3000 });
-      } else {
-        // Si cancela y vino de Drag, hay que devolverlo (CDK lo hace solo si no hubo transfer)
-        if (event) {
-          // Revertir visualmente si es necesario, o recargar datos
-          this.loadData(this.vacancyId!);
-        }
+              // Lógica visual (borrado)
+              if (event) {
+                // Si vino del Drag & Drop, lo borramos del array donde estaba
+                event.previousContainer.data.splice(event.previousIndex, 1);
+              } else {
+                // Si vino del botón, lo buscamos y borramos
+                this.removeCandidateFromList(candidate);
+              }
+            },
+            error: (err) => {
+              console.error(err);
+              this.snackBar.open('Error al rechazar el candidato', 'Cerrar');
+
+              // Opcional: Si falla y vino de Drag, podrías recargar para devolverlo a su sitio
+              // if (event) this.loadData(idParaRechazar);
+            }
+          });
       }
+      // Si cancela (else), no hacemos nada y Angular devuelve la tarjeta a su sitio solo.
     });
   }
-
   // Helper para borrar de la lista visualmente
   private removeCandidateFromList(candidate: Candidate) {
     for (const phase of this.pipelinePhases) {
