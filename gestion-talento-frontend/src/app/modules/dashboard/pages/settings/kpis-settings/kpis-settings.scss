@@ -1,0 +1,335 @@
+/* ==========================================================================
+   REPORT SETTINGS (FUSION: CARDS + NEW TOGGLE STYLE)
+   ========================================================================== */
+
+// --- 1. CONFIGURACIÓN DE PÁGINA ---
+.settings-subpage-container {
+    padding: var(--spacing-xl);
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+    padding-bottom: 120px; // Espacio para el footer fijo
+
+    .description {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-2xl);
+        font-size: 0.95rem;
+        max-width: 800px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        padding: var(--spacing-md);
+    }
+}
+
+// --- 2. TARJETAS (ESTÁNDAR PUNTO PYMES) ---
+.settings-card {
+    background: var(--color-surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center; // Centrado vertical
+        gap: 20px;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--color-border-light);
+        background: var(--color-surface-variant);
+
+        // ICONO (48x48 Fijo)
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            // Default: Primary Blue
+            color: var(--color-primary);
+            background: var(--color-primary-light);
+
+            mat-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
+
+            // Variantes
+            &.icon-orange {
+                color: #ea580c;
+                background: #ffedd5;
+            }
+
+            &.icon-gray {
+                color: #64748b;
+                background: #f1f5f9;
+            }
+        }
+
+        .header-text {
+            h4 {
+                margin: 0 0 4px 0;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--color-text-primary);
+                font-family: var(--font-family-base);
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.85rem;
+                color: var(--color-text-secondary);
+                line-height: 1.4;
+            }
+        }
+    }
+
+    // Contenedor interno
+    .card-content,
+    .toggles-grid,
+    .inputs-grid {
+        padding: 1.5rem;
+    }
+}
+
+// --- 3. GRID DE TOGGLES (ESTILO UNIFICADO) ---
+.toggles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+
+    // ITEM INDIVIDUAL (Estilo idéntico a .module-item)
+    .toggle-item {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border-light);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        flex-direction: column; // Column para acomodar el hint abajo
+        gap: 4px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
+
+        &:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-primary-light);
+        }
+
+        // --- ESTILOS PROFUNDOS DEL TOGGLE (COPIADOS EXACTAMENTE) ---
+        ::ng-deep mat-slide-toggle {
+
+            // Label Text
+            .mdc-label {
+                font-weight: 600 !important;
+                color: var(--color-text-primary) !important;
+                font-size: 0.95rem !important;
+                font-family: var(--font-family-base) !important;
+            }
+
+            // --- ESTADO ACTIVO (CHECKED) ---
+            &.mat-mdc-slide-toggle-checked:not(.mat-disabled) {
+                .mdc-switch__track::after {
+                    background-color: var(--color-primary-light) !important;
+                    border-color: var(--color-primary-light) !important;
+                }
+
+                .mdc-switch__handle::after {
+                    background-color: var(--color-primary) !important;
+                }
+
+                .mdc-switch__icon {
+                    color: white !important;
+                    fill: white !important;
+                }
+            }
+
+            // --- ESTADO DESHABILITADO (FORZAR GRIS - FIX) ---
+            &.mat-disabled,
+            &[disabled] {
+                opacity: 0.6 !important;
+
+                .mdc-switch__track::after,
+                .mdc-switch__track::before {
+                    background-color: #E5E7EB !important;
+                    border-color: #E5E7EB !important;
+                }
+
+                .mdc-switch__handle::after {
+                    background-color: #9CA3AF !important;
+                }
+
+                .mdc-switch__icon {
+                    color: white !important;
+                    fill: white !important;
+                }
+
+                .mdc-label {
+                    color: var(--color-text-secondary) !important;
+                }
+            }
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+            margin-left: 0; // Reset
+            margin-top: 4px;
+            line-height: 1.4;
+            padding-left: 52px; // Indentación visual alineada con el texto del toggle
+        }
+    }
+}
+
+// --- 4. GRID DE INPUTS (Metas) ---
+.inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+
+    // Estilos de Inputs Suaves (Sistema Punto Pymes)
+    ::ng-deep .custom-field {
+        width: 100%;
+
+        .mat-mdc-text-field-wrapper {
+            background-color: #F3F4F6 !important;
+            border-radius: 12px !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            border: 1px solid transparent; // Preparamos borde
+        }
+
+        .mdc-notched-outline {
+            display: none !important;
+        }
+
+        // Sin borde default
+        .mdc-line-ripple {
+            display: none !important;
+        }
+
+        // Sin linea inferior
+
+        // Input Text
+        .mat-mdc-input-element {
+            padding: 0 !important;
+        }
+
+        // Estado Focus
+        &.mat-focused .mat-mdc-text-field-wrapper {
+            background-color: var(--color-surface) !important;
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+            border-color: var(--color-primary) !important;
+        }
+
+        // Iconos Sufijo
+        .mat-icon[matSuffix],
+        span[matSuffix] {
+            color: var(--color-text-secondary);
+        }
+    }
+}
+
+// --- 5. ESTILOS MOCKUP (Próximamente) ---
+.mockup-card {
+    position: relative;
+    opacity: 0.8;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        // Patrón rayado
+        background: repeating-linear-gradient(45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 0, 0, 0.02) 10px,
+                rgba(0, 0, 0, 0.02) 20px);
+        pointer-events: none;
+        border-radius: 16px;
+        z-index: 10;
+    }
+
+    .mockup-switch {
+        pointer-events: none; // No click
+    }
+}
+
+.coming-soon-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    color: #92400E;
+    margin-left: 10px;
+}
+
+// --- 6. FOOTER FIJO (ESTÁNDAR UNIFICADO) ---
+.actions-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: flex-end;
+    z-index: 90;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+
+    @media (min-width: 1024px) {
+        padding-left: calc(280px + 2rem); // Compensar Sidebar
+    }
+
+    button[mat-flat-button] {
+        border-radius: 999px !important;
+        height: 44px;
+        padding: 0 32px;
+        font-weight: 600;
+        font-family: var(--font-family-base);
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+        color: white;
+        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+        }
+
+        &:disabled {
+            background: var(--color-border);
+            color: var(--color-text-secondary);
+            box-shadow: none;
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

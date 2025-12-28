@@ -4,6 +4,20 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment'; // Asegúrate de tener tu environment
 
 
+export interface ConfiguracionKpis {
+    // Visibilidad de Gráficos (Toggles)
+    mostrarHeadcount?: boolean;
+    mostrarDemografia?: boolean;
+    mostrar9Box?: boolean;
+    mostrarMasaSalarial?: boolean;
+    mostrarAsistencia?: boolean;
+
+    // Metas y Umbrales (Para pintar de rojo/verde los reportes)
+    metaAsistencia?: number;      // Ej: 95%
+    metaRotacionMaxima?: number;  // Ej: 5%
+    metaNPS?: number;             // Ej: 80 puntos
+}
+
 // 1. NUEVA INTERFAZ PARA VACACIONES (Esto es lo que faltaba)
 export interface ConfiguracionVacaciones {
     diasPorAnio?: number;
@@ -44,7 +58,7 @@ export interface ConfiguracionEmpresa {
     asistencia?: ConfiguracionAsistencia;
     nomina?: ConfiguracionNomina;
     vacaciones?: ConfiguracionVacaciones;
-    // ... resto
+    kpis?: ConfiguracionKpis;
 }
 
 @Injectable({

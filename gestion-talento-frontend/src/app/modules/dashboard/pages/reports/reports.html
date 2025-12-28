@@ -38,7 +38,8 @@
     <mat-tab label="Personal y Demografía">
       <div class="report-tab-content" @fadeSlideIn>
         <div class="report-widget-grid">
-          <mat-card class="overview-widget kpi-card simple-kpi report-container">
+
+          <mat-card *ngIf="showHeadcount" class="overview-widget kpi-card simple-kpi report-container">
             <mat-card-header>
               <mat-card-title>Headcount Total</mat-card-title>
             </mat-card-header>
@@ -51,7 +52,7 @@
             </mat-card-content>
           </mat-card>
 
-          <mat-card class="overview-widget chart-widget report-container">
+          <mat-card *ngIf="showDemographics" class="overview-widget chart-widget report-container">
             <mat-card-header>
               <mat-card-title>Distribución por Departamento</mat-card-title>
             </mat-card-header>
@@ -62,7 +63,7 @@
             </mat-card-content>
           </mat-card>
 
-          <mat-card class="overview-widget chart-widget report-container">
+          <mat-card *ngIf="showDemographics" class="overview-widget chart-widget report-container">
             <mat-card-header>
               <mat-card-title>Distribución por Antigüedad</mat-card-title>
             </mat-card-header>
@@ -80,6 +81,7 @@
       <div class="report-tab-content" @fadeSlideIn>
 
         <div class="report-widget-grid">
+
           <mat-card class="overview-widget chart-widget report-container">
             <mat-card-header>
               <mat-card-title>Estado General de Tareas (Últ. 30 días)</mat-card-title>
@@ -91,21 +93,25 @@
             </mat-card-content>
           </mat-card>
 
-          <mat-card class="overview-widget kpi-card simple-kpi report-container">
+          <mat-card *ngIf="showAsistencia" class="overview-widget kpi-card simple-kpi report-container">
             <mat-card-header>
               <mat-card-title>{{ avgGoalProgress.label }}</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <span class="kpi-main-value">{{ avgGoalProgress.total }}%</span>
+              <span class="kpi-main-value" [class.text-danger]="isAttendanceCritical"
+                [class.text-success]="!isAttendanceCritical">
+                {{ avgGoalProgress.total }}%
+              </span>
               <div class="kpi-sub-values">
-                <span>Progreso hacia objetivos trimestrales.</span>
+                <span>Meta Mínima: {{ metaAsistencia }}%</span>
+                <span *ngIf="isAttendanceCritical" class="alert-badge">⚠️ Atención Requerida</span>
               </div>
             </mat-card-content>
           </mat-card>
 
           <mat-card class="overview-widget chart-widget report-container">
             <mat-card-header>
-              <mat-card-title>Productividad por Equipo (% Tareas Completadas)</mat-card-title>
+              <mat-card-title>Productividad por Equipo</mat-card-title>
             </mat-card-header>
             <mat-card-content class="chart-container">
               <ngx-charts-bar-horizontal [results]="teamProductivityData" [xAxis]="true" [yAxis]="true"
@@ -117,24 +123,30 @@
         </div>
 
         <mat-divider></mat-divider>
-        <div class="report-widget-grid">
+
+        <div class="report-widget-grid" *ngIf="show9Box">
           <mat-card class="overview-widget report-container data-table-widget">
             <mat-card-header>
               <mat-card-title>Matriz de Talento (9-Box)</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <p class="no-data-placeholder">La visualización de la Matriz de Talento (9-Box Grid) irá aquí.</p>
+              <div class="nine-box-grid-placeholder">
+                <ngx-charts-heat-map [results]="employeeDistribution" [legend]="true" [xAxis]="true" [yAxis]="true"
+                  [scheme]="chartColorScheme">
+                </ngx-charts-heat-map>
+              </div>
             </mat-card-content>
           </mat-card>
         </div>
 
       </div>
     </mat-tab>
+
     <mat-tab label="Compensación">
       <div class="report-tab-content" @fadeSlideIn>
         <div class="report-widget-grid">
 
-          <mat-card class="overview-widget kpi-card simple-kpi report-container">
+          <mat-card *ngIf="showMasaSalarial" class="overview-widget kpi-card simple-kpi report-container">
             <mat-card-header>
               <mat-card-title>{{ kpiMasaSalarial.label }}</mat-card-title>
             </mat-card-header>
@@ -170,7 +182,7 @@
 
           <mat-card class="overview-widget data-table-widget report-container">
             <mat-card-header>
-              <mat-card-title>Últimas Novedades de Nómina Registradas</mat-card-title>
+              <mat-card-title>Últimas Novedades de Nómina</mat-card-title>
             </mat-card-header>
             <mat-card-content class="table-content-padding-fix">
               <table class="data-table">
@@ -231,5 +243,4 @@
     </mat-tab>
 
   </mat-tab-group>
-
 </div>

@@ -1,6 +1,6 @@
 import {
     IsBoolean, IsEnum, IsNumber, IsOptional,
-    IsString, Matches, Min, ValidateNested
+    IsString, Matches, Max, Min, ValidateNested
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -38,7 +38,20 @@ class ConfigAsistenciaDto {
     @Min(0)
     toleranciaRetraso?: number;
 }
+// 👇 1. CREAR LA CLASE DTO PARA KPIS
+class ConfigKpisDto {
+    // Toggles de Visibilidad
+    @IsOptional() @IsBoolean() mostrarHeadcount?: boolean;
+    @IsOptional() @IsBoolean() mostrarDemografia?: boolean;
+    @IsOptional() @IsBoolean() mostrar9Box?: boolean;
+    @IsOptional() @IsBoolean() mostrarMasaSalarial?: boolean;
+    @IsOptional() @IsBoolean() mostrarAsistencia?: boolean;
 
+    // Metas (Validamos que sean números y opcionalmente rangos lógicos)
+    @IsOptional() @IsNumber() @Min(0) @Max(100) metaAsistencia?: number;
+    @IsOptional() @IsNumber() @Min(0) @Max(100) metaRotacionMaxima?: number;
+    @IsOptional() @IsNumber() metaNPS?: number; // NPS va de -100 a 100
+}
 // 3. Validar Nómina
 class ConfigNominaDto {
     @IsOptional()
@@ -77,4 +90,9 @@ export class UpdateConfiguracionEmpresaDto {
     @ValidateNested()
     @Type(() => ConfigVacacionesDto)
     vacaciones?: ConfigVacacionesDto;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => ConfigKpisDto) // Importante para que valide el objeto anidado
+    kpis?: ConfigKpisDto;
 }

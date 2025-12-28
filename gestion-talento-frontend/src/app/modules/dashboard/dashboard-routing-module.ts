@@ -123,6 +123,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/settings/vacation-settings/vacation-settings').then(c => c.VacationSettingsComponent)
   },
   {
+    path: 'settings/kpis',
+    loadComponent: () => import('./pages/settings/kpis-settings/kpis-settings').then(c => c.KpisSettings)
+  },
+  {
     path: 'onboarding',
     loadComponent: () => import('./pages/onboarding-dashboard/onboarding-dashboard').then(c => c.OnboardingDashboard)
   },

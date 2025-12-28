@@ -259,6 +259,63 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], ConfigAsistenciaDto.prototype, "toleranciaRetraso", void 0);
+class ConfigKpisDto {
+    mostrarHeadcount;
+    mostrarDemografia;
+    mostrar9Box;
+    mostrarMasaSalarial;
+    mostrarAsistencia;
+    metaAsistencia;
+    metaRotacionMaxima;
+    metaNPS;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { mostrarHeadcount: { required: false, type: () => Boolean }, mostrarDemografia: { required: false, type: () => Boolean }, mostrar9Box: { required: false, type: () => Boolean }, mostrarMasaSalarial: { required: false, type: () => Boolean }, mostrarAsistencia: { required: false, type: () => Boolean }, metaAsistencia: { required: false, type: () => Number, minimum: 0, maximum: 100 }, metaRotacionMaxima: { required: false, type: () => Number, minimum: 0, maximum: 100 }, metaNPS: { required: false, type: () => Number } };
+    }
+}
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigKpisDto.prototype, "mostrarHeadcount", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigKpisDto.prototype, "mostrarDemografia", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigKpisDto.prototype, "mostrar9Box", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigKpisDto.prototype, "mostrarMasaSalarial", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], ConfigKpisDto.prototype, "mostrarAsistencia", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(100),
+    __metadata("design:type", Number)
+], ConfigKpisDto.prototype, "metaAsistencia", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(100),
+    __metadata("design:type", Number)
+], ConfigKpisDto.prototype, "metaRotacionMaxima", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], ConfigKpisDto.prototype, "metaNPS", void 0);
 class ConfigNominaDto {
     frecuenciaPago;
     multiplicadorHorasExtra;
@@ -294,8 +351,9 @@ class UpdateConfiguracionEmpresaDto {
     asistencia;
     nomina;
     vacaciones;
+    kpis;
     static _OPENAPI_METADATA_FACTORY() {
-        return { modulos: { required: false, type: () => ConfigModulosDto }, asistencia: { required: false, type: () => ConfigAsistenciaDto }, nomina: { required: false, type: () => ConfigNominaDto }, vacaciones: { required: false, type: () => ConfigVacacionesDto } };
+        return { modulos: { required: false, type: () => ConfigModulosDto }, asistencia: { required: false, type: () => ConfigAsistenciaDto }, nomina: { required: false, type: () => ConfigNominaDto }, vacaciones: { required: false, type: () => ConfigVacacionesDto }, kpis: { required: false, type: () => ConfigKpisDto } };
     }
 }
 exports.UpdateConfiguracionEmpresaDto = UpdateConfiguracionEmpresaDto;
@@ -323,6 +381,12 @@ __decorate([
     (0, class_transformer_1.Type)(() => ConfigVacacionesDto),
     __metadata("design:type", ConfigVacacionesDto)
 ], UpdateConfiguracionEmpresaDto.prototype, "vacaciones", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => ConfigKpisDto),
+    __metadata("design:type", ConfigKpisDto)
+], UpdateConfiguracionEmpresaDto.prototype, "kpis", void 0);
 
 
 /***/ }),

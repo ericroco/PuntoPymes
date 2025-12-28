@@ -20,8 +20,9 @@ import { SubpageHeader } from '../../../../shared/components/subpage-header/subp
 
 // Servicios y Modelos
 import { DashboardService, DashboardKPIs } from '../../services/dashboard';
+// 👇 1. IMPORTAR SERVICIO DE CONFIGURACIÓN
+import { CompanyConfigService } from '../../services/company-config';
 
-// Interfaz para los datos de los gráficos (Soluciona el error de tipo 'never')
 interface ChartData {
   name: string;
   value: number;
@@ -31,22 +32,10 @@ interface ChartData {
   selector: 'app-reports',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
-    MatTabsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    NgxChartsModule,
-    SubpageHeader,
-    MatDividerModule
+    CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
+    MatTabsModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+    MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule,
+    MatCardModule, NgxChartsModule, SubpageHeader, MatDividerModule
   ],
   templateUrl: './reports.html',
   styleUrls: ['./reports.scss'],
@@ -65,6 +54,8 @@ interface ChartData {
 })
 export class Reports implements OnInit {
   private dashboardService = inject(DashboardService);
+  // 👇 2. INYECTAR SERVICIO
+  private configService = inject(CompanyConfigService);
 
   legendPos: LegendPosition = LegendPosition.Below;
 
@@ -76,14 +67,23 @@ export class Reports implements OnInit {
   // KPIs (Tarjetas)
   headcount = { total: 0, newHires: 0, departures: 0 };
   kpiMasaSalarial = { label: 'Gastos Totales (Aprobados)', value: 0, subLabel: 'Acumulado' };
-  avgGoalProgress = { total: 0, label: 'Asistencia Hoy' }; // Reutilizamos para mostrar asistencia real
 
-  // --- GRÁFICOS (Aquí estaba el error: ahora tienen tipo explícito) ---
+  // Asistencia con lógica de alerta
+  avgGoalProgress = { total: 0, label: 'Asistencia Hoy' };
+  isAttendanceCritical = false; // ¿Está por debajo de la meta?
 
-  // Distribución (Pastel)
+  // --- 3. VARIABLES DE VISIBILIDAD (Controladas por Configuración) ---
+  showHeadcount = true;
+  showDemographics = true;
+  show9Box = false; // Por defecto oculto si no se configura
+  showMasaSalarial = true;
+  showAsistencia = true;
+
+  // --- 4. METAS DE LA EMPRESA ---
+  metaAsistencia = 90; // Valor default
+
+  // --- GRÁFICOS ---
   employeeDistribution: ChartData[] = [];
-
-  // Estado de Tareas/Proyectos (Barras o Pastel)
   tasksStatusData: ChartData[] = [];
 
   // Esquema de Colores
@@ -91,46 +91,25 @@ export class Reports implements OnInit {
     name: 'puntopymesReports',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: [
-      '#3f51b5', // Primary
-      '#ff4081', // Accent
-      '#ff9800', // Warning
-      '#4caf50', // Success
-      '#9c27b0', // Secondary
-      '#2C3E50'  // Dark
-    ]
+    domain: ['#3f51b5', '#ff4081', '#ff9800', '#4caf50', '#9c27b0', '#2C3E50']
   };
 
-  // --- Datos Simulados (Placeholders para gráficos que aún no tienen backend directo) ---
-
+  // Datos Simulados
   employeeTenure: ChartData[] = [
     { name: '0-1 Año', value: 20 }, { name: '1-3 Años', value: 35 },
     { name: '3-5 Años', value: 12 }, { name: '5+ Años', value: 7 }
   ];
-
   teamProductivityData: ChartData[] = [
     { name: 'Tecnología', value: 85 }, { name: 'Diseño', value: 92 },
     { name: 'Contabilidad', value: 78 }, { name: 'Marketing', value: 81 }
   ];
-
   salarioPromedioData: ChartData[] = [
     { name: 'Tecnología', value: 2150 }, { name: 'Diseño', value: 1800 },
     { name: 'RRHH', value: 1900 }
   ];
-
   adopcionBeneficiosData: ChartData[] = [
     { name: 'Seguro Médico', value: 68 }, { name: 'Gimnasio', value: 45 }
   ];
-
-  turnoverTrend = [
-    {
-      name: 'Rotación',
-      series: [
-        { name: 'Ene', value: 1 }, { name: 'Feb', value: 2 }, { name: 'Mar', value: 0 }
-      ]
-    }
-  ];
-
   novedadesRecientes = [
     { id: 'N-101', empleado: 'Juan Perez', tipo: 'Bono', monto: 300, estado: 'Aprobado' }
   ];
@@ -138,37 +117,60 @@ export class Reports implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    // Cargar ambas cosas en paralelo (Datos y Configuración)
+    this.loadCompanySettings();
     this.loadReportData();
   }
 
+  // 👇 5. NUEVA FUNCIÓN: Cargar preferencias del usuario
+  loadCompanySettings() {
+    this.configService.getConfig().subscribe({
+      next: (config) => {
+        const kpis = config.kpis || {};
+
+        // Actualizar Visibilidad (Si es undefined, mantenemos true por defecto)
+        this.showHeadcount = kpis.mostrarHeadcount ?? true;
+        this.showDemographics = kpis.mostrarDemografia ?? true;
+        this.show9Box = kpis.mostrar9Box ?? false;
+        this.showMasaSalarial = kpis.mostrarMasaSalarial ?? true;
+        this.showAsistencia = kpis.mostrarAsistencia ?? true;
+
+        // Actualizar Metas
+        if (kpis.metaAsistencia) this.metaAsistencia = kpis.metaAsistencia;
+
+        // Recalcular alertas por si los datos llegaron antes que la config
+        this.checkThresholds();
+      },
+      error: (err) => console.error('Error cargando configuración de KPIs', err)
+    });
+  }
+
   loadReportData() {
-    // Llamada al servicio real
     this.dashboardService.getKPIs().subscribe({
       next: (data: DashboardKPIs) => {
-        console.log('Datos Reportes:', data);
-
-        // 1. Mapear Headcount (Empleados Reales)
+        // 1. Headcount
         this.headcount.total = data.totalEmpleados;
 
-        // 2. Mapear Gastos (Total Dinero)
+        // 2. Gastos
         this.kpiMasaSalarial.value = data.totalGastosAprobados;
 
-        // 3. Mapear Asistencia (Porcentaje)
+        // 3. Asistencia
         this.avgGoalProgress.total = data.tasaAsistenciaHoy;
         this.avgGoalProgress.label = 'Asistencia Hoy (%)';
 
-        // 4. Gráfico 1: Distribución de Talento (9-Box)
+        // Verificar si cumple la meta
+        this.checkThresholds();
+
+        // 4. 9-Box
         this.employeeDistribution = [
           { name: 'Alto Potencial', value: data.distribucion9Box.altoDesempenoAltoPotencial },
           { name: 'Bajo Desempeño', value: data.distribucion9Box.bajoDesempenoBajoPotencial },
-          // Calculamos el resto como "Otros"
           { name: 'Otros', value: Math.max(0, data.totalEmpleados - data.distribucion9Box.altoDesempenoAltoPotencial - data.distribucion9Box.bajoDesempenoBajoPotencial) }
         ];
 
-        // 5. Gráfico 2: Estado de Proyectos
+        // 5. Proyectos
         this.tasksStatusData = [
           { name: 'Proyectos Activos', value: data.totalProyectosActivos },
-          // Simulación de inactivos (o podrías calcularlo si tuvieras el total histórico)
           { name: 'Inactivos / Completados', value: 0 }
         ];
       },
@@ -176,7 +178,14 @@ export class Reports implements OnInit {
     });
   }
 
-  // Funciones Placeholder
+  // 👇 6. VALIDAR METAS (Color Rojo/Verde)
+  checkThresholds() {
+    // Si la asistencia real es menor a la meta configurada, es crítico
+    if (this.avgGoalProgress.total > 0) {
+      this.isAttendanceCritical = this.avgGoalProgress.total < this.metaAsistencia;
+    }
+  }
+
   applyGlobalFilters(): void { console.log('Filtros aplicados...'); }
   exportReports(): void { console.log('Exportando...'); }
 }

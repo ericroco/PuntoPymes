@@ -858,6 +858,10 @@ export class AuthService {
       vacaciones: {
         ...configActual.vacaciones,
         ...updateDto.vacaciones,
+      },
+      kpis: {
+        ...configActual.kpis,
+        ...updateDto.kpis,
       }
     };
 

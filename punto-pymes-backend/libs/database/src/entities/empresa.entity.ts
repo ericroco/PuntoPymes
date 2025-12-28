@@ -14,6 +14,17 @@ import { Sucursal } from './sucursal.entity';
 
 // --- INTERFACES DE CONFIGURACIÓN (JSONB) ---
 
+export interface ConfiguracionKpis {
+  mostrarHeadcount?: boolean;
+  mostrarDemografia?: boolean;
+  mostrar9Box?: boolean;
+  mostrarMasaSalarial?: boolean;
+  mostrarAsistencia?: boolean;
+  metaAsistencia?: number;
+  metaRotacionMaxima?: number;
+  metaNPS?: number;
+}
+
 export interface ConfiguracionModulos {
   reclutamiento?: boolean;
   onboarding?: boolean;
@@ -52,6 +63,7 @@ export interface ConfiguracionEmpresa {
   asistencia?: ConfiguracionAsistencia;
   nomina?: ConfiguracionNomina;
   vacaciones?: ConfiguracionVacaciones;
+  kpis?: ConfiguracionKpis;
 }
 
 // --- ENTIDAD ---

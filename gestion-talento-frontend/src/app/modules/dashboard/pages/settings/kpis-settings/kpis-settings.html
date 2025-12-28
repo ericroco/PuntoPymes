@@ -1,0 +1,139 @@
+<div class="settings-subpage-container">
+
+    <app-subpage-header title="Configuración de Reportes" backRoute="/dashboard/settings"></app-subpage-header>
+
+    <p class="description">
+        Personaliza qué indicadores aparecen en tu panel de análisis y define las metas de tu empresa para
+        que el sistema te alerte cuando los números no sean los esperados.
+    </p>
+
+    <div class="settings-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <mat-icon>visibility</mat-icon>
+            </div>
+            <div class="header-text">
+                <h4>Paneles Visibles</h4>
+                <p>Activa o desactiva widgets según la relevancia para tu gestión.</p>
+            </div>
+        </div>
+
+        <div class="toggles-grid">
+            <div class="toggle-item">
+                <mat-slide-toggle [(ngModel)]="settings.mostrarHeadcount" color="primary">
+                    Headcount y Movimientos
+                </mat-slide-toggle>
+                <span class="hint">Altas, bajas y total de empleados.</span>
+            </div>
+            <div class="toggle-item">
+                <mat-slide-toggle [(ngModel)]="settings.mostrarDemografia" color="primary">
+                    Demografía y Antigüedad
+                </mat-slide-toggle>
+                <span class="hint">Gráficos de distribución por dpto y años.</span>
+            </div>
+            <div class="toggle-item">
+                <mat-slide-toggle [(ngModel)]="settings.mostrarMasaSalarial" color="primary">
+                    Compensación y Gastos
+                </mat-slide-toggle>
+                <span class="hint">Total gastado en nómina y beneficios.</span>
+            </div>
+            <div class="toggle-item">
+                <mat-slide-toggle [(ngModel)]="settings.mostrarAsistencia" color="primary">
+                    Métricas de Asistencia
+                </mat-slide-toggle>
+                <span class="hint">Ausentismo y puntualidad en tiempo real.</span>
+            </div>
+            <div class="toggle-item">
+                <mat-slide-toggle [(ngModel)]="settings.mostrar9Box" color="primary">
+                    Matriz de Talento (9-Box)
+                </mat-slide-toggle>
+                <span class="hint">Visualización avanzada de Desempeño vs Potencial.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-card">
+        <div class="card-header">
+            <div class="card-icon icon-orange">
+                <mat-icon>track_changes</mat-icon>
+            </div>
+            <div class="header-text">
+                <h4>Metas y Alertas</h4>
+                <p>Define los valores esperados (KPIs). El sistema marcará en rojo lo que esté por debajo.</p>
+            </div>
+        </div>
+
+        <div class="inputs-grid">
+
+            <mat-form-field appearance="outline" class="custom-field">
+                <mat-label>Meta de Asistencia (%)</mat-label>
+                <input matInput type="number" [(ngModel)]="settings.metaAsistencia" min="0" max="100" placeholder="95">
+                <span matSuffix style="margin-right: 8px; color: #64748b;">%</span>
+
+                <mat-hint align="start">
+                    Si la asistencia real es <strong>menor</strong> a este valor, el indicador se pondrá en rojo.
+                </mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="custom-field">
+                <mat-label>Máximo de Rotación (%)</mat-label>
+                <input matInput type="number" [(ngModel)]="settings.metaRotacionMaxima" min="0" max="100"
+                    placeholder="5">
+                <span matSuffix style="margin-right: 8px; color: #64748b;">%</span>
+
+                <mat-hint align="start">
+                    Límite tolerable de renuncias por mes. Superarlo generará una <strong>alerta crítica</strong>.
+                </mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="custom-field">
+                <mat-label>Meta eNPS (Clima)</mat-label>
+                <input matInput type="number" [(ngModel)]="settings.metaNPS" min="-100" max="100" placeholder="40">
+                <mat-icon matSuffix style="color: #64748b;">mood</mat-icon>
+
+                <mat-hint align="start">
+                    Puntaje objetivo de satisfacción (Escala de -100 a 100).
+                </mat-hint>
+            </mat-form-field>
+
+        </div>
+    </div>
+
+    <div class="settings-card mockup-card">
+        <div class="card-header">
+            <div class="card-icon icon-gray">
+                <mat-icon>auto_graph</mat-icon>
+            </div>
+            <div class="header-text">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h4>Reportes Inteligentes (AI)</h4>
+                    <span class="coming-soon-badge">Próximamente</span>
+                </div>
+                <p>Funcionalidades avanzadas de predicción y automatización.</p>
+            </div>
+        </div>
+
+        <div class="toggles-grid">
+            <div class="toggle-item mockup-switch">
+                <mat-slide-toggle disabled color="primary">
+                    Predicción de Fugas (Retención)
+                </mat-slide-toggle>
+                <span class="hint">Detectar empleados en riesgo de renuncia usando IA.</span>
+            </div>
+
+            <div class="toggle-item mockup-switch">
+                <mat-slide-toggle disabled color="primary">
+                    Envío Automático a Gerencia
+                </mat-slide-toggle>
+                <span class="hint">Enviar PDF con resumen ejecutivo cada lunes a las 8:00 AM.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-footer">
+        <button mat-flat-button color="primary" (click)="saveSettings()" [disabled]="isLoading">
+            <mat-icon style="margin-right: 8px;">save</mat-icon>
+            {{ isLoading ? 'Guardando...' : 'Guardar Configuración' }}
+        </button>
+    </div>
+</div>
