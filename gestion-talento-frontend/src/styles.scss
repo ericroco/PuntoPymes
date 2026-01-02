@@ -136,6 +136,54 @@ html {
   --mdc-switch-selected-handle-color: var(--color-primary) !important;
 }
 
+/* ====================================
+   MODO OSCURO (Paleta Gunmetal / Oxford Blue)
+   Se activa agregando la clase .dark-mode al body
+   ==================================== */
+body.dark-mode {
+  // 1. FONDOS (Tu elección de paleta)
+  --color-background: #1D1F21; // Gunmetal (Fondo Pantalla)
+  --color-surface: #212A37; // Oxford Blue (Tarjetas)
+  --color-surface-variant: #2C3645; // Un poco más claro para hovers/headers
+  --color-surface-elevated: #2C3645; // Diálogos y Menús
+
+  // 2. TEXTOS (Inversión de contraste)
+  --color-text-primary: #F3F4F6; // Blanco casi puro (para leer bien)
+  --color-text-secondary: #9CA3AF; // Gris medio
+  --color-text-muted: #6B7280; // Gris oscuro
+  --color-text-disabled: #4B5563;
+
+  // 3. BORDES
+  --color-border: #374151; // Gris oscuro sutil
+  --color-border-light: #2C3645; // Más oscuro que normal
+  --color-border-dark: #4B5563;
+
+  // 4. AJUSTE DE COLOR PRIMARIO (Branding Dinámico Adaptado)
+  // IMPORTANTE: En modo oscuro, los colores oscuros no se ven.
+  // Mezclamos el color de marca con BLANCO para que brille sobre negro.
+  --color-primary: color-mix(in srgb, var(--primary-color), white 35%);
+  --color-primary-dark: color-mix(in srgb, var(--primary-color), white 20%);
+  --color-primary-light: color-mix(in srgb, var(--primary-color), transparent 88%);
+  --color-primary-hover: color-mix(in srgb, var(--primary-color), white 45%);
+  --color-primary-subtle: color-mix(in srgb, var(--primary-color), transparent 92%);
+
+  // 5. SOMBRAS ADAPTADAS (Más intensas para fondos oscuros)
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.6);
+
+  // 6. ESTADOS SEMÁNTICOS AJUSTADOS (Más brillantes)
+  --color-success: #34D399;
+  --color-success-light: color-mix(in srgb, #34D399, transparent 88%);
+  --color-warning: #FBBF24;
+  --color-warning-light: color-mix(in srgb, #FBBF24, transparent 88%);
+  --color-danger: #F87171;
+  --color-danger-light: color-mix(in srgb, #F87171, transparent 88%);
+  --color-info: #60A5FA;
+  --color-info-light: color-mix(in srgb, #60A5FA, transparent 88%);
+}
+
 /* ==========================================================================
    3. RESET GLOBAL Y BASE
    ========================================================================== */
@@ -951,55 +999,74 @@ mat-progress-spinner {
 
 
 /* ============================================================
-   GLOBAL FIX: FORZAR FONDOS BLANCOS (CORRECCIÓN DE TINTE ROJO)
+   GLOBAL FIX: FORZAR VARIABLES DE SUPERFICIE
+   (Esto arregla el tinte rojo PERO permite Modo Oscuro)
    ============================================================ */
 
-// 1. TABLAS (El problema principal de tu imagen)
-// Forza que la tabla y sus celdas tengan fondo blanco
+// 1. TABLAS
 .mat-mdc-table,
 table.mat-table {
-  background-color: #ffffff !important;
+  // ANTES: background-color: #ffffff !important;
+  // AHORA: Usamos la variable. En Light es blanco, en Dark es Oxford Blue.
+  background-color: var(--color-surface) !important;
 }
 
-// Asegura que las filas no sean transparentes (heredando el rojo del padre)
 .mat-mdc-row,
 .mat-mdc-header-row {
-  background-color: #ffffff;
+  background-color: var(--color-surface);
+  // Importante: El texto debe reaccionar también
+  color: var(--color-text-primary);
 }
 
-// 2. CALENDARIOS (Datepicker)
-// El contenedor flotante del calendario y el calendario en sí
+// 2. CALENDARIOS
 .mat-datepicker-content {
-  background-color: #ffffff !important;
+  background-color: var(--color-surface-elevated) !important;
 
-  // Arregla el fondo del calendario interno
   .mat-calendar {
-    background-color: #ffffff !important;
+    background-color: var(--color-surface-elevated) !important;
+  }
+
+  // Arreglar flechas y textos del calendario en dark mode
+  .mat-calendar-arrow {
+    fill: var(--color-text-primary);
+  }
+
+  .mat-calendar-body-label {
+    color: var(--color-text-primary);
+  }
+
+  .mat-calendar-table-header th {
+    color: var(--color-text-secondary);
   }
 }
 
 // 3. TARJETAS Y DIÁLOGOS
-// Asegura que la superficie de los diálogos y cards sea blanca pura
 .mat-mdc-card,
 .mdc-card {
-  background-color: #ffffff !important;
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary); // Asegurar que el texto responda
 }
 
 .mdc-dialog__surface {
-  background-color: #ffffff !important;
+  background-color: var(--color-surface-elevated) !important;
 }
 
-// 4. PANELES FLOTANTES (Selects, Menús, Autocomplete)
-// Para que las opciones desplegables no se vean rojas
+// 4. PANELES FLOTANTES
 .mat-mdc-select-panel,
 .mat-mdc-menu-panel,
 .mat-mdc-autocomplete-panel {
-  background-color: #ffffff !important;
+  background-color: var(--color-surface-elevated) !important;
+
+  // Aseguramos que el texto de las opciones sea legible
+  .mat-mdc-option {
+    color: var(--color-text-primary);
+  }
 }
 
-// 5. PAGINADORES (Debajo de las tablas)
+// 5. PAGINADORES
 .mat-mdc-paginator {
-  background-color: #ffffff !important;
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-secondary);
 }
 
 /* ============================================================

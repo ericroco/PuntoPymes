@@ -67,6 +67,18 @@ export class Usuario extends BaseEntity {
   })
   twoFactorSecret: string;
 
+  /**
+   * Configuración de preferencias del usuario (Tema, Idioma, Notificaciones).
+   * Es JSON y Nullable para no romper registros antiguos.
+   * Si es NULL, el frontend asume los valores por defecto (Light/Español).
+   */
+  @Column({
+    type: 'json', // O usa 'simple-json' si estás usando MySQL/MariaDB básico
+    nullable: true,
+    comment: 'Preferencias de UI: { theme: "dark", lang: "en", ... }',
+  })
+  configuracion: any; // Usamos 'any' o puedes crear una interfaz 'UserConfig'
+
   // ---
   // RELACIONES (Un Usuario TIENE MUCHOS...)
   // ---

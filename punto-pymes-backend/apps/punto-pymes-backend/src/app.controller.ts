@@ -2757,4 +2757,17 @@ export class AppController {
       { empleadoId }                   // El payload
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('usuarios/configuracion') // Ruta limpia
+  async updateConfig(@Request() req, @Body() config: any) {
+    // Obtenemos el ID del usuario directamente del Token (seguridad)
+    // Dependiendo de tu estrategia JWT, puede ser req.user.id o req.user.sub
+    const usuarioId = req.user.id;
+
+    return this.authService.send(
+      { cmd: 'update_user_config' },
+      { usuarioId, config }
+    );
+  }
 }

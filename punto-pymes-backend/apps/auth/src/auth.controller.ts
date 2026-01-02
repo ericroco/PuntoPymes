@@ -96,4 +96,9 @@ export class AuthController {
     // data.config es el DTO que mandaste desde el Gateway
     return this.authService.updateCompanyConfig(data.empresaId, data.config);
   }
+
+  @MessagePattern({ cmd: 'update_user_config' })
+  async updateUserConfig(@Payload() data: { usuarioId: string, config: any }) {
+    return this.authService.updateUserConfig(data.usuarioId, data.config);
+  }
 }

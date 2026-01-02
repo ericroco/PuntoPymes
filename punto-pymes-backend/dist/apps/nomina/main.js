@@ -5829,9 +5829,10 @@ let Usuario = class Usuario extends base_entity_1.BaseEntity {
     passwordHash;
     emailVerificado;
     twoFactorSecret;
+    configuracion;
     membresias;
     static _OPENAPI_METADATA_FACTORY() {
-        return { email: { required: true, type: () => String, description: "Email de login, debe ser \u00FAnico en toda la plataforma.\nMapea: string email UK \"Email login unico global\"" }, passwordHash: { required: true, type: () => String, description: "Hash de la contrase\u00F1a (generado con bcrypt).\nMapea: string passwordHash \"Hash contrasena seguro\"\n\n@security 'select: false' es una medida de seguridad CR\u00CDTICA.\nEvita que la contrase\u00F1a hasheada sea enviada accidentalmente\nal frontend en consultas generales. (RNF7)" }, emailVerificado: { required: true, type: () => Boolean, description: "Estado de verificaci\u00F3n del email.\nMapea: boolean emailVerificado \"Estado verificacion email\"" }, twoFactorSecret: { required: true, type: () => String, description: "Secreto para la Autenticaci\u00F3n de Dos Factores (2FA) (RNF16).\nMapea: string twoFactorSecret \"Secret para 2FA\"\n\n@security 'select: false' por la misma raz\u00F3n que el passwordHash." }, membresias: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
+        return { email: { required: true, type: () => String, description: "Email de login, debe ser \u00FAnico en toda la plataforma.\nMapea: string email UK \"Email login unico global\"" }, passwordHash: { required: true, type: () => String, description: "Hash de la contrase\u00F1a (generado con bcrypt).\nMapea: string passwordHash \"Hash contrasena seguro\"\n\n@security 'select: false' es una medida de seguridad CR\u00CDTICA.\nEvita que la contrase\u00F1a hasheada sea enviada accidentalmente\nal frontend en consultas generales. (RNF7)" }, emailVerificado: { required: true, type: () => Boolean, description: "Estado de verificaci\u00F3n del email.\nMapea: boolean emailVerificado \"Estado verificacion email\"" }, twoFactorSecret: { required: true, type: () => String, description: "Secreto para la Autenticaci\u00F3n de Dos Factores (2FA) (RNF16).\nMapea: string twoFactorSecret \"Secret para 2FA\"\n\n@security 'select: false' por la misma raz\u00F3n que el passwordHash." }, configuracion: { required: true, type: () => Object, description: "Configuraci\u00F3n de preferencias del usuario (Tema, Idioma, Notificaciones).\nEs JSON y Nullable para no romper registros antiguos.\nSi es NULL, el frontend asume los valores por defecto (Light/Espa\u00F1ol)." }, membresias: { required: true, type: () => [(__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] } };
     }
 };
 exports.Usuario = Usuario;
@@ -5872,6 +5873,14 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Usuario.prototype, "twoFactorSecret", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'json',
+        nullable: true,
+        comment: 'Preferencias de UI: { theme: "dark", lang: "en", ... }',
+    }),
+    __metadata("design:type", Object)
+], Usuario.prototype, "configuracion", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => empleado_entity_1.Empleado, (empleado) => empleado.usuario),
     __metadata("design:type", Array)

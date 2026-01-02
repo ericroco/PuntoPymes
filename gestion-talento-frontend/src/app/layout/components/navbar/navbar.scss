@@ -1,10 +1,10 @@
 /* ==========================================================================
-   TALENTRACK NAVBAR - BRANDING & LAYOUT
+   TALENTRACK NAVBAR - BRANDING & LAYOUT (Dark Mode Compatible)
    ========================================================================== */
 
 // --- VARIABLES LOCALES ---
-$navbar-height: 88px; // Altura generosa (Breathing room)
-$element-height: 46px; // Altura unificada para controles
+$navbar-height: 88px;
+$element-height: 46px;
 $border-radius: 12px;
 
 :host {
@@ -13,8 +13,8 @@ $border-radius: 12px;
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(255, 255, 255, 0.95); // Fondo semitransparente
-  backdrop-filter: blur(10px); // Efecto Glassmorphism moderno
+  background-color: var(--color-surface); // 🔥 CAMBIO: Ahora usa variable
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -23,7 +23,7 @@ $border-radius: 12px;
   justify-content: space-between;
   align-items: center;
   height: $navbar-height;
-  padding: 0 2.5rem; // Espaciado lateral amplio
+  padding: 0 2.5rem;
   max-width: 1920px;
   margin: 0 auto;
 }
@@ -46,7 +46,7 @@ $border-radius: 12px;
     font-family: var(--font-family-base);
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--color-text-primary); // ✅ Ya usa variable
     margin: 0;
     line-height: 1.1;
     letter-spacing: -0.5px;
@@ -56,15 +56,19 @@ $border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 24px; // Altura fija para evitar saltos
+    height: 24px;
     margin-top: 4px;
 
     .welcome-msg {
       font-size: 0.85rem;
-      color: var(--color-text-muted);
+      color: var(--color-text-muted); // ✅ Ya usa variable
       font-weight: 500;
-      
-      strong { color: var(--color-text-secondary); }
+
+      strong {
+        color: var(--color-text-secondary);
+      }
+
+      // ✅ Ya usa variable
     }
 
     // Badge de Filtro Activo
@@ -74,8 +78,8 @@ $border-radius: 12px;
       gap: 6px;
       padding: 4px 10px;
       border-radius: 20px;
-      background-color: var(--color-warning-light); // Fondo amarillo suave
-      color: var(--color-warning); // Texto amarillo oscuro
+      background-color: var(--color-warning-light); // ✅ Ya usa variable
+      color: var(--color-warning); // ✅ Ya usa variable
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.3px;
@@ -98,38 +102,39 @@ $border-radius: 12px;
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1.25rem; // Espacio consistente entre grupos
+  gap: 1.25rem;
 
   // --- A. SELECTOR DE SUCURSAL ---
   .branch-wrapper {
     width: 220px;
-    display: flex;          // <--- AGREGADO: Convierte el wrapper en flex
-    align-items: center;    // <--- AGREGADO: Centra verticalmente el mat-form-field
-    height: $element-height;// <--- AGREGADO: Fuerza la misma altura que los demás elementos
+    display: flex;
+    align-items: center;
+    height: $element-height;
 
-    // Hack para estilizar el mat-select como un botón custom
     ::ng-deep .mat-mdc-form-field {
       width: 100%;
-      margin-bottom: 0; // Asegura que no haya margen inferior fantasma
-      
-      .mat-mdc-form-field-subscript-wrapper { display: none; } 
+      margin-bottom: 0;
+
+      .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
 
       .mat-mdc-text-field-wrapper {
         height: $element-height;
         padding: 0 12px;
-        background-color: var(--color-surface);
-        border: 1px solid var(--color-border);
+        background-color: var(--color-surface); // 🔥 CAMBIO: Usa variable
+        border: 1px solid var(--color-border); // 🔥 CAMBIO: Usa variable
         border-radius: $border-radius;
         transition: all 0.2s ease;
-        display: flex;           // <--- AGREGADO: Asegura que el contenido interno se centre
-        align-items: center;     // <--- AGREGADO: Centrado vertical interno
-        
-        // Eliminar estilos default de Material
+        display: flex;
+        align-items: center;
+
         .mdc-notched-outline__leading,
         .mdc-notched-outline__notch,
-        .mdc-notched-outline__trailing { border: none !important; }
-        
-        // Ajuste fino para centrar el contenido del select
+        .mdc-notched-outline__trailing {
+          border: none !important;
+        }
+
         .mat-mdc-select-trigger {
           display: flex;
           align-items: center;
@@ -139,34 +144,34 @@ $border-radius: 12px;
 
       // Estado Focus
       &.mat-focused .mat-mdc-text-field-wrapper {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px var(--color-primary-subtle);
+        border-color: var(--color-primary); // ✅ Ya usa variable
+        box-shadow: 0 0 0 3px var(--color-primary-subtle); // ✅ Ya usa variable
       }
 
       .trigger-content {
         display: flex;
         align-items: center;
         gap: 10px;
-        color: var(--color-text-secondary);
+        color: var(--color-text-secondary); // 🔥 CAMBIO: Usa variable
         font-weight: 500;
         font-size: 0.9rem;
-        width: 100%; // Asegura que ocupe el ancho para el ellipsis
+        width: 100%;
 
         .trigger-icon {
-          color: var(--color-primary);
+          color: var(--color-primary); // ✅ Ya usa variable
           font-size: 20px;
           width: 20px;
           height: 20px;
-          display: flex;          // Para centrar el SVG dentro del icono
+          display: flex;
           align-items: center;
           justify-content: center;
         }
-        
+
         .trigger-text {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          line-height: 1; // Resetea altura de línea para evitar saltos
+          line-height: 1;
         }
       }
     }
@@ -177,7 +182,7 @@ $border-radius: 12px;
     .search-box {
       position: relative;
       height: $element-height;
-      width: 260px; // Ancho inicial
+      width: 260px;
       transition: width 0.3s ease;
 
       .search-icon {
@@ -185,7 +190,7 @@ $border-radius: 12px;
         left: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--color-text-muted);
+        color: var(--color-text-muted); // 🔥 CAMBIO: Usa variable
         transition: color 0.2s;
       }
 
@@ -194,28 +199,38 @@ $border-radius: 12px;
         height: 100%;
         padding-left: 44px;
         padding-right: 16px;
-        background-color: var(--color-surface-variant); // Gris muy suave
+        background-color: var(--color-surface-variant); // 🔥 CAMBIO: Usa variable
         border: 1px solid transparent;
         border-radius: $border-radius;
         font-family: var(--font-family-base);
         font-size: 0.9rem;
-        color: var(--color-text-primary);
+        color: var(--color-text-primary); // 🔥 CAMBIO: Usa variable
         outline: none;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-        &::placeholder { color: var(--color-text-muted); }
+        &::placeholder {
+          color: var(--color-text-muted);
+        }
+
+        // 🔥 CAMBIO: Usa variable
 
         &:focus {
-          background-color: var(--color-surface);
-          border-color: var(--color-primary);
-          box-shadow: var(--shadow-md);
+          background-color: var(--color-surface); // 🔥 CAMBIO: Usa variable
+          border-color: var(--color-primary); // ✅ Ya usa variable
+          box-shadow: var(--shadow-md); // ✅ Ya usa variable
           width: 100%;
-          
-          & + .search-icon { color: var(--color-primary); }
+
+          &+.search-icon {
+            color: var(--color-primary);
+          }
+
+          // ✅ Ya usa variable
         }
       }
-      
-      &:focus-within { width: 320px; } // Expandir al escribir
+
+      &:focus-within {
+        width: 320px;
+      }
     }
   }
 
@@ -223,7 +238,7 @@ $border-radius: 12px;
   .divider-vertical {
     width: 1px;
     height: 24px;
-    background-color: var(--color-border);
+    background-color: var(--color-border); // 🔥 CAMBIO: Usa variable
   }
 
   // --- C. NOTIFICACIONES ---
@@ -232,17 +247,16 @@ $border-radius: 12px;
     height: 44px;
     border-radius: 12px;
     background-color: transparent;
-    color: var(--color-text-secondary);
+    color: var(--color-text-secondary); // 🔥 CAMBIO: Usa variable
     transition: all 0.2s;
-    
-    // Centrar icono
     display: flex;
     align-items: center;
     justify-content: center;
 
-    &:hover, &[aria-expanded="true"] {
-      background-color: var(--color-primary-light);
-      color: var(--color-primary);
+    &:hover,
+    &[aria-expanded="true"] {
+      background-color: var(--color-primary-light); // ✅ Ya usa variable
+      color: var(--color-primary); // ✅ Ya usa variable
     }
 
     .notification-dot {
@@ -251,8 +265,8 @@ $border-radius: 12px;
       right: 10px;
       width: 10px;
       height: 10px;
-      background-color: var(--color-danger);
-      border: 2px solid var(--color-surface);
+      background-color: var(--color-danger); // ✅ Ya usa variable
+      border: 2px solid var(--color-surface); // 🔥 CAMBIO: Usa variable
       border-radius: 50%;
     }
   }
@@ -263,20 +277,21 @@ $border-radius: 12px;
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 6px 6px 6px 16px; // Padding asimétrico para el pill
+      padding: 6px 6px 6px 16px;
       border-radius: 50px;
       border: 1px solid transparent;
       cursor: pointer;
       transition: all 0.2s ease;
 
-      &:hover, &[aria-expanded="true"] {
-        background-color: var(--color-surface);
-        border-color: var(--color-border-light);
-        box-shadow: var(--shadow-sm);
-        
+      &:hover,
+      &[aria-expanded="true"] {
+        background-color: var(--color-surface); // 🔥 CAMBIO: Usa variable
+        border-color: var(--color-border-light); // 🔥 CAMBIO: Usa variable
+        box-shadow: var(--shadow-sm); // ✅ Ya usa variable
+
         .avatar-container {
           transform: scale(1.05);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
       }
 
@@ -289,12 +304,12 @@ $border-radius: 12px;
         .name {
           font-size: 0.9rem;
           font-weight: 600;
-          color: var(--color-text-primary);
+          color: var(--color-text-primary); // 🔥 CAMBIO: Usa variable
         }
 
         .role {
           font-size: 0.75rem;
-          color: var(--color-text-secondary);
+          color: var(--color-text-secondary); // 🔥 CAMBIO: Usa variable
           font-weight: 500;
         }
       }
@@ -304,8 +319,8 @@ $border-radius: 12px;
         height: 42px;
         border-radius: 50%;
         overflow: hidden;
-        border: 2px solid var(--color-surface);
-        box-shadow: var(--shadow-sm);
+        border: 2px solid var(--color-surface); // 🔥 CAMBIO: Usa variable
+        box-shadow: var(--shadow-sm); // ✅ Ya usa variable
         transition: transform 0.2s ease;
 
         .avatar {
@@ -322,22 +337,38 @@ $border-radius: 12px;
 // 3. RESPONSIVE
 // ============================================
 @media (max-width: 1024px) {
-  .navbar-container { padding: 0 1.5rem; }
-  .user-info { display: none !important; } // Solo avatar en tablets
-  .search-wrapper .search-box { width: 200px; }
+  .navbar-container {
+    padding: 0 1.5rem;
+  }
+
+  .user-info {
+    display: none !important;
+  }
+
+  .search-wrapper .search-box {
+    width: 200px;
+  }
 }
 
 @media (max-width: 768px) {
-  .mobile-only { display: block !important; }
-  .branch-wrapper, .divider-vertical { display: none !important; }
-  
+  .mobile-only {
+    display: block !important;
+  }
+
+  .branch-wrapper,
+  .divider-vertical {
+    display: none !important;
+  }
+
   .search-wrapper .search-box {
     width: 44px;
     background: transparent;
     padding: 0;
-    
-    .search-input { display: none; }
-    
+
+    .search-input {
+      display: none;
+    }
+
     .search-icon {
       position: static;
       transform: none;
@@ -348,22 +379,38 @@ $border-radius: 12px;
       justify-content: center;
       font-size: 24px;
       cursor: pointer;
-      color: var(--color-text-secondary);
+      color: var(--color-text-secondary); // 🔥 CAMBIO: Usa variable
     }
   }
 }
 
-// Ocultar botón menú en desktop
-.mobile-only { display: none; }
+.mobile-only {
+  display: none;
+}
 
 // Animaciones
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(243, 156, 18, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(243, 156, 18, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+  }
 }

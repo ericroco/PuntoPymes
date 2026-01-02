@@ -7,7 +7,7 @@
 
     <div class="page-context">
       <h1>Vista General</h1>
-      
+
       <div class="context-subtitle">
         <span *ngIf="!selectedBranchId" class="welcome-msg fade-in">
           Bienvenido, <strong>{{ displayName | titlecase }}</strong>
@@ -27,17 +27,13 @@
       <mat-form-field appearance="outline" class="branch-select-field">
         <mat-select [value]="selectedBranchId" (selectionChange)="onBranchChange($event.value)"
           placeholder="Todas las Sedes">
-          
           <mat-select-trigger>
             <div class="trigger-content">
               <mat-icon class="trigger-icon">store</mat-icon>
               <span class="trigger-text">{{ getBranchName(selectedBranchId) || 'Todas las Sedes' }}</span>
             </div>
           </mat-select-trigger>
-
-          <mat-option [value]="null">
-            <mat-icon>domain</mat-icon> Todas las Sedes
-          </mat-option>
+          <mat-option [value]="null"><mat-icon>domain</mat-icon> Todas las Sedes</mat-option>
           <mat-option *ngFor="let b of branches" [value]="b.id">
             <mat-icon>store_mall_directory</mat-icon> {{ b.nombre }}
           </mat-option>
@@ -48,11 +44,23 @@
     <div class="action-group search-wrapper">
       <div class="search-box">
         <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" placeholder="Buscar en TalenTrack..." class="search-input">
+        <input type="text" placeholder="Buscar..." class="search-input">
       </div>
     </div>
 
     <div class="divider-vertical"></div>
+
+    <div class="action-group">
+      <button mat-icon-button (click)="configService.toggleTheme()"
+        [matTooltip]="(configService.config$ | async)?.theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'">
+
+        <mat-icon *ngIf="(configService.config$ | async)?.theme === 'dark'"
+          class="theme-icon-anim">light_mode</mat-icon>
+
+        <mat-icon *ngIf="(configService.config$ | async)?.theme === 'light'"
+          class="theme-icon-anim">dark_mode</mat-icon>
+      </button>
+    </div>
 
     <div class="action-group">
       <button mat-icon-button class="notification-btn" [matMenuTriggerFor]="notificationMenu">
@@ -81,7 +89,6 @@
     <h3>Notificaciones</h3>
     <button mat-button color="primary" (click)="markAllRead()">Marcar leídas</button>
   </div>
-
   <div class="notification-list">
     <button mat-menu-item *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
       <div class="notif-icon-box" [style.color]="notif.color || 'var(--color-primary)'">
@@ -92,7 +99,6 @@
         <span class="notif-time">{{ notif.time }}</span>
       </div>
     </button>
-
     <div *ngIf="notifications.length === 0" class="empty-notif">
       <mat-icon>notifications_off</mat-icon>
       <p>No tienes notificaciones nuevas</p>

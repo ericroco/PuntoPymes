@@ -876,4 +876,32 @@ export class AuthService {
     });
     return empresa?.configuracion || {};
   }
+
+  /**
+   * Actualiza la configuración del usuario haciendo un merge con lo existente.
+   */
+  async updateUserConfig(usuarioId: string, nuevaConfig: any) {
+    // 1. Buscamos al usuario
+    const usuario = await this.usuarioRepository.findOneBy({ id: usuarioId });
+
+    if (!usuario) {
+      // En microservicios usamos RpcException en lugar de NotFoundException
+      // o simplemente retornamos null y que el controller decida.
+      throw new Error('Usuario no encontrado');
+    }
+
+    // 2. Fusionar configuraciones (Merge)
+    // Si usuario.configuracion es null, usamos {}
+    const configActual = usuario.configuracion || {};
+
+    // Sobrescribimos solo las llaves que vienen en nuevaConfig
+    const configFinal = { ...configActual, ...nuevaConfig };
+
+    // 3. Guardar
+    usuario.configuracion = configFinal;
+    await this.usuarioRepository.save(usuario);
+
+    // Retornamos la config actualizada
+    return usuario.configuracion;
+  }
 }
