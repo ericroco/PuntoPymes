@@ -4,6 +4,8 @@
    ========================================================================== */
 
 // --- 1. CONFIGURACIÓN DE PÁGINA ---
+@import '../../../../../assets/scss/mixins';
+
 .page-container.overview-page {
   padding: var(--spacing-md);
   max-width: 100%;
@@ -13,6 +15,7 @@
 
   @media (min-width: 768px) {
     padding: var(--spacing-xl);
+
   }
 }
 
@@ -37,11 +40,39 @@
     font-size: 1.5rem;
     margin: 0;
     letter-spacing: -0.5px;
-    
+
     @media (min-width: 768px) {
       font-size: 1.75rem;
     }
   }
+}
+
+// Clase extraída para título jumbo
+.kpi-value-jumbo {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-primary);
+  margin-bottom: 0;
+}
+
+// Iconos extraídos
+.card-trend-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.arrow-icon {
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.no-data-icon {
+  font-size: 40px;
+  height: 40px;
+  width: 40px;
 }
 
 mat-divider {
@@ -138,7 +169,7 @@ button[mat-icon-button] {
   &.btn-approve {
     color: var(--color-success);
     background-color: var(--color-success-light); // Fondo suave siempre visible
-    
+
     &:hover {
       background-color: var(--color-success);
       color: white;
@@ -150,7 +181,7 @@ button[mat-icon-button] {
   &.btn-reject {
     color: var(--color-danger);
     background-color: var(--color-danger-light); // Fondo suave siempre visible
-    
+
     &:hover {
       background-color: var(--color-danger);
       color: white;
@@ -172,11 +203,9 @@ button[mat-icon-button] {
 }
 
 .card {
-  background-color: var(--color-surface);
+  @include glass(0.7, 12px); // Utilizando Mixin de Glassmorphism
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -198,19 +227,36 @@ button[mat-icon-button] {
   &:hover {
     transform: translateY(-4px); // Lift en toda la tarjeta
     box-shadow: var(--shadow-md);
-    
+
     &::before {
       width: 6px; // Acento se hace más grueso
     }
   }
 
-  &.card-blue { --card-accent: var(--color-info); }
-  &.card-green { --card-accent: var(--color-success); }
-  &.card-orange { --card-accent: var(--color-warning); }
-  &.card-red { --card-accent: var(--color-danger); }
-  &.card-brand { --card-accent: var(--color-primary); }
+  &.card-blue {
+    --card-accent: var(--color-info);
+  }
 
-  .card-content { flex-grow: 1; padding-left: var(--spacing-sm); }
+  &.card-green {
+    --card-accent: var(--color-success);
+  }
+
+  &.card-orange {
+    --card-accent: var(--color-warning);
+  }
+
+  &.card-red {
+    --card-accent: var(--color-danger);
+  }
+
+  &.card-brand {
+    --card-accent: var(--color-primary);
+  }
+
+  .card-content {
+    flex-grow: 1;
+    padding-left: var(--spacing-sm);
+  }
 
   .card-title {
     font-size: 0.8rem;
@@ -231,7 +277,7 @@ button[mat-icon-button] {
   .card-footer {
     margin-top: var(--spacing-md);
     padding-left: var(--spacing-sm);
-    
+
     .trend {
       font-weight: 600;
       font-size: 0.8rem;
@@ -241,8 +287,15 @@ button[mat-icon-button] {
       align-items: center;
       gap: 4px;
 
-      &.positive { background: var(--color-success-light); color: var(--color-success-dark); }
-      &.negative { background: var(--color-danger-light); color: var(--color-danger-dark); }
+      &.positive {
+        background: var(--color-success-light);
+        color: var(--color-success-dark);
+      }
+
+      &.negative {
+        background: var(--color-danger-light);
+        color: var(--color-danger-dark);
+      }
     }
 
     .details-link {
@@ -254,7 +307,7 @@ button[mat-icon-button] {
       align-items: center;
       gap: 4px;
       transition: color 0.2s;
-      
+
       &:hover {
         color: var(--color-primary);
       }
@@ -265,7 +318,7 @@ button[mat-icon-button] {
 // --- GRID PRINCIPAL ---
 .overview-grid {
   display: grid;
-  grid-template-columns: 1fr; 
+  grid-template-columns: 1fr;
   gap: var(--spacing-lg);
 
   @media (min-width: 768px) {
@@ -288,15 +341,13 @@ button[mat-icon-button] {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--color-surface) !important;
+  @include glass(0.8, 16px); // Glassmorphism más fuerte para widgets
   border-radius: var(--border-radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
-  border: 1px solid var(--color-border-light);
   width: 100%;
-  
+
   mat-card-header {
     padding: var(--spacing-lg) var(--spacing-lg) 0 !important;
-    
+
     mat-card-title {
       font-size: 1.1rem;
       font-weight: 700;
@@ -304,8 +355,10 @@ button[mat-icon-button] {
       display: flex;
       align-items: center;
       gap: var(--spacing-sm);
-      
-      mat-icon { color: var(--color-primary); }
+
+      mat-icon {
+        color: var(--color-primary);
+      }
     }
   }
 
@@ -376,7 +429,7 @@ button[mat-icon-button] {
 .polls-widget {
   .poll-preview {
     padding: var(--spacing-lg);
-    background: linear-gradient(180deg, var(--color-surface-variant) 0%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(180deg, var(--color-surface-variant) 0%, rgba(255, 255, 255, 0) 100%);
     border-radius: var(--border-radius);
     text-align: center;
     border: 1px dashed var(--color-border);
@@ -405,10 +458,19 @@ button[mat-icon-button] {
 
 // Forms
 .leave-request-form {
-  mat-form-field { width: 100%; }
+  mat-form-field {
+    width: 100%;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

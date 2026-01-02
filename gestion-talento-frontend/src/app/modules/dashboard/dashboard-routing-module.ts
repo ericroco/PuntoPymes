@@ -95,10 +95,6 @@ const routes: Routes = [
     loadComponent: () => import('./pages/settings/module-settings/module-settings').then(c => c.ModuleSettings)
   },
   {
-    path: 'settings/users',
-    loadComponent: () => import('./pages/settings/user-settings/user-settings').then(c => c.UserSettings)
-  },
-  {
     path: 'settings/roles',
     loadComponent: () => import('./pages/settings/role-settings/role-settings').then(c => c.RoleSettings)
   },

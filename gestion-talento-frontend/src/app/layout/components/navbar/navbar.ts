@@ -10,7 +10,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatTooltipModule } from '@angular/material/tooltip'; // <--- AGREGADO
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslateModule } from '@ngx-translate/core';
 
 // 👇 Servicios e Interfaces
 import { AuthService, User } from '../../../modules/auth/services/auth';
@@ -34,7 +35,8 @@ import { Notification } from '../../../shared/interfaces/notification.interface'
     MatButtonModule,
     MatIconModule,
     MatDividerModule,
-    MatTooltipModule // <--- AGREGADO
+    MatTooltipModule,
+    TranslateModule
   ],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss']

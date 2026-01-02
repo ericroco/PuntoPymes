@@ -1,34 +1,38 @@
 <div class="page-container overview-page">
 
-  <div *ngIf="viewingAsAdmin" class="admin-view" @widgetAnimation>
+  @if (viewingAsAdmin) {
+  <div class="admin-view" @widgetAnimation>
     <header class="page-header">
-      <h2>Vista General</h2>
+      <h2>{{ 'DASHBOARD.ADMIN.TITLE' | translate }}</h2>
     </header>
 
     <section class="summary-cards">
-      <div *ngFor="let card of adminKPIs" class="card" [ngClass]="'card-' + card.color">
+      @for (card of adminKPIs; track card.title) {
+      <div class="card" [ngClass]="'card-' + card.color">
         <div class="card-content">
-          <p class="card-title">{{ card.title }}</p>
+          <p class="card-title">{{ card.title | translate }}</p>
           <h3 class="card-value">{{ card.value }}</h3>
         </div>
         <div class="card-footer">
           <span class="trend" [class.positive]="card.isPositive" [class.negative]="!card.isPositive">
-            <mat-icon inline="true" style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">
+            <mat-icon inline="true" class="card-trend-icon">
               {{ card.isPositive ? 'trending_up' : 'trending_down' }}
             </mat-icon>
             {{ card.trend }}
           </span>
         </div>
       </div>
-      
+      }
+
       <div class="card card-brand">
         <div class="card-content">
-          <p class="card-title">Pendientes de Acción</p>
+          <p class="card-title">{{ 'DASHBOARD.ADMIN.SUMMARY.PENDING_ACTIONS' | translate }}</p>
           <h3 class="card-value">{{ pendingApprovals.length }}</h3>
         </div>
         <div class="card-footer">
           <span class="details-link" routerLink="/dashboard/approvals">
-            Gestionar <mat-icon inline="true" style="font-size: 14px; vertical-align: middle;">arrow_forward</mat-icon>
+            {{ 'DASHBOARD.ADMIN.SUMMARY.MANAGE_LINK' | translate }}
+            <mat-icon inline="true" class="arrow-icon">arrow_forward</mat-icon>
           </span>
         </div>
       </div>
@@ -37,56 +41,55 @@
     <mat-divider></mat-divider>
 
     <div class="overview-grid">
-      
+
       <mat-card class="overview-widget">
         <mat-card-header>
           <mat-card-title>
-            <mat-icon>checklist_rtl</mat-icon> Aprobaciones
+            <mat-icon>checklist_rtl</mat-icon> {{ 'DASHBOARD.ADMIN.WIDGETS.APPROVALS.TITLE' | translate }}
           </mat-card-title>
         </mat-card-header>
 
         <mat-card-content>
-          <mat-list *ngIf="pendingApprovals.length > 0; else noApprovals">
-            <mat-list-item *ngFor="let req of pendingApprovals" class="mb-2">
+          @if (pendingApprovals.length > 0) {
+          <mat-list>
+            @for (req of pendingApprovals; track req.id) {
+            <mat-list-item class="mb-2">
               <div matListItemIcon class="request-icon">
                 <mat-icon>{{ req.type === 'Vacaciones' ? 'beach_access' : 'receipt_long' }}</mat-icon>
               </div>
               <div matListItemTitle class="fw-bold text-truncate">{{ req.type }}</div>
               <div matListItemLine class="text-muted text-truncate">{{ req.description }}</div>
-              
+
               <div matListItemMeta class="approval-actions">
-                <button mat-icon-button class="btn-approve" (click)="approveRequest(req.id)" matTooltip="Aprobar">
+                <button mat-icon-button class="btn-approve" (click)="approveRequest(req.id)"
+                  [matTooltip]="'DASHBOARD.ADMIN.WIDGETS.APPROVALS.TOOLTIP_APPROVE' | translate">
                   <mat-icon>check_circle</mat-icon>
                 </button>
-                <button mat-icon-button class="btn-reject" (click)="rejectRequest(req.id)" matTooltip="Rechazar">
+                <button mat-icon-button class="btn-reject" (click)="rejectRequest(req.id)"
+                  [matTooltip]="'DASHBOARD.ADMIN.WIDGETS.APPROVALS.TOOLTIP_REJECT' | translate">
                   <mat-icon>cancel</mat-icon>
                 </button>
               </div>
             </mat-list-item>
+            }
           </mat-list>
-
-          <ng-template #noApprovals>
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 py-4 text-center">
-              <mat-icon class="text-muted mb-2" style="font-size: 40px; height: 40px; width: 40px;">done_all</mat-icon>
-              <p class="text-muted m-0">¡Todo al día!</p>
-            </div>
-          </ng-template>
+          } @else {
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 py-4 text-center">
+            <mat-icon class="text-muted mb-2 no-data-icon">done_all</mat-icon>
+            <p class="text-muted m-0">{{ 'DASHBOARD.ADMIN.WIDGETS.APPROVALS.EMPTY_STATE' | translate }}</p>
+          </div>
+          }
         </mat-card-content>
       </mat-card>
 
       <mat-card class="overview-widget chart-widget">
         <mat-card-header>
-          <mat-card-title>Distribución por Área</mat-card-title>
+          <mat-card-title>{{ 'DASHBOARD.ADMIN.WIDGETS.DISTRIBUTION.TITLE' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">
-            <ngx-charts-pie-chart 
-              [results]="employeeDistribution" 
-              [labels]="false" 
-              [doughnut]="true"
-              [scheme]="chartColorScheme" 
-              [legend]="false"
-              [arcWidth]="0.35"> 
+            <ngx-charts-pie-chart [results]="employeeDistribution" [labels]="false" [doughnut]="true"
+              [scheme]="chartColorScheme" [legend]="false" [arcWidth]="0.35">
             </ngx-charts-pie-chart>
           </div>
         </mat-card-content>
@@ -94,45 +97,43 @@
 
       <mat-card class="overview-widget">
         <mat-card-header>
-          <mat-card-title>Clima Laboral</mat-card-title>
-          <mat-card-subtitle>Encuesta: {{ surveySummary.latestSurvey }}</mat-card-subtitle>
+          <mat-card-title>{{ 'DASHBOARD.ADMIN.WIDGETS.CLIMATE.TITLE' | translate }}</mat-card-title>
+          <mat-card-subtitle>
+            {{ 'DASHBOARD.ADMIN.WIDGETS.CLIMATE.SURVEY_PREFIX' | translate }} {{ surveySummary.latestSurvey }}
+          </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <div class="d-flex flex-column justify-content-center h-100">
             <div class="mb-3">
               <div class="d-flex justify-content-between mb-1">
-                <small class="text-secondary fw-bold">Participación </small>
+                <small class="text-secondary fw-bold">{{ 'DASHBOARD.ADMIN.WIDGETS.CLIMATE.PARTICIPATION_LABEL' |
+                  translate }}</small>
                 <small class="fw-bold text-primary">{{ surveySummary.participationRate }}%</small>
               </div>
               <mat-progress-bar mode="determinate" [value]="surveySummary.participationRate"></mat-progress-bar>
             </div>
             <div class="text-center mt-2">
-              <h1 class="mb-0" style="font-size: 3.5rem; font-weight: 700; line-height: 1; color: var(--color-primary);">
+              <h1 class="mb-0 kpi-value-jumbo">
                 {{ surveySummary.overallSatisfaction }}
               </h1>
-              <small class="text-muted">Satisfacción (1-5)</small>
+              <small class="text-muted">{{ 'DASHBOARD.ADMIN.WIDGETS.CLIMATE.SATISFACTION_LABEL' | translate }}</small>
             </div>
           </div>
         </mat-card-content>
         <mat-card-actions align="end">
-          <button mat-button routerLink="/dashboard/surveys">DETALLES</button>
+          <button mat-button routerLink="/dashboard/surveys">{{ 'DASHBOARD.ADMIN.WIDGETS.CLIMATE.DETAILS_BTN' |
+            translate }}</button>
         </mat-card-actions>
       </mat-card>
 
       <mat-card class="overview-widget chart-widget">
         <mat-card-header>
-          <mat-card-title>Rotación (6 Meses)</mat-card-title>
+          <mat-card-title>{{ 'DASHBOARD.ADMIN.WIDGETS.TURNOVER.TITLE' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">
-            <ngx-charts-line-chart 
-              [results]="turnoverTrend" 
-              [xAxis]="true" 
-              [yAxis]="true" 
-              [showXAxisLabel]="false"
-              [showYAxisLabel]="false" 
-              [autoScale]="true" 
-              [scheme]="chartColorScheme">
+            <ngx-charts-line-chart [results]="turnoverTrend" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="false"
+              [showYAxisLabel]="false" [autoScale]="true" [scheme]="chartColorScheme">
             </ngx-charts-line-chart>
           </div>
         </mat-card-content>
@@ -140,30 +141,32 @@
 
       <mat-card class="overview-widget quick-links-widget">
         <mat-card-header>
-          <mat-card-title>Accesos Rápidos</mat-card-title>
+          <mat-card-title>{{ 'DASHBOARD.ADMIN.WIDGETS.QUICK_LINKS.TITLE' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content class="quick-links-container">
           <button mat-stroked-button routerLink="/dashboard/employees">
-            <mat-icon>group</mat-icon> Personal
+            <mat-icon>group</mat-icon> {{ 'DASHBOARD.ADMIN.WIDGETS.QUICK_LINKS.EMPLOYEES' | translate }}
           </button>
           <button mat-stroked-button routerLink="/dashboard/recruitment">
-            <mat-icon>work_outline</mat-icon> Vacantes
+            <mat-icon>work_outline</mat-icon> {{ 'DASHBOARD.ADMIN.WIDGETS.QUICK_LINKS.VACANCIES' | translate }}
           </button>
           <button mat-stroked-button routerLink="/dashboard/sprints">
-            <mat-icon>view_kanban</mat-icon> Sprints
+            <mat-icon>view_kanban</mat-icon> {{ 'DASHBOARD.ADMIN.WIDGETS.QUICK_LINKS.SPRINTS' | translate }}
           </button>
           <button mat-stroked-button routerLink="/dashboard/settings">
-            <mat-icon>settings</mat-icon> Ajustes
+            <mat-icon>settings</mat-icon> {{ 'DASHBOARD.ADMIN.WIDGETS.QUICK_LINKS.SETTINGS' | translate }}
           </button>
         </mat-card-content>
       </mat-card>
 
     </div>
   </div>
+  }
 
-  <div *ngIf="!viewingAsAdmin" class="employee-view" @widgetAnimation>
+  @if (!viewingAsAdmin) {
+  <div class="employee-view" @widgetAnimation>
     <header class="page-header">
-      <h2>Mi Portal</h2>
+      <h2>{{ 'DASHBOARD.EMPLOYEE.TITLE' | translate }}</h2>
     </header>
 
     <div class="overview-grid employee-grid">
@@ -171,11 +174,12 @@
       <mat-card class="overview-widget announcements-widget">
         <mat-card-header>
           <mat-card-title>
-            <mat-icon>campaign</mat-icon> Cartelera
+            <mat-icon>campaign</mat-icon> {{ 'DASHBOARD.EMPLOYEE.WIDGETS.ANNOUNCEMENTS.TITLE' | translate }}
           </mat-card-title>
         </mat-card-header>
         <mat-card-content class="scrollable-list">
-          <div *ngFor="let anuncio of anuncios" class="anuncio-card">
+          @for (anuncio of anuncios; track anuncio) {
+          <div class="anuncio-card">
             <div class="anuncio-top">
               <span class="badge">{{ anuncio.prioridad }}</span>
               <span class="text-muted small">{{ anuncio.createdAt | date:'dd MMM' }}</span>
@@ -183,24 +187,29 @@
             <h4 class="mb-1 fw-bold fs-6">{{ anuncio.titulo }}</h4>
             <p class="text-secondary small mb-0">{{ anuncio.contenido }}</p>
           </div>
-          <div *ngIf="anuncios.length === 0" class="text-center py-3 text-muted">
-            <small>No hay anuncios nuevos</small>
+          } @empty {
+          <div class="text-center py-3 text-muted">
+            <small>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.ANNOUNCEMENTS.EMPTY_STATE' | translate }}</small>
           </div>
+          }
         </mat-card-content>
       </mat-card>
 
       <mat-card class="overview-widget polls-widget">
         <mat-card-header>
           <mat-card-title class="d-flex justify-content-between w-100">
-            <span><mat-icon>poll</mat-icon> Encuestas</span>
-            <span class="badge bg-danger text-white rounded-pill px-2 fs-6" *ngIf="encuestasPendientes.length > 0">
+            <span><mat-icon>poll</mat-icon> {{ 'DASHBOARD.EMPLOYEE.WIDGETS.POLLS.TITLE' | translate }}</span>
+            @if (encuestasPendientes.length > 0) {
+            <span class="badge bg-danger text-white rounded-pill px-2 fs-6">
               {{ encuestasPendientes.length }}
             </span>
+            }
           </mat-card-title>
         </mat-card-header>
 
         <mat-card-content>
-          <div *ngIf="encuestasPendientes.length > 0; else noPolls" class="h-100 d-flex flex-column justify-content-center">
+          @if (encuestasPendientes.length > 0) {
+          <div class="h-100 d-flex flex-column justify-content-center">
             <div class="poll-preview">
               <h5 class="poll-title text-truncate">{{ encuestasPendientes[0].titulo }}</h5>
               <p class="small text-muted text-truncate" *ngIf="encuestasPendientes[0].descripcion">
@@ -208,54 +217,65 @@
               </p>
               <div class="mt-3">
                 <button mat-flat-button (click)="openVoteDialog(encuestasPendientes[0])">
-                  Participar
+                  {{ 'DASHBOARD.EMPLOYEE.WIDGETS.POLLS.VOTE_BTN' | translate }}
                 </button>
               </div>
-              <div class="mt-2 text-muted small fst-italic" *ngIf="encuestasPendientes.length > 1">
-                + {{ encuestasPendientes.length - 1 }} más
+              @if (encuestasPendientes.length > 1) {
+              <div class="mt-2 text-muted small fst-italic">
+                + {{ encuestasPendientes.length - 1 }} {{ 'DASHBOARD.EMPLOYEE.WIDGETS.POLLS.MORE_SUFFIX' | translate }}
               </div>
+              }
             </div>
           </div>
-
-          <ng-template #noPolls>
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center">
-              <mat-icon class="text-success mb-2" style="font-size: 32px; width: 32px; height: 32px;">check_circle_outline</mat-icon>
-              <p class="text-muted small m-0">¡Estás al día!</p>
-            </div>
-          </ng-template>
+          } @else {
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center">
+            <mat-icon class="text-success mb-2"
+              style="font-size: 32px; width: 32px; height: 32px;">check_circle_outline</mat-icon>
+            <p class="text-muted small m-0">{{ 'DASHBOARD.EMPLOYEE.WIDGETS.POLLS.EMPTY_STATE' | translate }}</p>
+          </div>
+          }
         </mat-card-content>
       </mat-card>
 
       <mat-card class="overview-widget kpi-widget">
         <mat-card-header>
-          <mat-card-title>Mis Métricas</mat-card-title>
+          <mat-card-title>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.METRICS.TITLE' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div *ngFor="let kpi of employeeKPIs" class="mb-3">
+          @for (kpi of employeeKPIs; track kpi.title) {
+          <div class="mb-3">
             <div class="d-flex justify-content-between mb-1">
-              <span class="text-secondary fw-bold small">{{ kpi.title }}</span>
-              <span class="fw-bold" style="color: var(--color-primary)">{{ kpi.value }}{{ kpi.unit === '%' ? '%' : ' ' + kpi.unit }}</span>
+              <span class="text-secondary fw-bold small">{{ kpi.title | translate }}</span>
+              <span class="fw-bold" style="color: var(--color-primary)">{{ kpi.value }}{{ kpi.unit === '%' ? '%' : ' ' +
+                kpi.unit }}</span>
             </div>
-            <mat-progress-bar *ngIf="kpi.unit === '%'" mode="determinate" [value]="kpi.value"></mat-progress-bar>
+            @if (kpi.unit === '%') {
+            <mat-progress-bar mode="determinate" [value]="kpi.value"></mat-progress-bar>
+            }
           </div>
+          }
         </mat-card-content>
       </mat-card>
 
       <mat-card class="overview-widget">
         <mat-card-header>
-          <mat-card-title>Vacaciones</mat-card-title>
+          <mat-card-title>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.TITLE' | translate }}</mat-card-title>
           <mat-card-subtitle>
-            Disponibles: <strong class="text-success">{{ availableLeaveDays }} días</strong>
+            {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.AVAILABLE_PREFIX' | translate }}
+            <strong class="text-success">{{ availableLeaveDays }} {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.DAYS_SUFFIX' |
+              translate }}</strong>
           </mat-card-subtitle>
         </mat-card-header>
 
         <form [formGroup]="leaveRequestForm" (ngSubmit)="requestLeave()" class="h-100 d-flex flex-column">
           <mat-card-content class="d-flex flex-column justify-content-center">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Fechas</mat-label>
+              <mat-label>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.DATES_LABEL' | translate }}</mat-label>
               <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker">
-                <input matStartDate formControlName="startDate" placeholder="Inicio">
-                <input matEndDate formControlName="endDate" placeholder="Fin">
+                <input matStartDate formControlName="startDate"
+                  [placeholder]="'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.START_PLACEHOLDER' | translate">
+                <input matEndDate formControlName="endDate"
+                  [placeholder]="'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.END_PLACEHOLDER' | translate">
               </mat-date-range-input>
               <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-date-range-picker #picker></mat-date-range-picker>
@@ -264,7 +284,7 @@
 
           <mat-card-actions align="end">
             <button type="submit" mat-flat-button color="primary" [disabled]="leaveRequestForm.invalid">
-              SOLICITAR
+              {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.SUBMIT_BTN' | translate }}
             </button>
           </mat-card-actions>
         </form>
@@ -272,5 +292,6 @@
 
     </div>
   </div>
+  }
 
 </div>

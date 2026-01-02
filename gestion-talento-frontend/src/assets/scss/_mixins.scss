@@ -1,0 +1,81 @@
+/* ==========================================================================
+   SCSS MIXINS & UTILITIES (SEMANTIC SYSTEM)
+   ========================================================================== */
+
+/* 
+   GLASSPHARIMS PRO
+   Generates a premium glass effect using color-mix for dynamic branding compatibility.
+*/
+@mixin glass($opacity: 0.7, $blur: 12px, $border-opacity: 0.3) {
+    background: color-mix(in srgb, var(--color-surface) $opacity * 100%, transparent);
+    backdrop-filter: blur($blur);
+    -webkit-backdrop-filter: blur($blur);
+    border: 1px solid color-mix(in srgb, var(--color-border) $border-opacity * 100%, transparent);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05);
+    /* Soft, premium shadow */
+
+    /* Optional: Add a subtle inner light for depth */
+    border-top: 1px solid color-mix(in srgb, white 40%, transparent);
+}
+
+/*
+   FLUID TYPOGRAPHY
+   Responsive text without managed media queries.
+   Min: 14px at 320px screen
+   Max: 16px at 1200px screen
+*/
+@mixin fluid-text($min-size, $max-size, $min-vw: 320px, $max-vw: 1200px) {
+    font-size: $min-size;
+    font-size: clamp(#{$min-size},
+        #{$min-size} + #{strip-unit($max-size - $min-size)} * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)}),
+        #{$max-size});
+}
+
+@function strip-unit($value) {
+    @return $value / ($value * 0 + 1);
+}
+
+/*
+   FLEX UTILITIES
+*/
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/*
+   STATUS BADGE GENERATOR
+   Creates the background and text color wrapper for status pills
+*/
+@mixin status-badge($color-name) {
+    background-color: var(--color-#{$color-name}-light);
+    color: var(--color-#{$color-name});
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+/*
+   TEXT GRADIENT
+   For "Wow" headings
+*/
+@mixin text-gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-tertiary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}

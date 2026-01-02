@@ -6,16 +6,16 @@
     </button>
 
     <div class="page-context">
-      <h1>Vista General</h1>
+      <h1>{{ 'NAVBAR.TITLE' | translate }}</h1>
 
       <div class="context-subtitle">
         <span *ngIf="!selectedBranchId" class="welcome-msg fade-in">
-          Bienvenido, <strong>{{ displayName | titlecase }}</strong>
+          {{ 'NAVBAR.WELCOME' | translate }} <strong>{{ displayName | titlecase }}</strong>
         </span>
 
         <div *ngIf="selectedBranchId" class="filter-badge fade-in">
           <span class="dot"></span>
-          <span>Filtrando por Sucursal</span>
+          <span>{{ 'NAVBAR.FILTERING_BADGE' | translate }}</span>
         </div>
       </div>
     </div>
@@ -26,14 +26,19 @@
     <div class="action-group branch-wrapper" *ngIf="canSwitchBranch">
       <mat-form-field appearance="outline" class="branch-select-field">
         <mat-select [value]="selectedBranchId" (selectionChange)="onBranchChange($event.value)"
-          placeholder="Todas las Sedes">
+          [placeholder]="'NAVBAR.ALL_BRANCHES' | translate">
+
           <mat-select-trigger>
             <div class="trigger-content">
               <mat-icon class="trigger-icon">store</mat-icon>
-              <span class="trigger-text">{{ getBranchName(selectedBranchId) || 'Todas las Sedes' }}</span>
+              <span class="trigger-text">{{ getBranchName(selectedBranchId) || ('NAVBAR.ALL_BRANCHES' | translate)
+                }}</span>
             </div>
           </mat-select-trigger>
-          <mat-option [value]="null"><mat-icon>domain</mat-icon> Todas las Sedes</mat-option>
+
+          <mat-option [value]="null">
+            <mat-icon>domain</mat-icon> {{ 'NAVBAR.ALL_BRANCHES' | translate }}
+          </mat-option>
           <mat-option *ngFor="let b of branches" [value]="b.id">
             <mat-icon>store_mall_directory</mat-icon> {{ b.nombre }}
           </mat-option>
@@ -44,15 +49,31 @@
     <div class="action-group search-wrapper">
       <div class="search-box">
         <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" placeholder="Buscar..." class="search-input">
+        <input type="text" [placeholder]="'NAVBAR.SEARCH_PLACEHOLDER' | translate" class="search-input">
       </div>
     </div>
 
     <div class="divider-vertical"></div>
 
     <div class="action-group">
+      <button mat-icon-button [matMenuTriggerFor]="langMenu" matTooltip="Idioma / Language">
+        <span style="font-weight: 700; font-size: 0.85rem;">
+          {{ (configService.config$ | async)?.lang | uppercase }}
+        </span>
+      </button>
+      <mat-menu #langMenu="matMenu">
+        <button mat-menu-item (click)="configService.setLanguage('es')">
+          <span>🇪🇸 Español</span>
+        </button>
+        <button mat-menu-item (click)="configService.setLanguage('en')">
+          <span>🇺🇸 English</span>
+        </button>
+      </mat-menu>
+    </div>
+
+    <div class="action-group">
       <button mat-icon-button (click)="configService.toggleTheme()"
-        [matTooltip]="(configService.config$ | async)?.theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'">
+        [matTooltip]="((configService.config$ | async)?.theme === 'dark' ? 'NAVBAR.THEME.LIGHT' : 'NAVBAR.THEME.DARK') | translate">
 
         <mat-icon *ngIf="(configService.config$ | async)?.theme === 'dark'"
           class="theme-icon-anim">light_mode</mat-icon>
@@ -76,7 +97,8 @@
           <span class="role">{{ userRole }}</span>
         </div>
         <div class="avatar-container">
-          <img [src]="userAvatar" alt="Avatar" class="avatar" onerror="this.src='assets/images/default-avatar.png'">
+          <img [src]="userAvatar" [alt]="'NAVBAR.AVATAR_ALT' | translate" class="avatar"
+            onerror="this.src='assets/images/default-avatar.png'">
         </div>
       </div>
     </div>
@@ -86,8 +108,8 @@
 
 <mat-menu #notificationMenu="matMenu" xPosition="before" class="notification-panel">
   <div class="notification-header">
-    <h3>Notificaciones</h3>
-    <button mat-button color="primary" (click)="markAllRead()">Marcar leídas</button>
+    <h3>{{ 'NOTIFICATIONS.TITLE' | translate }}</h3>
+    <button mat-button color="primary" (click)="markAllRead()">{{ 'NOTIFICATIONS.MARK_ALL_READ' | translate }}</button>
   </div>
   <div class="notification-list">
     <button mat-menu-item *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
@@ -101,20 +123,20 @@
     </button>
     <div *ngIf="notifications.length === 0" class="empty-notif">
       <mat-icon>notifications_off</mat-icon>
-      <p>No tienes notificaciones nuevas</p>
+      <p>{{ 'NOTIFICATIONS.EMPTY_STATE' | translate }}</p>
     </div>
   </div>
 </mat-menu>
 
 <mat-menu #userMenu="matMenu" xPosition="before">
   <button mat-menu-item routerLink="/dashboard/my-profile">
-    <mat-icon>account_circle</mat-icon> Mi Perfil
+    <mat-icon>account_circle</mat-icon> {{ 'USER_MENU.PROFILE' | translate }}
   </button>
   <button mat-menu-item routerLink="/dashboard/settings">
-    <mat-icon>settings</mat-icon> Configuración
+    <mat-icon>settings</mat-icon> {{ 'USER_MENU.SETTINGS' | translate }}
   </button>
   <mat-divider></mat-divider>
   <button mat-menu-item (click)="logout()">
-    <mat-icon color="warn">logout</mat-icon> Cerrar Sesión
+    <mat-icon color="warn">logout</mat-icon> {{ 'USER_MENU.LOGOUT' | translate }}
   </button>
 </mat-menu>

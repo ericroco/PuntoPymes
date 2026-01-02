@@ -4,11 +4,13 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../modules/auth/services/auth';
 import { MatIconModule } from '@angular/material/icon';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
+
+import { TranslateModule } from '@ngx-translate/core';
 import { CompanyConfigService, ConfiguracionModulos } from '../../../modules/dashboard/services/company-config';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule, MatIconModule, TranslateModule],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss']
 })

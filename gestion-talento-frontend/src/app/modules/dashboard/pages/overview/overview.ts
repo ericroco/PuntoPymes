@@ -20,6 +20,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
 
+import { TranslateModule } from '@ngx-translate/core';
+
 // Servicios
 import { DashboardService, DashboardKPIs } from '../../services/dashboard';
 import { AuthService } from '../../../auth/services/auth';
@@ -53,8 +55,9 @@ interface Holiday { date: string; name: string; }
     MatListModule,
     MatProgressBarModule,
     MatTooltipModule,
-    MatSnackBarModule, // Importante para notificaciones
-    NgxChartsModule
+    MatSnackBarModule,
+    NgxChartsModule,
+    TranslateModule
   ],
   templateUrl: './overview.html',
   styleUrls: ['./overview.scss'],

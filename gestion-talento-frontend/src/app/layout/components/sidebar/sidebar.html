@@ -1,7 +1,7 @@
 <aside class="sidebar-container">
 
   <div class="sidebar-header">
-    <img [src]="companyLogo" alt="Logo Empresa" class="logo">
+    <img [src]="companyLogo" [alt]="'SIDEBAR.HEADER.LOGO_ALT' | translate" class="logo">
     <span class="logo-text">{{ companyName }}</span>
   </div>
 
@@ -9,7 +9,7 @@
 
     <a routerLink="/dashboard/overview" routerLinkActive="active" class="nav-item">
       <mat-icon>dashboard</mat-icon>
-      <span>Dashboard</span>
+      <span>{{ 'SIDEBAR.NAV.DASHBOARD' | translate }}</span>
     </a>
 
     <div class="nav-divider"></div>
@@ -19,32 +19,32 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">people</mat-icon>
-        <span>Talento Humano</span>
+        <span>{{ 'SIDEBAR.SECTIONS.HUMAN_TALENT.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a *ngIf="can(P.EMPLOYEES_READ_BASIC)" routerLink="/dashboard/employees" routerLinkActive="active"
           class="nav-item">
           <mat-icon>badge</mat-icon>
-          <span>Directorio</span>
+          <span>{{ 'SIDEBAR.SECTIONS.HUMAN_TALENT.DIRECTORY' | translate }}</span>
         </a>
 
         <a *ngIf="can(P.RECRUITMENT_MANAGE) && isActive('recruitment')" routerLink="/dashboard/recruitment"
           routerLinkActive="active" class="nav-item">
           <mat-icon>work_outline</mat-icon>
-          <span>Reclutamiento</span>
+          <span>{{ 'SIDEBAR.SECTIONS.HUMAN_TALENT.RECRUITMENT' | translate }}</span>
         </a>
 
         <a *ngIf="can(P.ONBOARDING_MANAGE) && isActive('onboarding')" routerLink="/dashboard/onboarding"
           routerLinkActive="active" class="nav-item">
           <mat-icon>how_to_reg</mat-icon>
-          <span>Onboarding</span>
+          <span>{{ 'SIDEBAR.SECTIONS.HUMAN_TALENT.ONBOARDING' | translate }}</span>
         </a>
 
         <a *ngIf="can(P.PERFORMANCE_MANAGE) && isActive('performance')" routerLink="/dashboard/performance"
           routerLinkActive="active" class="nav-item">
           <mat-icon>stars</mat-icon>
-          <span>Evaluaciones</span>
+          <span>{{ 'SIDEBAR.SECTIONS.HUMAN_TALENT.PERFORMANCE' | translate }}</span>
         </a>
       </div>
     </div>
@@ -54,32 +54,32 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">business_center</mat-icon>
-        <span>Operaciones</span>
+        <span>{{ 'SIDEBAR.SECTIONS.OPERATIONS.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a *ngIf="(can(P.PROJECTS_READ) || can(P.TASKS_MY_READ)) && isActive('projects')"
           routerLink="/dashboard/sprints" routerLinkActive="active" class="nav-item">
           <mat-icon>view_kanban</mat-icon>
-          <span>Sprints y Tareas</span>
+          <span>{{ 'SIDEBAR.SECTIONS.OPERATIONS.SPRINTS_TASKS' | translate }}</span>
         </a>
 
         <a *ngIf="can(P.PROJECTS_READ) && isActive('goals')" routerLink="/dashboard/goals" routerLinkActive="active"
           class="nav-item">
           <mat-icon>flag</mat-icon>
-          <span>Metas y Objetivos</span>
+          <span>{{ 'SIDEBAR.SECTIONS.OPERATIONS.GOALS' | translate }}</span>
         </a>
 
         <a *ngIf="(can(P.ATTENDANCE_READ_ALL) || can(P.ATTENDANCE_MY_READ)) && isActive('attendance')"
           routerLink="/dashboard/attendance" routerLinkActive="active" class="nav-item">
           <mat-icon>event_available</mat-icon>
-          <span>Asistencia</span>
+          <span>{{ 'SIDEBAR.SECTIONS.OPERATIONS.ATTENDANCE' | translate }}</span>
         </a>
 
         <a *ngIf="can(P.TASKS_EXECUTE) && isActive('timesheet')" routerLink="/dashboard/timesheet"
           routerLinkActive="active" class="nav-item">
           <mat-icon>schedule</mat-icon>
-          <span>Registro de Tiempo</span>
+          <span>{{ 'SIDEBAR.SECTIONS.OPERATIONS.TIMESHEET' | translate }}</span>
         </a>
       </div>
     </div>
@@ -88,20 +88,20 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">payments</mat-icon>
-        <span>Compensación</span>
+        <span>{{ 'SIDEBAR.SECTIONS.COMPENSATION.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a *ngIf="(can(P.PAYROLL_READ) || can(P.PAYROLL_MY_READ)) && isActive('payroll')"
           routerLink="/dashboard/payroll" routerLinkActive="active" class="nav-item">
           <mat-icon>receipt_long</mat-icon>
-          <span>Nómina</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMPENSATION.PAYROLL' | translate }}</span>
         </a>
 
         <a *ngIf="(can(P.BENEFITS_MANAGE) || can(P.LOANS_REQUEST)) && isActive('benefits')"
           routerLink="/dashboard/benefits" routerLinkActive="active" class="nav-item">
           <mat-icon>card_giftcard</mat-icon>
-          <span>Beneficios</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMPENSATION.BENEFITS' | translate }}</span>
         </a>
       </div>
     </div>
@@ -110,13 +110,13 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">trending_up</mat-icon>
-        <span>Desarrollo</span>
+        <span>{{ 'SIDEBAR.SECTIONS.DEVELOPMENT.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a routerLink="/dashboard/courses" routerLinkActive="active" class="nav-item">
           <mat-icon>school</mat-icon>
-          <span>Capacitación</span>
+          <span>{{ 'SIDEBAR.SECTIONS.DEVELOPMENT.TRAINING' | translate }}</span>
         </a>
       </div>
     </div>
@@ -125,19 +125,19 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">inventory_2</mat-icon>
-        <span>Recursos</span>
+        <span>{{ 'SIDEBAR.SECTIONS.RESOURCES.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a *ngIf="isActive('documents')" routerLink="/dashboard/documents" routerLinkActive="active" class="nav-item">
           <mat-icon>folder</mat-icon>
-          <span>Documentos</span>
+          <span>{{ 'SIDEBAR.SECTIONS.RESOURCES.DOCUMENTS' | translate }}</span>
         </a>
 
         <a *ngIf="can(P.ASSETS_MANAGE) && isActive('assets')" routerLink="/dashboard/assets" routerLinkActive="active"
           class="nav-item">
           <mat-icon>devices</mat-icon>
-          <span>Activos y Equipos</span>
+          <span>{{ 'SIDEBAR.SECTIONS.RESOURCES.ASSETS' | translate }}</span>
         </a>
       </div>
     </div>
@@ -146,13 +146,13 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">analytics</mat-icon>
-        <span>Análisis</span>
+        <span>{{ 'SIDEBAR.SECTIONS.ANALYSIS.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a routerLink="/dashboard/reports" routerLinkActive="active" class="nav-item">
           <mat-icon>bar_chart</mat-icon>
-          <span>Reportes</span>
+          <span>{{ 'SIDEBAR.SECTIONS.ANALYSIS.REPORTS' | translate }}</span>
         </a>
       </div>
     </div>
@@ -162,19 +162,19 @@
     <div class="nav-section">
       <div class="nav-title">
         <mat-icon class="section-icon">person</mat-icon>
-        <span>Mi Portal</span>
+        <span>{{ 'SIDEBAR.SECTIONS.MY_PORTAL.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a routerLink="/dashboard/my-profile" routerLinkActive="active" class="nav-item">
           <mat-icon>account_circle</mat-icon>
-          <span>Mi Perfil</span>
+          <span>{{ 'SIDEBAR.SECTIONS.MY_PORTAL.PROFILE' | translate }}</span>
         </a>
 
         <a routerLink="/dashboard/my-expenses" routerLinkActive="active" class="nav-item"
           *ngIf="can(P.EXPENSES_REPORT)">
           <mat-icon>receipt_long</mat-icon>
-          <span>Mis Gastos</span>
+          <span>{{ 'SIDEBAR.SECTIONS.MY_PORTAL.EXPENSES' | translate }}</span>
         </a>
       </div>
     </div>
@@ -183,28 +183,28 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">domain</mat-icon>
-        <span>Empresa</span>
+        <span>{{ 'SIDEBAR.SECTIONS.COMPANY.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a *ngIf="can(P.BRANCHES_MANAGE)" routerLink="/dashboard/branches" routerLinkActive="active" class="nav-item">
           <mat-icon>store</mat-icon>
-          <span>Sucursales / Sedes</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMPANY.BRANCHES' | translate }}</span>
         </a>
 
         <a routerLink="/dashboard/organization-chart" routerLinkActive="active" class="nav-item">
           <mat-icon>account_tree</mat-icon>
-          <span>Organigrama</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMPANY.ORG_CHART' | translate }}</span>
         </a>
 
         <a routerLink="/dashboard/policies" routerLinkActive="active" class="nav-item">
           <mat-icon>gavel</mat-icon>
-          <span>Políticas y Normas</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMPANY.POLICIES' | translate }}</span>
         </a>
 
         <a routerLink="/dashboard/company-directory" routerLinkActive="active" class="nav-item">
           <mat-icon>contact_page</mat-icon>
-          <span>Directorio Empresarial</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMPANY.DIRECTORY' | translate }}</span>
         </a>
       </div>
     </div>
@@ -212,18 +212,18 @@
     <div class="nav-section" *ngIf="isActive('communication')">
       <div class="nav-title">
         <mat-icon class="section-icon">forum</mat-icon>
-        <span>Comunicación</span>
+        <span>{{ 'SIDEBAR.SECTIONS.COMMUNICATION.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a routerLink="/dashboard/announcements" routerLinkActive="active" class="nav-item">
           <mat-icon>campaign</mat-icon>
-          <span>Comunicados</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMMUNICATION.ANNOUNCEMENTS' | translate }}</span>
         </a>
 
         <a routerLink="/dashboard/surveys" routerLinkActive="active" class="nav-item">
           <mat-icon>poll</mat-icon>
-          <span>Clima y Encuestas</span>
+          <span>{{ 'SIDEBAR.SECTIONS.COMMUNICATION.SURVEYS' | translate }}</span>
         </a>
       </div>
     </div>
@@ -232,13 +232,13 @@
 
       <div class="nav-title">
         <mat-icon class="section-icon">verified_user</mat-icon>
-        <span>Gestión</span>
+        <span>{{ 'SIDEBAR.SECTIONS.MANAGEMENT.TITLE' | translate }}</span>
       </div>
 
       <div class="nav-submenu">
         <a routerLink="/dashboard/approvals" routerLinkActive="active" class="nav-item">
           <mat-icon>inbox</mat-icon>
-          <span>Centro de Aprobaciones</span>
+          <span>{{ 'SIDEBAR.SECTIONS.MANAGEMENT.APPROVALS' | translate }}</span>
         </a>
       </div>
     </div>
@@ -248,7 +248,7 @@
     <a *ngIf="can(P.ROLES_MANAGE) || can(P.USERS_MANAGE) || can(P.COMPANY_CONFIG)" routerLink="/dashboard/settings"
       routerLinkActive="active" class="nav-item">
       <mat-icon>settings</mat-icon>
-      <span>Configuración</span>
+      <span>{{ 'SIDEBAR.NAV.SETTINGS' | translate }}</span>
     </a>
 
   </nav>
@@ -256,7 +256,7 @@
   <div class="sidebar-footer">
     <button class="logout-btn" (click)="authService.logout()">
       <mat-icon>logout</mat-icon>
-      <span>Cerrar Sesión</span>
+      <span>{{ 'SIDEBAR.NAV.LOGOUT' | translate }}</span>
     </button>
   </div>
 

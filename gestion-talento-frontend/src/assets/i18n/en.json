@@ -1,0 +1,341 @@
+{
+    "NAVBAR": {
+        "TITLE": "Overview",
+        "WELCOME": "Welcome,",
+        "FILTERING_BADGE": "Filtering by Branch",
+        "ALL_BRANCHES": "All Branches",
+        "SEARCH_PLACEHOLDER": "Search...",
+        "THEME": {
+            "LIGHT": "Light Mode",
+            "DARK": "Dark Mode"
+        },
+        "AVATAR_ALT": "Avatar"
+    },
+    "NOTIFICATIONS": {
+        "TITLE": "Notifications",
+        "MARK_ALL_READ": "Mark all read",
+        "EMPTY_STATE": "You have no new notifications"
+    },
+    "USER_MENU": {
+        "PROFILE": "My Profile",
+        "SETTINGS": "Settings",
+        "LOGOUT": "Logout"
+    },
+    "SIDEBAR": {
+        "HEADER": {
+            "LOGO_ALT": "Company Logo"
+        },
+        "NAV": {
+            "DASHBOARD": "Dashboard",
+            "SETTINGS": "Settings",
+            "LOGOUT": "Logout"
+        },
+        "SECTIONS": {
+            "HUMAN_TALENT": {
+                "TITLE": "Human Resources",
+                "DIRECTORY": "Directory",
+                "RECRUITMENT": "Recruitment",
+                "ONBOARDING": "Onboarding",
+                "PERFORMANCE": "Performance Reviews"
+            },
+            "OPERATIONS": {
+                "TITLE": "Operations",
+                "SPRINTS_TASKS": "Sprints & Tasks",
+                "GOALS": "Goals & Objectives",
+                "ATTENDANCE": "Attendance",
+                "TIMESHEET": "Timesheet"
+            },
+            "COMPENSATION": {
+                "TITLE": "Compensation",
+                "PAYROLL": "Payroll",
+                "BENEFITS": "Benefits"
+            },
+            "DEVELOPMENT": {
+                "TITLE": "Development",
+                "TRAINING": "Training"
+            },
+            "RESOURCES": {
+                "TITLE": "Resources",
+                "DOCUMENTS": "Documents",
+                "ASSETS": "Assets & Equipment"
+            },
+            "ANALYSIS": {
+                "TITLE": "Analytics",
+                "REPORTS": "Reports"
+            },
+            "MY_PORTAL": {
+                "TITLE": "My Portal",
+                "PROFILE": "My Profile",
+                "EXPENSES": "My Expenses"
+            },
+            "COMPANY": {
+                "TITLE": "Company",
+                "BRANCHES": "Branches / Locations",
+                "ORG_CHART": "Org Chart",
+                "POLICIES": "Policies & Rules",
+                "DIRECTORY": "Corporate Directory"
+            },
+            "COMMUNICATION": {
+                "TITLE": "Communication",
+                "ANNOUNCEMENTS": "Announcements",
+                "SURVEYS": "Surveys & Culture"
+            },
+            "MANAGEMENT": {
+                "TITLE": "Management",
+                "APPROVALS": "Approval Center"
+            }
+        }
+    },
+    "HUB": {
+        "HEADER": {
+            "GREETING": "Hello,",
+            "SUBTITLE": "Welcome to your control center. Select a workspace to get started.",
+            "STATUS_ACTIVE": "Active Session",
+            "LOGOUT_TOOLTIP": "Logout"
+        },
+        "CARD": {
+            "DEFAULT_ROLE": "Member",
+            "WORKSPACE_LABEL": "Workspace",
+            "ENTER_BTN": "Enter"
+        },
+        "CREATE_NEW": {
+            "TITLE": "New Organization",
+            "DESCRIPTION": "Register a new company and configure your team from scratch.",
+            "START_BTN": "Get Started"
+        },
+        "FOOTER": "© 2025 TalenTrack. Smart Human Resources Management."
+    },
+    "CREATE_ORG": {
+        "HEADER": {
+            "BACK": "Back",
+            "STEP_PREFIX": "Step",
+            "STEP_OF": "of",
+            "TITLE": "Create your Organization",
+            "SUBTITLE": "Customize your workspace in Talent Track."
+        },
+        "STEPS": {
+            "IDENTITY": {
+                "LABEL": "Corporate Identity",
+                "LOGO": {
+                    "UPLOAD_BTN": "Upload Logo",
+                    "HINT": "Recommended: Transparent PNG, 500x500px"
+                },
+                "FORM": {
+                    "NAME_LABEL": "Your Name",
+                    "NAME_PLACEHOLDER": "Ex. John",
+                    "SURNAME_LABEL": "Your Surname",
+                    "SURNAME_PLACEHOLDER": "Ex. Doe",
+                    "COMPANY_LABEL": "Company Name",
+                    "COMPANY_PLACEHOLDER": "Ex. TechSolutions Inc.",
+                    "COLOR_LABEL": "Primary Color",
+                    "REQUIRED_ERROR": "Required",
+                    "NAME_REQUIRED_ERROR": "Name is required"
+                }
+            },
+            "PLAN": {
+                "LABEL": "Select your Plan",
+                "RECOMMENDED": "RECOMMENDED",
+                "PER_MONTH": "/month"
+            },
+            "SUMMARY": {
+                "LABEL": "Summary",
+                "PLAN_PREFIX": "Plan",
+                "ADMIN_ROLE_INFO": "By creating the company, you will be automatically assigned the role of <strong>Main Administrator</strong>.",
+                "LAUNCH_BTN": "Launch Platform"
+            }
+        },
+        "ACTIONS": {
+            "CONTINUE": "Continue",
+            "NEXT": "Next",
+            "BACK": "Back"
+        },
+        "PREVIEW_PANE": {
+            "TITLE": "Preview",
+            "SUBTITLE": "This is how your employees will see the platform",
+            "MOCK_WELCOME": "Welcome to"
+        }
+    },
+    "LOGIN": {
+        "VISUAL": {
+            "TAGLINE": "Smart Human Resources",
+            "TITLE": "Empower your Human Capital",
+            "DESCRIPTION": "Comprehensive payroll, attendance, and talent development management in a single platform designed to boost your organization.",
+            "FEATURES": {
+                "ANALYTICS": {
+                    "TITLE": "Advanced Analytics",
+                    "DESC": "Real-time KPIs"
+                },
+                "SECURITY": {
+                    "TITLE": "High Security",
+                    "DESC": "Banking standards"
+                },
+                "AUTOMATION": {
+                    "TITLE": "Automation",
+                    "DESC": "Save 80% time"
+                },
+                "CLOUD": {
+                    "TITLE": "100% Cloud",
+                    "DESC": "Access from anywhere"
+                }
+            },
+            "CARD_MOCKUP": {
+                "TITLE": "Payroll Processed",
+                "SUBTITLE": "Just now • Success"
+            }
+        },
+        "FORM": {
+            "TITLE": "Sign In",
+            "SUBTITLE": "Enter your credentials to access your dashboard",
+            "EMAIL": {
+                "LABEL": "Email Address",
+                "PLACEHOLDER": "your-email@company.com",
+                "ERROR_INVALID": "Please enter a valid email",
+                "ERROR_REQUIRED": "Email is required"
+            },
+            "PASSWORD": {
+                "LABEL": "Password",
+                "TOGGLE_ARIA": "Show password",
+                "ERROR_REQUIRED": "Password is required",
+                "ERROR_MINLENGTH": "Minimum 6 characters"
+            },
+            "FORGOT_PASSWORD": "Forgot your password?",
+            "SUBMIT_BTN": "Login",
+            "DIVIDER": "Or continue with",
+            "GOOGLE_BTN": "Continue with Google",
+            "REGISTER": {
+                "TEXT": "Don't have an account?",
+                "LINK": "Sign up for free"
+            }
+        }
+    },
+    "REGISTER": {
+        "VISUAL": {
+            "TAGLINE": "Smart Human Resources",
+            "TITLE": "Digitize your Talent Management",
+            "DESCRIPTION": "Join over 500 companies that have already transformed their HR department with our comprehensive platform.",
+            "FEATURES": {
+                "AI": {
+                    "TITLE": "Integrated AI",
+                    "DESC": "Smart recruitment"
+                },
+                "PAYROLL": {
+                    "TITLE": "Automated Payroll",
+                    "DESC": "Calculated in seconds"
+                },
+                "NO_COMMITMENT": {
+                    "TITLE": "No Commitment",
+                    "DESC": "No credit card required"
+                },
+                "TRIAL": {
+                    "TITLE": "Free Trial",
+                    "DESC": "30 days at no cost"
+                }
+            },
+            "CARD_MOCKUP": {
+                "TITLE": "+500 Active Companies",
+                "SUBTITLE": "Trust us"
+            }
+        },
+        "FORM": {
+            "TITLE": "Create Account",
+            "SUBTITLE": "Join the +500 companies that trust us",
+            "EMAIL": {
+                "LABEL": "Email Address",
+                "PLACEHOLDER": "your-email@company.com",
+                "ERROR_INVALID": "Please enter a valid email",
+                "ERROR_REQUIRED": "Email is required"
+            },
+            "PASSWORD": {
+                "LABEL": "Password",
+                "TOGGLE_ARIA": "Show password",
+                "ERROR_REQUIRED": "Password is required",
+                "ERROR_MINLENGTH": "Minimum 8 characters required"
+            },
+            "CONFIRM_PASSWORD": {
+                "LABEL": "Confirm Password",
+                "TOGGLE_ARIA": "Show confirm password",
+                "ERROR_MISMATCH": "Passwords do not match"
+            },
+            "TERMS": {
+                "ACCEPT": "I accept the",
+                "TOS_LINK": "Terms and Conditions",
+                "AND": "and the",
+                "PRIVACY_LINK": "Privacy Policy",
+                "ERROR_REQUIRED": "You must accept the terms to continue"
+            },
+            "SUBMIT_BTN": "Create my Account",
+            "DIVIDER": "Or sign up with",
+            "GOOGLE_BTN": "Continue with Google",
+            "LOGIN_REDIRECT": {
+                "TEXT": "Already have an account?",
+                "LINK": "Log In"
+            }
+        }
+    },
+    "DASHBOARD": {
+        "ADMIN": {
+            "TITLE": "Overview",
+            "SUMMARY": {
+                "PENDING_ACTIONS": "Pending Actions",
+                "MANAGE_LINK": "Manage"
+            },
+            "WIDGETS": {
+                "APPROVALS": {
+                    "TITLE": "Approvals",
+                    "TOOLTIP_APPROVE": "Approve",
+                    "TOOLTIP_REJECT": "Reject",
+                    "EMPTY_STATE": "All caught up!"
+                },
+                "DISTRIBUTION": {
+                    "TITLE": "Distribution by Area"
+                },
+                "CLIMATE": {
+                    "TITLE": "Work Climate",
+                    "SURVEY_PREFIX": "Survey:",
+                    "PARTICIPATION_LABEL": "Participation",
+                    "SATISFACTION_LABEL": "Satisfaction (1-5)",
+                    "DETAILS_BTN": "DETAILS"
+                },
+                "TURNOVER": {
+                    "TITLE": "Turnover (6 Months)"
+                },
+                "QUICK_LINKS": {
+                    "TITLE": "Quick Access",
+                    "EMPLOYEES": "Staff",
+                    "VACANCIES": "Vacancies",
+                    "SPRINTS": "Sprints",
+                    "SETTINGS": "Settings"
+                }
+            }
+        },
+        "EMPLOYEE": {
+            "TITLE": "My Portal",
+            "WIDGETS": {
+                "ANNOUNCEMENTS": {
+                    "TITLE": "Bulletin Board",
+                    "EMPTY_STATE": "No new announcements"
+                },
+                "POLLS": {
+                    "TITLE": "Surveys",
+                    "VOTE_BTN": "Participate",
+                    "MORE_SUFFIX": "more",
+                    "EMPTY_STATE": "You're all set!"
+                },
+                "METRICS": {
+                    "TITLE": "My Metrics"
+                },
+                "LEAVE": {
+                    "TITLE": "Time Off",
+                    "AVAILABLE_PREFIX": "Available:",
+                    "DAYS_SUFFIX": "days",
+                    "FORM": {
+                        "DATES_LABEL": "Dates",
+                        "START_PLACEHOLDER": "Start",
+                        "END_PLACEHOLDER": "End"
+                    },
+                    "SUBMIT_BTN": "REQUEST"
+                }
+            }
+        }
+    }
+}

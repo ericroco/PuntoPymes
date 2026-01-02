@@ -1,0 +1,341 @@
+{
+    "NAVBAR": {
+        "TITLE": "Vista General",
+        "WELCOME": "Bienvenido,",
+        "FILTERING_BADGE": "Filtrando por Sucursal",
+        "ALL_BRANCHES": "Todas las Sedes",
+        "SEARCH_PLACEHOLDER": "Buscar...",
+        "THEME": {
+            "LIGHT": "Modo Claro",
+            "DARK": "Modo Oscuro"
+        },
+        "AVATAR_ALT": "Avatar"
+    },
+    "NOTIFICATIONS": {
+        "TITLE": "Notificaciones",
+        "MARK_ALL_READ": "Marcar leídas",
+        "EMPTY_STATE": "No tienes notificaciones nuevas"
+    },
+    "USER_MENU": {
+        "PROFILE": "Mi Perfil",
+        "SETTINGS": "Configuración",
+        "LOGOUT": "Cerrar Sesión"
+    },
+    "SIDEBAR": {
+        "HEADER": {
+            "LOGO_ALT": "Logo Empresa"
+        },
+        "NAV": {
+            "DASHBOARD": "Dashboard",
+            "SETTINGS": "Configuración",
+            "LOGOUT": "Cerrar Sesión"
+        },
+        "SECTIONS": {
+            "HUMAN_TALENT": {
+                "TITLE": "Talento Humano",
+                "DIRECTORY": "Directorio",
+                "RECRUITMENT": "Reclutamiento",
+                "ONBOARDING": "Onboarding",
+                "PERFORMANCE": "Evaluaciones"
+            },
+            "OPERATIONS": {
+                "TITLE": "Operaciones",
+                "SPRINTS_TASKS": "Sprints y Tareas",
+                "GOALS": "Metas y Objetivos",
+                "ATTENDANCE": "Asistencia",
+                "TIMESHEET": "Registro de Tiempo"
+            },
+            "COMPENSATION": {
+                "TITLE": "Compensación",
+                "PAYROLL": "Nómina",
+                "BENEFITS": "Beneficios"
+            },
+            "DEVELOPMENT": {
+                "TITLE": "Desarrollo",
+                "TRAINING": "Capacitación"
+            },
+            "RESOURCES": {
+                "TITLE": "Recursos",
+                "DOCUMENTS": "Documentos",
+                "ASSETS": "Activos y Equipos"
+            },
+            "ANALYSIS": {
+                "TITLE": "Análisis",
+                "REPORTS": "Reportes"
+            },
+            "MY_PORTAL": {
+                "TITLE": "Mi Portal",
+                "PROFILE": "Mi Perfil",
+                "EXPENSES": "Mis Gastos"
+            },
+            "COMPANY": {
+                "TITLE": "Empresa",
+                "BRANCHES": "Sucursales / Sedes",
+                "ORG_CHART": "Organigrama",
+                "POLICIES": "Políticas y Normas",
+                "DIRECTORY": "Directorio Empresarial"
+            },
+            "COMMUNICATION": {
+                "TITLE": "Comunicación",
+                "ANNOUNCEMENTS": "Comunicados",
+                "SURVEYS": "Clima y Encuestas"
+            },
+            "MANAGEMENT": {
+                "TITLE": "Gestión",
+                "APPROVALS": "Centro de Aprobaciones"
+            }
+        }
+    },
+    "HUB": {
+        "HEADER": {
+            "GREETING": "Hola,",
+            "SUBTITLE": "Bienvenido a tu centro de control. Selecciona un espacio de trabajo para comenzar.",
+            "STATUS_ACTIVE": "Sesión Activa",
+            "LOGOUT_TOOLTIP": "Cerrar Sesión"
+        },
+        "CARD": {
+            "DEFAULT_ROLE": "Miembro",
+            "WORKSPACE_LABEL": "Espacio de Trabajo",
+            "ENTER_BTN": "Ingresar"
+        },
+        "CREATE_NEW": {
+            "TITLE": "Nueva Organización",
+            "DESCRIPTION": "Registra una nueva empresa y configura tu equipo desde cero.",
+            "START_BTN": "Comenzar"
+        },
+        "FOOTER": "© 2025 TalenTrack. Gestión de Recursos Humanos Inteligente."
+    },
+    "CREATE_ORG": {
+        "HEADER": {
+            "BACK": "Volver",
+            "STEP_PREFIX": "Paso",
+            "STEP_OF": "de",
+            "TITLE": "Crea tu Organización",
+            "SUBTITLE": "Personaliza tu espacio de trabajo en Talent Track."
+        },
+        "STEPS": {
+            "IDENTITY": {
+                "LABEL": "Identidad Corporativa",
+                "LOGO": {
+                    "UPLOAD_BTN": "Subir Logo",
+                    "HINT": "Recomendado: PNG transparente, 500x500px"
+                },
+                "FORM": {
+                    "NAME_LABEL": "Tu Nombre",
+                    "NAME_PLACEHOLDER": "Ej. Juan",
+                    "SURNAME_LABEL": "Tu Apellido",
+                    "SURNAME_PLACEHOLDER": "Ej. Pérez",
+                    "COMPANY_LABEL": "Nombre de la Empresa",
+                    "COMPANY_PLACEHOLDER": "Ej. TechSolutions S.A.",
+                    "COLOR_LABEL": "Color Principal",
+                    "REQUIRED_ERROR": "Requerido",
+                    "NAME_REQUIRED_ERROR": "El nombre es requerido"
+                }
+            },
+            "PLAN": {
+                "LABEL": "Selecciona tu Plan",
+                "RECOMMENDED": "RECOMENDADO",
+                "PER_MONTH": "/mes"
+            },
+            "SUMMARY": {
+                "LABEL": "Resumen",
+                "PLAN_PREFIX": "Plan",
+                "ADMIN_ROLE_INFO": "Al crear la empresa, se te asignará automáticamente el rol de <strong>Administrador Principal</strong>.",
+                "LAUNCH_BTN": "Lanzar Plataforma"
+            }
+        },
+        "ACTIONS": {
+            "CONTINUE": "Continuar",
+            "NEXT": "Siguiente",
+            "BACK": "Atrás"
+        },
+        "PREVIEW_PANE": {
+            "TITLE": "Vista Previa",
+            "SUBTITLE": "Así verán tus empleados la plataforma",
+            "MOCK_WELCOME": "Bienvenido a"
+        }
+    },
+    "LOGIN": {
+        "VISUAL": {
+            "TAGLINE": "Recursos Humanos Inteligentes",
+            "TITLE": "Potencia tu Capital Humano",
+            "DESCRIPTION": "Gestión integral de nómina, asistencia y desarrollo de talento en una única plataforma diseñada para impulsar tu organización.",
+            "FEATURES": {
+                "ANALYTICS": {
+                    "TITLE": "Analítica Avanzada",
+                    "DESC": "KPIs en tiempo real"
+                },
+                "SECURITY": {
+                    "TITLE": "Alta Seguridad",
+                    "DESC": "Estándares bancarios"
+                },
+                "AUTOMATION": {
+                    "TITLE": "Automatización",
+                    "DESC": "Ahorra 80% de tiempo"
+                },
+                "CLOUD": {
+                    "TITLE": "100% Cloud",
+                    "DESC": "Acceso desde cualquier lugar"
+                }
+            },
+            "CARD_MOCKUP": {
+                "TITLE": "Nómina Procesada",
+                "SUBTITLE": "Justo ahora • Éxito"
+            }
+        },
+        "FORM": {
+            "TITLE": "Iniciar Sesión",
+            "SUBTITLE": "Ingresa tus credenciales para acceder a tu panel de control",
+            "EMAIL": {
+                "LABEL": "Correo Electrónico",
+                "PLACEHOLDER": "tu-email@empresa.com",
+                "ERROR_INVALID": "Por favor ingresa un correo válido",
+                "ERROR_REQUIRED": "El correo es requerido"
+            },
+            "PASSWORD": {
+                "LABEL": "Contraseña",
+                "TOGGLE_ARIA": "Mostrar contraseña",
+                "ERROR_REQUIRED": "La contraseña es requerida",
+                "ERROR_MINLENGTH": "Mínimo 6 caracteres"
+            },
+            "FORGOT_PASSWORD": "¿Olvidaste tu contraseña?",
+            "SUBMIT_BTN": "Iniciar Sesión",
+            "DIVIDER": "O continúa con",
+            "GOOGLE_BTN": "Continuar con Google",
+            "REGISTER": {
+                "TEXT": "¿No tienes una cuenta?",
+                "LINK": "Regístrate gratis"
+            }
+        }
+    },
+    "REGISTER": {
+        "VISUAL": {
+            "TAGLINE": "Recursos Humanos Inteligentes",
+            "TITLE": "Digitaliza tu Gestión de Talento",
+            "DESCRIPTION": "Únete a más de 500 empresas que ya transformaron su área de recursos humanos con nuestra plataforma integral.",
+            "FEATURES": {
+                "AI": {
+                    "TITLE": "IA Integrada",
+                    "DESC": "Reclutamiento inteligente"
+                },
+                "PAYROLL": {
+                    "TITLE": "Nómina Automática",
+                    "DESC": "Cálculo en segundos"
+                },
+                "NO_COMMITMENT": {
+                    "TITLE": "Sin Compromiso",
+                    "DESC": "No requiere tarjeta"
+                },
+                "TRIAL": {
+                    "TITLE": "Prueba Gratis",
+                    "DESC": "30 días sin costo"
+                }
+            },
+            "CARD_MOCKUP": {
+                "TITLE": "+500 Empresas Activas",
+                "SUBTITLE": "Confían en nosotros"
+            }
+        },
+        "FORM": {
+            "TITLE": "Crear Cuenta",
+            "SUBTITLE": "Únete a las más de 500 empresas que confían en nosotros",
+            "EMAIL": {
+                "LABEL": "Correo Electrónico",
+                "PLACEHOLDER": "tu-email@empresa.com",
+                "ERROR_INVALID": "Por favor ingresa un correo válido",
+                "ERROR_REQUIRED": "El correo es obligatorio"
+            },
+            "PASSWORD": {
+                "LABEL": "Contraseña",
+                "TOGGLE_ARIA": "Mostrar contraseña",
+                "ERROR_REQUIRED": "La contraseña es requerida",
+                "ERROR_MINLENGTH": "Mínimo 8 caracteres requeridos"
+            },
+            "CONFIRM_PASSWORD": {
+                "LABEL": "Confirmar Contraseña",
+                "TOGGLE_ARIA": "Mostrar confirmar contraseña",
+                "ERROR_MISMATCH": "Las contraseñas no coinciden"
+            },
+            "TERMS": {
+                "ACCEPT": "Acepto los",
+                "TOS_LINK": "Términos y Condiciones",
+                "AND": "y la",
+                "PRIVACY_LINK": "Política de Privacidad",
+                "ERROR_REQUIRED": "Debes aceptar los términos para continuar"
+            },
+            "SUBMIT_BTN": "Crear mi Cuenta",
+            "DIVIDER": "O regístrate con",
+            "GOOGLE_BTN": "Continuar con Google",
+            "LOGIN_REDIRECT": {
+                "TEXT": "¿Ya tienes una cuenta?",
+                "LINK": "Inicia Sesión"
+            }
+        }
+    },
+    "DASHBOARD": {
+        "ADMIN": {
+            "TITLE": "Vista General",
+            "SUMMARY": {
+                "PENDING_ACTIONS": "Pendientes de Acción",
+                "MANAGE_LINK": "Gestionar"
+            },
+            "WIDGETS": {
+                "APPROVALS": {
+                    "TITLE": "Aprobaciones",
+                    "TOOLTIP_APPROVE": "Aprobar",
+                    "TOOLTIP_REJECT": "Rechazar",
+                    "EMPTY_STATE": "¡Todo al día!"
+                },
+                "DISTRIBUTION": {
+                    "TITLE": "Distribución por Área"
+                },
+                "CLIMATE": {
+                    "TITLE": "Clima Laboral",
+                    "SURVEY_PREFIX": "Encuesta:",
+                    "PARTICIPATION_LABEL": "Participación",
+                    "SATISFACTION_LABEL": "Satisfacción (1-5)",
+                    "DETAILS_BTN": "DETALLES"
+                },
+                "TURNOVER": {
+                    "TITLE": "Rotación (6 Meses)"
+                },
+                "QUICK_LINKS": {
+                    "TITLE": "Accesos Rápidos",
+                    "EMPLOYEES": "Personal",
+                    "VACANCIES": "Vacantes",
+                    "SPRINTS": "Sprints",
+                    "SETTINGS": "Ajustes"
+                }
+            }
+        },
+        "EMPLOYEE": {
+            "TITLE": "Mi Portal",
+            "WIDGETS": {
+                "ANNOUNCEMENTS": {
+                    "TITLE": "Cartelera",
+                    "EMPTY_STATE": "No hay anuncios nuevos"
+                },
+                "POLLS": {
+                    "TITLE": "Encuestas",
+                    "VOTE_BTN": "Participar",
+                    "MORE_SUFFIX": "más",
+                    "EMPTY_STATE": "¡Estás al día!"
+                },
+                "METRICS": {
+                    "TITLE": "Mis Métricas"
+                },
+                "LEAVE": {
+                    "TITLE": "Vacaciones",
+                    "AVAILABLE_PREFIX": "Disponibles:",
+                    "DAYS_SUFFIX": "días",
+                    "FORM": {
+                        "DATES_LABEL": "Fechas",
+                        "START_PLACEHOLDER": "Inicio",
+                        "END_PLACEHOLDER": "Fin"
+                    },
+                    "SUBMIT_BTN": "SOLICITAR"
+                }
+            }
+        }
+    }
+}

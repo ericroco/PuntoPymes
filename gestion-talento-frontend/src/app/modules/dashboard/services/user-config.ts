@@ -1,28 +1,32 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from '../../../../environments/environment'; // Asegúrate de que la ruta sea correcta
+import { environment } from '../../../../environments/environment';
+import { TranslateService } from '@ngx-translate/core'; // 👈 Importante
 
 interface UserConfig {
     theme?: 'light' | 'dark';
     lang?: 'es' | 'en';
-    // Aquí podrás agregar más cosas a futuro (sidebarCollapsed, notifications, etc.)
 }
 
 @Injectable({
-    providedIn: 'root' // Esto lo hace disponible en TODA la app (Sidebar, Navbar, Settings)
+    providedIn: 'root'
 })
 export class UserConfigService {
     private http = inject(HttpClient);
-    private apiUrl = `${environment.apiUrl}/usuarios/configuracion`; // La ruta que creamos en el Gateway
+    private translate = inject(TranslateService); // 👈 Inyectamos el servicio de traducción
+    private apiUrl = `${environment.apiUrl}/usuarios/configuracion`;
 
-    // Estado Reactivo (Para que los botones sepan si están activos o no)
+    // Estado Reactivo
     private configSubject = new BehaviorSubject<UserConfig>({ theme: 'light', lang: 'es' });
     public config$ = this.configSubject.asObservable();
 
     constructor() {
-        // 1. Al iniciar la app, leemos del navegador (LocalStorage)
-        // Esto evita el "parpadeo blanco" antes de que cargue el backend.
+        // 1. Configuración inicial de idiomas
+        this.translate.addLangs(['es', 'en']);
+        this.translate.setDefaultLang('es');
+
+        // 2. Al iniciar la app, leemos del navegador
         this.loadFromLocalStorage();
     }
 
@@ -31,54 +35,93 @@ export class UserConfigService {
      */
     syncWithBackend(configFromDb: any) {
         if (configFromDb) {
-            // Si la DB tiene datos, actualizamos el estado local
             const current = this.configSubject.value;
-            const merged = { ...current, ...configFromDb };
+            // Fusionamos lo local con lo que viene de la DB
+            const merged: UserConfig = { ...current, ...configFromDb };
 
+            // Aplicamos visualmente (sin guardar en backend de nuevo)
             this.applyTheme(merged.theme);
-            this.configSubject.next(merged);
 
-            // Actualizamos localStorage para la próxima vez
+            // Si viene idioma, lo aplicamos
+            if (merged.lang) {
+                this.translate.use(merged.lang);
+            }
+
+            // Actualizamos estado y localStorage
+            this.configSubject.next(merged);
             localStorage.setItem('user_config', JSON.stringify(merged));
         }
     }
 
     /**
-     * Cambia el tema (Toggle) y guarda en Backend
+     * Cambia el tema (Toggle) y guarda
      */
     toggleTheme() {
         const current = this.configSubject.value;
         const newTheme = current.theme === 'dark' ? 'light' : 'dark';
 
-        // 1. Aplicar visualmente YA (Feedback instantáneo)
+        // 1. Aplicar visualmente
         this.applyTheme(newTheme);
 
-        // 2. Actualizar estado
-        const newConfig = { ...current, theme: newTheme };
-        this.configSubject.next(newConfig as UserConfig);
-        localStorage.setItem('user_config', JSON.stringify(newConfig));
+        // 2. Actualizar todo (Estado, LocalStorage, Backend)
+        this.updateConfig({ ...current, theme: newTheme });
+    }
 
-        // 3. Guardar en Backend (Silenciosamente)
-        this.http.patch(this.apiUrl, { theme: newTheme }).subscribe({
-            error: (err) => console.error('Error guardando preferencia de tema', err)
-        });
+    /**
+     * Cambia el idioma y guarda (NUEVO MÉTODO)
+     */
+    setLanguage(lang: 'es' | 'en') {
+        const current = this.configSubject.value;
+
+        // 1. Si ya es el mismo idioma, no hacemos nada
+        if (current.lang === lang) return;
+
+        // 2. Aplicar idioma en la librería
+        this.translate.use(lang);
+
+        // 3. Actualizar todo (Estado, LocalStorage, Backend)
+        this.updateConfig({ ...current, lang: lang });
     }
 
     // --- Lógica Privada ---
+
+    /**
+     * Centraliza la lógica de guardar cambios (LocalStorage + Backend)
+     */
+    private updateConfig(newConfig: UserConfig) {
+        // A. Actualizamos el Subject (para que la UI reaccione)
+        this.configSubject.next(newConfig);
+
+        // B. Guardamos en el navegador (para recargas)
+        localStorage.setItem('user_config', JSON.stringify(newConfig));
+
+        // C. Guardamos en el Backend (Persistencia de usuario)
+        this.http.patch(this.apiUrl, newConfig).subscribe({
+            error: (err) => console.error('Error guardando configuración de usuario', err)
+        });
+    }
 
     private loadFromLocalStorage() {
         const saved = localStorage.getItem('user_config');
         if (saved) {
             const config = JSON.parse(saved);
             this.configSubject.next(config);
+
+            // Aplicar Tema guardado
             this.applyTheme(config.theme);
+
+            // Aplicar Idioma guardado
+            if (config.lang) {
+                this.translate.use(config.lang);
+            }
         } else {
-            // Por defecto Light si es la primera vez en este PC
+            // Valores por defecto
             this.applyTheme('light');
+            this.translate.use('es');
         }
     }
 
-    private applyTheme(theme: string) {
+    private applyTheme(theme: string | undefined) {
         if (theme === 'dark') {
             document.body.classList.add('dark-mode');
         } else {
