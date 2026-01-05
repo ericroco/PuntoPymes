@@ -1,0 +1,292 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Visión General",
+      "purpose": "Presentar PuntoPymes, explicándolo como un Sistema de Gestión de RRHH con arquitectura de microservicios, reclutamiento mejorado por IA y diseño multi-inquilino. Proporcionar una comprensión de alto nivel del propósito y las capacidades del sistema.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Primeros Pasos",
+      "purpose": "Guiar a los desarrolladores a través de la configuración inicial, incluido el entorno Docker, la instalación de dependencias y la ejecución de la aplicación localmente.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Arquitectura",
+      "purpose": "Descripción general de las decisiones arquitectónicas del sistema, la pila tecnológica y los patrones de diseño.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Arquitectura del Sistema de Alto Nivel",
+      "purpose": "Explicar la arquitectura general: Frontend en Angular, API Gateway en NestJS, microservicios con comunicación TCP y base de datos PostgreSQL.",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Arquitectura del Frontend",
+      "purpose": "Documentar la estructura de la aplicación Angular, organización de módulos, estrategia de carga diferida (lazy loading) y jerarquía de componentes.",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Arquitectura de Microservicios Backend",
+      "purpose": "Explicar el patrón de microservicios, comunicación TCP vía @MessagePattern, enfoque de base de datos compartida y responsabilidades de los servicios.",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Base de Datos y Modelo de Datos",
+      "purpose": "Documentar la estructura de entidades TypeORM, modelo de datos multi-inquilino, relaciones de entidades y el módulo compartido libs/database.",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Microservicios Backend",
+      "purpose": "Documentación detallada de cada microservicio backend, sus responsabilidades, patrones de mensajes y lógica de negocio.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "API Gateway",
+      "purpose": "Documentar el API Gateway principal (punto-pymes-backend), su rol en el enrutamiento, autenticación JWT, guardias de permisos y servicio de archivos estáticos.",
+      "parent": "Backend Microservices",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Microservicio de Autenticación",
+      "purpose": "Documentar la autenticación y gestión de empresas: registro de usuarios, flujo de inicio de sesión, generación de JWT, creación de empresas y la función de cambio de empresa.",
+      "parent": "Backend Microservices",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Microservicio de Personal",
+      "purpose": "Documentación completa del microservicio Personal: gestión de empleados, estructura organizacional (departamentos, roles, cargos), pipeline de reclutamiento con análisis de CV por IA, flujos de incorporación y gestión de documentos.",
+      "parent": "Backend Microservices",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Microservicio de Nómina",
+      "purpose": "Documentar el procesamiento de nómina: contratos, periodos de nómina, conceptos de nómina, gestión de beneficios, solicitudes de vacaciones y el motor de cálculo de nómina.",
+      "parent": "Backend Microservices",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Microservicio de Productividad",
+      "purpose": "Documentar características de productividad: gestión de proyectos y sprints, seguimiento de tareas, ciclos de desempeño, objetivos, sistema de asistencia, gestión de activos e informes de gastos.",
+      "parent": "Backend Microservices",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Aplicación Frontend",
+      "purpose": "Descripción general de la aplicación frontend en Angular, sus módulos e integración con el backend.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Estructura y Configuración de la Aplicación",
+      "purpose": "Documentar la estructura del proyecto Angular, componentes independientes (standalone), organización de módulos y configuración de compilación.",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Sistema de Autenticación",
+      "purpose": "Documentar la autenticación en el frontend: AuthService, manejo de JWT, flujos de inicio de sesión/registro, cambio entre múltiples empresas y el interceptor de autenticación.",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Navegación y Enrutamiento",
+      "purpose": "Documentar la configuración de enrutamiento, navegación de la barra lateral, visibilidad del menú basada en permisos y módulos cargados de forma diferida.",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Panel de Control y Componentes Principales",
+      "purpose": "Documentar componentes clave del panel: página de resumen, interfaz de gestión de empleados y patrones CRUD impulsados por modales.",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Características Principales",
+      "purpose": "Documentación detallada de las principales características de negocio y flujos de trabajo del sistema.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gestión de Empleados",
+      "purpose": "Documentar el ciclo de vida del empleado: creación con aprovisionamiento de usuario, actualizaciones, estructura organizacional (departamentos, cargos), contratos y el directorio de empleados.",
+      "parent": "Core Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Reclutamiento Impulsado por IA",
+      "purpose": "Documentar el sistema de reclutamiento: creación de vacantes, publicaciones de trabajo públicas, aplicación de candidatos, análisis de CV impulsado por IA usando Google Gemini, puntuación de candidatos y gestión del pipeline.",
+      "parent": "Core Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Procesamiento de Nómina",
+      "purpose": "Documentar flujos de trabajo de nómina: gestión de periodos de nómina, conceptos y beneficios de nómina, beneficios automáticos y asignados, transacción de procesamiento de nómina y generación de recibos de nómina.",
+      "parent": "Core Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gestión de Proyectos y Tareas",
+      "purpose": "Documentar características de productividad: creación de proyectos, gestión de sprints, asignación de tareas, seguimiento de asistencia y gestión de activos.",
+      "parent": "Core Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gestión de Permisos y Roles",
+      "purpose": "Documentar el sistema RBAC: definiciones de permisos, grupos de permisos, creación y asignación de roles, roles predeterminados y autorización en frontend/backend.",
+      "parent": "Core Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gestión Multi-Inquilino y de Sucursales",
+      "purpose": "Documentar la multi-tenencia: empresa (Empresa) como raíz del inquilino, filtrado por sucursal (Sucursal), membresías de usuario a través de empresas y cambio de contexto.",
+      "parent": "Core Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Guía de Desarrollo",
+      "purpose": "Guía práctica para desarrolladores que trabajan con el código base.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Configuración del Entorno de Desarrollo",
+      "purpose": "Instrucciones detalladas de configuración: configuración de Docker Compose, variables de entorno, configuración de base de datos y ejecución de microservicios localmente.",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Añadir Nuevas Características",
+      "purpose": "Guía para extender el sistema: creación de nuevos endpoints de microservicios, adición de DTOs, implementación de verificaciones de permisos e integración con el frontend.",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Pruebas",
+      "purpose": "Documentar enfoques de pruebas, estructura de pruebas y ejecución de pruebas tanto para el frontend como para el backend.",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
