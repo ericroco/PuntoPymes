@@ -11081,7 +11081,9 @@ async function bootstrap() {
     app.use((0, express_1.json)({ limit: '50mb' }));
     app.use((0, express_1.urlencoded)({ extended: true, limit: '50mb' }));
     app.enableCors({
-        origin: 'http://localhost:4200',
+        origin: ['http://localhost:4200', 'http://192.168.1.6:4200', 'http://25.37.228.19:4200', 'http://192.168.56.1:4200',
+            'http://192.168.137.1:4200'
+        ],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
     });
