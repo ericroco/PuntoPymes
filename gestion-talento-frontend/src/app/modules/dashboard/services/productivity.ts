@@ -187,13 +187,6 @@ export class ProductivityService {
     // 2. Cambiamos '/all' por '/admin/encuestas' para coincidir con tu Backend y evitar bugs
     return this.http.get<Encuesta[]>(`${this.apiUrl}/productividad/admin/encuestas`);
   }
-
-  // 2. Eliminar encuesta
-  deleteSurvey(id: string): Observable<any> {
-    // Esto está bien, siempre y cuando tu backend tenga el endpoint DELETE
-    return this.http.delete(`${this.apiUrl}/encuestas/${id}`);
-  }
-
   // 3. Helper para calcular total de respuestas
   countVotes(encuesta: Encuesta): number {
     if (!encuesta.opciones) return 0;
@@ -208,5 +201,34 @@ export class ProductivityService {
     // Ya el interceptor se encarga de mandar el token con tu ID
     return this.http.get<any[]>(`${this.apiUrl}/anuncios`);
   }
+  /**
+     * Obtener detalle completo de una encuesta (útil para resultados)
+     */
+  getSurveyById(id: string): Observable<Encuesta> {
+    // Apunta al endpoint GET /productividad/encuestas/:id
+    return this.http.get<Encuesta>(`${this.apiUrl}/productividad/encuestas/${id}`);
+  }
 
+  /**
+   * Eliminar encuesta
+   */
+  deleteSurvey(id: string): Observable<any> {
+    // Apunta al endpoint DELETE /productividad/encuestas/:id
+    return this.http.delete(`${this.apiUrl}/productividad/encuestas/${id}`);
+  }
+
+  /**
+   * Editar encuesta (Título, descripción, fecha, estado)
+   */
+  updateSurvey(id: string, data: any): Observable<Encuesta> {
+    // Apunta al endpoint PATCH /productividad/encuestas/:id
+    return this.http.patch<Encuesta>(`${this.apiUrl}/productividad/encuestas/${id}`, data);
+  }
+
+  /**
+   * Shortcut para abrir/cerrar encuesta rápidamente
+   */
+  toggleSurveyStatus(id: string, estadoActual: boolean): Observable<Encuesta> {
+    return this.updateSurvey(id, { activa: !estadoActual });
+  }
 }

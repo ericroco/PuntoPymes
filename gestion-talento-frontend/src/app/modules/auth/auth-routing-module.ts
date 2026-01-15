@@ -4,6 +4,7 @@ import { Login } from './pages/login/login';
 import { CreateCompanyComponent } from './pages/create-company/create-company';
 import { RegisterComponent } from './pages/register/register';
 import { CompanySelectorComponent } from './pages/company-selector/company-selector';
+import { ChangePasswordComponent } from './pages/change-password/change-password';
 
 const routes: Routes = [
   // Rutas Públicas
@@ -18,6 +19,10 @@ const routes: Routes = [
   {
     path: 'select-company',
     component: CompanySelectorComponent,
+  },
+  {
+    path: 'change-password',
+    component: ChangePasswordComponent,
   },
 
   { path: '**', redirectTo: 'login' }

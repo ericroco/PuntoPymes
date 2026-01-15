@@ -5,6 +5,7 @@ import {
   ConflictException,
   NotFoundException,
   UnauthorizedException,
+
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -49,6 +50,7 @@ import { CreateAnuncioDto } from './dto/create-anuncio.dto';
 import { CreateEncuestaDto } from './dto/create-encuesta.dto';
 import { VoteDto } from './dto/vote.dto';
 import { IsNull } from 'typeorm';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class ProductividadService {
@@ -2147,6 +2149,61 @@ export class ProductividadService {
       relations: ['opciones'], // Importante traer opciones para contar votos
       order: { createdAt: 'DESC' }
     });
+  }
+
+  // ==========================================
+  // 1. OBTENER DETALLE (GET ONE)
+  // ==========================================
+  async getEncuestaById(encuestaId: string, empresaId: string) {
+    const encuesta = await this.encuestaRepo.findOne({
+      where: { id: encuestaId, empresaId },
+      relations: ['opciones'] // Traemos opciones para mostrar resultados
+    });
+
+    if (!encuesta) throw new RpcException({ message: 'Encuesta no encontrada', status: 404 });
+
+    // Opcional: Calcular votos totales aquí si quieres devolverlo procesado
+    // o dejar que el front lo sume.
+    return encuesta;
+  }
+
+  // ==========================================
+  // 2. EDITAR ENCUESTA (PATCH)
+  // ==========================================
+  async updateEncuesta(encuestaId: string, empresaId: string, data: any) {
+    const encuesta = await this.encuestaRepo.findOne({
+      where: { id: encuestaId, empresaId }
+    });
+
+    if (!encuesta) throw new RpcException({ message: 'Encuesta no encontrada', status: 404 });
+
+    // Actualizamos solo lo permitido
+    if (data.titulo) encuesta.titulo = data.titulo;
+    if (data.descripcion) encuesta.descripcion = data.descripcion;
+    // Manejo de fecha (aseguramos que sea objeto Date)
+    if (data.fechaFin) encuesta.fechaFin = new Date(data.fechaFin);
+
+    // Toggle de estado (Activa/Cerrada)
+    if (data.activa !== undefined) encuesta.activa = data.activa;
+
+    return this.encuestaRepo.save(encuesta);
+  }
+
+  // ==========================================
+  // 3. ELIMINAR ENCUESTA (DELETE)
+  // ==========================================
+  async deleteEncuesta(encuestaId: string, empresaId: string) {
+    const encuesta = await this.encuestaRepo.findOne({
+      where: { id: encuestaId, empresaId }
+    });
+
+    if (!encuesta) throw new RpcException({ message: 'Encuesta no encontrada', status: 404 });
+
+    // Si tienes configurado { onDelete: 'CASCADE' } en las relaciones de Opciones y Votos
+    // en tus Entidades, esto borrará todo automáticamente.
+    await this.encuestaRepo.remove(encuesta);
+
+    return { status: 'success', message: 'Encuesta eliminada correctamente' };
   }
 
 }

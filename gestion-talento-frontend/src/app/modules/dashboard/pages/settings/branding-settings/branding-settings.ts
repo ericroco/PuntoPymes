@@ -160,8 +160,8 @@ export class BrandingSettings implements OnInit {
   }
 
   /**
-   * Guarda la configuración de branding
-   */
+     * Guarda la configuración de branding
+     */
   saveBranding(): void {
     if (!this.hasUnsavedChanges() && !this.selectedFile) {
       this.snackBar.open('No hay cambios para guardar', 'Cerrar', {
@@ -172,25 +172,22 @@ export class BrandingSettings implements OnInit {
 
     this.isSaving = true;
 
-    // PASO 1: Upload de logo (si hay archivo nuevo)
+    // PASO 1: Upload de logo
     const uploadTask$ = this.selectedFile
       ? this.companyService.uploadLogo(this.selectedFile)
       : of({ url: this.companyLogo });
 
     uploadTask$.pipe(
-      // PASO 2: Construir payload y actualizar branding
+      // PASO 2: Construir payload
       switchMap((uploadResult: any) => {
-        // Determinar URL final del logo
         let finalLogoUrl: string | undefined = undefined;
 
         if (this.selectedFile && uploadResult.url) {
-          // Nuevo logo subido
           finalLogoUrl = uploadResult.url;
         } else if (this.companyLogo && this.companyLogo.startsWith('http')) {
-          // Logo existente (URL válida)
-          finalLogoUrl = this.companyLogo;
+          // Si tiene timestamp viejo, lo limpiamos antes de mandar al back
+          finalLogoUrl = this.companyLogo.split('?')[0];
         }
-        // Si no hay logo, enviamos undefined para que el backend lo maneje
 
         const payload = {
           logoUrl: finalLogoUrl,
@@ -200,59 +197,64 @@ export class BrandingSettings implements OnInit {
         return this.companyService.updateBranding(payload);
       }),
 
-      // PASO 3: Aplicar cambios al theme service
+      // PASO 3: Aplicar cambios (AQUÍ ESTÁ LA CORRECCIÓN 🔧)
       tap((updatedCompany: any) => {
-        // Aplicar branding actualizado
-        this.themeService.applyCompanyBranding(
-          {
-            logoUrl: updatedCompany.branding?.logoUrl,
-            primaryColor: updatedCompany.branding?.primaryColor
-          },
-          updatedCompany.nombre
-        );
 
-        // Actualizar valores originales
+        const rawLogoUrl = updatedCompany.branding?.logoUrl;
+
+        if (rawLogoUrl) {
+          // 🔥 EL TRUCO: Agregamos ?t=hora_actual
+          // Esto engaña al navegador para que crea que es una imagen nueva y la descargue sí o sí.
+          const timestamp = new Date().getTime();
+          const logoWithTimestamp = `${rawLogoUrl}?t=${timestamp}`;
+
+          // 1. Actualizamos la variable local para que se vea YA en este componente
+          this.companyLogo = logoWithTimestamp;
+
+          // 2. Guardamos el original limpio para detectar cambios futuros
+          this.originalLogo = rawLogoUrl;
+
+          // 3. Actualizamos el servicio global (Navbar, Sidebar, etc) con el timestamp
+          this.themeService.applyCompanyBranding(
+            {
+              logoUrl: logoWithTimestamp, // <--- Enviamos la URL con truco
+              primaryColor: updatedCompany.branding?.primaryColor
+            },
+            updatedCompany.nombre
+          );
+        } else {
+          // Si se borró el logo
+          this.companyLogo = null;
+          this.originalLogo = null;
+          this.themeService.applyCompanyBranding(updatedCompany.branding, updatedCompany.nombre);
+        }
+
         this.originalColor = this.primaryColor;
-        this.originalLogo = updatedCompany.branding?.logoUrl || null;
-        this.companyLogo = this.originalLogo;
       }),
 
-      // PASO 4: Manejo de errores
       catchError((error) => {
         console.error('Error al guardar branding:', error);
-
-        // Revertir color al original
         this.themeService.setPrimaryColor(this.originalColor);
         this.primaryColor = this.originalColor;
 
-        // Revertir logo al original
+        // Restauramos logo original si falla
         if (this.originalLogo) {
           this.companyLogo = this.originalLogo;
         }
 
-        this.snackBar.open(
-          'Error al guardar configuración. Intenta nuevamente.',
-          'Cerrar',
-          { duration: 4000 }
-        );
-
+        this.snackBar.open('Error al guardar configuración.', 'Cerrar', { duration: 4000 });
         return of(null);
       }),
 
-      // PASO 5: Finalizar (siempre se ejecuta)
       finalize(() => {
         this.isSaving = false;
-        this.selectedFile = null; // Reset del archivo seleccionado
+        this.selectedFile = null;
       })
 
     ).subscribe({
       next: (result) => {
         if (result) {
-          this.snackBar.open(
-            '✅ Configuración guardada exitosamente',
-            'Cerrar',
-            { duration: 3000 }
-          );
+          this.snackBar.open('✅ Configuración guardada exitosamente', 'Cerrar', { duration: 3000 });
         }
       }
     });

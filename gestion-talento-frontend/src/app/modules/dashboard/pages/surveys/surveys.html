@@ -40,14 +40,15 @@
       </div>
 
       <div class="actions">
-        <button mat-icon-button class="btn-icon" title="Ver Resultados">
+        <button mat-icon-button class="btn-icon" matTooltip="Ver Resultados" (click)="openResults(survey)">
           <mat-icon>poll</mat-icon>
         </button>
-        <button mat-icon-button class="btn-icon" title="Editar">
-          <mat-icon>edit</mat-icon>
+        <button mat-icon-button class="btn-icon" [matTooltip]="survey.activa ? 'Cerrar Encuesta' : 'Reabrir Encuesta'"
+          (click)="toggleStatus(survey)">
+          <mat-icon>{{ survey.activa ? 'lock_open' : 'lock' }}</mat-icon>
         </button>
-        <button mat-icon-button class="btn-icon btn-danger" title="Eliminar" (click)="deleteSurvey(survey.id)">
-          <mat-icon>delete</mat-icon>
+        <button mat-icon-button class="btn-icon btn-danger" matTooltip="Eliminar" (click)="deleteSurvey(survey.id)">
+          <mat-icon color="warn">delete</mat-icon>
         </button>
       </div>
 

@@ -444,6 +444,15 @@ let ProductividadController = class ProductividadController {
     deleteItemGasto(data) {
         return this.productividadService.removeItemFromReporte(data.empresaId, data.itemId);
     }
+    async getEncuestaDetail(data) {
+        return this.productividadService.getEncuestaById(data.encuestaId, data.empresaId);
+    }
+    async updateEncuesta(data) {
+        return this.productividadService.updateEncuesta(data.encuestaId, data.empresaId, data.dto);
+    }
+    async deleteEncuesta(data) {
+        return this.productividadService.deleteEncuesta(data.encuestaId, data.empresaId);
+    }
 };
 exports.ProductividadController = ProductividadController;
 __decorate([
@@ -999,6 +1008,30 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductividadController.prototype, "deleteItemGasto", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'get_encuesta_detail' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ProductividadController.prototype, "getEncuestaDetail", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'update_encuesta' }),
+    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts").Encuesta) }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ProductividadController.prototype, "updateEncuesta", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'delete_encuesta' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ProductividadController.prototype, "deleteEncuesta", null);
 exports.ProductividadController = ProductividadController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [productividad_service_1.ProductividadService])
@@ -1098,6 +1131,7 @@ const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 const create_proyecto_dto_1 = __webpack_require__(/*! ./dto/create-proyecto.dto */ "./apps/productividad/src/dto/create-proyecto.dto.ts");
 const create_tarea_dto_1 = __webpack_require__(/*! ./dto/create-tarea.dto */ "./apps/productividad/src/dto/create-tarea.dto.ts");
 const typeorm_3 = __webpack_require__(/*! typeorm */ "typeorm");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 let ProductividadService = class ProductividadService {
     proyectoRepository;
     sprintRepository;
@@ -2395,6 +2429,40 @@ let ProductividadService = class ProductividadService {
             relations: ['opciones'],
             order: { createdAt: 'DESC' }
         });
+    }
+    async getEncuestaById(encuestaId, empresaId) {
+        const encuesta = await this.encuestaRepo.findOne({
+            where: { id: encuestaId, empresaId },
+            relations: ['opciones']
+        });
+        if (!encuesta)
+            throw new microservices_1.RpcException({ message: 'Encuesta no encontrada', status: 404 });
+        return encuesta;
+    }
+    async updateEncuesta(encuestaId, empresaId, data) {
+        const encuesta = await this.encuestaRepo.findOne({
+            where: { id: encuestaId, empresaId }
+        });
+        if (!encuesta)
+            throw new microservices_1.RpcException({ message: 'Encuesta no encontrada', status: 404 });
+        if (data.titulo)
+            encuesta.titulo = data.titulo;
+        if (data.descripcion)
+            encuesta.descripcion = data.descripcion;
+        if (data.fechaFin)
+            encuesta.fechaFin = new Date(data.fechaFin);
+        if (data.activa !== undefined)
+            encuesta.activa = data.activa;
+        return this.encuestaRepo.save(encuesta);
+    }
+    async deleteEncuesta(encuestaId, empresaId) {
+        const encuesta = await this.encuestaRepo.findOne({
+            where: { id: encuestaId, empresaId }
+        });
+        if (!encuesta)
+            throw new microservices_1.RpcException({ message: 'Encuesta no encontrada', status: 404 });
+        await this.encuestaRepo.remove(encuesta);
+        return { status: 'success', message: 'Encuesta eliminada correctamente' };
     }
 };
 exports.ProductividadService = ProductividadService;

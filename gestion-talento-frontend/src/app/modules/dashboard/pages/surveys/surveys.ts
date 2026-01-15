@@ -1,19 +1,24 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Para feedback
-import { RouterModule } from '@angular/router'; // Para navegar a editar/crear
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { RouterModule } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatIcon } from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-// 👇 Importamos el servicio y la interfaz
 import { ProductivityService, Encuesta } from '../../services/productivity';
 import { CreateSurveyDialogComponent } from '../../components/create-survey-dialog/create-survey-dialog';
+import { SurveyResultsDialogComponent } from '../../components/survey-results-dialog/survey-results-dialog';
 
 @Component({
   selector: 'app-surveys',
   standalone: true,
-  imports: [CommonModule, MatSnackBarModule, RouterModule, MatDialogModule, MatIcon],
+  imports: [
+    CommonModule, MatSnackBarModule, RouterModule,
+    MatDialogModule, MatIconModule, MatButtonModule, MatTooltipModule
+  ],
   templateUrl: './surveys.html',
   styleUrls: ['./surveys.scss'],
   animations: [
@@ -45,8 +50,6 @@ export class Surveys implements OnInit {
     this.isLoading = true;
     this.productivityService.getAllSurveys().subscribe({
       next: (data) => {
-        // Mapeamos los datos si necesitamos calcular algo extra, 
-        // o usamos el helper en el HTML
         this.surveys = data;
         this.isLoading = false;
       },
@@ -58,34 +61,55 @@ export class Surveys implements OnInit {
     });
   }
 
+  // ELIMINAR
   deleteSurvey(id: string) {
     if (!confirm('¿Estás seguro de eliminar esta encuesta? Se perderán los resultados.')) return;
 
     this.productivityService.deleteSurvey(id).subscribe({
       next: () => {
         this.snackBar.open('Encuesta eliminada', 'Cerrar', { duration: 3000 });
-        this.loadSurveys(); // Recargar lista
+        this.loadSurveys();
       },
       error: () => this.snackBar.open('Error al eliminar', 'Cerrar')
     });
   }
 
-  // Helper para el HTML
-  getTotalVotes(survey: Encuesta): number {
-    return this.productivityService.countVotes(survey);
+  // EDITAR ESTADO (Abrir/Cerrar)
+  toggleStatus(survey: Encuesta) {
+    this.productivityService.toggleSurveyStatus(survey.id, survey.activa).subscribe({
+      next: (updatedSurvey) => {
+        // Actualizamos localmente para feedback inmediato
+        survey.activa = updatedSurvey.activa;
+        const statusMsg = survey.activa ? 'activada' : 'cerrada';
+        this.snackBar.open(`Encuesta ${statusMsg} correctamente`, 'Cerrar', { duration: 2000 });
+      },
+      error: () => this.snackBar.open('Error al cambiar estado', 'Cerrar')
+    });
   }
 
+  // VER RESULTADOS
+  openResults(survey: Encuesta) {
+    this.dialog.open(SurveyResultsDialogComponent, {
+      width: '600px',
+      data: survey // Pasamos la encuesta completa
+    });
+  }
+
+  // CREAR
   openCreateDialog() {
     const dialogRef = this.dialog.open(CreateSurveyDialogComponent, {
       width: '800px',
-      disableClose: true // Obliga a usar cancelar o guardar
+      disableClose: true
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        // Si se creó con éxito (devolvió true), recargamos la lista
         this.loadSurveys();
       }
     });
+  }
+
+  getTotalVotes(survey: Encuesta): number {
+    return this.productivityService.countVotes(survey);
   }
 }

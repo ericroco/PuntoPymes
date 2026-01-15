@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common'; // <--- Para *ngIf
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms'; // <--- Para [formGroup]
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
-// --- MATERIAL IMPORTS (Necesarios para que funcionen las etiquetas HTML) ---
+// --- MATERIAL IMPORTS ---
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,15 +10,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core'; // Necesario para el Datepicker
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Para el loading
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // --- SERVICIO ---
-import { PerformanceService } from '../../services/performance'; // Ajusta si tu archivo se llama performance.ts
+import { PerformanceService } from '../../services/performance';
 
 @Component({
   selector: 'app-create-cycle-dialog',
-  standalone: true, // <--- Importante para que funcionen los imports aquí
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -61,12 +61,14 @@ export class CreateCycleDialogComponent {
   onSave(): void {
     if (this.cycleForm.invalid) return;
 
-    // Validar fechas
-    const { fechaInicio, fechaFin } = this.cycleForm.value;
+    const { nombre, fechaInicio, fechaFin } = this.cycleForm.value;
 
-    // Asegurarnos de que sean objetos Date para comparar
+    // 1. Arreglo de Fechas: Normalizamos horas para evitar problemas de zona horaria
     const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0); // Empieza al inicio del día
+
     const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999); // Termina al final del día
 
     if (fin <= inicio) {
       this.snackBar.open('La fecha de fin debe ser posterior a la de inicio', 'Cerrar', { duration: 3000 });
@@ -74,13 +76,22 @@ export class CreateCycleDialogComponent {
     }
 
     this.isLoading = true;
-    this.cycleForm.disable(); // Deshabilitar formulario mientras guarda
+    this.cycleForm.disable();
 
-    // Llamamos al servicio
-    this.performanceService.createCycle(this.cycleForm.value).subscribe({
+    // 2. Preparar el envío (Payload)
+    // El "as const" soluciona tu error de TypeScript, asegurando que el tipo sea exacto.
+    const payload = {
+      nombre: nombre,
+      fechaInicio: inicio,
+      fechaFin: fin,
+      estado: 'ACTIVO' as const
+    };
+
+    // 3. Llamar al servicio
+    this.performanceService.createCycle(payload).subscribe({
       next: (res) => {
-        this.snackBar.open('Ciclo creado exitosamente', 'Cerrar', { duration: 3000 });
-        this.dialogRef.close(true); // Retornamos true para que el padre recargue
+        this.snackBar.open('Ciclo creado y activado exitosamente', 'Cerrar', { duration: 3000 });
+        this.dialogRef.close(true);
       },
       error: (err) => {
         console.error(err);

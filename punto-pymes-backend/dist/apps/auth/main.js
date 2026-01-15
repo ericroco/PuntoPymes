@@ -83,6 +83,10 @@ let AuthController = class AuthController {
     async updateUserConfig(data) {
         return this.authService.updateUserConfig(data.usuarioId, data.config);
     }
+    async changePassword(data) {
+        console.log('📨 Microservicio recibió solicitud de cambio de contraseña');
+        return this.authService.changePassword(data.userId, data.dto);
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -183,6 +187,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "updateUserConfig", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'change_password' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "changePassword", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
@@ -712,6 +724,27 @@ let AuthService = class AuthService {
             };
         });
     }
+    async changePassword(userId, dto) {
+        const { passwordActual, nuevaPassword } = dto;
+        const usuario = await this.usuarioRepository
+            .createQueryBuilder('usuario')
+            .addSelect('usuario.passwordHash')
+            .where('usuario.id = :id', { id: userId })
+            .getOne();
+        if (!usuario) {
+            throw new microservices_1.RpcException({ message: 'Usuario no encontrado', status: 404 });
+        }
+        const isMatch = await this.comparePassword(passwordActual, usuario.passwordHash);
+        if (!isMatch) {
+            throw new microservices_1.RpcException({ message: 'La contraseña actual es incorrecta', status: 400 });
+        }
+        if (passwordActual === nuevaPassword) {
+            throw new microservices_1.RpcException({ message: 'La nueva contraseña debe ser diferente', status: 400 });
+        }
+        usuario.passwordHash = await this.hashPassword(nuevaPassword);
+        await this.usuarioRepository.save(usuario);
+        return { status: 'success', message: 'Contraseña actualizada correctamente.' };
+    }
     async login(loginDto) {
         const { email, password } = loginDto;
         const usuario = await this.usuarioRepository
@@ -899,15 +932,19 @@ let AuthService = class AuthService {
         return empresa;
     }
     async updateCompanyBranding(empresaId, brandingData) {
+        console.log('🎨 INTENTO DE UPDATE BRANDING:', brandingData);
         const empresa = await this.empresaRepository.findOne({ where: { id: empresaId } });
         if (!empresa)
             throw new microservices_1.RpcException('Empresa no encontrada');
+        const currentBranding = empresa.branding || { logoUrl: null, primaryColor: null };
         empresa.branding = {
-            ...empresa.branding,
-            logoUrl: brandingData.logoUrl,
-            primaryColor: brandingData.primaryColor
+            logoUrl: brandingData.logoUrl ?? currentBranding.logoUrl,
+            primaryColor: brandingData.primaryColor ?? currentBranding.primaryColor
         };
-        return this.empresaRepository.save(empresa);
+        this.empresaRepository.merge(empresa, { branding: empresa.branding });
+        const resultado = await this.empresaRepository.save(empresa);
+        console.log('✅ BRANDING GUARDADO:', resultado.branding);
+        return resultado;
     }
     async updateCompanyConfig(empresaId, updateDto) {
         const empresa = await this.empresaRepository.findOneBy({ id: empresaId });

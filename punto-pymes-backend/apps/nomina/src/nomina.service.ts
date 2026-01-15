@@ -1160,7 +1160,7 @@ export class NominaService {
       throw new BadRequestException(`Esta solicitud ya fue procesada. Estado actual: ${solicitud.estado}`);
     }
 
-    // 2. SEGURIDAD (Tu lógica original)
+    // 2. SEGURIDAD 
     const rol = usuario.role ? usuario.role.toLowerCase() : '';
     const esSuperAdmin = rol.includes('admin') || rol.includes('root');
 
@@ -1187,13 +1187,6 @@ export class NominaService {
 
       if (!saldo) throw new NotFoundException(`Error crítico: No existe saldo para el año ${anio}.`);
 
-      // --- DEBUG LOGS (Míralos en la consola del backend) ---
-      console.log('--- PROCESANDO APROBACIÓN ---');
-      console.log(`Días Totales: ${saldo.diasTotales}`);
-      console.log(`Días Usados (Antes): ${saldo.diasUsados}`);
-      console.log(`Días Solicitados: ${solicitud.diasSolicitados}`);
-
-      // 🔥 FIX MATEMÁTICO: Forzar conversión a Number
       const diasTotales = Number(saldo.diasTotales);
       const diasUsados = Number(saldo.diasUsados);
       const diasSolicitados = Number(solicitud.diasSolicitados);
@@ -1204,12 +1197,42 @@ export class NominaService {
         throw new ConflictException(`Saldo insuficiente. Tiene ${disponibles}, pide ${diasSolicitados}.`);
       }
 
-      // Actualizar Saldo (Suma aritmética segura)
+      // Actualizar Saldo 
       saldo.diasUsados = diasUsados + diasSolicitados;
-
-      console.log(`Días Usados (Nuevo): ${saldo.diasUsados}`); // Debería salir la suma correcta
-
       await this.saldoRepo.save(saldo);
+
+      // =================================================================
+      // 3.5 🔥 LÓGICA AGREGADA: ACTUALIZAR ESTADO DEL EMPLEADO
+      // =================================================================
+
+      const hoy = new Date();
+      // Normalizamos las horas a 00:00:00 para comparar solo fechas
+      hoy.setHours(0, 0, 0, 0);
+
+      const inicioVac = new Date(solicitud.fechaInicio);
+      inicioVac.setHours(0, 0, 0, 0);
+
+      const finVac = new Date(solicitud.fechaFin);
+      finVac.setHours(23, 59, 59, 999); // Fin del día final
+
+      // Si hoy está DENTRO del rango de vacaciones (o es el día de inicio)
+      if (hoy >= inicioVac && hoy <= finVac) {
+        console.log(`--- ACTUALIZANDO ESTADO DE EMPLEADO A VACACIONES ---`);
+
+        // Asegúrate de inyectar empleadoRepo en el constructor o usar el relation
+        // Suponiendo que tienes un Enum EstadoEmpleado o string 'VACACIONES'
+
+        // Opción A: Si usas TypeORM Repository directo
+        /* await this.empleadoRepo.update(solicitud.empleadoId, { 
+           estado: EstadoEmpleado.VACACIONES // O 'VACACIONES'
+        }); 
+        */
+
+        // Opción B: Actualizar sobre el objeto cargado (si usas cascade update o save directo)
+        solicitud.empleado.estado = 'De Vacaciones'; // Ajusta esto a tu Enum real
+        await this.empleadoRepository.save(solicitud.empleado); // Necesitas inyectar empleadoRepo
+      }
+      // =================================================================
     }
 
     // 4. Actualizar Solicitud

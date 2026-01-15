@@ -559,4 +559,19 @@ export class ProductividadController {
     // Nota: El servicio que hicimos antes ya tenía removeItemFromReporte
     return this.productividadService.removeItemFromReporte(data.empresaId, data.itemId);
   }
+
+  @MessagePattern({ cmd: 'get_encuesta_detail' })
+  async getEncuestaDetail(@Payload() data: { encuestaId: string, empresaId: string }) {
+    return this.productividadService.getEncuestaById(data.encuestaId, data.empresaId);
+  }
+
+  @MessagePattern({ cmd: 'update_encuesta' })
+  async updateEncuesta(@Payload() data: { encuestaId: string, empresaId: string, dto: any }) {
+    return this.productividadService.updateEncuesta(data.encuestaId, data.empresaId, data.dto);
+  }
+
+  @MessagePattern({ cmd: 'delete_encuesta' })
+  async deleteEncuesta(@Payload() data: { encuestaId: string, empresaId: string }) {
+    return this.productividadService.deleteEncuesta(data.encuestaId, data.empresaId);
+  }
 }

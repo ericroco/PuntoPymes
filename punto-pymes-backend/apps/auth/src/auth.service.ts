@@ -18,6 +18,8 @@ import { LoginDto } from './dto/login.dto';
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 import { RpcException } from '@nestjs/microservices';
 import { UpdateConfiguracionEmpresaDto } from './dto/update-configuracion.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { BadRequestException } from '@nestjs/common';
 
 
 @Injectable()
@@ -547,6 +549,42 @@ export class AuthService {
       };
     });
   }
+
+  /**
+   * Cambiar contraseña de un usuario logueado
+   */
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const { passwordActual, nuevaPassword } = dto;
+
+    // 1. Buscar usuario (con passwordHash oculto)
+    const usuario = await this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .addSelect('usuario.passwordHash')
+      .where('usuario.id = :id', { id: userId })
+      .getOne();
+
+    if (!usuario) {
+      // En microservicios se suele usar RpcException
+      throw new RpcException({ message: 'Usuario no encontrado', status: 404 });
+    }
+
+    // 2. Validar contraseña actual
+    const isMatch = await this.comparePassword(passwordActual, usuario.passwordHash);
+    if (!isMatch) {
+      throw new RpcException({ message: 'La contraseña actual es incorrecta', status: 400 });
+    }
+
+    // 3. Validar que no repita la misma
+    if (passwordActual === nuevaPassword) {
+      throw new RpcException({ message: 'La nueva contraseña debe ser diferente', status: 400 });
+    }
+
+    // 4. Hashear y guardar
+    usuario.passwordHash = await this.hashPassword(nuevaPassword);
+    await this.usuarioRepository.save(usuario);
+
+    return { status: 'success', message: 'Contraseña actualizada correctamente.' };
+  }
   /**
    * Lógica de Login de Usuario
    * @param loginDto Los datos del formulario de login
@@ -817,17 +855,30 @@ export class AuthService {
 
   // 2. Actualizar Branding
   async updateCompanyBranding(empresaId: string, brandingData: any) {
+    // 1. LOG DE DEPURACIÓN (Míralo en la consola del backend al guardar)
+    console.log('🎨 INTENTO DE UPDATE BRANDING:', brandingData);
+
     const empresa = await this.empresaRepository.findOne({ where: { id: empresaId } });
     if (!empresa) throw new RpcException('Empresa no encontrada');
 
-    // Actualizamos SOLO la columna branding (respetando lo que ya exista si quieres)
+    // 2. Obtener lo que ya existe (o objeto vacío si es null)
+    const currentBranding = empresa.branding || { logoUrl: null, primaryColor: null };
+
+    // 3. ASIGNACIÓN SEGURA (Operador ??)
+    // Esto significa: "Si viene un dato nuevo, úsalo. Si viene null/undefined, mantén el viejo".
     empresa.branding = {
-      ...empresa.branding, // Mantiene datos viejos si los hubiera
-      logoUrl: brandingData.logoUrl,
-      primaryColor: brandingData.primaryColor
+      logoUrl: brandingData.logoUrl ?? currentBranding.logoUrl,
+      primaryColor: brandingData.primaryColor ?? currentBranding.primaryColor
     };
 
-    return this.empresaRepository.save(empresa);
+    // 4. FORZAR ACTUALIZACIÓN
+    // A veces TypeORM se lía con los JSON. Esto ayuda a confirmar que el campo cambió.
+    this.empresaRepository.merge(empresa, { branding: empresa.branding });
+
+    const resultado = await this.empresaRepository.save(empresa);
+
+    console.log('✅ BRANDING GUARDADO:', resultado.branding);
+    return resultado;
   }
 
   // --- LÓGICA DE ACTUALIZACIÓN DE CONFIGURACIÓN ---

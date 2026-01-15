@@ -85,7 +85,7 @@ import { CreateEncuestaDto } from 'apps/productividad/src/dto/create-encuesta.dt
 import { VoteDto } from 'apps/productividad/src/dto/vote.dto';
 import { ResponderSolicitudDto, EstadoSolicitud } from 'apps/nomina/src/dto/responder-solicitud.dto';
 import { UpdateConfiguracionEmpresaDto } from 'apps/auth/src/dto/update-configuracion.dto';
-
+import { ChangePasswordDto } from 'apps/auth/src/dto/change-password.dto';
 import { PERMISSIONS } from '../../../libs/common/src/constants/permissions';
 import { lastValueFrom } from 'rxjs';
 
@@ -2745,6 +2745,26 @@ export class AppController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch('auth/change-password') // <--- Definimos la ruta completa aquí
+  async changePassword(
+    @Request() req,
+    @Body() dto: ChangePasswordDto // El DTO que definimos antes
+  ) {
+    // En tu JWT Strategy, normalmente el ID viene en 'sub' o 'userId'
+    // Revisa tu payload, pero asumo que es 'sub' o 'id'
+    const userId = req.user.sub || req.user.id || req.user.userId;
+
+    // Enviamos al microservicio de Auth
+    return this.authService.send(
+      { cmd: 'change_password' }, // El comando para el microservicio
+      {
+        userId,
+        dto // Enviamos { passwordActual, nuevaPassword }
+      }
+    );
+  }
+
   // ============================================================
   // 1. OBTENER SALDO (GET /nomina/vacaciones/saldo/:id)
   // ============================================================
@@ -2768,6 +2788,43 @@ export class AppController {
     return this.authService.send(
       { cmd: 'update_user_config' },
       { usuarioId, config }
+    );
+  }
+
+  // 1. GET ONE (Para ver resultados o detalle)
+  @UseGuards(JwtAuthGuard)
+  @Get('productividad/encuestas/:id')
+  async getEncuestaById(@Request() req, @Param('id') encuestaId: string) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'get_encuesta_detail' },
+      { encuestaId, empresaId }
+    );
+  }
+
+  // 2. UPDATE (Editar o Cerrar/Abrir)
+  @UseGuards(JwtAuthGuard)
+  @Patch('productividad/encuestas/:id')
+  async updateEncuesta(
+    @Request() req,
+    @Param('id') encuestaId: string,
+    @Body() dto: any // O tu UpdateEncuestaDto
+  ) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'update_encuesta' },
+      { encuestaId, empresaId, dto }
+    );
+  }
+
+  // 3. DELETE (Eliminar)
+  @UseGuards(JwtAuthGuard)
+  @Delete('productividad/encuestas/:id')
+  async deleteEncuesta(@Request() req, @Param('id') encuestaId: string) {
+    const { empresaId } = req.user;
+    return this.productividadService.send(
+      { cmd: 'delete_encuesta' },
+      { encuestaId, empresaId }
     );
   }
 }

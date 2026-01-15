@@ -9,6 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { SwitchCompanyDto } from './dto/switch-company.dto';
 import { RpcException } from '@nestjs/microservices';
 import { UpdateConfiguracionEmpresaDto } from './dto/update-configuracion.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -100,5 +101,12 @@ export class AuthController {
   @MessagePattern({ cmd: 'update_user_config' })
   async updateUserConfig(@Payload() data: { usuarioId: string, config: any }) {
     return this.authService.updateUserConfig(data.usuarioId, data.config);
+  }
+
+  // 👇 ESTO ES LO QUE BUSCA EL GATEWAY
+  @MessagePattern({ cmd: 'change_password' })
+  async changePassword(@Payload() data: { userId: string, dto: any }) {
+    console.log('📨 Microservicio recibió solicitud de cambio de contraseña'); // <--- Añade este log
+    return this.authService.changePassword(data.userId, data.dto);
   }
 }

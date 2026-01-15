@@ -109,7 +109,8 @@ export class Goals implements OnInit {
   loadData() {
     this.isLoading = true;
     const user = this.authService.getUser();
-    this.loadActiveCycle();
+
+    // CORRECCIÓN: Eliminada llamada redundante a loadActiveCycle()
 
     this.performanceService.getActiveCycle().subscribe({
       next: (cycle) => {
@@ -127,6 +128,8 @@ export class Goals implements OnInit {
           }
 
         } else {
+          // Si no hay ciclo, dejamos de cargar pero no mostramos datos
+          this.activeCycleId = null;
           this.isLoading = false;
         }
       },
@@ -261,7 +264,9 @@ export class Goals implements OnInit {
   }
 
   // Placeholders
-  editGoal(goal: any) { } deleteGoal(goal: any): void {
+  editGoal(goal: any) { }
+
+  deleteGoal(goal: any): void {
     // Usamos confirm nativo o tu ConfirmationDialog si prefieres
     if (confirm(`¿Estás seguro de eliminar la meta "${goal.title}"?`)) {
       this.performanceService.deleteGoal(goal.id).subscribe({
@@ -296,30 +301,13 @@ export class Goals implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.loadActiveCycle(); // Recargar para detectar el nuevo ciclo
+        // CORRECCIÓN IMPORTANTE:
+        // Usamos loadData() en lugar de la función incompleta loadActiveCycle().
+        // Esto asegura que se refresque TODO (ciclo, kpis, tablas).
+        this.loadData();
       }
     });
   }
 
-  loadActiveCycle() {
-    this.performanceService.getActiveCycle().subscribe({
-      next: (cycle) => {
-        if (cycle && cycle.id) {
-          console.log('Ciclo activo encontrado:', cycle.nombre);
-          this.activeCycleId = cycle.id;
-
-          // Opcional: Si ya tenías lógica para cargar metas, 
-          // puedes llamarla aquí ahora que sabes que hay un ciclo.
-          // Ej: this.loadMyGoals(); 
-        } else {
-          console.warn('No hay ciclo activo.');
-          this.activeCycleId = null;
-        }
-      },
-      error: (err) => {
-        console.error('Error buscando ciclo activo:', err);
-        this.activeCycleId = null;
-      }
-    });
-  }
+  // SE ELIMINÓ LA FUNCIÓN loadActiveCycle() PORQUE ERA REDUNDANTE E INCOMPLETA.
 }

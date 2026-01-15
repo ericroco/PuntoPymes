@@ -1399,10 +1399,6 @@ let NominaService = class NominaService {
             });
             if (!saldo)
                 throw new common_1.NotFoundException(`Error crítico: No existe saldo para el año ${anio}.`);
-            console.log('--- PROCESANDO APROBACIÓN ---');
-            console.log(`Días Totales: ${saldo.diasTotales}`);
-            console.log(`Días Usados (Antes): ${saldo.diasUsados}`);
-            console.log(`Días Solicitados: ${solicitud.diasSolicitados}`);
             const diasTotales = Number(saldo.diasTotales);
             const diasUsados = Number(saldo.diasUsados);
             const diasSolicitados = Number(solicitud.diasSolicitados);
@@ -1411,8 +1407,18 @@ let NominaService = class NominaService {
                 throw new common_1.ConflictException(`Saldo insuficiente. Tiene ${disponibles}, pide ${diasSolicitados}.`);
             }
             saldo.diasUsados = diasUsados + diasSolicitados;
-            console.log(`Días Usados (Nuevo): ${saldo.diasUsados}`);
             await this.saldoRepo.save(saldo);
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const inicioVac = new Date(solicitud.fechaInicio);
+            inicioVac.setHours(0, 0, 0, 0);
+            const finVac = new Date(solicitud.fechaFin);
+            finVac.setHours(23, 59, 59, 999);
+            if (hoy >= inicioVac && hoy <= finVac) {
+                console.log(`--- ACTUALIZANDO ESTADO DE EMPLEADO A VACACIONES ---`);
+                solicitud.empleado.estado = 'De Vacaciones';
+                await this.empleadoRepository.save(solicitud.empleado);
+            }
         }
         solicitud.estado = dto.estado;
         solicitud.comentariosRespuesta = dto.comentarios || null;

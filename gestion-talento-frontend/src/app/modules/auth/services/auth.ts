@@ -386,4 +386,7 @@ export class AuthService {
 
     console.log('✅ Cache local actualizada. Total empresas:', this.memberships.length);
   }
+  changePassword(data: { passwordActual: string; nuevaPassword: string }): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/change-password`, data);
+  }
 }

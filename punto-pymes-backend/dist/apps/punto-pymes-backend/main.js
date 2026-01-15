@@ -2,6 +2,48 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./apps/auth/src/dto/change-password.dto.ts":
+/*!**************************************************!*\
+  !*** ./apps/auth/src/dto/change-password.dto.ts ***!
+  \**************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ChangePasswordDto = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class ChangePasswordDto {
+    passwordActual;
+    nuevaPassword;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { passwordActual: { required: true, type: () => String }, nuevaPassword: { required: true, type: () => String, minLength: 6 } };
+    }
+}
+exports.ChangePasswordDto = ChangePasswordDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'La contraseña actual es obligatoria' }),
+    __metadata("design:type", String)
+], ChangePasswordDto.prototype, "passwordActual", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6, { message: 'La nueva contraseña debe tener al menos 6 caracteres' }),
+    __metadata("design:type", String)
+], ChangePasswordDto.prototype, "nuevaPassword", void 0);
+
+
+/***/ }),
+
 /***/ "./apps/auth/src/dto/login.dto.ts":
 /*!****************************************!*\
   !*** ./apps/auth/src/dto/login.dto.ts ***!
@@ -3070,6 +3112,7 @@ const create_encuesta_dto_1 = __webpack_require__(/*! apps/productividad/src/dto
 const vote_dto_1 = __webpack_require__(/*! apps/productividad/src/dto/vote.dto */ "./apps/productividad/src/dto/vote.dto.ts");
 const responder_solicitud_dto_1 = __webpack_require__(/*! apps/nomina/src/dto/responder-solicitud.dto */ "./apps/nomina/src/dto/responder-solicitud.dto.ts");
 const update_configuracion_dto_1 = __webpack_require__(/*! apps/auth/src/dto/update-configuracion.dto */ "./apps/auth/src/dto/update-configuracion.dto.ts");
+const change_password_dto_1 = __webpack_require__(/*! apps/auth/src/dto/change-password.dto */ "./apps/auth/src/dto/change-password.dto.ts");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
 const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
 let AppController = class AppController {
@@ -3936,12 +3979,31 @@ let AppController = class AppController {
             config: dto
         });
     }
+    async changePassword(req, dto) {
+        const userId = req.user.sub || req.user.id || req.user.userId;
+        return this.authService.send({ cmd: 'change_password' }, {
+            userId,
+            dto
+        });
+    }
     async getSaldoVacaciones(empleadoId) {
         return this.nominaService.send({ cmd: 'get_saldo_vacaciones' }, { empleadoId });
     }
     async updateConfig(req, config) {
         const usuarioId = req.user.id;
         return this.authService.send({ cmd: 'update_user_config' }, { usuarioId, config });
+    }
+    async getEncuestaById(req, encuestaId) {
+        const { empresaId } = req.user;
+        return this.productividadService.send({ cmd: 'get_encuesta_detail' }, { encuestaId, empresaId });
+    }
+    async updateEncuesta(req, encuestaId, dto) {
+        const { empresaId } = req.user;
+        return this.productividadService.send({ cmd: 'update_encuesta' }, { encuestaId, empresaId, dto });
+    }
+    async deleteEncuesta(req, encuestaId) {
+        const { empresaId } = req.user;
+        return this.productividadService.send({ cmd: 'delete_encuesta' }, { encuestaId, empresaId });
     }
 };
 exports.AppController = AppController;
@@ -5699,6 +5761,16 @@ __decorate([
 ], AppController.prototype, "updateEmpresaConfig", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('auth/change-password'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, change_password_dto_1.ChangePasswordDto]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "changePassword", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('nomina/vacaciones/saldo/:empleadoId'),
     openapi.ApiResponse({ status: 200, type: Object }),
     __param(0, (0, common_1.Param)('empleadoId')),
@@ -5716,6 +5788,37 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "updateConfig", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('productividad/encuestas/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getEncuestaById", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('productividad/encuestas/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "updateEncuesta", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Delete)('productividad/encuestas/:id'),
+    openapi.ApiResponse({ status: 200, type: Object }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "deleteEncuesta", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -11082,7 +11185,7 @@ async function bootstrap() {
     app.use((0, express_1.urlencoded)({ extended: true, limit: '50mb' }));
     app.enableCors({
         origin: ['http://localhost:4200', 'http://192.168.1.6:4200', 'http://25.37.228.19:4200', 'http://192.168.56.1:4200',
-            'http://192.168.137.1:4200'
+            'http://192.168.137.1:4200', 'http://192.168.137.235:4200', 'http://10.125.239.142:4200'
         ],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
