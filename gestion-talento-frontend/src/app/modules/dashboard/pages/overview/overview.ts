@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 // Material Imports
@@ -86,6 +87,7 @@ export class Overview implements OnInit {
   viewingAsAdmin: boolean = false;
   isLoading: boolean = true;
   leaveRequestForm: FormGroup;
+  approvedVacations: { start: Date; end: Date }[] = [];
   availableLeaveDays: number = 0;
 
   // Datos
@@ -133,7 +135,7 @@ export class Overview implements OnInit {
     this.leaveRequestForm = this.fb.group({
       startDate: [null, Validators.required],
       endDate: [null, Validators.required]
-    });
+    }, { validators: this.overlapValidator.bind(this) });
   }
 
   ngOnInit(): void {
@@ -181,33 +183,87 @@ export class Overview implements OnInit {
     }
   }
 
-  // 👇 5. NUEVA FUNCIÓN PARA CARGAR TODO LO DEL EMPLEADO EN PARALELO
+  // 🟢 ACTUALIZADO: Modificar loadEmployeeData para incluir las vacaciones
   loadEmployeeData() {
     this.isLoading = true;
+    const currentUser = this.authService.getUser(); // Necesitamos el ID
 
-    // Usamos Promesas o ForksJoin si quisieramos esperar a todo, 
-    // pero suscripciones individuales están bien para que se vaya pintando lo que llegue.
-
-    // A. Anuncios
+    // A. Anuncios (Igual que antes)
     this.productivityService.getMyAnuncios().subscribe({
       next: (data) => this.anuncios = data,
       error: (err) => console.error('Error cargando anuncios', err)
     });
 
-    // B. Encuestas
+    // B. Encuestas (Igual que antes)
     this.productivityService.getMyEncuestas().subscribe({
       next: (data) => {
         this.encuestas = data;
-        // Calculamos participación si hace falta
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Error cargando encuestas', err);
-        this.isLoading = false;
-      }
+      error: (err) => { console.error(err); this.isLoading = false; }
     });
 
-    // C. Otros datos (Vacaciones, Tareas, etc) pueden ir aquí...
+    // C. 🟢 NUEVO: Cargar historial de vacaciones para bloquear fechas
+    if (currentUser && currentUser.empleadoId) {
+      this.vacationService.getRequests().subscribe({
+        next: (requests) => {
+          // 1. Filtramos: Solo del usuario actual Y que estén APROBADAS
+          const myApprovedRequests = requests.filter(req =>
+            req.empleado?.id === currentUser.empleadoId && // Ajusta 'req.empleado.id' según tu backend
+            req.estado === 'APROBADA'
+          );
+
+          // 2. Mapeamos a objetos Date limpios
+          this.approvedVacations = myApprovedRequests.map(req => ({
+            start: this.parseDate(req.fechaInicio),
+            end: this.parseDate(req.fechaFin)
+          }));
+
+          console.log('📅 Fechas bloqueadas:', this.approvedVacations);
+        },
+        error: (err) => console.error('Error cargando historial vacaciones', err)
+      });
+    }
+  }
+
+  // 🟢 NUEVA FUNCIÓN AUXILIAR: Parsear fecha string 'YYYY-MM-DD' a Date local (00:00:00)
+  // Esto evita problemas de zona horaria donde el día se retrasa 1 día
+  private parseDate(dateStr: string): Date {
+    const parts = dateStr.split('-');
+    // new Date(año, mes-1, dia) crea la fecha en hora local
+    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  }
+
+  // 🟢 2. EL FILTRO VISUAL (Para el HTML [dateFilter])
+  // Devuelve true (disponible) o false (deshabilitado/gris)
+  myDateFilter = (d: Date | null): boolean => {
+    if (!d) return false;
+    const time = d.getTime();
+
+    // Verificamos si la fecha 'd' cae dentro de algún rango aprobado
+    const isOccupied = this.approvedVacations.some(range =>
+      time >= range.start.getTime() && time <= range.end.getTime()
+    );
+
+    // Retorna true si NO está ocupado
+    return !isOccupied;
+  };
+
+  // 🟢 3. EL VALIDADOR LÓGICO (Para el FormGroup)
+  // Evita que seleccionen un rango que "envuelva" días ocupados
+  overlapValidator(control: AbstractControl): ValidationErrors | null {
+    const start = control.get('startDate')?.value;
+    const end = control.get('endDate')?.value;
+
+    if (!start || !end) return null;
+
+    // Lógica de superposición de rangos
+    const hasOverlap = this.approvedVacations.some(range => {
+      // (InicioSolicitado <= FinAprobado) Y (FinSolicitado >= InicioAprobado)
+      return start <= range.end && end >= range.start;
+    });
+
+    return hasOverlap ? { overlap: true } : null;
   }
 
   loadDashboardData() {

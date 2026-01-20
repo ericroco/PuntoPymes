@@ -5,29 +5,29 @@ export const PERMISSIONS = {
     // -------------------------------------------------------------------------
     // 1. AUTOSERVICIO (Portal del Colaborador) - [NUEVO]
     // -------------------------------------------------------------------------
-    PERFIL_ME: 'perfil.me',                  // Ver y editar foto/teléfono propio
-    PAYROLL_MY_READ: 'nomina.leer_propia',   // Ver mis roles de pago
-    ATTENDANCE_MY_READ: 'asistencia.leer_propia', // Ver mis marcaciones
-    VACATIONS_REQUEST: 'vacaciones.solicitar', // Solicitar días libres
-    LOANS_REQUEST: 'prestamos.solicitar',    // Solicitar anticipos
-    ONBOARDING_MY_PROGRESS: 'onboarding.mi_progreso', // Ver mi inducción
-    TASKS_MY_READ: 'tareas.leer_propias',    // Ver tareas asignadas a mí
+    PERFIL_ME: 'perfil.me',
+    PAYROLL_MY_READ: 'nomina.leer_propia',
+    ATTENDANCE_MY_READ: 'asistencia.leer_propia',
+    VACATIONS_REQUEST: 'vacaciones.solicitar',
+    LOANS_REQUEST: 'prestamos.solicitar',
+    ONBOARDING_MY_PROGRESS: 'onboarding.mi_progreso',
+    TASKS_MY_READ: 'tareas.leer_propias',
     EXPENSES_REPORT: 'gastos.reportar',
 
     // -------------------------------------------------------------------------
     // 2. TALENTO HUMANO (Gestión de Personas)
     // -------------------------------------------------------------------------
-    EMPLOYEES_READ_BASIC: 'empleados.leer_basico', // Directorio público
-    EMPLOYEES_READ_SENSITIVE: 'empleados.leer_sensible', // Datos privados (RRHH)
+    EMPLOYEES_READ_BASIC: 'empleados.leer_basico',
+    EMPLOYEES_READ_SENSITIVE: 'empleados.leer_sensible',
 
     // [COMPATIBILIDAD] Llaves antiguas que tu HTML busca:
-    EMPLOYEES_READ: 'empleados.leer',        // (Legacy) Lectura general
-    EMPLOYEES_CREATE: 'empleados.crear',     // (Legacy) Contratar
-    EMPLOYEES_EDIT: 'empleados.editar',      // (Legacy) Editar <--- ESTA FALTABA EN EL ERROR
+    EMPLOYEES_READ: 'empleados.leer',
+    EMPLOYEES_CREATE: 'empleados.crear',
+    EMPLOYEES_EDIT: 'empleados.editar',
 
-    EMPLOYEES_MANAGE: 'empleados.gestion',   // [NUEVO] Gestión total (recomendado)
-    EMPLOYEES_DELETE: 'empleados.borrar',    // Desvincular
-    EMPLOYEES_EXPORT: 'empleados.exportar',  // Exportar Excel
+    EMPLOYEES_MANAGE: 'empleados.gestion',
+    EMPLOYEES_DELETE: 'empleados.borrar',
+    EMPLOYEES_EXPORT: 'empleados.exportar',
 
     // -------------------------------------------------------------------------
     // 3. ESTRUCTURA ORGANIZACIONAL
@@ -39,32 +39,32 @@ export const PERMISSIONS = {
     // -------------------------------------------------------------------------
     // 4. PRODUCTIVIDAD Y PROYECTOS (Sprints)
     // -------------------------------------------------------------------------
-    PROJECTS_READ: 'proyectos.leer',       // Ver tableros
-    PROJECTS_MANAGE: 'proyectos.gestion',  // Crear Proyectos (Jefes)
-    TASKS_MANAGE: 'tareas.gestion',        // Asignar/Borrar Tareas (Jefes)
-    TASKS_EXECUTE: 'tareas.ejecutar',      // Mover columnas/Comentar (Colaboradores)
+    PROJECTS_READ: 'proyectos.leer',
+    PROJECTS_MANAGE: 'proyectos.gestion',
+    TASKS_MANAGE: 'tareas.gestion',
+    TASKS_EXECUTE: 'tareas.ejecutar',
 
     // -------------------------------------------------------------------------
     // 5. NÓMINA Y COMPENSACIÓN
     // -------------------------------------------------------------------------
-    SALARIES_READ: 'salarios.leer',        // Ver campo sueldo
-    PAYROLL_READ_ALL: 'nomina.leer_todo',  // Ver historial completo (RRHH)
+    SALARIES_READ: 'salarios.leer',
+    PAYROLL_READ_ALL: 'nomina.leer_todo',
 
     // [COMPATIBILIDAD]
-    PAYROLL_READ: 'nomina.leer',           // (Legacy) <--- ESTA FALTABA EN EL ERROR
+    PAYROLL_READ: 'nomina.leer',
 
-    PAYROLL_PROCESS: 'nomina.procesar',    // Calcular Rol
-    PAYROLL_CONFIG: 'nomina.configurar',   // Fórmulas
-    PAYROLL_EXPORT: 'nomina.exportar',     // Archivos bancarios
-    BENEFITS_MANAGE: 'beneficios.gestionar', // Préstamos (Legacy)
-    LOANS_APPROVE: 'prestamos.aprobar',    // Aprobar préstamos (Nuevo)
+    PAYROLL_PROCESS: 'nomina.procesar',
+    PAYROLL_CONFIG: 'nomina.configurar',
+    PAYROLL_EXPORT: 'nomina.exportar',
+    BENEFITS_MANAGE: 'beneficios.gestionar',
+    LOANS_APPROVE: 'prestamos.aprobar',
 
     // -------------------------------------------------------------------------
     // 6. OPERACIONES, TIEMPO Y ASISTENCIA
     // -------------------------------------------------------------------------
     ATTENDANCE_READ_ALL: 'asistencia.leer_todo',
-    ATTENDANCE_APPROVE: 'asistencia.aprobar',    // (Legacy)
-    ATTENDANCE_MODIFY: 'asistencia.modificar',   // (Nuevo) Corregir
+    ATTENDANCE_APPROVE: 'asistencia.aprobar',
+    ATTENDANCE_MODIFY: 'asistencia.modificar',
     SHIFTS_MANAGE: 'turnos.gestion',
     VACATIONS_APPROVE: 'vacaciones.aprobar',
 
@@ -76,8 +76,8 @@ export const PERMISSIONS = {
     ONBOARDING_VIEW_PROGRESS: 'onboarding.ver_progreso',
 
     // [COMPATIBILIDAD]
-    PERFORMANCE_MANAGE: 'desempeno.gestionar', // <--- ESTA FALTABA EN EL ERROR (Evaluaciones)
-    TRAINING_MANAGE: 'capacitacion.gestionar', // Cursos
+    PERFORMANCE_MANAGE: 'desempeno.gestionar',
+    TRAINING_MANAGE: 'capacitacion.gestionar',
 
     // -------------------------------------------------------------------------
     // 8. RECURSOS Y ACTIVOS
@@ -118,7 +118,7 @@ export const PERMISSION_GROUPS = [
             { key: PERMISSIONS.EMPLOYEES_READ_BASIC, label: 'Ver Directorio (Público)' },
             { key: PERMISSIONS.EMPLOYEES_READ_SENSITIVE, label: 'Ver Datos Sensibles (RRHH)' },
             { key: PERMISSIONS.EMPLOYEES_CREATE, label: 'Contratar Empleados' },
-            { key: PERMISSIONS.EMPLOYEES_EDIT, label: 'Editar Datos Personales' }, // <--- Aquí está la que faltaba
+            { key: PERMISSIONS.EMPLOYEES_EDIT, label: 'Editar Datos Personales' },
             { key: PERMISSIONS.EMPLOYEES_DELETE, label: 'Desvincular Personal' },
             { key: PERMISSIONS.EMPLOYEES_EXPORT, label: 'Exportar Excel' },
             { key: PERMISSIONS.SALARIES_READ, label: 'Ver Salarios' },
@@ -127,7 +127,7 @@ export const PERMISSION_GROUPS = [
     {
         name: 'Nómina y Pagos',
         permissions: [
-            { key: PERMISSIONS.PAYROLL_READ, label: 'Ver Historial de Nóminas' }, // <--- Aquí está la que faltaba
+            { key: PERMISSIONS.PAYROLL_READ, label: 'Ver Historial de Nóminas' },
             { key: PERMISSIONS.PAYROLL_PROCESS, label: 'Procesar/Calcular Rol' },
             { key: PERMISSIONS.PAYROLL_EXPORT, label: 'Archivos Bancarios' },
             { key: PERMISSIONS.PAYROLL_CONFIG, label: 'Configurar Fórmulas' },
@@ -141,7 +141,7 @@ export const PERMISSION_GROUPS = [
             { key: PERMISSIONS.ATTENDANCE_APPROVE, label: 'Aprobar Asistencias' },
             { key: PERMISSIONS.SHIFTS_MANAGE, label: 'Gestionar Turnos' },
             { key: PERMISSIONS.VACATIONS_APPROVE, label: 'Aprobar Vacaciones' },
-            { key: PERMISSIONS.PERFORMANCE_MANAGE, label: 'Gestionar Evaluaciones' }, // <--- Aquí está la que faltaba
+            { key: PERMISSIONS.PERFORMANCE_MANAGE, label: 'Gestionar Evaluaciones' },
         ]
     },
     {

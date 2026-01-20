@@ -1,17 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { switchMap, of } from 'rxjs'; // Importante para la lógica secuencial
+import { switchMap, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ExpensesService {
     private http = inject(HttpClient);
-    // Base URL: localhost:3000/gastos/reportes
     private apiUrl = `${environment.apiUrl}/gastos/reportes`;
-    // URL para subir archivos: localhost:3000/gastos/upload-factura
     private uploadUrl = `${environment.apiUrl}/gastos/upload-factura`;
 
-    // ... (Tus métodos existentes getMyReports, createReport, getReports se quedan igual) ...
     getMyReports(empleadoId: string) {
         let params = new HttpParams().set('empleadoId', empleadoId);
         return this.http.get<any[]>(this.apiUrl, { params });

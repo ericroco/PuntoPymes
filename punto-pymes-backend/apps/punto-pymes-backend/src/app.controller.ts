@@ -258,9 +258,6 @@ export class AppController {
     // --- REGLA DE ASIGNACIÓN DE SUCURSAL ---
 
     if (sucursalId) {
-      // CASO 1: Soy Gerente de Sucursal (tengo ID en el token)
-      // FORZAMOS que el nuevo empleado pertenezca a mi sucursal.
-      // No importa si en el formulario intentó poner otra cosa.
       dto.sucursalId = sucursalId;
     }
     else if (headerSucursalId) {
@@ -268,9 +265,6 @@ export class AppController {
       // Asignamos el empleado a la sede que estoy viendo actualmente.
       dto.sucursalId = headerSucursalId;
     }
-    // CASO 3: Soy Super Admin viendo "Todas las sedes".
-    // Respetamos lo que venga en el dto.sucursalId (el select del formulario),
-    // o si no viene nada, queda como empleado global (sin sucursal).
 
     console.log(`Gateway: Creando empleado en sucursal: ${dto.sucursalId || 'Global'}`);
 

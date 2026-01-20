@@ -8,7 +8,6 @@ import {
 
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-// Tu import ya incluye 'Contrato', lo cual es perfecto.
 import {
   Empleado, Rol, Cargo, Departamento, Contrato, Candidato,
   Vacante, EstadoCandidato, EstadoVacante, DocumentoEmpleado, DocumentoEmpresa

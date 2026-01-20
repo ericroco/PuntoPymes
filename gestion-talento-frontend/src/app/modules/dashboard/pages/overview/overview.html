@@ -271,14 +271,25 @@
           <mat-card-content class="d-flex flex-column justify-content-center">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.DATES_LABEL' | translate }}</mat-label>
-              <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker">
+
+              <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker" [dateFilter]="myDateFilter">
                 <input matStartDate formControlName="startDate"
                   [placeholder]="'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.START_PLACEHOLDER' | translate">
                 <input matEndDate formControlName="endDate"
                   [placeholder]="'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.END_PLACEHOLDER' | translate">
               </mat-date-range-input>
+
               <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-date-range-picker #picker></mat-date-range-picker>
+
+              <mat-error *ngIf="leaveRequestForm.hasError('overlap')">
+                El rango seleccionado choca con otras vacaciones aprobadas.
+              </mat-error>
+              <mat-error
+                *ngIf="leaveRequestForm.get('startDate')?.hasError('required') && !leaveRequestForm.hasError('overlap')">
+                Requerido.
+              </mat-error>
+
             </mat-form-field>
           </mat-card-content>
 

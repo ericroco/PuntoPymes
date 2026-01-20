@@ -16,7 +16,6 @@ import { EmployeesService, CreateEmployeeDto } from '../../services/employees';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RolesService, Rol } from '../../services/roles';
 
-// Interfaces para los datos recibidos
 interface DialogData {
   availableJobs: JobPosition[];
   availableManagers: Manager[];
@@ -49,14 +48,15 @@ interface JobPosition {
 })
 export class AddEmployeeDialog implements OnInit {
   isLoading = false;
-  step1Form: FormGroup; // Personal
-  step2Form: FormGroup; // Laboral
-  step3Form: FormGroup; // Compensación
+  step1Form: FormGroup;
+  step2Form: FormGroup;
+  step3Form: FormGroup;
 
   availableJobs: JobPosition[] = [];
   availableManagers: Manager[] = [];
   availableRoles: Rol[] = [];
   selectedJobSalaryRange: string | null = null;
+  maxDate: Date;
 
   constructor(
     public dialogRef: MatDialogRef<AddEmployeeDialog>,
@@ -68,6 +68,8 @@ export class AddEmployeeDialog implements OnInit {
   ) {
     this.availableJobs = data.availableJobs || [];
     this.availableManagers = data.availableManagers || [];
+    const today = new Date();
+    this.maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
 
     // ============================================================
     // Paso 1: Datos Personales (ACTUALIZADO CON IDENTIFICACIÓN)

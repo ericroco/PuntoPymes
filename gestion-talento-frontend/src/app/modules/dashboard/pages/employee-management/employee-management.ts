@@ -161,15 +161,12 @@ export class EmployeeManagement implements OnInit {
   }
 
   openAddEmployeeDialog(): void {
-    // 3. CARGAR CARGOS REALES ANTES DE ABRIR
     this.catalogService.getJobs().subscribe(realJobs => {
 
       const dialogRef = this.dialog.open(AddEmployeeDialog, {
         width: '800px',
         disableClose: true,
         data: {
-          // Mapeamos los cargos reales al formato que espera el diálogo
-          // (El backend devuelve { id, nombre, ... }, el dialogo espera { id, name, ... })
           availableJobs: realJobs.map(job => ({
             id: job.id,
             name: job.nombre,
@@ -177,7 +174,6 @@ export class EmployeeManagement implements OnInit {
             minSalary: job.salarioMin || 0,
             maxSalary: job.salarioMax || 0
           })),
-          // Managers simulados por ahora
           availableManagers: this.availableManagers
         }
       });

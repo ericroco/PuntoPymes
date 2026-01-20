@@ -52,16 +52,7 @@ export class PersonalController {
     return this.personalService.createEmpleado(data.empresaId, data.dto);
   }
 
-  // --- (INICIO DE CAMBIOS) ---
-
-  /**
-   * Escucha el comando 'update_empleado' (RF-01-03)
-   * @param data El payload que envía el Gateway, que contiene
-   * el empresaId (del JWT), el empleadoId (de la URL) y el dto (del body).
-   */
   @MessagePattern({ cmd: 'update_empleado' })
-  // 2. Usamos ValidationPipe para asegurar que la parte 'dto' del payload
-  //    cumpla con las reglas que definimos (IsOptional, IsUUID, etc.)
   @UsePipes(new ValidationPipe())
   updateEmpleado(
     @Payload()

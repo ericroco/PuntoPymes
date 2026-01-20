@@ -57,9 +57,19 @@
 
             <mat-form-field appearance="outline" class="form-field custom-field">
               <mat-label>Nacimiento</mat-label>
-              <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
+
+              <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" [max]="maxDate">
+
               <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
               <mat-datepicker #dobPicker></mat-datepicker>
+
+              <mat-error *ngIf="step1Form.get('dateOfBirth')?.hasError('matDatepickerMax')">
+                Debe ser mayor de 18 años.
+              </mat-error>
+              <mat-error *ngIf="step1Form.get('dateOfBirth')?.hasError('required')">
+                Requerido.
+              </mat-error>
+
             </mat-form-field>
           </div>
 

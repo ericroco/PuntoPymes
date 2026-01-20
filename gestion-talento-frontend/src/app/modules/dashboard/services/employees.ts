@@ -107,8 +107,6 @@ export interface EmployeeDocument {
 export class EmployeesService {
     private http = inject(HttpClient);
 
-    // ⚠️ URL: Apunta al endpoint base del Gateway
-    // Backend: @Controller() -> @Post('empleados')
     private apiUrl = `${environment.apiUrl}/empleados`;
 
     /**
