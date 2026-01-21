@@ -1,0 +1,224 @@
+// ==========================================
+// MODO FLOTANTE (Para el Layout Principal)
+// ==========================================
+.floating-wrapper {
+    z-index: 1000; // Asegura que flote sobre todo
+}
+
+.chat-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #3f51b5; // Tu color primario
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 1001; // Encima de la ventana
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+
+    mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #f44336;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+    }
+}
+
+// ==========================================
+// MODO INCRUSTADO (Para el Sprint)
+// ==========================================
+.embedded-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden; // Para que el header y el input no se salgan
+}
+
+// ==========================================
+// ESTILOS COMUNES (Ventana, Mensajes, Input)
+// ==========================================
+
+// Contenedor Base de la Ventana
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    overflow: hidden;
+
+    // Modificador: Cuando es flotante
+    &.fixed-window {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 320px;
+        height: 450px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    // Modificador: Cuando es incrustado (toma el tamaño de su padre)
+    &.embedded-window {
+        width: 100%;
+        height: 100%;
+        box-shadow: none;
+        border-radius: 0;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Encabezado
+.chat-header {
+    background: #3f51b5;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; // No encoger
+
+    &.clickable {
+        cursor: pointer;
+    }
+
+    .header-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+        }
+    }
+}
+
+// Área de Mensajes
+.chat-messages {
+    flex: 1; // Ocupa todo el espacio disponible
+    padding: 16px;
+    background: #f5f5f5;
+    overflow-y: auto; // Scroll vertical
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .empty-state {
+        text-align: center;
+        color: #999;
+        padding: 20px;
+        font-size: 13px;
+        font-style: italic;
+    }
+}
+
+// Burbujas de chat
+.message-bubble {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    position: relative;
+    font-size: 14px;
+    word-wrap: break-word; // Romper palabras largas
+
+    &.mine {
+        align-self: flex-end;
+        background: #e3f2fd;
+        color: #333;
+        border-bottom-right-radius: 2px;
+    }
+
+    &.others {
+        align-self: flex-start;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 2px;
+    }
+
+    .sender-name {
+        display: block;
+        font-size: 10px;
+        color: #3f51b5;
+        font-weight: bold;
+        margin-bottom: 2px;
+    }
+
+    .msg-time {
+        display: block;
+        font-size: 10px;
+        color: #999;
+        text-align: right;
+        margin-top: 4px;
+    }
+}
+
+// Área de Input
+.chat-input {
+    padding: 8px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+
+    input {
+        flex: 1;
+        border: none;
+        background: #f0f2f5;
+        padding: 10px 12px;
+        border-radius: 20px;
+        outline: none;
+        font-size: 14px;
+    }
+}

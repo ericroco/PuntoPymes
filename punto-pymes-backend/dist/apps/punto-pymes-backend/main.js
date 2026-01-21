@@ -5860,6 +5860,8 @@ const passport_1 = __webpack_require__(/*! @nestjs/passport */ "@nestjs/passport
 const jwt_strategy_1 = __webpack_require__(/*! ./auth/jwt.strategy */ "./apps/punto-pymes-backend/src/auth/jwt.strategy.ts");
 const serve_static_1 = __webpack_require__(/*! @nestjs/serve-static */ "@nestjs/serve-static");
 const path_1 = __webpack_require__(/*! path */ "path");
+const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
+const chat_module_1 = __webpack_require__(/*! ./chat/chat.module */ "./apps/punto-pymes-backend/src/chat/chat.module.ts");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -5935,6 +5937,21 @@ exports.AppModule = AppModule = __decorate([
                 }),
             }),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
+            mongoose_1.MongooseModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                useFactory: async (configService) => {
+                    const host = configService.get('DB_MONGO_HOST');
+                    const port = configService.get('DB_MONGO_PORT');
+                    const user = configService.get('DB_MONGO_USER');
+                    const pass = configService.get('DB_MONGO_PASSWORD');
+                    const dbName = configService.get('DB_MONGO_DATABASE');
+                    const uri = `mongodb://${user}:${pass}@${host}:${port}/${dbName}?authSource=admin`;
+                    console.log('🐢 Intentando conectar a Mongo en:', `mongodb://${user}:******@${host}:${port}/${dbName}`);
+                    return { uri };
+                },
+                inject: [config_1.ConfigService],
+            }),
+            chat_module_1.ChatModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, jwt_strategy_1.JwtStrategy],
@@ -6168,6 +6185,263 @@ exports.JwtStrategy = JwtStrategy = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService])
 ], JwtStrategy);
+
+
+/***/ }),
+
+/***/ "./apps/punto-pymes-backend/src/chat/chat.gateway.ts":
+/*!***********************************************************!*\
+  !*** ./apps/punto-pymes-backend/src/chat/chat.gateway.ts ***!
+  \***********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ChatGateway = void 0;
+const websockets_1 = __webpack_require__(/*! @nestjs/websockets */ "@nestjs/websockets");
+const socket_io_1 = __webpack_require__(/*! socket.io */ "socket.io");
+const chat_service_1 = __webpack_require__(/*! ./chat.service */ "./apps/punto-pymes-backend/src/chat/chat.service.ts");
+let ChatGateway = class ChatGateway {
+    chatService;
+    server;
+    constructor(chatService) {
+        this.chatService = chatService;
+    }
+    handleConnection(client) {
+        console.log(`🔌 Cliente conectado al chat: ${client.id}`);
+    }
+    handleDisconnect(client) {
+        console.log(`❌ Cliente desconectado: ${client.id}`);
+    }
+    async handleMessage(payload) {
+        console.log('📨 [DEBUG] Payload recibido:', JSON.stringify(payload));
+        try {
+            const mensajeGuardado = await this.chatService.crearMensaje({
+                contenido: payload.contenido,
+                emisorId: payload.emisorId,
+                nombreEmisor: payload.nombreEmisor,
+                sala: payload.sala || 'general'
+            });
+            console.log('✅ [DEBUG] Mensaje guardado ID:', mensajeGuardado._id);
+            this.server.to(payload.sala || 'general').emit('nuevo-mensaje', mensajeGuardado);
+        }
+        catch (error) {
+            console.error('🔥 [DEBUG] ERROR:', error);
+        }
+    }
+    async handleJoinRoom(client, sala) {
+        const salaReal = sala || 'general';
+        client.join(salaReal);
+        console.log(`🔌 Cliente ${client.id} se unió a la sala: ${salaReal}`);
+        try {
+            const historial = await this.chatService.obtenerUltimos(salaReal);
+            client.emit('historial-mensajes', historial);
+            console.log(`📜 Historial enviado a ${client.id} (${historial.length} msgs)`);
+        }
+        catch (error) {
+            console.error('Error enviando historial al unirse:', error);
+        }
+    }
+    async handleHistorial(client, sala) {
+        console.log(`📜 [DEBUG] Cliente ${client.id} solicita historial de: ${sala}`);
+        try {
+            const historial = await this.chatService.obtenerUltimos(sala || 'general');
+            client.emit('historial-recibido', historial);
+        }
+        catch (error) {
+            console.error('🔥 [DEBUG] Error al obtener historial:', error);
+        }
+    }
+};
+exports.ChatGateway = ChatGateway;
+__decorate([
+    (0, websockets_1.WebSocketServer)(),
+    __metadata("design:type", socket_io_1.Server)
+], ChatGateway.prototype, "server", void 0);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('enviar-mensaje'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "handleMessage", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('entrar-sala'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "handleJoinRoom", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('solicitar-historial'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "handleHistorial", null);
+exports.ChatGateway = ChatGateway = __decorate([
+    (0, websockets_1.WebSocketGateway)({ cors: true }),
+    __metadata("design:paramtypes", [chat_service_1.ChatService])
+], ChatGateway);
+
+
+/***/ }),
+
+/***/ "./apps/punto-pymes-backend/src/chat/chat.module.ts":
+/*!**********************************************************!*\
+  !*** ./apps/punto-pymes-backend/src/chat/chat.module.ts ***!
+  \**********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ChatModule = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
+const chat_gateway_1 = __webpack_require__(/*! ./chat.gateway */ "./apps/punto-pymes-backend/src/chat/chat.gateway.ts");
+const chat_service_1 = __webpack_require__(/*! ./chat.service */ "./apps/punto-pymes-backend/src/chat/chat.service.ts");
+const mensaje_schema_1 = __webpack_require__(/*! ./schemas/mensaje.schema */ "./apps/punto-pymes-backend/src/chat/schemas/mensaje.schema.ts");
+let ChatModule = class ChatModule {
+};
+exports.ChatModule = ChatModule;
+exports.ChatModule = ChatModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            mongoose_1.MongooseModule.forFeature([{ name: mensaje_schema_1.Mensaje.name, schema: mensaje_schema_1.MensajeSchema }]),
+        ],
+        providers: [chat_gateway_1.ChatGateway, chat_service_1.ChatService],
+        exports: [chat_service_1.ChatService],
+    })
+], ChatModule);
+
+
+/***/ }),
+
+/***/ "./apps/punto-pymes-backend/src/chat/chat.service.ts":
+/*!***********************************************************!*\
+  !*** ./apps/punto-pymes-backend/src/chat/chat.service.ts ***!
+  \***********************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var ChatService_1;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ChatService = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
+const mongoose_2 = __webpack_require__(/*! mongoose */ "mongoose");
+const mensaje_schema_1 = __webpack_require__(/*! ./schemas/mensaje.schema */ "./apps/punto-pymes-backend/src/chat/schemas/mensaje.schema.ts");
+let ChatService = ChatService_1 = class ChatService {
+    mensajeModel;
+    logger = new common_1.Logger(ChatService_1.name);
+    constructor(mensajeModel) {
+        this.mensajeModel = mensajeModel;
+    }
+    async crearMensaje(datos) {
+        if (!datos.emisorId || !datos.nombreEmisor) {
+            this.logger.error('Intento de guardar mensaje sin emisorId o nombreEmisor', datos);
+            throw new Error('Datos incompletos para el mensaje');
+        }
+        const nuevo = new this.mensajeModel(datos);
+        return await nuevo.save();
+    }
+    async obtenerUltimos(sala) {
+        const mensajes = await this.mensajeModel
+            .find({ sala })
+            .sort({ createdAt: -1 })
+            .limit(50)
+            .exec();
+        return mensajes.reverse();
+    }
+};
+exports.ChatService = ChatService;
+exports.ChatService = ChatService = ChatService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, mongoose_1.InjectModel)(mensaje_schema_1.Mensaje.name)),
+    __metadata("design:paramtypes", [mongoose_2.Model])
+], ChatService);
+
+
+/***/ }),
+
+/***/ "./apps/punto-pymes-backend/src/chat/schemas/mensaje.schema.ts":
+/*!*********************************************************************!*\
+  !*** ./apps/punto-pymes-backend/src/chat/schemas/mensaje.schema.ts ***!
+  \*********************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MensajeSchema = exports.Mensaje = void 0;
+const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
+let Mensaje = class Mensaje {
+    contenido;
+    emisorId;
+    nombreEmisor;
+    sala;
+};
+exports.Mensaje = Mensaje;
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Mensaje.prototype, "contenido", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Mensaje.prototype, "emisorId", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Mensaje.prototype, "nombreEmisor", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: 'general' }),
+    __metadata("design:type", String)
+], Mensaje.prototype, "sala", void 0);
+exports.Mensaje = Mensaje = __decorate([
+    (0, mongoose_1.Schema)({ timestamps: true })
+], Mensaje);
+exports.MensajeSchema = mongoose_1.SchemaFactory.createForClass(Mensaje);
 
 
 /***/ }),
@@ -10998,6 +11272,16 @@ module.exports = require("@nestjs/microservices");
 
 /***/ }),
 
+/***/ "@nestjs/mongoose":
+/*!***********************************!*\
+  !*** external "@nestjs/mongoose" ***!
+  \***********************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs/mongoose");
+
+/***/ }),
+
 /***/ "@nestjs/passport":
 /*!***********************************!*\
   !*** external "@nestjs/passport" ***!
@@ -11048,6 +11332,16 @@ module.exports = require("@nestjs/typeorm");
 
 /***/ }),
 
+/***/ "@nestjs/websockets":
+/*!*************************************!*\
+  !*** external "@nestjs/websockets" ***!
+  \*************************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs/websockets");
+
+/***/ }),
+
 /***/ "class-transformer":
 /*!************************************!*\
   !*** external "class-transformer" ***!
@@ -11088,6 +11382,16 @@ module.exports = require("fs");
 
 /***/ }),
 
+/***/ "mongoose":
+/*!***************************!*\
+  !*** external "mongoose" ***!
+  \***************************/
+/***/ ((module) => {
+
+module.exports = require("mongoose");
+
+/***/ }),
+
 /***/ "multer":
 /*!*************************!*\
   !*** external "multer" ***!
@@ -11125,6 +11429,16 @@ module.exports = require("path");
 /***/ ((module) => {
 
 module.exports = require("rxjs");
+
+/***/ }),
+
+/***/ "socket.io":
+/*!****************************!*\
+  !*** external "socket.io" ***!
+  \****************************/
+/***/ ((module) => {
+
+module.exports = require("socket.io");
 
 /***/ }),
 

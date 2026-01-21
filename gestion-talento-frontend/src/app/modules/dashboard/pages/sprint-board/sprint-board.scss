@@ -427,3 +427,57 @@
     transform: translateY(0);
   }
 }
+
+.board-layout {
+  display: flex;
+  gap: 0; // Quitamos el gap fijo para manejarlo en la animación
+  height: calc(100vh - 220px);
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden; // Importante para evitar scroll horizontal durante la animación
+}
+
+.board-columns {
+  flex: 1; // Ocupa todo el espacio disponible
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  height: 100%;
+  padding-right: 20px; // Espacio extra para que no se pegue al chat
+  transition: all 0.3s ease; // Suaviza el redimensionamiento
+}
+
+// EL CONTENEDOR DEL CHAT
+.chat-sidebar-wrapper {
+  width: 0; // 🔒 POR DEFECTO CERRADO
+  opacity: 0;
+  height: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); // Animación Material Design
+  border-left: 1px solid transparent;
+  overflow: hidden; // Esconde el chat cuando el ancho es 0
+
+  // 🔓 ESTADO ABIERTO
+  &.open {
+    width: 340px;
+    opacity: 1;
+    border-left: 1px solid #e0e0e0;
+    margin-left: 20px; // Añadimos el margen visualmente aquí
+  }
+
+  // Contenedor interno para evitar que el contenido se deforme mientras se abre
+  .chat-inner-content {
+    width: 340px; // Ancho fijo interno
+    height: 100%;
+  }
+}
+
+// Ajuste opcional para el botón del header
+.btn-outline-primary {
+  background: white;
+  color: #3f51b5;
+  border: 1px solid #3f51b5;
+
+  &:hover {
+    background: #e8eaf6;
+  }
+}

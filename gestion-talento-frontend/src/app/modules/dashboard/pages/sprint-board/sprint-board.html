@@ -20,6 +20,14 @@
     </div>
 
     <div class="sprint-actions">
+
+      <button class="btn" [ngClass]="isChatSidebarOpen ? 'btn-primary' : 'btn-outline-primary'"
+        (click)="toggleSprintChat()" matTooltip="Abrir/Cerrar Chat del Sprint">
+        <mat-icon style="vertical-align: middle; margin-right: 4px;">forum</mat-icon>
+        <span *ngIf="!isChatSidebarOpen">Chat de Equipo</span>
+        <span *ngIf="isChatSidebarOpen">Cerrar Chat</span>
+      </button>
+
       <button *ngIf="sprintStatus === 'Planificado' && can(P.TASKS_MANAGE)" class="btn btn-success"
         (click)="startSprint()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -58,119 +66,121 @@
     </div>
   </header>
 
-  <div class="board-columns" cdkDropListGroup>
+  <div class="board-layout">
 
-    <div class="board-column">
-      <h3 class="column-title">Pendiente ({{pendingTasks.length}})</h3>
-      <div class="task-list" id="pendingList" cdkDropList [cdkDropListData]="pendingTasks"
-        (cdkDropListDropped)="drop($event)">
-        <div class="task-card" *ngFor="let task of pendingTasks" cdkDrag @taskAnimation>
-          <div class="task-card-main">
-            <div class="task-priority priority-{{task.prioridad}}"></div>
-            <div class="task-content">
-              <p class="task-title">{{ task.titulo }}</p>
-              <div class="task-meta">
-                <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
+    <div class="board-columns" cdkDropListGroup>
+
+      <div class="board-column">
+        <h3 class="column-title">Pendiente ({{pendingTasks.length}})</h3>
+        <div class="task-list" id="pendingList" cdkDropList [cdkDropListData]="pendingTasks"
+          (cdkDropListDropped)="drop($event)">
+          <div class="task-card" *ngFor="let task of pendingTasks" cdkDrag @taskAnimation>
+            <div class="task-card-main">
+              <div class="task-priority priority-{{task.prioridad}}"></div>
+              <div class="task-content">
+                <p class="task-title">{{ task.titulo }}</p>
+                <div class="task-meta">
+                  <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
+                </div>
+              </div>
+              <div class="task-card-actions">
+                <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon task-edit" (click)="openEditTaskDialog(task)"
+                  title="Editar Tarea">✏️</button>
+                <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    [class.rotated]="expandedTaskId === task.id">
+                    <path fill-rule="evenodd"
+                      d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                      clip-rule="evenodd" />
+                  </svg>
+                </button>
               </div>
             </div>
-            <div class="task-card-actions">
-              <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon task-edit" (click)="openEditTaskDialog(task)"
-                title="Editar Tarea">✏️</button>
-
-              <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                  [class.rotated]="expandedTaskId === task.id">
-                  <path fill-rule="evenodd"
-                    d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-                    clip-rule="evenodd" />
-                </svg>
-              </button>
+            <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
+              <p *ngIf="task.descripcion; else noDescriptionPending">{{ task.descripcion }}</p>
+              <ng-template #noDescriptionPending>
+                <p><i>No hay descripción.</i></p>
+              </ng-template>
             </div>
           </div>
-          <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
-            <p *ngIf="task.descripcion; else noDescriptionPending">{{ task.descripcion }}</p>
-            <ng-template #noDescriptionPending>
-              <p><i>No hay descripción para esta tarea.</i></p>
-            </ng-template>
-          </div>
+          <div class="empty-list-placeholder" *ngIf="pendingTasks.length === 0">No hay tareas</div>
         </div>
-        <div class="empty-list-placeholder" *ngIf="pendingTasks.length === 0">No hay tareas</div>
       </div>
+
+      <div class="board-column">
+        <h3 class="column-title">En Progreso ({{inProgressTasks.length}})</h3>
+        <div class="task-list" id="inProgressList" cdkDropList [cdkDropListData]="inProgressTasks"
+          (cdkDropListDropped)="drop($event)">
+          <div class="task-card" *ngFor="let task of inProgressTasks" cdkDrag @taskAnimation>
+            <div class="task-card-main">
+              <div class="task-priority priority-{{task.prioridad}}"></div>
+              <div class="task-content">
+                <p class="task-title">{{ task.titulo }}</p>
+                <div class="task-meta">
+                  <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
+                </div>
+              </div>
+              <div class="task-card-actions">
+                <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon task-edit"
+                  (click)="openEditTaskDialog(task)">✏️</button>
+                <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    [class.rotated]="expandedTaskId === task.id">
+                    <path fill-rule="evenodd"
+                      d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                      clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
+              <p *ngIf="task.descripcion">{{ task.descripcion }}</p>
+            </div>
+          </div>
+          <div class="empty-list-placeholder" *ngIf="inProgressTasks.length === 0">No hay tareas</div>
+        </div>
+      </div>
+
+      <div class="board-column">
+        <h3 class="column-title">Completada ({{completedTasks.length}})</h3>
+        <div class="task-list" id="completedList" cdkDropList [cdkDropListData]="completedTasks"
+          (cdkDropListDropped)="drop($event)">
+          <div class="task-card" *ngFor="let task of completedTasks" cdkDrag @taskAnimation>
+            <div class="task-card-main">
+              <div class="task-priority priority-{{task.prioridad}}"></div>
+              <div class="task-content">
+                <p class="task-title">{{ task.titulo }}</p>
+                <div class="task-meta">
+                  <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
+                </div>
+              </div>
+              <div class="task-card-actions">
+                <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon task-edit"
+                  (click)="openEditTaskDialog(task)">✏️</button>
+                <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    [class.rotated]="expandedTaskId === task.id">
+                    <path fill-rule="evenodd"
+                      d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                      clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
+              <p *ngIf="task.descripcion">{{ task.descripcion }}</p>
+            </div>
+          </div>
+          <div class="empty-list-placeholder" *ngIf="completedTasks.length === 0">No hay tareas</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="board-column">
-      <h3 class="column-title">En Progreso ({{inProgressTasks.length}})</h3>
-      <div class="task-list" id="inProgressList" cdkDropList [cdkDropListData]="inProgressTasks"
-        (cdkDropListDropped)="drop($event)">
-        <div class="task-card" *ngFor="let task of inProgressTasks" cdkDrag @taskAnimation>
-          <div class="task-card-main">
-            <div class="task-priority priority-{{task.prioridad}}"></div>
-            <div class="task-content">
-              <p class="task-title">{{ task.titulo }}</p>
-              <div class="task-meta">
-                <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
-              </div>
-            </div>
-            <div class="task-card-actions">
-              <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon task-edit" (click)="openEditTaskDialog(task)"
-                title="Editar Tarea">✏️</button>
-
-              <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                  [class.rotated]="expandedTaskId === task.id">
-                  <path fill-rule="evenodd"
-                    d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-                    clip-rule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
-            <p *ngIf="task.descripcion; else noDescriptionProgress">{{ task.descripcion }}</p>
-            <ng-template #noDescriptionProgress>
-              <p><i>No hay descripción para esta tarea.</i></p>
-            </ng-template>
-          </div>
-        </div>
-        <div class="empty-list-placeholder" *ngIf="inProgressTasks.length === 0">No hay tareas</div>
-      </div>
-    </div>
-
-    <div class="board-column">
-      <h3 class="column-title">Completada ({{completedTasks.length}})</h3>
-      <div class="task-list" id="completedList" cdkDropList [cdkDropListData]="completedTasks"
-        (cdkDropListDropped)="drop($event)">
-        <div class="task-card" *ngFor="let task of completedTasks" cdkDrag @taskAnimation>
-          <div class="task-card-main">
-            <div class="task-priority priority-{{task.prioridad}}"></div>
-            <div class="task-content">
-              <p class="task-title">{{ task.titulo }}</p>
-              <div class="task-meta">
-                <span>{{ task.asignaciones?.[0]?.nombre || 'Sin asignar' }}</span>
-              </div>
-            </div>
-            <div class="task-card-actions">
-              <button *ngIf="can(P.TASKS_MANAGE)" class="btn-icon task-edit" (click)="openEditTaskDialog(task)"
-                title="Editar Tarea">✏️</button>
-
-              <button class="btn-icon task-expand" (click)="toggleTaskDetails(task.id)" title="Ver Detalles">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                  [class.rotated]="expandedTaskId === task.id">
-                  <path fill-rule="evenodd"
-                    d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-                    clip-rule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="task-details-expanded" [@detailExpand]="expandedTaskId === task.id ? 'expanded' : 'collapsed'">
-            <p *ngIf="task.descripcion; else noDescriptionCompleted">{{ task.descripcion }}</p>
-            <ng-template #noDescriptionCompleted>
-              <p><i>No hay descripción para esta tarea.</i></p>
-            </ng-template>
-          </div>
-        </div>
-        <div class="empty-list-placeholder" *ngIf="completedTasks.length === 0">No hay tareas</div>
+    <div class="chat-sidebar-wrapper" [class.open]="isChatSidebarOpen">
+      <div class="chat-inner-content">
+        <app-global-chat [roomId]="'sprint-' + (sprintId || 'demo')" [title]="'Chat del Equipo'" [isFloating]="false">
+        </app-global-chat>
       </div>
     </div>
 

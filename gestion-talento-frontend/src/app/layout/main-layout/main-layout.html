@@ -4,14 +4,11 @@
   <main class="main-content">
     <app-navbar></app-navbar>
 
-    <!-- 
-      CORRECCIÓN AQUÍ:
-      Usamos el método 'prepareRoute(o)' que definimos en el TS.
-      Esto asegura que la animación reciba el valor correcto ('DashboardPage', 'EmployeePage', etc.)
-      o 'undefined' si no hay configuración, evitando errores.
-    -->
     <div class="page-wrapper" [@routeAnimations]="prepareRoute(o)">
       <router-outlet #o="outlet"></router-outlet>
     </div>
   </main>
+
+  <app-global-chat></app-global-chat>
+
 </div>

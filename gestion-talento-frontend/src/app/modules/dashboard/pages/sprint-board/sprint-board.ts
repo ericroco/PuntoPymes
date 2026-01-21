@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { GlobalChatComponent } from '../../../../shared/components/global-chat/global-chat';
 
 // Componentes
 import { AddTaskDialog } from '../../components/add-task-dialog/add-task-dialog';
@@ -37,7 +38,8 @@ interface Goal { id: string; title: string; description: string; progress: numbe
     MatTooltipModule,
     MatIconModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    GlobalChatComponent
   ],
   templateUrl: './sprint-board.html',
   styleUrls: ['./sprint-board.scss'],
@@ -67,6 +69,7 @@ export class SprintBoard implements OnInit {
   private performanceService = inject(PerformanceService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  isChatSidebarOpen = false;
   P = PERMISSIONS; // 👇 EXPONER CONSTANTES
 
   // Datos Reales
@@ -94,6 +97,10 @@ export class SprintBoard implements OnInit {
     if (this.sprintId) {
       this.loadSprintData(this.sprintId);
     }
+  }
+
+  toggleSprintChat() {
+    this.isChatSidebarOpen = !this.isChatSidebarOpen;
   }
 
   loadSprintData(id: string) {

@@ -1,0 +1,56 @@
+<div *ngIf="isFloating" class="floating-wrapper">
+    <button *ngIf="!isOpen" class="chat-fab" (click)="toggleChat()">
+        <mat-icon>chat</mat-icon>
+        <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </button>
+
+    <div class="chat-window fixed-window" *ngIf="isOpen" [class.open]="isOpen">
+        <ng-container *ngTemplateOutlet="chatContent"></ng-container>
+    </div>
+</div>
+
+<div *ngIf="!isFloating" class="embedded-wrapper">
+    <div class="chat-window embedded-window">
+        <ng-container *ngTemplateOutlet="chatContent"></ng-container>
+    </div>
+</div>
+
+<ng-template #chatContent>
+    <div class="chat-header" [class.clickable]="isFloating" (click)="isFloating ? toggleChat() : null">
+        <div class="header-info">
+            <span class="status-dot"></span>
+            <h3>{{ title }}</h3>
+        </div>
+        <mat-icon *ngIf="isFloating">expand_more</mat-icon>
+    </div>
+
+    <div class="chat-messages" #scrollContainer>
+        <div *ngFor="let msg of messages" class="message-bubble" [class.mine]="msg.emisorId === currentUserId"
+            [class.others]="msg.emisorId !== currentUserId">
+
+            <small class="sender-name" *ngIf="msg.emisorId !== currentUserId">
+                {{ msg.nombreEmisor }}
+            </small>
+
+            <div class="bubble-content">
+                {{ msg.contenido }}
+            </div>
+
+            <small class="msg-time">
+                {{ msg.createdAt | date:'shortTime' }}
+            </small>
+        </div>
+
+        <div *ngIf="messages.length === 0" class="empty-state">
+            <small>No hay mensajes en esta sala.</small>
+        </div>
+    </div>
+
+    <div class="chat-input">
+        <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe aquí..."
+            autocomplete="off">
+        <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+            <mat-icon>send</mat-icon>
+        </button>
+    </div>
+</ng-template>

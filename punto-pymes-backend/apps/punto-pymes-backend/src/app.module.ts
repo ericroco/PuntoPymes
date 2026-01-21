@@ -9,20 +9,20 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../../..', 'uploads'), // Sube niveles hasta la raíz
-      serveRoot: '/uploads', // La URL pública empezará con /uploads
+      rootPath: join(__dirname, '../../..', 'uploads'),
+      serveRoot: '/uploads',
     }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: './.env',
     }),
 
-    // --- (INICIO DE CAMBIOS) ---
-    // 1. Registra AMBOS microservicios
     ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
@@ -36,7 +36,6 @@ import { join } from 'path';
           },
         }),
       },
-      // 2. AÑADE EL NUEVO SERVICIO
       {
         name: 'PERSONAL_SERVICE',
         imports: [ConfigModule],
@@ -44,7 +43,7 @@ import { join } from 'path';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: 'personal_service', // <-- Nombre del servicio en Docker
+            host: 'personal_service',
             port: +configService.get<number>('PERSONAL_SERVICE_PORT')!,
           },
         }),
@@ -68,16 +67,14 @@ import { join } from 'path';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: 'productividad_service', // <-- Nombre del servicio en Docker
+            host: 'productividad_service',
             port: +configService.get<number>('PRODUCTIVIDAD_SERVICE_PORT')!,
           },
         }),
       },
     ]),
-    // --- (FIN DE CAMBIOS) ---
 
     JwtModule.registerAsync({
-      // ... (tu configuración de JwtModule)
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -88,6 +85,27 @@ import { join } from 'path';
       }),
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    // 👇 CONFIGURACIÓN DE MONGO (NUEVO)
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        // 1. Leemos tus variables
+        const host = configService.get<string>('DB_MONGO_HOST');
+        const port = configService.get<string>('DB_MONGO_PORT');
+        const user = configService.get<string>('DB_MONGO_USER');
+        const pass = configService.get<string>('DB_MONGO_PASSWORD');
+        const dbName = configService.get<string>('DB_MONGO_DATABASE');
+
+        const uri = `mongodb://${user}:${pass}@${host}:${port}/${dbName}?authSource=admin`;
+
+        console.log('🐢 Intentando conectar a Mongo en:', `mongodb://${user}:******@${host}:${port}/${dbName}`);
+
+        return { uri };
+      },
+      inject: [ConfigService],
+    }),
+
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtStrategy],
