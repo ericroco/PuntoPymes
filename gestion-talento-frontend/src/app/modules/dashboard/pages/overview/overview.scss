@@ -474,3 +474,23 @@ button[mat-icon-button] {
     transform: translateY(0);
   }
 }
+
+.dense-field {
+
+  // Hace el input de fecha un poco más compacto
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none; // Oculta espacio extra si no hay error
+  }
+}
+
+.icon-align {
+  // Alineación vertical perfecta para iconos pequeños
+  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.request-section {
+  padding: 0 4px;
+}

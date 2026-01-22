@@ -71,7 +71,8 @@ export class PersonalService {
     private readonly candidatoRepository: Repository<Candidato>,
     @InjectRepository(DocumentoEmpleado)
     private readonly documentoRepository: Repository<DocumentoEmpleado>,
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy, // Inyectar Cliente Auth
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    @Inject('IA_SERVICE') private readonly iaClient: ClientProxy,
     private readonly mailerService: MailerService,
     @InjectRepository(Sucursal)
     private readonly sucursalRepository: Repository<Sucursal>,
@@ -1659,7 +1660,6 @@ export class PersonalService {
     return response;
   }
 
-  // 👇 NUEVA FUNCIÓN PRIVADA BASADA EN TU ESTILO
   private async predecirDepartamentoConIA(
     listaDeptos: { id: string; nombre: string }[],
     nombreCargo: string
@@ -1709,35 +1709,65 @@ export class PersonalService {
   // ==========================================
 
   async createDocumentoEmpresa(empresaId: string, dto: CreateDocumentoEmpresaDto) {
+
+    // TRUCO: Normalizar texto (Quitar tildes y pasar a mayúsculas)
+    // Esto convierte "PolíTica", "política", "POLÍTICA" -> "POLITICA"
+    const categoriaNormalizada = dto.categoria
+      ? dto.categoria.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+      : '';
+
+    // Comparamos contra la lista limpia (sin tildes)
+    const esConocimientoGeneral = ['POLITICA', 'NORMATIVA', 'MANUAL', 'CODIGO DE ETICA', 'LEGAL'].includes(categoriaNormalizada);
+
+    // Si es conocimiento general, forzamos sucursal NULL (Global)
+    const sucursalData = esConocimientoGeneral ? undefined : (dto.sucursalId ? { id: dto.sucursalId } : undefined);
+
     const doc = this.documentoEmpresaRepository.create({
       ...dto,
       empresaId,
-      // Si el DTO trae ID, se asigna. Si no, queda NULL (Global)
-      sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
+      sucursal: sucursalData,
     });
-    return this.documentoEmpresaRepository.save(doc);
+
+    const guardado = await this.documentoEmpresaRepository.save(doc);
+
+    // 2. CONEXIÓN CON IA 🧠
+    // Usamos la misma variable 'esConocimientoGeneral' que calculamos arriba
+    if (esConocimientoGeneral && guardado.url) {
+      try {
+        let rutaRelativa = guardado.url;
+
+        if (guardado.url.includes('/uploads/')) {
+          rutaRelativa = 'uploads/' + guardado.url.split('/uploads/')[1];
+        } else if (rutaRelativa.startsWith('/')) {
+          rutaRelativa = rutaRelativa.substring(1);
+        }
+
+        const rutaAbsoluta = require('path').join(process.cwd(), rutaRelativa);
+
+        this.iaClient.emit('documento_subido', {
+          filePath: rutaAbsoluta,
+          documentoId: guardado.id
+        });
+
+        console.log(`📡 Evento Auto-Sync enviado para: ${guardado.nombre}`);
+      } catch (e) {
+        console.error('Error enviando evento a IA', e);
+      }
+    }
+
+    return guardado;
   }
 
   async getDocumentosEmpresa(empresaId: string, filtroSucursalId?: string) {
-
-    // 🧠 LOGICA SEGURA (Whitelisting):
-    // 1. Siempre traemos los documentos GLOBALES (públicos para todos)
     const condiciones: any[] = [
       { empresaId, sucursalId: IsNull() }
     ];
-
-    // 2. Si (y solo si) hay un filtro específico, agregamos esa sede a la lista permitida
     if (filtroSucursalId) {
       condiciones.push({
         empresaId,
         sucursalId: filtroSucursalId
       });
     }
-
-    // ELIMINAMOS EL "IF" QUE RETORNABA TODO.
-    // Ahora:
-    // - Sin filtro -> Retorna solo Globales.
-    // - Con filtro -> Retorna Globales + Sede X.
 
     return this.documentoEmpresaRepository.find({
       where: condiciones,
@@ -1755,20 +1785,18 @@ export class PersonalService {
     return this.empleadoRepository.find({
       where: {
         empresaId,
-        estado: 'Activo' // Ojo: Tu entidad dice 'Activo' (Mayúscula), no 'ACTIVO'
+        estado: 'Activo'
       },
       select: {
         id: true,
         nombre: true,
         apellido: true,
-        emailPersonal: true, // Usamos este ya que es el que tienes en la entidad
+        emailPersonal: true,
         telefono: true,
         fotoUrl: true,
-        // Relaciones disponibles en tu entidad:
         sucursal: { nombre: true },
-        cargo: { nombre: true } // 👈 CAMBIO: Usamos Cargo en vez de Departamento
+        cargo: { nombre: true }
       },
-      // Cargamos las relaciones reales que tienes
       relations: ['sucursal', 'cargo'],
       order: { nombre: 'ASC' }
     });
@@ -1817,5 +1845,65 @@ export class PersonalService {
     }
 
     return { success: true, id: candidatoId, estado: EstadoCandidato.RECHAZADO };
+  }
+
+  async sincronizarConocimientoIA() {
+    // 1. Buscar documentos con variaciones de nombre (Con y sin tildes)
+    // El array en 'where' funciona como un OR
+    const documentos = await this.documentoEmpresaRepository.find({
+      where: [
+        // Variaciones comunes
+        { categoria: 'POLITICA' }, { categoria: 'POLÍTICA' }, { categoria: 'Política' },
+        { categoria: 'NORMATIVA' }, { categoria: 'Normativa' },
+        { categoria: 'MANUAL' }, { categoria: 'Manual' },
+        { categoria: 'LEGAL' }, { categoria: 'Legal' },
+        { categoria: 'CÓDIGO DE ÉTICA' }, { categoria: 'CODIGO DE ETICA' }, { categoria: 'Código de Ética' }
+      ]
+    });
+
+    console.log(`🔄 Encontrados en BD: ${documentos.length} documentos para sincronizar.`);
+
+    // DEBUG: Si sale 0, imprimamos qué categorías existen realmente para ver el error
+    if (documentos.length === 0) {
+      // Hacemos una consulta rápida para ver qué hay en la base de datos
+      const todos = await this.documentoEmpresaRepository.find({ select: ['categoria'], take: 20 });
+      const categoriasExistentes = [...new Set(todos.map(d => d.categoria))]; // Filtramos únicos
+      console.log('⚠️ ALERTA: No hubo coincidencias. Las categorías que TIENES en tu BD son:', categoriasExistentes);
+      console.log('👉 Asegúrate de agregar una de estas al array "where" en el código.');
+    }
+
+    // 2. Emitir eventos
+    for (const doc of documentos) {
+      if (!doc.url) continue;
+
+      try {
+        let rutaRelativa = doc.url;
+
+        // Limpieza de ruta
+        if (doc.url.includes('/uploads/')) {
+          rutaRelativa = 'uploads/' + doc.url.split('/uploads/')[1];
+        } else if (rutaRelativa.startsWith('/')) {
+          rutaRelativa = rutaRelativa.substring(1);
+        }
+
+        const rutaAbsoluta = require('path').join(process.cwd(), rutaRelativa);
+
+        this.iaClient.emit('documento_subido', {
+          filePath: rutaAbsoluta,
+          documentoId: doc.id
+        });
+
+        console.log(`📤 Enviando a IA: ${doc.nombre}`);
+
+      } catch (error) {
+        console.error(`❌ Error ruta doc ${doc.id}:`, error);
+      }
+    }
+
+    return { message: `Sincronización enviada para ${documentos.length} documentos.` };
+  }
+
+  async consultarIAPuente(data: { pregunta: string }) {
+    return this.iaClient.send({ cmd: 'consultar_ia' }, data);
   }
 }

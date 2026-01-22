@@ -37,6 +37,15 @@
         "tsConfigPath": "libs/database/tsconfig.lib.json"
       }
     },
+    "ia": {
+      "type": "application",
+      "root": "apps/ia",
+      "entryFile": "main",
+      "sourceRoot": "apps/ia/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ia/tsconfig.app.json"
+      }
+    },
     "nomina": {
       "type": "application",
       "root": "apps/nomina",

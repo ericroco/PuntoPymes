@@ -1,0 +1,33 @@
+// === BREAKPOINTS ESTÁNDAR ===
+$breakpoint-xs: 389px; // iPhone SE y menores
+$breakpoint-sm: 390px; // iPhone 12 Pro
+$breakpoint-md: 768px; // iPad Mini
+$breakpoint-lg: 1024px; // iPad Pro / Desktop
+$breakpoint-xl: 1440px; // Desktop grande
+
+// === SPACING RESPONSIVE ===
+:root {
+    // Base (mobile)
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    // Tablet (768px+)
+    @media (min-width: 768px) {
+        --spacing-md: 20px;
+        --spacing-lg: 28px;
+        --spacing-xl: 40px;
+        --spacing-2xl: 56px;
+    }
+
+    // Desktop (1024px+)
+    @media (min-width: 1024px) {
+        --spacing-md: 24px;
+        --spacing-lg: 32px;
+        --spacing-xl: 48px;
+        --spacing-2xl: 64px;
+    }
+}

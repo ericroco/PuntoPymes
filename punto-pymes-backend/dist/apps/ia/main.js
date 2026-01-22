@@ -2,6 +2,353 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./apps/ia/src/ia.controller.ts":
+/*!**************************************!*\
+  !*** ./apps/ia/src/ia.controller.ts ***!
+  \**************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.IaController = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const ia_service_1 = __webpack_require__(/*! ./ia.service */ "./apps/ia/src/ia.service.ts");
+let IaController = class IaController {
+    iaService;
+    constructor(iaService) {
+        this.iaService = iaService;
+    }
+    async handleDocumentoSubido(data) {
+        console.log('📨 Evento recibido: documento_subido', data);
+        this.iaService.procesarDocumento(data.filePath, data.documentoId);
+    }
+    async consultar(data) {
+        return this.iaService.consultarIA(data.pregunta);
+    }
+};
+exports.IaController = IaController;
+__decorate([
+    (0, microservices_1.EventPattern)('documento_subido'),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], IaController.prototype, "handleDocumentoSubido", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'consultar_ia' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], IaController.prototype, "consultar", null);
+exports.IaController = IaController = __decorate([
+    (0, common_1.Controller)(),
+    __metadata("design:paramtypes", [ia_service_1.IaService])
+], IaController);
+
+
+/***/ }),
+
+/***/ "./apps/ia/src/ia.module.ts":
+/*!**********************************!*\
+  !*** ./apps/ia/src/ia.module.ts ***!
+  \**********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.IaModule = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const ia_controller_1 = __webpack_require__(/*! ./ia.controller */ "./apps/ia/src/ia.controller.ts");
+const ia_service_1 = __webpack_require__(/*! ./ia.service */ "./apps/ia/src/ia.service.ts");
+const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
+let IaModule = class IaModule {
+};
+exports.IaModule = IaModule;
+exports.IaModule = IaModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: './.env',
+            }),
+            database_1.DatabaseModule,
+            typeorm_1.TypeOrmModule.forFeature([database_1.DocumentoEmbedding]),
+        ],
+        controllers: [ia_controller_1.IaController],
+        providers: [ia_service_1.IaService],
+    })
+], IaModule);
+
+
+/***/ }),
+
+/***/ "./apps/ia/src/ia.service.ts":
+/*!***********************************!*\
+  !*** ./apps/ia/src/ia.service.ts ***!
+  \***********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var IaService_1;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.IaService = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
+const fs = __importStar(__webpack_require__(/*! fs */ "fs"));
+const path = __importStar(__webpack_require__(/*! path */ "path"));
+const generative_ai_1 = __webpack_require__(/*! @google/generative-ai */ "@google/generative-ai");
+const textsplitters_1 = __webpack_require__(/*! @langchain/textsplitters */ "@langchain/textsplitters");
+const google_genai_1 = __webpack_require__(/*! @langchain/google-genai */ "@langchain/google-genai");
+const generative_ai_2 = __webpack_require__(/*! @google/generative-ai */ "@google/generative-ai");
+const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
+let IaService = IaService_1 = class IaService {
+    configService;
+    embeddingRepo;
+    logger = new common_1.Logger(IaService_1.name);
+    genAI;
+    embeddingsModel;
+    constructor(configService, embeddingRepo) {
+        this.configService = configService;
+        this.embeddingRepo = embeddingRepo;
+        const apiKey = this.configService.getOrThrow('GEMINI_API_KEY');
+        this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
+        this.embeddingsModel = new google_genai_1.GoogleGenerativeAIEmbeddings({
+            modelName: 'text-embedding-004',
+            apiKey: apiKey,
+            taskType: generative_ai_2.TaskType.RETRIEVAL_DOCUMENT,
+        });
+    }
+    async retryOperation(operation, retries = 3, delay = 5000) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                return await operation();
+            }
+            catch (error) {
+                if (error.message?.includes('429') || error.status === 429 || error.status === 503) {
+                    this.logger.warn(`⏳ Cuota Gemini excedida. Esperando ${delay / 1000}s para reintentar (Intento ${i + 1}/${retries})...`);
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+                else {
+                    throw error;
+                }
+            }
+        }
+        throw new Error('Operación fallida tras varios intentos por saturación de API.');
+    }
+    async procesarDocumento(filePath, documentoId) {
+        this.logger.log(`🤖 IA: Iniciando procesamiento para DocID: ${documentoId}`);
+        try {
+            const absolutePath = path.resolve(filePath);
+            if (!fs.existsSync(absolutePath)) {
+                throw new Error(`El archivo no existe en: ${absolutePath}`);
+            }
+            const pdfjsLib = await Promise.resolve(/*! import() */).then(__webpack_require__.t.bind(__webpack_require__, /*! pdfjs-dist/legacy/build/pdf.mjs */ "pdfjs-dist/legacy/build/pdf.mjs", 23));
+            const dataBuffer = fs.readFileSync(absolutePath);
+            const typedArray = new Uint8Array(dataBuffer);
+            const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+            const pdfDocument = await loadingTask.promise;
+            let textoCompleto = '';
+            for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+                const page = await pdfDocument.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map((item) => item.str).join(' ');
+                textoCompleto += pageText + '\n';
+            }
+            if (!textoCompleto || textoCompleto.trim().length === 0) {
+                this.logger.warn('⚠️ El PDF parece estar vacío o es una imagen escaneada.');
+                return;
+            }
+            this.logger.log(`📄 Texto extraído: ${textoCompleto.length} caracteres`);
+            await this.embeddingRepo.delete({ documentoId });
+            const splitter = new textsplitters_1.RecursiveCharacterTextSplitter({
+                chunkSize: 1500,
+                chunkOverlap: 300,
+            });
+            const docs = await splitter.createDocuments([textoCompleto]);
+            const batchSize = 5;
+            for (let i = 0; i < docs.length; i += batchSize) {
+                const batch = docs.slice(i, i + batchSize);
+                const batchTexts = batch.map((d) => d.pageContent);
+                const vectors = await this.retryOperation(() => this.embeddingsModel.embedDocuments(batchTexts));
+                const entidades = batch.map((doc, index) => {
+                    return this.embeddingRepo.create({
+                        contenido: doc.pageContent,
+                        vector: JSON.stringify(vectors[index]),
+                        documentoId: documentoId,
+                    });
+                });
+                await this.embeddingRepo.save(entidades);
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            this.logger.log(`✅ Documento procesado y memorizado EXITOSAMENTE.`);
+        }
+        catch (error) {
+            this.logger.error(`❌ Error procesando documento: ${error.message}`, error.stack);
+        }
+    }
+    async consultarIA(pregunta) {
+        this.logger.log(`💬 Pregunta recibida: ${pregunta}`);
+        const inicio = Date.now();
+        try {
+            const vectorPregunta = await this.retryOperation(() => this.embeddingsModel.embedQuery(pregunta));
+            const vectorString = JSON.stringify(vectorPregunta);
+            const resultados = await this.embeddingRepo.query(`SELECT contenido, 1 - (vector <=> $1) as similitud 
+         FROM documentos_embeddings 
+         ORDER BY vector <=> $1 ASC 
+         LIMIT 10`, [vectorString]);
+            const fragmentosUtiles = resultados.filter(r => r.similitud > 0.15);
+            this.logger.log(`📊 Fragmentos encontrados: ${fragmentosUtiles.length} (de ${resultados.length} analizados)`);
+            resultados.forEach((r, idx) => {
+                const preview = r.contenido.substring(0, 100).replace(/\n/g, ' ');
+                this.logger.log(`  [${idx + 1}] Similitud: ${(r.similitud * 100).toFixed(2)}% - "${preview}..."`);
+            });
+            if (fragmentosUtiles.length === 0) {
+                return { respuesta: "No encontré información en las políticas de la empresa sobre ese tema." };
+            }
+            const contexto = fragmentosUtiles.map(r => r.contenido).join('\n\n---\n\n');
+            const generationConfig = {
+                temperature: 0.2,
+                maxOutputTokens: 2048,
+                topP: 0.95,
+                topK: 40,
+            };
+            const model = this.genAI.getGenerativeModel({
+                model: 'gemini-flash-latest',
+                generationConfig
+            });
+            const prompt = `
+Eres un asistente experto en RRHH de la empresa PuntoPyMES.
+Responde a la pregunta basándote EXCLUSIVAMENTE en el siguiente CONTEXTO.
+
+CONTEXTO:
+${contexto}
+
+PREGUNTA:
+${pregunta}
+
+INSTRUCCIONES IMPORTANTES:
+1. Si la respuesta está en el contexto, explícala de forma clara y completa
+2. Si no está, di que no tienes información
+3. NO uses formato markdown (sin *, **, #, ###, ni listas con guiones)
+4. Escribe en texto plano con párrafos normales
+5. Usa saltos de línea simples para separar ideas
+6. Numera pasos como "1.", "2.", etc. si es necesario
+7. COMPLETA toda la respuesta, nunca la dejes a medias
+8. Sé conversacional y amable
+
+Responde ahora en texto plano:
+      `;
+            const result = await this.retryOperation(() => model.generateContent(prompt));
+            const respuesta = result.response.text();
+            if (respuesta.length < 50 || respuesta.endsWith('...') || !this.esRespuestaCompleta(respuesta)) {
+                this.logger.warn(`⚠️ Respuesta posiblemente truncada. Longitud: ${respuesta.length}`);
+            }
+            this.logger.log(`🚀 Respuesta generada en ${Date.now() - inicio}ms (${respuesta.length} caracteres)`);
+            return { respuesta };
+        }
+        catch (error) {
+            this.logger.error(`❌ Error en consultarIA: ${error.message}`);
+            return { respuesta: "El sistema está experimentando alta demanda. Intenta luego." };
+        }
+    }
+    esRespuestaCompleta(texto) {
+        const ultimoCaracter = texto.trim().slice(-1);
+        const caracteresFinales = ['.', '!', '?', ':', '"'];
+        const palabrasIncompletas = ['La', 'El', 'Los', 'Las', 'Un', 'Una', 'De', 'En'];
+        const ultimaPalabra = texto.trim().split(' ').pop() || '';
+        if (!caracteresFinales.includes(ultimoCaracter)) {
+            return false;
+        }
+        if (palabrasIncompletas.includes(ultimaPalabra)) {
+            return false;
+        }
+        return true;
+    }
+};
+exports.IaService = IaService;
+exports.IaService = IaService = IaService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __param(1, (0, typeorm_1.InjectRepository)(database_1.DocumentoEmbedding)),
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        typeorm_2.Repository])
+], IaService);
+
+
+/***/ }),
+
 /***/ "./apps/nomina/src/dto/create-solicitud.dto.ts":
 /*!*****************************************************!*\
   !*** ./apps/nomina/src/dto/create-solicitud.dto.ts ***!
@@ -62,2273 +409,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateSolicitudDto.prototype, "comentario", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/bulk-import-response.dto.ts":
-/*!***********************************************************!*\
-  !*** ./apps/personal/src/dto/bulk-import-response.dto.ts ***!
-  \***********************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BulkImportResponseDto = exports.BulkErrorDetailDto = void 0;
-const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-const class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
-class BulkErrorDetailDto {
-    identifier;
-    error;
-    static _OPENAPI_METADATA_FACTORY() {
-        return { identifier: { required: true, type: () => String }, error: { required: true, type: () => String } };
-    }
-}
-exports.BulkErrorDetailDto = BulkErrorDetailDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], BulkErrorDetailDto.prototype, "identifier", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], BulkErrorDetailDto.prototype, "error", void 0);
-class BulkImportResponseDto {
-    total;
-    success;
-    errors;
-    details;
-    static _OPENAPI_METADATA_FACTORY() {
-        return { total: { required: true, type: () => Number }, success: { required: true, type: () => Number }, errors: { required: true, type: () => Number }, details: { required: true, type: () => [(__webpack_require__(/*! ./bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts").BulkErrorDetailDto)] } };
-    }
-}
-exports.BulkImportResponseDto = BulkImportResponseDto;
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], BulkImportResponseDto.prototype, "total", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], BulkImportResponseDto.prototype, "success", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], BulkImportResponseDto.prototype, "errors", void 0);
-__decorate([
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ValidateNested)({ each: true }),
-    (0, class_transformer_1.Type)(() => BulkErrorDetailDto),
-    __metadata("design:type", Array)
-], BulkImportResponseDto.prototype, "details", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/dto/create-candidato.dto.ts":
-/*!*******************************************************!*\
-  !*** ./apps/personal/src/dto/create-candidato.dto.ts ***!
-  \*******************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateCandidatoDto = void 0;
-const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
-const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-class CreateCandidatoDto {
-    nombre;
-    email;
-    telefono;
-    cvUrl;
-    vacanteId;
-    static _OPENAPI_METADATA_FACTORY() {
-        return { nombre: { required: true, type: () => String }, email: { required: true, type: () => String, format: "email" }, telefono: { required: false, type: () => String }, cvUrl: { required: true, type: () => String }, vacanteId: { required: true, type: () => String, format: "uuid" } };
-    }
-}
-exports.CreateCandidatoDto = CreateCandidatoDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateCandidatoDto.prototype, "nombre", void 0);
-__decorate([
-    (0, class_validator_1.IsEmail)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateCandidatoDto.prototype, "email", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateCandidatoDto.prototype, "telefono", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateCandidatoDto.prototype, "cvUrl", void 0);
-__decorate([
-    (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateCandidatoDto.prototype, "vacanteId", void 0);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/onboarding.service.ts":
-/*!*************************************************!*\
-  !*** ./apps/personal/src/onboarding.service.ts ***!
-  \*************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.OnboardingService = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
-const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
-const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
-let OnboardingService = class OnboardingService {
-    plantillaRepo;
-    tareaEmpleadoRepo;
-    constructor(plantillaRepo, tareaEmpleadoRepo) {
-        this.plantillaRepo = plantillaRepo;
-        this.tareaEmpleadoRepo = tareaEmpleadoRepo;
-    }
-    async createPlantilla(empresaId, data) {
-        const nuevaPlantilla = this.plantillaRepo.create({
-            ...data,
-            empresaId,
-        });
-        return this.plantillaRepo.save(nuevaPlantilla);
-    }
-    async asignarPlantilla(empleadoId, plantillaId) {
-        const plantilla = await this.plantillaRepo.findOne({
-            where: { id: plantillaId },
-            relations: ['tareas'],
-        });
-        if (!plantilla) {
-            throw new common_1.NotFoundException('La plantilla de onboarding no existe.');
-        }
-        const tareasPersonales = plantilla.tareas.map((t) => {
-            return this.tareaEmpleadoRepo.create({
-                empleadoId: empleadoId,
-                titulo: t.titulo,
-                descripcion: t.descripcion,
-                enlace: t.enlace,
-                completado: false,
-                plantillaOrigenId: plantilla.id,
-            });
-        });
-        return this.tareaEmpleadoRepo.save(tareasPersonales);
-    }
-    async getMisTareas(empleadoId) {
-        const tareas = await this.tareaEmpleadoRepo.find({
-            where: { empleadoId },
-            order: { createdAt: 'ASC' },
-        });
-        return tareas.map((t) => ({
-            id: t.id,
-            title: t.titulo,
-            description: t.descripcion,
-            link: t.enlace,
-            isComplete: t.completado,
-        }));
-    }
-    async toggleTarea(tareaId, isComplete) {
-        await this.tareaEmpleadoRepo.update(tareaId, { completado: isComplete });
-        return { success: true };
-    }
-    async seedOnboarding(empresaId, empleadoId) {
-        const plantillaExistente = await this.plantillaRepo.findOne({
-            where: { empresaId, nombre: 'Onboarding General' },
-            relations: ['tareas']
-        });
-        if (plantillaExistente) {
-            console.log('ℹ️ La plantilla ya existía, asignando...');
-            return this.asignarPlantilla(empleadoId, plantillaExistente.id);
-        }
-        const nuevaPlantilla = this.plantillaRepo.create({
-            nombre: 'Onboarding General',
-            descripcion: 'Pasos básicos para todo nuevo ingreso en Punto Pymes.',
-            empresaId: empresaId,
-            tareas: [
-                {
-                    titulo: 'Completa tu Perfil',
-                    descripcion: 'Sube tu foto y actualiza tu teléfono de contacto.',
-                    diaRelativo: 0,
-                    enlace: '/dashboard/my-profile'
-                },
-                {
-                    titulo: 'Video de Bienvenida',
-                    descripcion: 'Mira el mensaje de nuestro CEO sobre la cultura de la empresa.',
-                    diaRelativo: 0,
-                    enlace: null
-                },
-                {
-                    titulo: 'Políticas de Seguridad',
-                    descripcion: 'Lee y acepta el manual de seguridad de la información.',
-                    diaRelativo: 1,
-                    enlace: '/dashboard/policies'
-                },
-                {
-                    titulo: 'Configuración de Correo',
-                    descripcion: 'Asegúrate de tener acceso a tu email corporativo.',
-                    diaRelativo: 1,
-                    enlace: null
-                }
-            ]
-        });
-        const plantillaGuardada = (await this.plantillaRepo.save(nuevaPlantilla));
-        console.log('✅ Plantilla General creada automáticamente.');
-        return this.asignarPlantilla(empleadoId, plantillaGuardada.id);
-    }
-};
-exports.OnboardingService = OnboardingService;
-exports.OnboardingService = OnboardingService = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(database_1.PlantillaOnboarding)),
-    __param(1, (0, typeorm_1.InjectRepository)(database_1.TareaEmpleado)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
-], OnboardingService);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/personal.controller.ts":
-/*!**************************************************!*\
-  !*** ./apps/personal/src/personal.controller.ts ***!
-  \**************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalController = void 0;
-const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
-const create_candidato_dto_1 = __webpack_require__(/*! ./dto/create-candidato.dto */ "./apps/personal/src/dto/create-candidato.dto.ts");
-const onboarding_service_1 = __webpack_require__(/*! ./onboarding.service */ "./apps/personal/src/onboarding.service.ts");
-let PersonalController = class PersonalController {
-    personalService;
-    onboardingService;
-    constructor(personalService, onboardingService) {
-        this.personalService = personalService;
-        this.onboardingService = onboardingService;
-    }
-    getEmpleados(data) {
-        return this.personalService.getEmpleados(data.empresaId, data.filtroSucursalId);
-    }
-    getEmpleado(data) {
-        return this.personalService.getEmpleado(data.empresaId, data.empleadoId);
-    }
-    createEmpleado(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_empleado para empresa: ${data.empresaId}`);
-        return this.personalService.createEmpleado(data.empresaId, data.dto);
-    }
-    updateEmpleado(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_empleado para empleado: ${data.empleadoId}`);
-        return this.personalService.updateEmpleado(data.empresaId, data.empleadoId, data.dto);
-    }
-    deleteEmpleado(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_empleado para empleado: ${data.empleadoId}`);
-        return this.personalService.deleteEmpleado(data.empresaId, data.empleadoId);
-    }
-    createDepartamento(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_departamento para empresa: ${data.empresaId}`);
-        return this.personalService.createDepartamento(data.empresaId, data.dto);
-    }
-    getDepartamentos(data) {
-        console.log(`Microservicio PERSONAL: Recibido get_departamentos para empresa: ${data.empresaId}`);
-        return this.personalService.getDepartamentos(data.empresaId, data.filtroSucursalId);
-    }
-    updateDepartamento(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_departamento para depto: ${data.deptoId}`);
-        return this.personalService.updateDepartamento(data.empresaId, data.deptoId, data.dto);
-    }
-    deleteDepartamento(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_departamento para depto: ${data.deptoId}`);
-        return this.personalService.deleteDepartamento(data.empresaId, data.deptoId);
-    }
-    createCargo(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_cargo para empresa: ${data.empresaId}`);
-        return this.personalService.createCargo(data.empresaId, data.dto);
-    }
-    getCargos(data) {
-        return this.personalService.getCargos(data.empresaId, data.filtroSucursalId);
-    }
-    updateCargo(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_cargo para cargo: ${data.cargoId}`);
-        return this.personalService.updateCargo(data.empresaId, data.cargoId, data.dto);
-    }
-    deleteCargo(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_cargo para cargo: ${data.cargoId}`);
-        return this.personalService.deleteCargo(data.empresaId, data.cargoId);
-    }
-    createRol(data) {
-        console.log(`Microservicio PERSONAL: Recibido create_rol para empresa: ${data.empresaId}`);
-        return this.personalService.createRol(data.empresaId, data.dto);
-    }
-    getRoles(data) {
-        console.log(`Microservicio PERSONAL: Recibido get_roles para empresa: ${data.empresaId}`);
-        return this.personalService.getRoles(data.empresaId);
-    }
-    updateRol(data) {
-        console.log(`Microservicio PERSONAL: Recibido update_rol para rol: ${data.rolId}`);
-        return this.personalService.updateRol(data.empresaId, data.rolId, data.dto);
-    }
-    deleteRol(data) {
-        console.log(`Microservicio PERSONAL: Recibido delete_rol para rol: ${data.rolId}`);
-        return this.personalService.deleteRol(data.empresaId, data.rolId);
-    }
-    createVacante(data) {
-        return this.personalService.createVacante(data.empresaId, data.dto);
-    }
-    getVacantes(data) {
-        return this.personalService.getVacantes(data.empresaId, data.publicas, data.filtroSucursalId);
-    }
-    updateVacante(data) {
-        return this.personalService.updateVacante(data.empresaId, data.vacanteId, data.dto);
-    }
-    registrarCandidato(dto) {
-        return this.personalService.registrarCandidato(dto);
-    }
-    getCandidatos(data) {
-        return this.personalService.getCandidatos(data.empresaId, data.vacanteId);
-    }
-    reanalizarCandidato(data) {
-        return this.personalService.reanalizarCandidato(data.candidatoId);
-    }
-    getDocumentosEmpleado(data) {
-        return this.personalService.getDocumentosEmpleado(data.empresaId, data.empleadoId);
-    }
-    uploadDocumentoEmpleado(data) {
-        return this.personalService.uploadDocumentoEmpleado(data.empresaId, data.empleadoId, data.dto);
-    }
-    updateFotoPerfil(data) {
-        return this.personalService.updateFotoPerfil(data.empresaId, data.empleadoId, data.fileUrl);
-    }
-    deleteDocumento(data) {
-        return this.personalService.deleteDocumento(data.empresaId, data.documentoId);
-    }
-    fixPermissions(data) {
-        return this.personalService.fixEmployeePermissions(data.empresaId);
-    }
-    createSucursal(data) {
-        return this.personalService.createSucursal(data.empresaId, data.dto);
-    }
-    getSucursales(data) {
-        return this.personalService.getSucursales(data.empresaId);
-    }
-    updateSucursal(data) {
-        return this.personalService.updateSucursal(data.empresaId, data.sucursalId, data.dto);
-    }
-    deleteSucursal(data) {
-        return this.personalService.deleteSucursal(data.empresaId, data.sucursalId);
-    }
-    getPublicVacancy(data) {
-        return this.personalService.getPublicVacancy(data.vacanteId);
-    }
-    async importBulkEmpleados(data) {
-        return this.personalService.bulkCreateEmpleados(data.empresaId, data.empleados);
-    }
-    createOnboardingTemplate(data) {
-        return this.onboardingService.createPlantilla(data.empresaId, data.dto);
-    }
-    assignOnboarding(data) {
-        return this.onboardingService.asignarPlantilla(data.empleadoId, data.plantillaId);
-    }
-    getMyOnboarding(data) {
-        return this.onboardingService.getMisTareas(data.empleadoId);
-    }
-    toggleTask(data) {
-        return this.onboardingService.toggleTarea(data.tareaId, data.isComplete);
-    }
-    seedOnboarding(data) {
-        return this.onboardingService.seedOnboarding(data.empresaId, data.empleadoId);
-    }
-    async seedRolesDefault(data) {
-        return this.personalService.crearRolesPorDefecto(data.empresaId);
-    }
-    createDocEmpresa(data) {
-        return this.personalService.createDocumentoEmpresa(data.empresaId, data.dto);
-    }
-    getDocsEmpresa(data) {
-        return this.personalService.getDocumentosEmpresa(data.empresaId, data.filtroSucursalId);
-    }
-    deleteDocEmpresa(data) {
-        return this.personalService.deleteDocumentoEmpresa(data.empresaId, data.docId);
-    }
-    getDirectorio(data) {
-        return this.personalService.getDirectorioPublico(data.empresaId);
-    }
-    getOrganigramaData(data) {
-        return this.personalService.getOrganigramaData(data.empresaId);
-    }
-    rechazar(data) {
-        console.log('✅ Payload recibido correctamente:', data);
-        return this.personalService.rechazarCandidato(data.candidatoId, data.motivo);
-    }
-    async puenteIA(data) {
-        return this.personalService.consultarIAPuente(data);
-    }
-    async sincronizarIA() {
-        return this.personalService.sincronizarConocimientoIA();
-    }
-};
-exports.PersonalController = PersonalController;
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'get_empleados' (RF-01-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'get_empleados' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getEmpleados", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_empleado' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getEmpleado", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'create_empleado' (RF-01-01)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'create_empleado' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createEmpleado", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_empleado' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateEmpleado", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'delete_empleado' (RF-01-04)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_empleado' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteEmpleado", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'create_departamento' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'create_departamento' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createDepartamento", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'get_departamentos' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'get_departamentos' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getDepartamentos", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'update_departamento' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'update_departamento' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/departamento.entity */ "./libs/database/src/entities/departamento.entity.ts").Departamento) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateDepartamento", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'delete_departamento' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_departamento' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteDepartamento", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'create_cargo' (RF-02)\n(Tu m\u00E9todo existente - sin cambios)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'create_cargo' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createCargo", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'get_cargos' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'get_cargos' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getCargos", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'update_cargo' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'update_cargo' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/cargo.entity */ "./libs/database/src/entities/cargo.entity.ts").Cargo) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateCargo", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'delete_cargo' (RF-02)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_cargo' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteCargo", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'create_rol' (RF-29)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'create_rol' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createRol", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'get_roles' (RF-29)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'get_roles' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getRoles", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'update_rol' (RF-29)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'update_rol' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/rol.entity */ "./libs/database/src/entities/rol.entity.ts").Rol) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateRol", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Escucha el comando 'delete_rol' (RF-29)" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_rol' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteRol", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_vacante' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createVacante", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_vacantes' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getVacantes", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_vacante' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateVacante", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'registrar_candidato' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_candidato_dto_1.CreateCandidatoDto]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "registrarCandidato", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_candidatos' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getCandidatos", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'reanalizar_candidato' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/candidato.entity */ "./libs/database/src/entities/candidato.entity.ts").Candidato) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "reanalizarCandidato", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_documentos_empleado' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getDocumentosEmpleado", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'upload_documento_empleado' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/documentoEmpleado.entity */ "./libs/database/src/entities/documentoEmpleado.entity.ts").DocumentoEmpleado) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "uploadDocumentoEmpleado", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_foto_perfil' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateFotoPerfil", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_documento' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteDocumento", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'fix_permissions' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "fixPermissions", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_sucursal' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createSucursal", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_sucursales' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getSucursales", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'update_sucursal' }),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe()),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/sucursal.entity */ "./libs/database/src/entities/sucursal.entity.ts").Sucursal) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "updateSucursal", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_sucursal' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteSucursal", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_public_vacancy' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/vacante.entity */ "./libs/database/src/entities/vacante.entity.ts").Vacante) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getPublicVacancy", null);
-__decorate([
-    openapi.ApiOperation({ summary: "Recibe la petici\u00F3n del Gateway para importar masivamente\ncmd: 'import_bulk_empleados'" }),
-    (0, microservices_1.MessagePattern)({ cmd: 'import_bulk_empleados' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ./dto/bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts").BulkImportResponseDto) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], PersonalController.prototype, "importBulkEmpleados", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_onboarding_template' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/plantilla-onboarding.entity */ "./libs/database/src/entities/plantilla-onboarding.entity.ts").PlantillaOnboarding)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createOnboardingTemplate", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'assign_onboarding' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts").TareaEmpleado)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "assignOnboarding", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_my_onboarding' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getMyOnboarding", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'toggle_onboarding_task' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "toggleTask", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'seed_onboarding_test' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/tarea-empleado.entity */ "./libs/database/src/entities/tarea-empleado.entity.ts").TareaEmpleado)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "seedOnboarding", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'seed_roles_default' }),
-    openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], PersonalController.prototype, "seedRolesDefault", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'create_doc_empresa' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts").DocumentoEmpresa) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "createDocEmpresa", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_docs_empresa' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts").DocumentoEmpresa)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getDocsEmpresa", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'delete_doc_empresa' }),
-    openapi.ApiResponse({ status: 200, type: (__webpack_require__(/*! ../../../libs/database/src/entities/documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts").DocumentoEmpresa) }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "deleteDocEmpresa", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_directorio' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getDirectorio", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'get_organigrama_data' }),
-    openapi.ApiResponse({ status: 200, type: [(__webpack_require__(/*! ../../../libs/database/src/entities/empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado)] }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "getOrganigramaData", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'rechazar_candidato' }),
-    openapi.ApiResponse({ status: 200, type: Object }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], PersonalController.prototype, "rechazar", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'consultar_ia_puente' }),
-    openapi.ApiResponse({ status: 200, type: Object }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], PersonalController.prototype, "puenteIA", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: 'sincronizar_ia' }),
-    openapi.ApiResponse({ status: 200 }),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], PersonalController.prototype, "sincronizarIA", null);
-exports.PersonalController = PersonalController = __decorate([
-    (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [personal_service_1.PersonalService,
-        onboarding_service_1.OnboardingService])
-], PersonalController);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/personal.module.ts":
-/*!**********************************************!*\
-  !*** ./apps/personal/src/personal.module.ts ***!
-  \**********************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalModule = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
-const personal_controller_1 = __webpack_require__(/*! ./personal.controller */ "./apps/personal/src/personal.controller.ts");
-const personal_service_1 = __webpack_require__(/*! ./personal.service */ "./apps/personal/src/personal.service.ts");
-const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-const onboarding_service_1 = __webpack_require__(/*! ./onboarding.service */ "./apps/personal/src/onboarding.service.ts");
-const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
-let PersonalModule = class PersonalModule {
-};
-exports.PersonalModule = PersonalModule;
-exports.PersonalModule = PersonalModule = __decorate([
-    (0, common_1.Module)({
-        imports: [
-            config_1.ConfigModule.forRoot({
-                isGlobal: true,
-                envFilePath: './.env',
-            }),
-            database_1.DatabaseModule,
-            typeorm_1.TypeOrmModule.forFeature([
-                database_1.Empleado,
-                database_1.Departamento,
-                database_1.Cargo,
-                database_1.Rol, database_1.Contrato,
-                database_1.Vacante,
-                database_1.Candidato,
-                database_1.Usuario,
-                database_1.DocumentoEmpleado,
-                database_1.Sucursal,
-                database_1.PlantillaOnboarding,
-                database_1.TareaPlantilla,
-                database_1.TareaEmpleado,
-                database_1.DocumentoEmpresa,
-            ]),
-            microservices_1.ClientsModule.register([
-                {
-                    name: 'AUTH_SERVICE',
-                    transport: microservices_1.Transport.TCP,
-                    options: {
-                        host: 'auth_service',
-                        port: 3001
-                    },
-                },
-                {
-                    name: 'IA_SERVICE',
-                    transport: microservices_1.Transport.TCP,
-                    options: {
-                        host: 'ia_service',
-                        port: 3005
-                    },
-                },
-            ]),
-            mailer_1.MailerModule.forRoot({
-                transport: {
-                    host: 'smtp.gmail.com',
-                    port: 587,
-                    secure: false,
-                    auth: {
-                        user: 'erickrodas559@gmail.com',
-                        pass: 'tqhl basq ufjw vyor',
-                    },
-                },
-                defaults: {
-                    from: '"PuntoPyMES RRHH" <noreply@puntopymes.com>',
-                },
-            }),
-        ],
-        controllers: [personal_controller_1.PersonalController],
-        providers: [personal_service_1.PersonalService, onboarding_service_1.OnboardingService],
-    })
-], PersonalModule);
-
-
-/***/ }),
-
-/***/ "./apps/personal/src/personal.service.ts":
-/*!***********************************************!*\
-  !*** ./apps/personal/src/personal.service.ts ***!
-  \***********************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var PersonalService_1;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalService = void 0;
-const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
-const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
-const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
-const generative_ai_1 = __webpack_require__(/*! @google/generative-ai */ "@google/generative-ai");
-const database_2 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
-const fs = __importStar(__webpack_require__(/*! fs */ "fs"));
-const path_1 = __webpack_require__(/*! path */ "path");
-const axios_1 = __importDefault(__webpack_require__(/*! axios */ "axios"));
-const common_2 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
-const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
-const common_3 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const bulk_import_response_dto_1 = __webpack_require__(/*! ./dto/bulk-import-response.dto */ "./apps/personal/src/dto/bulk-import-response.dto.ts");
-const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
-const typeorm_3 = __webpack_require__(/*! typeorm */ "typeorm");
-const microservices_2 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-let PersonalService = PersonalService_1 = class PersonalService {
-    empleadoRepository;
-    rolRepository;
-    cargoRepository;
-    configService;
-    contratoRepository;
-    deptoRepository;
-    vacanteRepository;
-    candidatoRepository;
-    documentoRepository;
-    authClient;
-    iaClient;
-    mailerService;
-    sucursalRepository;
-    documentoEmpresaRepository;
-    dataSource;
-    logger = new common_3.Logger(PersonalService_1.name);
-    genAI;
-    constructor(empleadoRepository, rolRepository, cargoRepository, configService, contratoRepository, deptoRepository, vacanteRepository, candidatoRepository, documentoRepository, authClient, iaClient, mailerService, sucursalRepository, documentoEmpresaRepository, dataSource) {
-        this.empleadoRepository = empleadoRepository;
-        this.rolRepository = rolRepository;
-        this.cargoRepository = cargoRepository;
-        this.configService = configService;
-        this.contratoRepository = contratoRepository;
-        this.deptoRepository = deptoRepository;
-        this.vacanteRepository = vacanteRepository;
-        this.candidatoRepository = candidatoRepository;
-        this.documentoRepository = documentoRepository;
-        this.authClient = authClient;
-        this.iaClient = iaClient;
-        this.mailerService = mailerService;
-        this.sucursalRepository = sucursalRepository;
-        this.documentoEmpresaRepository = documentoEmpresaRepository;
-        this.dataSource = dataSource;
-        const apiKey = this.configService.getOrThrow('GEMINI_API_KEY');
-        this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
-    }
-    async getEmpleados(empresaId, filtroSucursalId) {
-        console.log(`Microservicio PERSONAL: Buscando empleados. Empresa: ${empresaId}, Sucursal: ${filtroSucursalId || 'Todas'}`);
-        const whereClause = {
-            empresaId,
-            estado: (0, typeorm_2.Not)('Inactivo')
-        };
-        if (filtroSucursalId) {
-            whereClause.sucursal = { id: filtroSucursalId };
-        }
-        return this.empleadoRepository.find({
-            where: whereClause,
-            relations: [
-                'cargo',
-                'cargo.departamento',
-                'rol',
-                'sucursal',
-                'contratos'
-            ],
-            order: {
-                createdAt: 'DESC'
-            }
-        });
-    }
-    async getEmpleado(empresaId, empleadoId, filtroSucursalId) {
-        const whereClause = {
-            id: empleadoId,
-            empresaId
-        };
-        if (filtroSucursalId) {
-            whereClause.sucursal = { id: filtroSucursalId };
-        }
-        const empleado = await this.empleadoRepository.findOne({
-            where: whereClause,
-            relations: [
-                'cargo',
-                'rol',
-                'cargo.departamento',
-                'sucursal'
-            ],
-        });
-        if (!empleado) {
-            throw new common_1.NotFoundException('Empleado no encontrado o no pertenece a su jurisdicción.');
-        }
-        return empleado;
-    }
-    async createEmpleado(empresaId, dto, usuarioCreador) {
-        console.log(`Microservicio PERSONAL: Procesando empleado... ID: ${dto.nroIdentificacion} - Email: ${dto.emailPersonal}`);
-        let sucursalDestino = dto.sucursalId;
-        if (usuarioCreador && usuarioCreador.sucursalId) {
-            sucursalDestino = usuarioCreador.sucursalId;
-        }
-        if (sucursalDestino) {
-            const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalDestino, empresaId });
-            if (!sucursal)
-                throw new common_1.BadRequestException('La sucursal seleccionada no es válida o no pertenece a la empresa.');
-        }
-        const rol = await this.rolRepository.findOneBy({ id: dto.rolId, empresaId });
-        if (!rol)
-            throw new common_1.BadRequestException('El rol seleccionado no es válido.');
-        const cargo = await this.cargoRepository.findOne({
-            where: { id: dto.cargoId, departamento: { empresaId } },
-        });
-        if (!cargo)
-            throw new common_1.BadRequestException('El cargo seleccionado no es válido.');
-        const existentePorId = await this.empleadoRepository.findOne({
-            where: { nroIdentificacion: dto.nroIdentificacion, empresaId },
-        });
-        if (existentePorId && existentePorId.estado === 'Activo') {
-            throw new common_1.ConflictException(`Ya existe un empleado activo con la identificación ${dto.nroIdentificacion} (${existentePorId.nombre} ${existentePorId.apellido}).`);
-        }
-        const existentePorEmail = await this.empleadoRepository.findOne({
-            where: { emailPersonal: dto.emailPersonal, empresaId },
-        });
-        if (existentePorEmail && existentePorEmail.estado === 'Activo') {
-            throw new common_1.ConflictException(`Ya existe un empleado activo con el correo ${dto.emailPersonal}.`);
-        }
-        const empleadoAReactivar = existentePorId || existentePorEmail;
-        let empleadoGuardado;
-        if (empleadoAReactivar) {
-            console.log(`♻️ Reactivando ex-empleado inactivo: ${empleadoAReactivar.nombre} ${empleadoAReactivar.apellido}`);
-            this.empleadoRepository.merge(empleadoAReactivar, {
-                ...dto,
-                sucursalId: sucursalDestino,
-                estado: 'Activo',
-                nroIdentificacion: dto.nroIdentificacion,
-                tipoIdentificacion: dto.tipoIdentificacion
-            });
-            empleadoGuardado = await this.empleadoRepository.save(empleadoAReactivar);
-        }
-        else {
-            console.log(`✨ Creando nuevo empleado totalmente nuevo...`);
-            const nuevoEmpleado = this.empleadoRepository.create({
-                ...dto,
-                empresaId,
-                sucursalId: sucursalDestino,
-                estado: 'Activo'
-            });
-            empleadoGuardado = await this.empleadoRepository.save(nuevoEmpleado);
-        }
-        if (dto.salario !== undefined) {
-            if (empleadoAReactivar) {
-                await this.contratoRepository.update({ empleado: { id: empleadoGuardado.id }, estado: 'Vigente' }, { estado: 'Inactivo' });
-            }
-            const nuevoContrato = this.contratoRepository.create({
-                empleado: empleadoGuardado,
-                tipo: dto.tipoContrato || 'Indefinido',
-                salario: dto.salario,
-                moneda: 'USD',
-                fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : new Date(),
-                fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
-                estado: 'Vigente'
-            });
-            await this.contratoRepository.save(nuevoContrato);
-            console.log(`✅ Contrato generado: $${dto.salario}`);
-        }
-        if (dto.emailPersonal) {
-            try {
-                const resultadoAuth = await (0, rxjs_1.firstValueFrom)(this.authClient.send({ cmd: 'create_user_auto' }, {
-                    empleadoId: empleadoGuardado.id,
-                    email: dto.emailPersonal,
-                    nombre: dto.nombre,
-                    empresaId,
-                }));
-                if (resultadoAuth.isNew) {
-                    await this.mailerService.sendMail({
-                        to: dto.emailPersonal,
-                        subject: 'Bienvenido a PuntoPyMES - Tus Credenciales',
-                        html: `
-              <div style="font-family: Arial; color: #333;">
-                <h1 style="color: #3f51b5;">¡Bienvenido ${dto.nombre}!</h1>
-                <p>Se ha creado tu cuenta profesional en PuntoPyMES.</p>
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #3f51b5;">
-                    <p><b>Usuario:</b> ${resultadoAuth.email}</p>
-                    <p><b>Contraseña Temporal:</b> ${resultadoAuth.password}</p>
-                </div>
-                <p>Por favor ingresa y cambia tu contraseña.</p>
-                <br>
-                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ingresar al Sistema</a>
-              </div>
-            `
-                    });
-                }
-                else {
-                    await this.mailerService.sendMail({
-                        to: dto.emailPersonal,
-                        subject: 'PuntoPyMES - Cuenta Reactivada',
-                        html: `
-              <div style="font-family: Arial; color: #333;">
-                <h1 style="color: #3f51b5;">¡Hola de nuevo ${dto.nombre}!</h1>
-                <p>Tu perfil de empleado ha sido reactivado exitosamente.</p>
-                <p>Puedes seguir usando tus credenciales anteriores para acceder.</p>
-                <br>
-                <a href="http://localhost:4200/auth/login" style="background-color: #3f51b5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ir al Dashboard</a>
-              </div>
-            `
-                    });
-                }
-            }
-            catch (error) {
-                console.error('⚠️ Error al crear usuario Auth o enviar correo:', error.message);
-            }
-        }
-        return empleadoGuardado;
-    }
-    async updateEmpleado(empresaId, empleadoId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando empleado ${empleadoId} para empresaId: ${empresaId}`);
-        const empleado = await this.empleadoRepository.findOneBy({
-            id: empleadoId,
-            empresaId: empresaId,
-        });
-        if (!empleado) {
-            throw new common_1.NotFoundException('Empleado no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.rolId) {
-            const rol = await this.rolRepository.findOneBy({
-                id: dto.rolId,
-                empresaId: empresaId,
-            });
-            if (!rol) {
-                throw new common_1.BadRequestException('El Rol seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        if (dto.cargoId) {
-            const cargo = await this.cargoRepository.findOne({
-                where: {
-                    id: dto.cargoId,
-                    departamento: {
-                        empresaId: empresaId,
-                    },
-                },
-            });
-            if (!cargo) {
-                throw new common_1.BadRequestException('El Cargo seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        const empleadoActualizado = this.empleadoRepository.merge(empleado, dto);
-        return this.empleadoRepository.save(empleadoActualizado);
-    }
-    async deleteEmpleado(empresaId, empleadoId) {
-        console.log(`Microservicio PERSONAL: Procesando desvinculación del empleado ${empleadoId}`);
-        const empleado = await this.empleadoRepository.findOne({
-            where: { id: empleadoId, empresaId },
-        });
-        if (!empleado) {
-            throw new common_1.NotFoundException('Empleado no encontrado o no pertenece a esta empresa.');
-        }
-        const contratoVigente = await this.contratoRepository.findOne({
-            where: {
-                empleadoId: empleadoId,
-                estado: 'Vigente'
-            }
-        });
-        if (contratoVigente) {
-            contratoVigente.estado = 'Finalizado';
-            contratoVigente.fechaFin = new Date();
-            await this.contratoRepository.save(contratoVigente);
-            console.log(`✅ Contrato finalizado para ${empleado.nombre} ${empleado.apellido}`);
-        }
-        else {
-            console.log(`⚠️ El empleado ${empleado.nombre} no tenía contrato vigente, solo se desactivará su perfil.`);
-        }
-        empleado.estado = 'Inactivo';
-        await this.empleadoRepository.save(empleado);
-        return { message: 'Empleado desvinculado correctamente.' };
-    }
-    async createDepartamento(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando departamento para empresaId: ${empresaId}`);
-        const whereDuplicado = {
-            nombre: dto.nombre,
-            empresaId: empresaId,
-        };
-        whereDuplicado.sucursal = dto.sucursalId ? { id: dto.sucursalId } : (0, typeorm_3.IsNull)();
-        const deptoExistente = await this.deptoRepository.findOne({
-            where: whereDuplicado
-        });
-        if (deptoExistente) {
-            throw new common_1.ConflictException('Ya existe un departamento con ese nombre en esta sede (o a nivel global).');
-        }
-        const nuevoDepto = this.deptoRepository.create({
-            ...dto,
-            empresaId: empresaId,
-            sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined
-        });
-        return this.deptoRepository.save(nuevoDepto);
-    }
-    async getDepartamentos(empresaId, filtroSucursalId) {
-        console.log(`Microservicio PERSONAL: Buscando departamentos. Empresa: ${empresaId}, Sede: ${filtroSucursalId}`);
-        const whereClause = { empresaId: empresaId };
-        if (filtroSucursalId) {
-            whereClause.sucursal = { id: filtroSucursalId };
-        }
-        return this.deptoRepository.find({
-            where: whereClause,
-            relations: ['cargos', 'sucursal'],
-            order: { nombre: 'ASC' }
-        });
-    }
-    async updateDepartamento(empresaId, deptoId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando depto ${deptoId} para empresaId: ${empresaId}`);
-        const depto = await this.deptoRepository.findOneBy({
-            id: deptoId,
-            empresaId: empresaId,
-        });
-        if (!depto) {
-            throw new common_1.NotFoundException('Departamento no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.nombre && dto.nombre !== depto.nombre) {
-            const deptoExistente = await this.deptoRepository.findOneBy({
-                nombre: dto.nombre,
-                empresaId: empresaId,
-            });
-            if (deptoExistente) {
-                throw new common_1.ConflictException('Ya existe un departamento con ese nombre en esta empresa.');
-            }
-        }
-        const deptoActualizado = this.deptoRepository.merge(depto, dto);
-        return this.deptoRepository.save(deptoActualizado);
-    }
-    async deleteDepartamento(empresaId, deptoId) {
-        console.log(`Microservicio PERSONAL: Borrando (Soft Delete) depto ${deptoId} para empresaId: ${empresaId}`);
-        const depto = await this.deptoRepository.findOneBy({
-            id: deptoId,
-            empresaId: empresaId,
-        });
-        if (!depto) {
-            throw new common_1.NotFoundException('Departamento no encontrado o no pertenece a esta empresa.');
-        }
-        await this.deptoRepository.softRemove(depto);
-        return { message: 'Departamento desactivado correctamente.' };
-    }
-    async createCargo(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando cargo para empresaId: ${empresaId}`);
-        const depto = await this.deptoRepository.findOneBy({
-            id: dto.departamentoId,
-            empresaId: empresaId,
-        });
-        if (!depto) {
-            throw new common_1.BadRequestException('El Departamento seleccionado no es válido o no pertenece a esta empresa.');
-        }
-        const cargoExistente = await this.cargoRepository.findOneBy({
-            nombre: dto.nombre,
-            departamentoId: dto.departamentoId,
-        });
-        if (cargoExistente) {
-            throw new common_1.ConflictException('Ya existe un cargo con ese nombre en este departamento.');
-        }
-        const nuevoCargo = this.cargoRepository.create({
-            ...dto,
-        });
-        return this.cargoRepository.save(nuevoCargo);
-    }
-    async getCargos(empresaId, filtroSucursalId) {
-        console.log(`Microservicio PERSONAL: Buscando cargos. Empresa: ${empresaId}, Sede: ${filtroSucursalId || 'Todas'}`);
-        const whereClause = {
-            departamento: {
-                empresaId: empresaId,
-            },
-        };
-        if (filtroSucursalId) {
-            whereClause.departamento.sucursal = { id: filtroSucursalId };
-        }
-        return this.cargoRepository.find({
-            where: whereClause,
-            relations: ['departamento', 'departamento.sucursal'],
-            withDeleted: false,
-            order: { nombre: 'ASC' }
-        });
-    }
-    async updateCargo(empresaId, cargoId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando cargo ${cargoId} para empresaId: ${empresaId}`);
-        const cargo = await this.cargoRepository.findOne({
-            where: { id: cargoId },
-            relations: ['departamento'],
-        });
-        if (!cargo || cargo.departamento.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Cargo no encontrado o no pertenece a esta empresa.');
-        }
-        if (dto.departamentoId && dto.departamentoId !== cargo.departamentoId) {
-            const nuevoDepto = await this.deptoRepository.findOneBy({
-                id: dto.departamentoId,
-                empresaId: empresaId,
-            });
-            if (!nuevoDepto) {
-                throw new common_1.BadRequestException('El nuevo departamento seleccionado no es válido o no pertenece a esta empresa.');
-            }
-        }
-        if (dto.nombre || dto.departamentoId) {
-            const nombreValidar = dto.nombre || cargo.nombre;
-            const deptoIdValidar = dto.departamentoId || cargo.departamentoId;
-            const cargoExistente = await this.cargoRepository.findOne({
-                where: {
-                    nombre: nombreValidar,
-                    departamentoId: deptoIdValidar,
-                    id: (0, typeorm_2.Not)(cargoId),
-                },
-            });
-            if (cargoExistente) {
-                throw new common_1.ConflictException('Ya existe un cargo con ese nombre en el departamento seleccionado.');
-            }
-        }
-        const cargoActualizado = this.cargoRepository.merge(cargo, dto);
-        return this.cargoRepository.save(cargoActualizado);
-    }
-    async deleteCargo(empresaId, cargoId) {
-        console.log(`Microservicio PERSONAL: Borrando (Soft Delete) cargo ${cargoId} para empresaId: ${empresaId}`);
-        const cargo = await this.cargoRepository.findOne({
-            where: { id: cargoId },
-            relations: ['departamento'],
-        });
-        if (!cargo || cargo.departamento.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Cargo no encontrado o no pertenece a esta empresa.');
-        }
-        await this.cargoRepository.softRemove(cargo);
-        return { message: 'Cargo desactivado correctamente.' };
-    }
-    async createRol(empresaId, dto) {
-        console.log(`Microservicio PERSONAL: Creando Rol para empresaId: ${empresaId}`);
-        return this.dataSource.transaction(async (manager) => {
-            const rolExistente = await manager.findOne(database_1.Rol, {
-                where: { nombre: dto.nombre, empresaId: empresaId },
-            });
-            if (rolExistente) {
-                throw new common_1.ConflictException('Ya existe un rol con ese nombre en esta empresa.');
-            }
-            if (dto.esDefecto) {
-                await manager.update(database_1.Rol, { empresaId }, { esDefecto: false });
-            }
-            const nuevoRol = manager.create(database_1.Rol, {
-                ...dto,
-                empresaId: empresaId,
-                permisos: dto.permisos || [],
-            });
-            return manager.save(nuevoRol);
-        });
-    }
-    async crearRolesPorDefecto(empresaId) {
-        console.log(`🏭 Generando roles base para la empresa: ${empresaId}`);
-        const rolesDefecto = [
-            {
-                nombre: 'Super Admin',
-                descripcion: 'Acceso total y control de configuración de la empresa.',
-                esNativo: true,
-                esDefecto: false,
-                permisos: ['*']
-            },
-            {
-                nombre: 'Gerente de RRHH',
-                descripcion: 'Gestión integral de personal, nómina, contratos y reclutamiento.',
-                esNativo: false,
-                esDefecto: false,
-                permisos: [
-                    permissions_1.PERMISSIONS.EMPLOYEES_MANAGE,
-                    permissions_1.PERMISSIONS.EMPLOYEES_READ_SENSITIVE,
-                    permissions_1.PERMISSIONS.SALARIES_READ,
-                    permissions_1.PERMISSIONS.BRANCHES_MANAGE,
-                    permissions_1.PERMISSIONS.DEPARTMENTS_MANAGE,
-                    permissions_1.PERMISSIONS.POSITIONS_MANAGE,
-                    permissions_1.PERMISSIONS.PAYROLL_PROCESS,
-                    permissions_1.PERMISSIONS.PAYROLL_READ_ALL,
-                    permissions_1.PERMISSIONS.PAYROLL_CONFIG,
-                    permissions_1.PERMISSIONS.ONBOARDING_MANAGE,
-                    permissions_1.PERMISSIONS.RECRUITMENT_MANAGE,
-                    permissions_1.PERMISSIONS.LOANS_APPROVE
-                ]
-            },
-            {
-                nombre: 'Gerente de Sucursal',
-                descripcion: 'Supervisión operativa de ubicación física. Control de asistencia.',
-                esNativo: false,
-                esDefecto: false,
-                permisos: [
-                    permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
-                    permissions_1.PERMISSIONS.EMPLOYEES_READ_SENSITIVE,
-                    permissions_1.PERMISSIONS.ATTENDANCE_READ_ALL,
-                    permissions_1.PERMISSIONS.ATTENDANCE_MODIFY,
-                    permissions_1.PERMISSIONS.SHIFTS_MANAGE,
-                    permissions_1.PERMISSIONS.ONBOARDING_VIEW_PROGRESS,
-                    permissions_1.PERMISSIONS.ASSETS_MANAGE
-                ]
-            },
-            {
-                nombre: 'Líder de Proyecto',
-                descripcion: 'Gestión de productividad, sprints y asignación de tareas.',
-                esNativo: false,
-                esDefecto: false,
-                permisos: [
-                    permissions_1.PERMISSIONS.PROJECTS_MANAGE,
-                    permissions_1.PERMISSIONS.TASKS_MANAGE,
-                    permissions_1.PERMISSIONS.EMPLOYEES_READ_BASIC,
-                    permissions_1.PERMISSIONS.REPORTS_VIEW
-                ]
-            },
-            {
-                nombre: 'Colaborador',
-                descripcion: 'Rol estándar. Acceso a portal personal y ejecución de tareas.',
-                esNativo: true,
-                esDefecto: true,
-                permisos: [
-                    permissions_1.PERMISSIONS.PERFIL_ME,
-                    permissions_1.PERMISSIONS.PAYROLL_MY_READ,
-                    permissions_1.PERMISSIONS.ONBOARDING_MY_PROGRESS,
-                    permissions_1.PERMISSIONS.ATTENDANCE_MY_READ,
-                    permissions_1.PERMISSIONS.LOANS_REQUEST,
-                    permissions_1.PERMISSIONS.PROJECTS_READ,
-                    permissions_1.PERMISSIONS.TASKS_MY_READ,
-                    permissions_1.PERMISSIONS.TASKS_EXECUTE
-                ]
-            }
-        ];
-        await this.dataSource.transaction(async (manager) => {
-            for (const r of rolesDefecto) {
-                const existe = await manager.findOne(database_1.Rol, {
-                    where: { empresaId, nombre: r.nombre }
-                });
-                if (!existe) {
-                    const nuevoRol = manager.create(database_1.Rol, {
-                        nombre: r.nombre,
-                        descripcion: r.descripcion,
-                        esNativo: r.esNativo,
-                        esDefecto: r.esDefecto,
-                        empresaId: empresaId,
-                        permisos: r.permisos
-                    });
-                    await manager.save(nuevoRol);
-                }
-            }
-        });
-        console.log(`✅ 5 Roles base configurados correctamente para la empresa ${empresaId}`);
-    }
-    async getRoles(empresaId) {
-        console.log(`Microservicio PERSONAL: Buscando Roles para empresaId: ${empresaId}`);
-        return this.rolRepository.find({
-            where: {
-                empresaId: empresaId,
-            },
-            withDeleted: false,
-        });
-    }
-    async updateRol(empresaId, rolId, dto) {
-        console.log(`Microservicio PERSONAL: Actualizando Rol ${rolId}`);
-        return this.dataSource.transaction(async (manager) => {
-            const rol = await manager.findOne(database_1.Rol, {
-                where: { id: rolId, empresaId },
-            });
-            if (!rol)
-                throw new common_1.NotFoundException('Rol no encontrado.');
-            if (dto.nombre && dto.nombre !== rol.nombre) {
-                const duplicado = await manager.findOne(database_1.Rol, {
-                    where: { nombre: dto.nombre, empresaId, id: (0, typeorm_2.Not)(rolId) },
-                });
-                if (duplicado)
-                    throw new common_1.ConflictException('Ya existe un rol con ese nombre.');
-            }
-            if (dto.esDefecto === true) {
-                await manager.update(database_1.Rol, { empresaId }, { esDefecto: false });
-            }
-            const updates = {
-                ...dto,
-                ...(dto.permisos ? { permisos: dto.permisos } : {})
-            };
-            const rolActualizado = manager.merge(database_1.Rol, rol, updates);
-            return manager.save(rolActualizado);
-        });
-    }
-    async deleteRol(empresaId, rolId) {
-        console.log(`Microservicio PERSONAL: Borrando (Soft Delete) Rol ${rolId} para empresaId: ${empresaId}`);
-        const rol = await this.rolRepository.findOneBy({
-            id: rolId,
-            empresaId: empresaId,
-        });
-        if (!rol) {
-            throw new common_1.NotFoundException('Rol no encontrado o no pertenece a esta empresa.');
-        }
-        const empleadosConRol = await this.empleadoRepository.count({
-            where: {
-                rolId: rolId,
-                empresaId: empresaId,
-            },
-        });
-        if (empleadosConRol > 0) {
-            throw new common_1.ConflictException(`No se puede eliminar el rol. Está asignado a ${empleadosConRol} empleado(s).`);
-        }
-        await this.rolRepository.softRemove(rol);
-        return { message: 'Rol desactivado correctamente.' };
-    }
-    async createVacante(empresaId, dto) {
-        if (dto.estado === database_1.EstadoVacante.CERRADA) {
-            throw new common_1.BadRequestException('Estado inicial inválido: No se puede crear una vacante directamente como CERRADA.');
-        }
-        if (dto.departamentoId) {
-            const dep = await this.deptoRepository.findOneBy({ id: dto.departamentoId, empresaId });
-            if (!dep)
-                throw new common_1.BadRequestException('Departamento no válido.');
-            const cargoExistente = await this.cargoRepository.findOne({
-                where: {
-                    nombre: dto.titulo,
-                    departamentoId: dto.departamentoId
-                }
-            });
-            if (!cargoExistente) {
-                console.log(`ℹ️ Creando cargo automático: ${dto.titulo}`);
-                const nuevoCargo = this.cargoRepository.create({
-                    nombre: dto.titulo,
-                    departamentoId: dto.departamentoId,
-                    salarioMin: dto.salarioMin || 0,
-                    salarioMax: dto.salarioMax || 0
-                });
-                await this.cargoRepository.save(nuevoCargo);
-            }
-        }
-        const vacante = this.vacanteRepository.create({
-            ...dto,
-            empresaId,
-            estado: dto.estado || database_1.EstadoVacante.BORRADOR,
-            sucursal: dto.sucursalId ? { id: dto.sucursalId } : undefined,
-        });
-        return this.vacanteRepository.save(vacante);
-    }
-    async getVacantes(empresaId, soloPublicas = false, filtroSucursalId) {
-        const where = { empresaId };
-        if (soloPublicas) {
-            where.estado = database_1.EstadoVacante.PUBLICA;
-        }
-        if (filtroSucursalId && !soloPublicas) {
-            where.sucursal = { id: filtroSucursalId };
-        }
-        return this.vacanteRepository.find({
-            where,
-            order: { createdAt: 'DESC' },
-            relations: ['departamento', 'sucursal']
-        });
-    }
-    async updateVacante(empresaId, vacanteId, dto) {
-        const vacante = await this.vacanteRepository.findOneBy({ id: vacanteId, empresaId });
-        if (!vacante)
-            throw new common_1.NotFoundException('Vacante no encontrada.');
-        if (vacante.estado === database_1.EstadoVacante.CERRADA) {
-            throw new common_1.BadRequestException('Operación inválida: La vacante está CERRADA y no admite cambios.');
-        }
-        if (vacante.estado === database_1.EstadoVacante.BORRADOR && dto.estado === database_1.EstadoVacante.CERRADA) {
-            throw new common_1.BadRequestException('Transición inválida: Una vacante en BORRADOR debe ser PUBLICADA antes de poder cerrarse.');
-        }
-        this.vacanteRepository.merge(vacante, dto);
-        return this.vacanteRepository.save(vacante);
-    }
-    async registrarCandidato(dto) {
-        const vacante = await this.vacanteRepository.findOneBy({ id: dto.vacanteId });
-        if (!vacante)
-            throw new common_1.NotFoundException('La vacante no existe.');
-        const existente = await this.candidatoRepository.findOne({
-            where: { email: dto.email, vacanteId: dto.vacanteId }
-        });
-        if (existente)
-            throw new common_1.BadRequestException('Ya has postulado a esta vacante.');
-        const candidato = this.candidatoRepository.create({
-            ...dto,
-            estado: database_1.EstadoCandidato.ANALIZANDO_IA,
-        });
-        await this.candidatoRepository.save(candidato);
-        this.analizarCVConIA(candidato, vacante).catch(err => {
-            console.error(`Error en análisis IA para candidato ${candidato.id}:`, err);
-            this.candidatoRepository.update(candidato.id, { estado: database_1.EstadoCandidato.NUEVO });
-        });
-        return candidato;
-    }
-    async analizarCVConIA(candidato, vacante) {
-        try {
-            console.log(`🤖 Iniciando análisis IA para: ${candidato.nombre}`);
-            let pdfBuffer;
-            if (candidato.cvUrl.includes('localhost')) {
-                const urlParts = candidato.cvUrl.split('/uploads/');
-                if (!urlParts[1])
-                    throw new Error('Formato de URL local no reconocido');
-                const filePath = (0, path_1.join)(process.cwd(), 'uploads', urlParts[1]);
-                if (!fs.existsSync(filePath))
-                    throw new Error(`El archivo no existe: ${filePath}`);
-                pdfBuffer = fs.readFileSync(filePath);
-            }
-            else {
-                const response = await axios_1.default.get(candidato.cvUrl, { responseType: 'arraybuffer' });
-                pdfBuffer = Buffer.from(response.data);
-            }
-            const pdfBase64 = pdfBuffer.toString('base64');
-            const generationConfig = {
-                temperature: 0.4,
-                responseMimeType: "application/json",
-            };
-            const model = this.genAI.getGenerativeModel({
-                model: 'gemini-flash-latest',
-                generationConfig
-            });
-            const prompt = `
-      Actúa como un Reclutador Técnico Experto.
-      Analiza el siguiente Currículum Vitae (PDF adjunto) frente a la Vacante proporcionada.
-      
-      VACANTE:
-      - Título: ${vacante.titulo}
-      - Descripción: ${vacante.descripcion}
-      - Requisitos: ${vacante.requisitos}
-
-      Responde SOLO con este JSON válido en ESPAÑOL:
-      {
-        "aiScore": (número entero 0-100),
-        "aiAnalysis": (resumen breve justificando el puntaje)
-      }
-      `;
-            let result;
-            let intentos = 0;
-            const maxIntentos = 3;
-            let exito = false;
-            while (intentos < maxIntentos && !exito) {
-                try {
-                    if (intentos > 0)
-                        console.log(`🔄 Reintento ${intentos + 1}...`);
-                    result = await model.generateContent([
-                        prompt,
-                        { inlineData: { data: pdfBase64, mimeType: 'application/pdf' } }
-                    ]);
-                    exito = true;
-                }
-                catch (apiError) {
-                    if (apiError.message?.includes('429') || apiError.message?.includes('503')) {
-                        intentos++;
-                        if (intentos >= maxIntentos)
-                            throw apiError;
-                        const tiempoEspera = 20000;
-                        console.warn(`⏳ API ocupada. Esperando ${tiempoEspera / 1000}s...`);
-                        await new Promise(r => setTimeout(r, tiempoEspera));
-                    }
-                    else {
-                        throw apiError;
-                    }
-                }
-            }
-            const responseText = result.response.text();
-            const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-            const analisis = JSON.parse(jsonString);
-            await this.candidatoRepository.update(candidato.id, {
-                aiScore: analisis.aiScore,
-                aiAnalysis: analisis.aiAnalysis,
-                estado: database_1.EstadoCandidato.NUEVO,
-            });
-            console.log(`✅ Análisis completado. Score: ${analisis.aiScore}`);
-        }
-        catch (error) {
-            console.error('❌ Error FINAL IA:', error.message);
-            await this.candidatoRepository.update(candidato.id, {
-                estado: database_1.EstadoCandidato.REVISION,
-                aiAnalysis: `Fallo: ${error.message}`
-            });
-        }
-    }
-    async getCandidatos(empresaId, vacanteId) {
-        const vacante = await this.vacanteRepository.findOneBy({ id: vacanteId, empresaId });
-        if (!vacante) {
-            throw new common_1.NotFoundException('Vacante no encontrada o no tienes acceso.');
-        }
-        return this.candidatoRepository.find({
-            where: {
-                vacanteId,
-                estado: (0, typeorm_2.Not)(database_1.EstadoCandidato.RECHAZADO)
-            },
-            order: {
-                aiScore: 'DESC',
-                fechaPostulacion: 'DESC'
-            },
-        });
-    }
-    async reanalizarCandidato(candidatoId) {
-        const candidato = await this.candidatoRepository.findOne({
-            where: { id: candidatoId },
-            relations: ['vacante'],
-        });
-        if (!candidato) {
-            throw new common_1.NotFoundException('Candidato no encontrado.');
-        }
-        candidato.estado = database_1.EstadoCandidato.ANALIZANDO_IA;
-        candidato.aiScore = null;
-        candidato.aiAnalysis = null;
-        await this.candidatoRepository.save(candidato);
-        this.analizarCVConIA(candidato, candidato.vacante).catch(err => {
-            console.error('Error en reanálisis:', err);
-            this.candidatoRepository.update(candidato.id, {
-                estado: database_1.EstadoCandidato.REVISION,
-                aiAnalysis: 'Error al reintentar análisis.'
-            });
-        });
-        return candidato;
-    }
-    async getDocumentosEmpleado(empresaId, empleadoId) {
-        const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
-        if (!empleado)
-            throw new common_1.NotFoundException('Empleado no encontrado');
-        const documentos = [];
-        const candidato = await this.candidatoRepository.findOneBy({ email: empleado.emailPersonal });
-        if (candidato && candidato.cvUrl) {
-            documentos.push({
-                name: 'Currículum Vitae (CV)',
-                type: 'Reclutamiento',
-                origin: 'Empleado',
-                date: candidato.fechaPostulacion,
-                url: candidato.cvUrl,
-                canDelete: false
-            });
-        }
-        const docsSubidos = await this.documentoRepository.find({
-            where: { empleadoId },
-            order: { fechaSubida: 'DESC' }
-        });
-        docsSubidos.forEach(doc => {
-            documentos.push({
-                id: doc.id,
-                name: doc.nombre,
-                type: doc.tipo,
-                origin: 'Empresa',
-                date: doc.fechaSubida,
-                url: doc.url,
-                canDelete: true
-            });
-        });
-        return documentos;
-    }
-    async uploadDocumentoEmpleado(empresaId, empleadoId, dto) {
-        console.log(`Microservicio PERSONAL: Guardando documento para empleado ${empleadoId}`);
-        const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
-        if (!empleado) {
-            throw new common_1.NotFoundException('Empleado no encontrado o no pertenece a tu empresa.');
-        }
-        const nuevoDocumento = this.documentoRepository.create({
-            empleadoId,
-            nombre: dto.nombre,
-            tipo: dto.tipo,
-            url: dto.url,
-            fechaSubida: new Date(),
-        });
-        return this.documentoRepository.save(nuevoDocumento);
-    }
-    async updateFotoPerfil(empresaId, empleadoId, fileUrl) {
-        const empleado = await this.empleadoRepository.findOneBy({ id: empleadoId, empresaId });
-        if (!empleado)
-            throw new common_1.NotFoundException('Empleado no encontrado');
-        empleado.fotoUrl = fileUrl;
-        return this.empleadoRepository.save(empleado);
-    }
-    async deleteDocumento(empresaId, documentoId) {
-        const documento = await this.documentoRepository.findOne({
-            where: { id: documentoId },
-            relations: ['empleado']
-        });
-        if (!documento || documento.empleado.empresaId !== empresaId) {
-            throw new common_1.NotFoundException('Documento no encontrado o no tienes permiso.');
-        }
-        await this.documentoRepository.remove(documento);
-        return { message: 'Documento eliminado correctamente.' };
-    }
-    async fixEmployeePermissions(empresaId) {
-        const roles = await this.rolRepository.find({ where: { empresaId } });
-        const rolesEmpleado = roles.filter(r => r.nombre !== 'Administrador');
-        for (const rol of rolesEmpleado) {
-            const permisosActuales = rol.permisos || {};
-            const nuevosPermisos = {
-                ...permisosActuales,
-                'desempeno.objetivos.read': true,
-                'desempeno.objetivos.create': true,
-                'desempeno.objetivos.update': true,
-                'desempeno.ciclos.read': true,
-                'asistencia.registro': true,
-                'asistencia.reportes': true
-            };
-            rol.permisos = nuevosPermisos;
-            await this.rolRepository.save(rol);
-            console.log(`✅ Permisos actualizados para el rol: ${rol.nombre}`);
-        }
-        return { message: 'Permisos de empleados corregidos.' };
-    }
-    async createSucursal(empresaId, dto) {
-        return this.dataSource.transaction(async (manager) => {
-            const sucursalData = {
-                ...dto,
-                empresaId,
-                activa: true
-            };
-            if (dto.jefeId) {
-                sucursalData.jefeId = dto.jefeId;
-            }
-            const nuevaSucursal = manager.create(database_2.Sucursal, sucursalData);
-            const sucursalGuardada = await manager.save(nuevaSucursal);
-            if (dto.jefeId) {
-                const empleado = await manager.findOneBy(database_1.Empleado, { id: dto.jefeId, empresaId });
-                if (empleado) {
-                    const rolGerente = await manager.findOneBy(database_1.Rol, { nombre: 'Gerente de Sucursal', empresaId });
-                    empleado.sucursal = sucursalGuardada;
-                    if (rolGerente) {
-                        empleado.rol = rolGerente;
-                    }
-                    await manager.save(empleado);
-                }
-            }
-            return sucursalGuardada;
-        });
-    }
-    async getSucursales(empresaId) {
-        return this.sucursalRepository.find({
-            where: { empresaId },
-            order: { nombre: 'ASC' },
-            relations: ['jefe', 'jefe.cargo']
-        });
-    }
-    async updateSucursal(empresaId, sucursalId, dto) {
-        const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalId, empresaId });
-        if (!sucursal)
-            throw new common_1.NotFoundException('Sucursal no encontrada.');
-        this.sucursalRepository.merge(sucursal, dto);
-        return this.sucursalRepository.save(sucursal);
-    }
-    async deleteSucursal(empresaId, sucursalId) {
-        const sucursal = await this.sucursalRepository.findOneBy({ id: sucursalId, empresaId });
-        if (!sucursal)
-            throw new common_1.NotFoundException('Sucursal no encontrada.');
-        const deptosCount = await this.deptoRepository.count({ where: { sucursal: { id: sucursalId } } });
-        if (deptosCount > 0) {
-            throw new common_1.ConflictException('No se puede borrar: Hay departamentos asignados a esta sucursal.');
-        }
-        const empleadosCount = await this.empleadoRepository.count({ where: { sucursal: { id: sucursalId } } });
-        if (empleadosCount > 0) {
-            throw new common_1.ConflictException('No se puede borrar: Hay empleados asignados a esta sucursal.');
-        }
-        await this.sucursalRepository.remove(sucursal);
-        return { message: 'Sucursal eliminada correctamente.' };
-    }
-    async getPublicVacancy(vacanteId) {
-        const vacante = await this.vacanteRepository.findOne({
-            where: {
-                id: vacanteId,
-                estado: database_1.EstadoVacante.PUBLICA
-            },
-            relations: ['departamento']
-        });
-        if (!vacante) {
-            throw new common_1.NotFoundException('Esta vacante no está disponible o no existe.');
-        }
-        return vacante;
-    }
-    async bulkCreateEmpleados(empresaId, empleadosDtos) {
-        const rolDefecto = await this.rolRepository.findOne({ where: { empresaId, esDefecto: true } });
-        const rolSeguroId = rolDefecto?.id || (await this.rolRepository.findOne({ where: { empresaId } }))?.id;
-        if (!rolSeguroId) {
-            throw new Error('CONFIGURACIÓN INCOMPLETA: No existen roles creados en la empresa.');
-        }
-        const departamentos = await this.deptoRepository.find({
-            where: { empresaId },
-            select: ['id', 'nombre'],
-        });
-        if (departamentos.length === 0) {
-            throw new Error('CONFIGURACIÓN INCOMPLETA: Debes crear al menos un departamento antes de importar.');
-        }
-        const response = new bulk_import_response_dto_1.BulkImportResponseDto();
-        response.total = empleadosDtos.length;
-        response.success = 0;
-        response.errors = 0;
-        response.details = [];
-        for (const dto of empleadosDtos) {
-            try {
-                if (!dto.rolId) {
-                    dto.rolId = rolSeguroId;
-                }
-                if (!dto.cargoId && !dto.cargoNombre) {
-                    dto.cargoNombre = 'Sin Cargo Asignado';
-                }
-                if (!dto.cargoId && dto.cargoNombre) {
-                    let cargo = await this.cargoRepository.findOne({
-                        where: {
-                            empresaId,
-                            nombre: dto.cargoNombre
-                        },
-                    });
-                    if (!cargo) {
-                        const deptoId = await this.predecirDepartamentoConIA(departamentos, dto.cargoNombre);
-                        const salarioBase = Number(dto.salario) || 400;
-                        const salarioMin = Math.max(0, salarioBase - 300);
-                        const salarioMax = salarioBase + 300;
-                        cargo = this.cargoRepository.create({
-                            nombre: dto.cargoNombre,
-                            descripcion: 'Generado automáticamente por Importación Masiva',
-                            empresaId: empresaId,
-                            departamentoId: deptoId,
-                            salarioMin: salarioMin,
-                            salarioMax: salarioMax,
-                        });
-                        await this.cargoRepository.save(cargo);
-                        this.logger.log(`🤖 Cargo creado con IA: "${cargo.nombre}" en Depto ID: ${deptoId}`);
-                    }
-                    dto.cargoId = cargo.id;
-                }
-                if (!dto.salario) {
-                    dto.salario = 400;
-                }
-                await this.createEmpleado(empresaId, dto);
-                response.success++;
-            }
-            catch (error) {
-                response.errors++;
-                response.details.push({
-                    identifier: `${dto.nombre} ${dto.apellido}` || 'Registro desconocido',
-                    error: error.message || 'Error interno',
-                });
-                this.logger.warn(`Error importando ${dto.nombre}: ${error.message}`);
-            }
-        }
-        return response;
-    }
-    async predecirDepartamentoConIA(listaDeptos, nombreCargo) {
-        try {
-            console.log(`🧠 Consultando a Gemini para clasificar: ${nombreCargo}`);
-            const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-            const nombresDeptos = listaDeptos.map(d => d.nombre).join(', ');
-            const prompt = `
-        Actúa como un Gerente de RRHH.
-        Tengo estos departamentos: [${nombresDeptos}].
-        Tengo un nuevo cargo: "${nombreCargo}".
-        Tarea: Responde ÚNICAMENTE con el nombre exacto del departamento de la lista donde encaja mejor este cargo.
-        Si no encaja en ninguno, responde con el nombre del primero de la lista.
-        No des explicaciones, solo el nombre exacto.
-      `;
-            const result = await model.generateContent(prompt);
-            const respuestaTexto = result.response.text().trim();
-            console.log(`🤖 Gemini sugiere: ${respuestaTexto}`);
-            const deptoEncontrado = listaDeptos.find(d => d.nombre.toLowerCase().includes(respuestaTexto.toLowerCase()) ||
-                respuestaTexto.toLowerCase().includes(d.nombre.toLowerCase()));
-            return deptoEncontrado ? deptoEncontrado.id : listaDeptos[0].id;
-        }
-        catch (error) {
-            console.error('❌ Error en IA de Deptos:', error);
-            return listaDeptos.length > 0 ? listaDeptos[0].id : '';
-        }
-    }
-    async createDocumentoEmpresa(empresaId, dto) {
-        const categoriaNormalizada = dto.categoria
-            ? dto.categoria.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
-            : '';
-        const esConocimientoGeneral = ['POLITICA', 'NORMATIVA', 'MANUAL', 'CODIGO DE ETICA', 'LEGAL'].includes(categoriaNormalizada);
-        const sucursalData = esConocimientoGeneral ? undefined : (dto.sucursalId ? { id: dto.sucursalId } : undefined);
-        const doc = this.documentoEmpresaRepository.create({
-            ...dto,
-            empresaId,
-            sucursal: sucursalData,
-        });
-        const guardado = await this.documentoEmpresaRepository.save(doc);
-        if (esConocimientoGeneral && guardado.url) {
-            try {
-                let rutaRelativa = guardado.url;
-                if (guardado.url.includes('/uploads/')) {
-                    rutaRelativa = 'uploads/' + guardado.url.split('/uploads/')[1];
-                }
-                else if (rutaRelativa.startsWith('/')) {
-                    rutaRelativa = rutaRelativa.substring(1);
-                }
-                const rutaAbsoluta = (__webpack_require__(/*! path */ "path").join)(process.cwd(), rutaRelativa);
-                this.iaClient.emit('documento_subido', {
-                    filePath: rutaAbsoluta,
-                    documentoId: guardado.id
-                });
-                console.log(`📡 Evento Auto-Sync enviado para: ${guardado.nombre}`);
-            }
-            catch (e) {
-                console.error('Error enviando evento a IA', e);
-            }
-        }
-        return guardado;
-    }
-    async getDocumentosEmpresa(empresaId, filtroSucursalId) {
-        const condiciones = [
-            { empresaId, sucursalId: (0, typeorm_3.IsNull)() }
-        ];
-        if (filtroSucursalId) {
-            condiciones.push({
-                empresaId,
-                sucursalId: filtroSucursalId
-            });
-        }
-        return this.documentoEmpresaRepository.find({
-            where: condiciones,
-            order: { fechaSubida: 'DESC' },
-            relations: ['sucursal']
-        });
-    }
-    async deleteDocumentoEmpresa(empresaId, docId) {
-        const doc = await this.documentoEmpresaRepository.findOneBy({ id: docId, empresaId });
-        if (!doc)
-            throw new common_1.NotFoundException('Documento no encontrado');
-        return this.documentoEmpresaRepository.remove(doc);
-    }
-    async getDirectorioPublico(empresaId) {
-        return this.empleadoRepository.find({
-            where: {
-                empresaId,
-                estado: 'Activo'
-            },
-            select: {
-                id: true,
-                nombre: true,
-                apellido: true,
-                emailPersonal: true,
-                telefono: true,
-                fotoUrl: true,
-                sucursal: { nombre: true },
-                cargo: { nombre: true }
-            },
-            relations: ['sucursal', 'cargo'],
-            order: { nombre: 'ASC' }
-        });
-    }
-    async getOrganigramaData(empresaId) {
-        return this.empleadoRepository.find({
-            where: {
-                empresaId,
-                estado: 'Activo'
-            },
-            select: {
-                id: true,
-                nombre: true,
-                apellido: true,
-                fotoUrl: true,
-                jefeId: true,
-                cargo: {
-                    nombre: true
-                }
-            },
-            relations: ['cargo']
-        });
-    }
-    async rechazarCandidato(candidatoId, motivo) {
-        console.log('🛑 DEBUG rechazarCandidato -> ID:', candidatoId, 'Motivo:', motivo);
-        if (!candidatoId) {
-            throw new microservices_2.RpcException(new common_1.BadRequestException('El ID del candidato es obligatorio y llegó vacío'));
-        }
-        const resultado = await this.candidatoRepository.update({ id: candidatoId }, {
-            estado: database_1.EstadoCandidato.RECHAZADO,
-        });
-        if (resultado.affected === 0) {
-            throw new microservices_2.RpcException(new common_1.BadRequestException('No se encontró el candidato para rechazar'));
-        }
-        return { success: true, id: candidatoId, estado: database_1.EstadoCandidato.RECHAZADO };
-    }
-    async sincronizarConocimientoIA() {
-        const documentos = await this.documentoEmpresaRepository.find({
-            where: [
-                { categoria: 'POLITICA' }, { categoria: 'POLÍTICA' }, { categoria: 'Política' },
-                { categoria: 'NORMATIVA' }, { categoria: 'Normativa' },
-                { categoria: 'MANUAL' }, { categoria: 'Manual' },
-                { categoria: 'LEGAL' }, { categoria: 'Legal' },
-                { categoria: 'CÓDIGO DE ÉTICA' }, { categoria: 'CODIGO DE ETICA' }, { categoria: 'Código de Ética' }
-            ]
-        });
-        console.log(`🔄 Encontrados en BD: ${documentos.length} documentos para sincronizar.`);
-        if (documentos.length === 0) {
-            const todos = await this.documentoEmpresaRepository.find({ select: ['categoria'], take: 20 });
-            const categoriasExistentes = [...new Set(todos.map(d => d.categoria))];
-            console.log('⚠️ ALERTA: No hubo coincidencias. Las categorías que TIENES en tu BD son:', categoriasExistentes);
-            console.log('👉 Asegúrate de agregar una de estas al array "where" en el código.');
-        }
-        for (const doc of documentos) {
-            if (!doc.url)
-                continue;
-            try {
-                let rutaRelativa = doc.url;
-                if (doc.url.includes('/uploads/')) {
-                    rutaRelativa = 'uploads/' + doc.url.split('/uploads/')[1];
-                }
-                else if (rutaRelativa.startsWith('/')) {
-                    rutaRelativa = rutaRelativa.substring(1);
-                }
-                const rutaAbsoluta = (__webpack_require__(/*! path */ "path").join)(process.cwd(), rutaRelativa);
-                this.iaClient.emit('documento_subido', {
-                    filePath: rutaAbsoluta,
-                    documentoId: doc.id
-                });
-                console.log(`📤 Enviando a IA: ${doc.nombre}`);
-            }
-            catch (error) {
-                console.error(`❌ Error ruta doc ${doc.id}:`, error);
-            }
-        }
-        return { message: `Sincronización enviada para ${documentos.length} documentos.` };
-    }
-    async consultarIAPuente(data) {
-        return this.iaClient.send({ cmd: 'consultar_ia' }, data);
-    }
-};
-exports.PersonalService = PersonalService;
-exports.PersonalService = PersonalService = PersonalService_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(database_1.Empleado)),
-    __param(1, (0, typeorm_1.InjectRepository)(database_1.Rol)),
-    __param(2, (0, typeorm_1.InjectRepository)(database_1.Cargo)),
-    __param(4, (0, typeorm_1.InjectRepository)(database_1.Contrato)),
-    __param(5, (0, typeorm_1.InjectRepository)(database_1.Departamento)),
-    __param(6, (0, typeorm_1.InjectRepository)(database_1.Vacante)),
-    __param(7, (0, typeorm_1.InjectRepository)(database_1.Candidato)),
-    __param(8, (0, typeorm_1.InjectRepository)(database_1.DocumentoEmpleado)),
-    __param(9, (0, common_2.Inject)('AUTH_SERVICE')),
-    __param(10, (0, common_2.Inject)('IA_SERVICE')),
-    __param(12, (0, typeorm_1.InjectRepository)(database_2.Sucursal)),
-    __param(13, (0, typeorm_1.InjectRepository)(database_1.DocumentoEmpresa)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
-        config_1.ConfigService,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
-        microservices_1.ClientProxy,
-        microservices_1.ClientProxy,
-        mailer_1.MailerService,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.DataSource])
-], PersonalService);
 
 
 /***/ }),
@@ -2408,148 +488,6 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateTareaDto.prototype, "objetivoId", void 0);
-
-
-/***/ }),
-
-/***/ "./libs/common/src/constants/permissions.ts":
-/*!**************************************************!*\
-  !*** ./libs/common/src/constants/permissions.ts ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PERMISSION_GROUPS = exports.PERMISSIONS = void 0;
-exports.PERMISSIONS = {
-    PERFIL_ME: 'perfil.me',
-    PAYROLL_MY_READ: 'nomina.leer_propia',
-    ATTENDANCE_MY_READ: 'asistencia.leer_propia',
-    VACATIONS_REQUEST: 'vacaciones.solicitar',
-    LOANS_REQUEST: 'prestamos.solicitar',
-    ONBOARDING_MY_PROGRESS: 'onboarding.mi_progreso',
-    TASKS_MY_READ: 'tareas.leer_propias',
-    EXPENSES_REPORT: 'gastos.reportar',
-    EMPLOYEES_READ_BASIC: 'empleados.leer_basico',
-    EMPLOYEES_READ_SENSITIVE: 'empleados.leer_sensible',
-    EMPLOYEES_READ: 'empleados.leer',
-    EMPLOYEES_CREATE: 'empleados.crear',
-    EMPLOYEES_EDIT: 'empleados.editar',
-    EMPLOYEES_MANAGE: 'empleados.gestion',
-    EMPLOYEES_DELETE: 'empleados.borrar',
-    EMPLOYEES_EXPORT: 'empleados.exportar',
-    BRANCHES_MANAGE: 'sucursales.gestion',
-    DEPARTMENTS_MANAGE: 'departamentos.gestion',
-    POSITIONS_MANAGE: 'cargos.gestion',
-    PROJECTS_READ: 'proyectos.leer',
-    PROJECTS_MANAGE: 'proyectos.gestion',
-    TASKS_MANAGE: 'tareas.gestion',
-    TASKS_EXECUTE: 'tareas.ejecutar',
-    SALARIES_READ: 'salarios.leer',
-    PAYROLL_READ_ALL: 'nomina.leer_todo',
-    PAYROLL_READ: 'nomina.leer',
-    PAYROLL_PROCESS: 'nomina.procesar',
-    PAYROLL_CONFIG: 'nomina.configurar',
-    PAYROLL_EXPORT: 'nomina.exportar',
-    BENEFITS_MANAGE: 'beneficios.gestionar',
-    LOANS_APPROVE: 'prestamos.aprobar',
-    ATTENDANCE_READ_ALL: 'asistencia.leer_todo',
-    ATTENDANCE_APPROVE: 'asistencia.aprobar',
-    ATTENDANCE_MODIFY: 'asistencia.modificar',
-    SHIFTS_MANAGE: 'turnos.gestion',
-    VACATIONS_APPROVE: 'vacaciones.aprobar',
-    RECRUITMENT_MANAGE: 'reclutamiento.gestion',
-    ONBOARDING_MANAGE: 'onboarding.gestion',
-    ONBOARDING_VIEW_PROGRESS: 'onboarding.ver_progreso',
-    PERFORMANCE_MANAGE: 'desempeno.gestionar',
-    TRAINING_MANAGE: 'capacitacion.gestionar',
-    ASSETS_MANAGE: 'activos.gestionar',
-    DOCUMENTS_MANAGE: 'documentos.gestionar',
-    ROLES_MANAGE: 'roles.gestion',
-    USERS_MANAGE: 'usuarios.gestion',
-    COMPANY_CONFIG: 'empresa.configurar',
-    REPORTS_VIEW: 'reportes.ver',
-    AUDIT_LOG_VIEW: 'auditoria.ver',
-    COMPANY_POLICIES_MANAGE: 'politicas.gestion',
-};
-exports.PERMISSION_GROUPS = [
-    {
-        name: 'Portal del Colaborador (Autoservicio)',
-        permissions: [
-            { key: exports.PERMISSIONS.PERFIL_ME, label: 'Ver/Editar mi Perfil' },
-            { key: exports.PERMISSIONS.PAYROLL_MY_READ, label: 'Ver mis Roles de Pago' },
-            { key: exports.PERMISSIONS.ATTENDANCE_MY_READ, label: 'Ver mi Asistencia' },
-            { key: exports.PERMISSIONS.VACATIONS_REQUEST, label: 'Solicitar Vacaciones' },
-            { key: exports.PERMISSIONS.LOANS_REQUEST, label: 'Solicitar Préstamos' },
-            { key: exports.PERMISSIONS.TASKS_MY_READ, label: 'Ver mis Tareas (Proyectos)' },
-            { key: exports.PERMISSIONS.EXPENSES_REPORT, label: 'Reportar Gastos' },
-        ]
-    },
-    {
-        name: 'Gestión de Talento Humano',
-        permissions: [
-            { key: exports.PERMISSIONS.EMPLOYEES_READ_BASIC, label: 'Ver Directorio (Público)' },
-            { key: exports.PERMISSIONS.EMPLOYEES_READ_SENSITIVE, label: 'Ver Datos Sensibles (RRHH)' },
-            { key: exports.PERMISSIONS.EMPLOYEES_CREATE, label: 'Contratar Empleados' },
-            { key: exports.PERMISSIONS.EMPLOYEES_EDIT, label: 'Editar Datos Personales' },
-            { key: exports.PERMISSIONS.EMPLOYEES_DELETE, label: 'Desvincular Personal' },
-            { key: exports.PERMISSIONS.EMPLOYEES_EXPORT, label: 'Exportar Excel' },
-            { key: exports.PERMISSIONS.SALARIES_READ, label: 'Ver Salarios' },
-        ]
-    },
-    {
-        name: 'Nómina y Pagos',
-        permissions: [
-            { key: exports.PERMISSIONS.PAYROLL_READ, label: 'Ver Historial de Nóminas' },
-            { key: exports.PERMISSIONS.PAYROLL_PROCESS, label: 'Procesar/Calcular Rol' },
-            { key: exports.PERMISSIONS.PAYROLL_EXPORT, label: 'Archivos Bancarios' },
-            { key: exports.PERMISSIONS.PAYROLL_CONFIG, label: 'Configurar Fórmulas' },
-            { key: exports.PERMISSIONS.BENEFITS_MANAGE, label: 'Gestionar Beneficios' },
-        ]
-    },
-    {
-        name: 'Operaciones y Desempeño',
-        permissions: [
-            { key: exports.PERMISSIONS.ATTENDANCE_READ_ALL, label: 'Ver Asistencias' },
-            { key: exports.PERMISSIONS.ATTENDANCE_APPROVE, label: 'Aprobar Asistencias' },
-            { key: exports.PERMISSIONS.SHIFTS_MANAGE, label: 'Gestionar Turnos' },
-            { key: exports.PERMISSIONS.VACATIONS_APPROVE, label: 'Aprobar Vacaciones' },
-            { key: exports.PERMISSIONS.PERFORMANCE_MANAGE, label: 'Gestionar Evaluaciones' },
-        ]
-    },
-    {
-        name: 'Proyectos y Productividad (Agile)',
-        permissions: [
-            { key: exports.PERMISSIONS.PROJECTS_READ, label: 'Ver Tableros' },
-            { key: exports.PERMISSIONS.TASKS_EXECUTE, label: 'Colaborador: Ejecutar Tareas' },
-            { key: exports.PERMISSIONS.PROJECTS_MANAGE, label: 'Manager: Crear Proyectos' },
-            { key: exports.PERMISSIONS.TASKS_MANAGE, label: 'Manager: Gestionar Tareas' },
-        ]
-    },
-    {
-        name: 'Estructura y Reclutamiento',
-        permissions: [
-            { key: exports.PERMISSIONS.BRANCHES_MANAGE, label: 'Gestionar Sucursales' },
-            { key: exports.PERMISSIONS.DEPARTMENTS_MANAGE, label: 'Gestionar Departamentos' },
-            { key: exports.PERMISSIONS.POSITIONS_MANAGE, label: 'Gestionar Cargos' },
-            { key: exports.PERMISSIONS.RECRUITMENT_MANAGE, label: 'Gestionar Reclutamiento' },
-            { key: exports.PERMISSIONS.ONBOARDING_MANAGE, label: 'Gestionar Onboarding' },
-        ]
-    },
-    {
-        name: 'Recursos y Admin',
-        permissions: [
-            { key: exports.PERMISSIONS.ASSETS_MANAGE, label: 'Activos e Inventario' },
-            { key: exports.PERMISSIONS.DOCUMENTS_MANAGE, label: 'Documentos Legales' },
-            { key: exports.PERMISSIONS.TRAINING_MANAGE, label: 'Capacitación' },
-            { key: exports.PERMISSIONS.ROLES_MANAGE, label: 'Gestionar Roles' },
-            { key: exports.PERMISSIONS.USERS_MANAGE, label: 'Gestionar Usuarios' },
-            { key: exports.PERMISSIONS.COMPANY_CONFIG, label: 'Configuración Empresa' },
-            { key: exports.PERMISSIONS.REPORTS_VIEW, label: 'Ver Reportes' },
-            { key: exports.PERMISSIONS.COMPANY_POLICIES_MANAGE, label: 'Gestionar Políticas' },
-        ]
-    }
-];
 
 
 /***/ }),
@@ -7206,13 +5144,23 @@ module.exports = require("@google/generative-ai");
 
 /***/ }),
 
-/***/ "@nestjs-modules/mailer":
-/*!*****************************************!*\
-  !*** external "@nestjs-modules/mailer" ***!
-  \*****************************************/
+/***/ "@langchain/google-genai":
+/*!******************************************!*\
+  !*** external "@langchain/google-genai" ***!
+  \******************************************/
 /***/ ((module) => {
 
-module.exports = require("@nestjs-modules/mailer");
+module.exports = require("@langchain/google-genai");
+
+/***/ }),
+
+/***/ "@langchain/textsplitters":
+/*!*******************************************!*\
+  !*** external "@langchain/textsplitters" ***!
+  \*******************************************/
+/***/ ((module) => {
+
+module.exports = require("@langchain/textsplitters");
 
 /***/ }),
 
@@ -7276,26 +5224,6 @@ module.exports = require("@nestjs/typeorm");
 
 /***/ }),
 
-/***/ "axios":
-/*!************************!*\
-  !*** external "axios" ***!
-  \************************/
-/***/ ((module) => {
-
-module.exports = require("axios");
-
-/***/ }),
-
-/***/ "class-transformer":
-/*!************************************!*\
-  !*** external "class-transformer" ***!
-  \************************************/
-/***/ ((module) => {
-
-module.exports = require("class-transformer");
-
-/***/ }),
-
 /***/ "class-validator":
 /*!**********************************!*\
   !*** external "class-validator" ***!
@@ -7326,13 +5254,13 @@ module.exports = require("path");
 
 /***/ }),
 
-/***/ "rxjs":
-/*!***********************!*\
-  !*** external "rxjs" ***!
-  \***********************/
+/***/ "pdfjs-dist/legacy/build/pdf.mjs":
+/*!**************************************************!*\
+  !*** external "pdfjs-dist/legacy/build/pdf.mjs" ***!
+  \**************************************************/
 /***/ ((module) => {
 
-module.exports = require("rxjs");
+module.exports = require("pdfjs-dist/legacy/build/pdf.mjs");
 
 /***/ }),
 
@@ -7373,33 +5301,94 @@ module.exports = require("typeorm");
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	(() => {
+/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		var leafPrototypes;
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 16: return value when it's Promise-like
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if(typeof value === 'object' && value) {
+/******/ 				if((mode & 4) && value.__esModule) return value;
+/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 			}
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			var def = {};
+/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 			for(var current = mode & 2 && value; (typeof current == 'object' || typeof current == 'function') && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 			}
+/******/ 			def['default'] = () => (value);
+/******/ 			__webpack_require__.d(ns, def);
+/******/ 			return ns;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
 var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 var exports = __webpack_exports__;
-/*!***********************************!*\
-  !*** ./apps/personal/src/main.ts ***!
-  \***********************************/
+/*!*****************************!*\
+  !*** ./apps/ia/src/main.ts ***!
+  \*****************************/
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(/*! @nestjs/core */ "@nestjs/core");
-const personal_module_1 = __webpack_require__(/*! ./personal.module */ "./apps/personal/src/personal.module.ts");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const ia_module_1 = __webpack_require__(/*! ./ia.module */ "./apps/ia/src/ia.module.ts");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 async function bootstrap() {
-    const tempApp = await core_1.NestFactory.createApplicationContext(personal_module_1.PersonalModule);
-    const configService = tempApp.get(config_1.ConfigService);
-    const port = configService.get('PERSONAL_SERVICE_PORT') || 3002;
-    await tempApp.close();
-    const app = await core_1.NestFactory.createMicroservice(personal_module_1.PersonalModule, {
+    const app = await core_1.NestFactory.create(ia_module_1.IaModule);
+    const configService = app.get(config_1.ConfigService);
+    const logger = new common_1.Logger('IaBootstrap');
+    const port = configService.get('IA_SERVICE_PORT') || 3005;
+    app.connectMicroservice({
         transport: microservices_1.Transport.TCP,
         options: {
             host: '0.0.0.0',
             port: port,
         },
     });
-    await app.listen();
-    console.log(`🚀 Microservicio PERSONAL está escuchando en el puerto ${port}`);
+    await app.startAllMicroservices();
+    await app.listen(3000);
+    logger.log(`🤖 Microservicio IA escuchando TCP en puerto ${port} y HTTP en 3000`);
 }
 bootstrap();
 

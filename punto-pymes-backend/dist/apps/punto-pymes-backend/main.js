@@ -761,16 +761,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateSolicitudDto = void 0;
+exports.CreateSolicitudDto = exports.TipoSolicitud = void 0;
 const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var TipoSolicitud;
+(function (TipoSolicitud) {
+    TipoSolicitud["VACACIONES"] = "VACACIONES";
+    TipoSolicitud["CALAMIDAD"] = "CALAMIDAD_DOMESTICA";
+    TipoSolicitud["SALUD"] = "CITA_MEDICA";
+    TipoSolicitud["TRAMITE"] = "TRAMITE_PERSONAL";
+    TipoSolicitud["OTROS"] = "OTROS";
+})(TipoSolicitud || (exports.TipoSolicitud = TipoSolicitud = {}));
 class CreateSolicitudDto {
     empleadoId;
+    tipo;
     fechaInicio;
     fechaFin;
     comentario;
     static _OPENAPI_METADATA_FACTORY() {
-        return { empleadoId: { required: true, type: () => String, format: "uuid" }, fechaInicio: { required: true, type: () => String }, fechaFin: { required: true, type: () => String }, comentario: { required: false, type: () => String } };
+        return { empleadoId: { required: true, type: () => String, format: "uuid" }, tipo: { required: true, enum: (__webpack_require__(/*! ./create-solicitud.dto */ "./apps/nomina/src/dto/create-solicitud.dto.ts").TipoSolicitud) }, fechaInicio: { required: true, type: () => String }, fechaFin: { required: true, type: () => String }, comentario: { required: false, type: () => String } };
     }
 }
 exports.CreateSolicitudDto = CreateSolicitudDto;
@@ -778,6 +787,10 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateSolicitudDto.prototype, "empleadoId", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(TipoSolicitud),
+    __metadata("design:type", String)
+], CreateSolicitudDto.prototype, "tipo", void 0);
 __decorate([
     (0, class_validator_1.IsDateString)(),
     __metadata("design:type", String)
@@ -4008,6 +4021,12 @@ let AppController = class AppController {
         const { empresaId } = req.user;
         return this.productividadService.send({ cmd: 'delete_encuesta' }, { encuestaId, empresaId });
     }
+    async chatConIA(body) {
+        return this.personalService.send({ cmd: 'consultar_ia_puente' }, { pregunta: body.pregunta });
+    }
+    async triggerSincronizacionIA() {
+        return this.personalService.send({ cmd: 'sincronizar_ia' }, {});
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -5835,6 +5854,22 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "deleteEncuesta", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('ia/chat'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "chatConIA", null);
+__decorate([
+    (0, common_1.Post)('personal/ia/sincronizar'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "triggerSincronizacionIA", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(1, (0, common_1.Inject)('AUTH_SERVICE')),
@@ -6475,7 +6510,7 @@ const multer_1 = __webpack_require__(/*! multer */ "multer");
 const path_1 = __webpack_require__(/*! path */ "path");
 const fs_1 = __webpack_require__(/*! fs */ "fs");
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const createMulterOptions = (folderPath, maxFileSizeMB = 5, allowedTypes = /\/(jpg|jpeg|png|pdf)$/) => {
+const createMulterOptions = (folderPath, maxFileSizeMB = 10, allowedTypes = /(jpg|jpeg|png|pdf)$/i) => {
     return {
         storage: (0, multer_1.diskStorage)({
             destination: (req, file, cb) => {
@@ -6503,7 +6538,10 @@ const createMulterOptions = (folderPath, maxFileSizeMB = 5, allowedTypes = /\/(j
         }),
         limits: { fileSize: maxFileSizeMB * 1024 * 1024 },
         fileFilter: (req, file, cb) => {
+            console.log('📂 Procesando archivo:', file.originalname);
+            console.log('MimeType recibido:', file.mimetype);
             if (!file.mimetype.match(allowedTypes)) {
+                console.error('❌ MimeType rechazado por regex:', allowedTypes);
                 return cb(new common_1.BadRequestException(`Tipo inválido. Se permite: ${allowedTypes}`), false);
             }
             cb(null, true);
@@ -8159,6 +8197,66 @@ exports.Departamento = Departamento = __decorate([
 
 /***/ }),
 
+/***/ "./libs/database/src/entities/documento-embedding.entity.ts":
+/*!******************************************************************!*\
+  !*** ./libs/database/src/entities/documento-embedding.entity.ts ***!
+  \******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DocumentoEmbedding = void 0;
+const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+const documento_empresa_entity_1 = __webpack_require__(/*! ./documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts");
+let DocumentoEmbedding = class DocumentoEmbedding {
+    id;
+    contenido;
+    vector;
+    documentoId;
+    documento;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { id: { required: true, type: () => String }, contenido: { required: true, type: () => String }, vector: { required: true, type: () => String }, documentoId: { required: true, type: () => String }, documento: { required: true, type: () => (__webpack_require__(/*! ./documento-empresa.entity */ "./libs/database/src/entities/documento-empresa.entity.ts").DocumentoEmpresa) } };
+    }
+};
+exports.DocumentoEmbedding = DocumentoEmbedding;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
+], DocumentoEmbedding.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], DocumentoEmbedding.prototype, "contenido", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'vector', length: 768 }),
+    __metadata("design:type", String)
+], DocumentoEmbedding.prototype, "vector", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], DocumentoEmbedding.prototype, "documentoId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => documento_empresa_entity_1.DocumentoEmpresa, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'documentoId' }),
+    __metadata("design:type", documento_empresa_entity_1.DocumentoEmpresa)
+], DocumentoEmbedding.prototype, "documento", void 0);
+exports.DocumentoEmbedding = DocumentoEmbedding = __decorate([
+    (0, typeorm_1.Entity)('documentos_embeddings')
+], DocumentoEmbedding);
+
+
+/***/ }),
+
 /***/ "./libs/database/src/entities/documento-empresa.entity.ts":
 /*!****************************************************************!*\
   !*** ./libs/database/src/entities/documento-empresa.entity.ts ***!
@@ -9030,6 +9128,7 @@ __exportStar(__webpack_require__(/*! ./anuncio.entity */ "./libs/database/src/en
 __exportStar(__webpack_require__(/*! ./encuesta.entity */ "./libs/database/src/entities/encuesta.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./voto.entity */ "./libs/database/src/entities/voto.entity.ts"), exports);
 __exportStar(__webpack_require__(/*! ./saldo-vacaciones.entity */ "./libs/database/src/entities/saldo-vacaciones.entity.ts"), exports);
+__exportStar(__webpack_require__(/*! ./documento-embedding.entity */ "./libs/database/src/entities/documento-embedding.entity.ts"), exports);
 
 
 /***/ }),
@@ -10291,6 +10390,7 @@ const openapi = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
 const base_entity_1 = __webpack_require__(/*! ./base.entity */ "./libs/database/src/entities/base.entity.ts");
 const empleado_entity_1 = __webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts");
+const create_solicitud_dto_1 = __webpack_require__(/*! apps/nomina/src/dto/create-solicitud.dto */ "./apps/nomina/src/dto/create-solicitud.dto.ts");
 var EstadoSolicitud;
 (function (EstadoSolicitud) {
     EstadoSolicitud["PENDIENTE"] = "PENDIENTE";
@@ -10298,6 +10398,7 @@ var EstadoSolicitud;
     EstadoSolicitud["RECHAZADA"] = "RECHAZADA";
 })(EstadoSolicitud || (exports.EstadoSolicitud = EstadoSolicitud = {}));
 let SolicitudVacaciones = class SolicitudVacaciones extends base_entity_1.BaseEntity {
+    tipo;
     fechaInicio;
     fechaFin;
     diasSolicitados;
@@ -10309,16 +10410,24 @@ let SolicitudVacaciones = class SolicitudVacaciones extends base_entity_1.BaseEn
     comentariosRespuesta;
     fechaRespuesta;
     static _OPENAPI_METADATA_FACTORY() {
-        return { fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, comentariosRespuesta: { required: true, type: () => String, nullable: true }, fechaRespuesta: { required: true, type: () => Date, nullable: true } };
+        return { tipo: { required: true, enum: (__webpack_require__(/*! ../../../../apps/nomina/src/dto/create-solicitud.dto */ "./apps/nomina/src/dto/create-solicitud.dto.ts").TipoSolicitud) }, fechaInicio: { required: true, type: () => Date }, fechaFin: { required: true, type: () => Date }, diasSolicitados: { required: true, type: () => Number }, estado: { required: true, enum: (__webpack_require__(/*! ./solicitudVacaciones.entity */ "./libs/database/src/entities/solicitudVacaciones.entity.ts").EstadoSolicitud) }, comentario: { required: true, type: () => String }, respuestaAdmin: { required: true, type: () => String }, empleado: { required: true, type: () => (__webpack_require__(/*! ./empleado.entity */ "./libs/database/src/entities/empleado.entity.ts").Empleado) }, empleadoId: { required: true, type: () => String }, comentariosRespuesta: { required: true, type: () => String, nullable: true }, fechaRespuesta: { required: true, type: () => Date, nullable: true } };
     }
 };
 exports.SolicitudVacaciones = SolicitudVacaciones;
 __decorate([
-    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de inicio de las vacaciones' }),
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        length: 50,
+        default: 'VACACIONES'
+    }),
+    __metadata("design:type", String)
+], SolicitudVacaciones.prototype, "tipo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de inicio' }),
     __metadata("design:type", Date)
 ], SolicitudVacaciones.prototype, "fechaInicio", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de fin de las vacaciones' }),
+    (0, typeorm_1.Column)({ type: 'date', comment: 'Fecha de fin' }),
     __metadata("design:type", Date)
 ], SolicitudVacaciones.prototype, "fechaFin", void 0);
 __decorate([
@@ -10334,7 +10443,7 @@ __decorate([
     __metadata("design:type", String)
 ], SolicitudVacaciones.prototype, "estado", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Motivo o comentario del empleado' }),
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: 'Motivo o justificación' }),
     __metadata("design:type", String)
 ], SolicitudVacaciones.prototype, "comentario", void 0);
 __decorate([

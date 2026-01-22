@@ -1,0 +1,72 @@
+<div class="dialog-container">
+
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon class="header-icon">local_hospital</mat-icon>
+            Solicitar Permiso Especial
+        </h2>
+        <button type="button" mat-icon-button class="close-btn" (click)="onCancel()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content class="dialog-body">
+
+        <div class="info-banner">
+            <mat-icon>info</mat-icon>
+            <p>
+                Utiliza este formulario para justificar ausencias por fuerza mayor.
+                Estos días <strong>no se descontarán</strong> de tu saldo de vacaciones.
+            </p>
+        </div>
+
+        <form [formGroup]="form" class="step-form-content">
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Motivo de la Ausencia</mat-label>
+                <mat-select formControlName="tipo" placeholder="Selecciona una opción">
+                    <mat-option *ngFor="let opt of tiposAusencia" [value]="opt.value">
+                        {{ opt.label }}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matSuffix>category</mat-icon>
+                <mat-error *ngIf="form.get('tipo')?.hasError('required')">Requerido.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Rango de Fechas</mat-label>
+                <mat-date-range-input [rangePicker]="picker">
+                    <input matStartDate formControlName="start" placeholder="Inicio">
+                    <input matEndDate formControlName="end" placeholder="Fin">
+                </mat-date-range-input>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+
+                <mat-error *ngIf="form.get('start')?.hasError('required')">Requerido.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width custom-field">
+                <mat-label>Justificación / Detalle</mat-label>
+                <textarea matInput formControlName="justificacion" rows="4"
+                    placeholder="Ej: Tengo cita médica a las 3pm en el IESS..."></textarea>
+                <mat-hint align="end">{{ form.get('justificacion')?.value?.length || 0 }} / 10 min</mat-hint>
+                <mat-error *ngIf="form.get('justificacion')?.hasError('minlength')">
+                    Detalla un poco más el motivo.
+                </mat-error>
+                <mat-error *ngIf="form.get('justificacion')?.hasError('required')">
+                    Obligatorio.
+                </mat-error>
+            </mat-form-field>
+
+        </form>
+    </mat-dialog-content>
+
+    <div class="dialog-footer">
+        <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+
+        <button mat-flat-button color="warn" (click)="onSubmit()" [disabled]="form.invalid" class="btn-save btn-warn">
+            Enviar Solicitud
+        </button>
+    </div>
+
+</div>

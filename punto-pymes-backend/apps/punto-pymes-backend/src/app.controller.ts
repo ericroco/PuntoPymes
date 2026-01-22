@@ -2801,4 +2801,19 @@ export class AppController {
       { encuestaId, empresaId }
     );
   }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('ia/chat')
+  async chatConIA(@Body() body: { pregunta: string }) {
+    return this.personalService.send(
+      { cmd: 'consultar_ia_puente' },
+      { pregunta: body.pregunta }
+    );
+  }
+
+  @Post('personal/ia/sincronizar')
+  async triggerSincronizacionIA() {
+    return this.personalService.send({ cmd: 'sincronizar_ia' }, {});
+  }
 }

@@ -79,3 +79,37 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
+/*
+   RESPONSIVE BREAKPOINT MIXINS
+   Para usar en cualquier componente
+*/
+@mixin mobile-sm {
+    @media (max-width: 389px) {
+        @content;
+    }
+}
+
+@mixin mobile {
+    @media (min-width: 390px) and (max-width: 767px) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (min-width: 768px) and (max-width: 1023px) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (min-width: 1024px) {
+        @content;
+    }
+}
+
+@mixin desktop-lg {
+    @media (min-width: 1440px) {
+        @content;
+    }
+}

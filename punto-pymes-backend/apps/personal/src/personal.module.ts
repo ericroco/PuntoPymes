@@ -56,28 +56,32 @@ import {
       TareaEmpleado,
       DocumentoEmpresa,
     ]),
-    // 1. CLIENTE PARA LLAMAR AL AUTH SERVICE
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
         transport: Transport.TCP,
         options: {
-          // 👇 AQUÍ ESTÁ EL ERROR: Probablemente no pusiste host, o por defecto usa localhost
-          host: 'auth_service', // <--- AGREGAR ESTA LÍNEA OBLIGATORIAMENTE
+          host: 'auth_service',
           port: 3001
         },
       },
+      {
+        name: 'IA_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: 'ia_service', // Nombre del servicio en Docker Compose
+          port: 3005          // El puerto que definimos para la IA
+        },
+      },
     ]),
-    // 2. CONFIGURACIÓN DE CORREO (Usando Gmail como ejemplo)
-    // En producción, usa variables de entorno (process.env.SMTP_...)
     MailerModule.forRoot({
       transport: {
-        host: 'smtp.gmail.com', // O tu proveedor (Outlook, AWS SES)
+        host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
-          user: 'erickrodas559@gmail.com', // ⚠️ PON TU CORREO REAL AQUÍ PARA PROBAR
-          pass: 'tqhl basq ufjw vyor',     // ⚠️ GENERA UNA APP PASSWORD EN GOOGLE
+          user: 'erickrodas559@gmail.com',
+          pass: 'tqhl basq ufjw vyor',
         },
       },
       defaults: {

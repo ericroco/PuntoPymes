@@ -259,46 +259,58 @@
 
       <mat-card class="overview-widget">
         <mat-card-header>
-          <mat-card-title>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.TITLE' | translate }}</mat-card-title>
+          <mat-card-title>
+            <mat-icon class="me-2">event_note</mat-icon>
+            {{ 'Solicitudes y Permisos' | translate }}
+          </mat-card-title>
           <mat-card-subtitle>
             {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.AVAILABLE_PREFIX' | translate }}
-            <strong class="text-success">{{ availableLeaveDays }} {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.DAYS_SUFFIX' |
-              translate }}</strong>
+            <strong class="text-success">{{ availableLeaveDays }} días</strong>
           </mat-card-subtitle>
         </mat-card-header>
 
-        <form [formGroup]="leaveRequestForm" (ngSubmit)="requestLeave()" class="h-100 d-flex flex-column">
-          <mat-card-content class="d-flex flex-column justify-content-center">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>{{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.DATES_LABEL' | translate }}</mat-label>
+        <mat-card-content class="d-flex flex-column justify-content-center gap-3 py-3">
 
-              <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker" [dateFilter]="myDateFilter">
-                <input matStartDate formControlName="startDate"
-                  [placeholder]="'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.START_PLACEHOLDER' | translate">
-                <input matEndDate formControlName="endDate"
-                  [placeholder]="'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.FORM.END_PLACEHOLDER' | translate">
-              </mat-date-range-input>
+          <div class="request-section">
+            <h5 class="mb-2 d-flex align-items-center text-primary">
+              <mat-icon class="me-1 fs-5 icon-align">beach_access</mat-icon>
+              Vacaciones
+            </h5>
 
-              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-date-range-picker #picker></mat-date-range-picker>
+            <form [formGroup]="leaveRequestForm" (ngSubmit)="requestLeave()" class="d-flex flex-column gap-2">
+              <mat-form-field appearance="outline" class="w-100 dense-field">
+                <mat-label>Seleccionar Fechas</mat-label>
+                <mat-date-range-input [formGroup]="leaveRequestForm" [rangePicker]="picker" [dateFilter]="myDateFilter">
+                  <input matStartDate formControlName="startDate" placeholder="Inicio">
+                  <input matEndDate formControlName="endDate" placeholder="Fin">
+                </mat-date-range-input>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
 
-              <mat-error *ngIf="leaveRequestForm.hasError('overlap')">
-                El rango seleccionado choca con otras vacaciones aprobadas.
-              </mat-error>
-              <mat-error
-                *ngIf="leaveRequestForm.get('startDate')?.hasError('required') && !leaveRequestForm.hasError('overlap')">
-                Requerido.
-              </mat-error>
+                <mat-error *ngIf="leaveRequestForm.hasError('overlap')">Cruce de fechas.</mat-error>
+              </mat-form-field>
 
-            </mat-form-field>
-          </mat-card-content>
+              <button type="submit" mat-flat-button color="primary" [disabled]="leaveRequestForm.invalid" class="w-100">
+                {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.SUBMIT_BTN' | translate }}
+              </button>
+            </form>
+          </div>
 
-          <mat-card-actions align="end">
-            <button type="submit" mat-flat-button color="primary" [disabled]="leaveRequestForm.invalid">
-              {{ 'DASHBOARD.EMPLOYEE.WIDGETS.LEAVE.SUBMIT_BTN' | translate }}
+          <mat-divider></mat-divider>
+
+          <div class="request-section">
+            <h5 class="mb-2 d-flex align-items-center text-warn">
+              <mat-icon class="me-1 fs-5 icon-align">local_hospital</mat-icon>
+              Ausencias / Permisos
+            </h5>
+            <p class="text-muted small mb-2">Calamidad, Citas Médicas, Trámites...</p>
+
+            <button mat-stroked-button color="warn" class="w-100" (click)="openAbsenceModal()">
+              Solicitar Permiso Especial
             </button>
-          </mat-card-actions>
-        </form>
+          </div>
+
+        </mat-card-content>
       </mat-card>
 
     </div>

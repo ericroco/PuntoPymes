@@ -10,8 +10,8 @@ type FolderPath = string | ((req: any) => string);
 
 export const createMulterOptions = (
     folderPath: FolderPath, // AHORA ACEPTA UNA FUNCIÓN
-    maxFileSizeMB: number = 5,
-    allowedTypes: RegExp = /\/(jpg|jpeg|png|pdf)$/,
+    maxFileSizeMB: number = 10,
+    allowedTypes: RegExp = /(jpg|jpeg|png|pdf)$/i,
 ) => {
     return {
         storage: diskStorage({
@@ -48,7 +48,11 @@ export const createMulterOptions = (
         }),
         limits: { fileSize: maxFileSizeMB * 1024 * 1024 },
         fileFilter: (req, file, cb) => {
+            console.log('📂 Procesando archivo:', file.originalname);
+            console.log('MimeType recibido:', file.mimetype); // <--- AGREGA ESTO
+
             if (!file.mimetype.match(allowedTypes)) {
+                console.error('❌ MimeType rechazado por regex:', allowedTypes);
                 return cb(
                     new BadRequestException(`Tipo inválido. Se permite: ${allowedTypes}`),
                     false,

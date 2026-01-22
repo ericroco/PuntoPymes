@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   Contrato, Empleado, Beneficio, BeneficioAsignado, PeriodoNomina, NominaEmpleado,
   RubroNomina, ConceptoNomina, SolicitudVacaciones, EstadoSolicitud, NovedadNomina,
-  EstadoNovedad, Empresa, TipoBeneficio, IndicadorNomina, SaldoVacaciones
+  EstadoNovedad, Empresa, TipoBeneficio, IndicadorNomina, SaldoVacaciones,
 } from 'default/database';
 import { Repository, Not, LessThanOrEqual, MoreThanOrEqual, EntityManager } from 'typeorm';
 import {
@@ -32,6 +32,7 @@ import { TipoRubro } from '../../../libs/database/src/entities/conceptoNomina.en
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
 import { ResponderSolicitudDto, } from './dto/responder-solicitud.dto';
 import { LessThan } from 'typeorm';
+import { TipoSolicitud } from './dto/create-solicitud.dto';
 
 
 
@@ -869,15 +870,12 @@ export class NominaService {
       return { message: 'Nómina procesada correctamente', count: contratos.length };
     });
   }
-  // ============================================================
-  // 3. SOLICITAR VACACIONES (CORREGIDO Y ROBUSTO)
-  // ============================================================
   async solicitarVacaciones(empresaId: string, dto: any): Promise<SolicitudVacaciones> {
 
-    // 1. Validar Empleado y traer su empresa (para la política de vacaciones)
+    // 1. Validar Empleado (IGUAL)
     const empleado = await this.empleadoRepository.findOne({
       where: { id: dto.empleadoId, empresaId },
-      relations: ['empresa'] // 👈 Necesario para leer la config si hay que crear saldo
+      relations: ['empresa']
     });
 
     if (!empleado) throw new NotFoundException('Empleado no válido.');
@@ -887,47 +885,60 @@ export class NominaService {
 
     if (fin < inicio) throw new BadRequestException('La fecha fin debe ser posterior al inicio.');
 
-    // 2. Calcular días hábiles
+    // 2. Calcular días hábiles (IGUAL - Sirve para saber cuántos días faltó, sea vacación o enfermedad)
     const diasSolicitados = this.calcularDiasHabiles(inicio, fin);
     if (diasSolicitados <= 0) throw new BadRequestException('Debes seleccionar al menos un día hábil.');
 
-    // 3. VERIFICAR Y OBTENER SALDO
-    const anioActual = inicio.getFullYear();
+    // =================================================================
+    // 🆕 MODIFICACIÓN: Lógica de Saldos SOLO para VACACIONES
+    // =================================================================
 
-    let saldo = await this.saldoRepo.findOneBy({
-      empleadoId: dto.empleadoId,
-      anio: anioActual
-    });
+    // Si no envían tipo, asumimos VACACIONES para compatibilidad
+    const tipoSolicitud = dto.tipo || TipoSolicitud.VACACIONES;
 
-    // 🔥 FIX CRÍTICO: Si no existe el saldo, LO CREAMOS AQUÍ MISMO.
-    // Ya no lanzamos error, sino que lo inicializamos para que pueda pedir.
-    if (!saldo) {
-      const diasPolitica = empleado.empresa?.configuracion?.vacaciones?.diasPorAnio || 15;
+    if (tipoSolicitud === TipoSolicitud.VACACIONES) {
 
-      saldo = this.saldoRepo.create({
+      // --- AQUÍ VA TU LÓGICA DE SALDOS (INTACTA) ---
+      const anioActual = inicio.getFullYear();
+
+      let saldo = await this.saldoRepo.findOneBy({
         empleadoId: dto.empleadoId,
-        anio: anioActual,
-        diasTotales: diasPolitica,
-        diasUsados: 0
+        anio: anioActual
       });
-      await this.saldoRepo.save(saldo);
+
+      if (!saldo) {
+        const diasPolitica = empleado.empresa?.configuracion?.vacaciones?.diasPorAnio || 15;
+        saldo = this.saldoRepo.create({
+          empleadoId: dto.empleadoId,
+          anio: anioActual,
+          diasTotales: diasPolitica,
+          diasUsados: 0
+        });
+        await this.saldoRepo.save(saldo);
+      }
+
+      const diasDisponibles = saldo.diasTotales - saldo.diasUsados;
+
+      if (diasDisponibles < diasSolicitados) {
+        throw new BadRequestException(`Saldo insuficiente. Tienes ${diasDisponibles} días y pides ${diasSolicitados}.`);
+      }
+      // ---------------------------------------------
+    }
+    else {
+      // 🆕 Lógica para Ausencias (No validamos saldo, pero sí justificación)
+      if (!dto.comentario || dto.comentario.length < 5) {
+        throw new BadRequestException('Para este tipo de ausencia, la justificación es obligatoria.');
+      }
     }
 
-    // Ahora sí, validamos disponibilidad
-    const diasDisponibles = saldo.diasTotales - saldo.diasUsados;
-
-    if (diasDisponibles < diasSolicitados) {
-      throw new BadRequestException(`Saldo insuficiente. Tienes ${diasDisponibles} días disponibles y solicitaste ${diasSolicitados}.`);
-    }
-
-    // 4. Crear Solicitud
+    // 4. Crear Solicitud (MODIFICADO)
     const solicitud = this.solicitudRepo.create({
       empleadoId: dto.empleadoId,
+      tipo: tipoSolicitud, // 👈 AGREGAMOS ESTO (Asegurate de haber actualizado la Entity primero)
       fechaInicio: inicio,
       fechaFin: fin,
       diasSolicitados,
       comentario: dto.comentario,
-      // Asegúrate de que EstadoSolicitud esté importado arriba
       estado: EstadoSolicitud.PENDIENTE
     });
 

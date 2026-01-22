@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Empleado } from './empleado.entity';
+import { TipoSolicitud } from 'apps/nomina/src/dto/create-solicitud.dto';
 
 export enum EstadoSolicitud {
     PENDIENTE = 'PENDIENTE',
@@ -8,14 +9,23 @@ export enum EstadoSolicitud {
     RECHAZADA = 'RECHAZADA',
 }
 
-@Entity({ name: 'solicitudes_vacaciones' })
+@Entity({ name: 'solicitudes_vacaciones' }) // El nombre se queda igual, no pasa nada
 @Index(['empleadoId'])
 export class SolicitudVacaciones extends BaseEntity {
 
-    @Column({ type: 'date', comment: 'Fecha de inicio de las vacaciones' })
+    // 👇 AQUÍ ESTÁ EL CAMBIO CLAVE
+    @Column({
+        type: 'varchar',
+        length: 50,
+        default: 'VACACIONES' // ¡Importante! Para compatibilidad con datos viejos
+    })
+    tipo: TipoSolicitud;
+    // 👆 FIN DEL CAMBIO
+
+    @Column({ type: 'date', comment: 'Fecha de inicio' })
     fechaInicio: Date;
 
-    @Column({ type: 'date', comment: 'Fecha de fin de las vacaciones' })
+    @Column({ type: 'date', comment: 'Fecha de fin' })
     fechaFin: Date;
 
     @Column({ type: 'int', comment: 'Cantidad de días solicitados' })
@@ -28,7 +38,10 @@ export class SolicitudVacaciones extends BaseEntity {
     })
     estado: EstadoSolicitud;
 
-    @Column({ type: 'text', nullable: true, comment: 'Motivo o comentario del empleado' })
+    // Reciclamos este campo:
+    // Vacaciones = Comentario opcional
+    // Ausencias = Justificación obligatoria
+    @Column({ type: 'text', nullable: true, comment: 'Motivo o justificación' })
     comentario: string;
 
     @Column({ type: 'text', nullable: true, comment: 'Respuesta del aprobador' })

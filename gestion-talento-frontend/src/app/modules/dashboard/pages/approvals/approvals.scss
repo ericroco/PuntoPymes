@@ -322,3 +322,215 @@ $radius-card: 16px;
         white-space: nowrap; // Scroll horizontal en móvil
     }
 }
+
+// ============================================
+// 🟢 ESTILOS NUEVOS: BADGES Y MODAL
+// ============================================
+
+// 1. Badges de Tipo (Para la tabla)
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+
+    // Vacaciones (Azul)
+    &.vacation {
+        background-color: #E3F2FD;
+        color: #1565C0;
+    }
+
+    // Gastos (Morado/Verde)
+    &.expense {
+        background-color: #F3E5F5;
+        color: #7B1FA2;
+    }
+
+    // Ausencias / Permisos (Rojo suave)
+    &.absence {
+        background-color: #FFEBEE;
+        color: #C62828;
+    }
+}
+
+// Utility para cursor
+.cursor-pointer {
+    cursor: pointer;
+}
+
+// 2. MODAL DE DETALLES (Estilos del Dialog)
+.modal-container {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 1.1rem;
+
+        mat-icon {
+            font-size: 22px;
+            width: 22px;
+            height: 22px;
+        }
+    }
+
+    // Colores dinámicos del header según el tipo
+    &.vacation-header {
+        background: linear-gradient(to right, #E3F2FD, #FFFFFF);
+        color: #0D47A1;
+    }
+
+    &.absence-header {
+        background: linear-gradient(to right, #FFEBEE, #FFFFFF);
+        color: #B71C1C;
+    }
+
+    &.expense-header {
+        background: linear-gradient(to right, #F3E5F5, #FFFFFF);
+        color: #4A148C;
+    }
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+
+    // Info del solicitante (Avatar + Nombre)
+    .requester-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 1rem;
+
+        .avatar-circle {
+            width: 54px;
+            height: 54px;
+            background: #F5F5F5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #757575;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+    }
+
+    .my-3 {
+        margin: 1.5rem 0;
+    }
+
+    // Filas de detalle (Fecha, Monto)
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        font-size: 0.95rem;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed var(--color-border-light);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .value {
+            text-align: right;
+            color: var(--color-text-primary);
+            font-weight: 500;
+            max-width: 60%;
+        }
+
+        .fw-bold {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--color-primary);
+        }
+    }
+
+    // Caja de Justificación / Comentario
+    .detail-box {
+        margin-top: 20px;
+        background: #FAFAFA;
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid var(--color-border-light);
+
+        .label-box {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comment-text {
+            margin: 0;
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+    }
+}
+
+.modal-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border-light);
+    background-color: #FAFAFA; // Fondo sutil para separar acciones
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    button {
+        border-radius: 8px;
+        padding: 0 20px;
+        height: 40px;
+    }
+}

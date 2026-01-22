@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSpinner } from '@angular/material/progress-spinner';
 
 // Servicios y Componentes
-import { DocumentsService, DocumentoEmpresa } from '../../../../core/services/documents'; // Ajusta ruta
+import { DocumentsService, DocumentoEmpresa } from '../../../../core/services/documents';
 import { AddDocumentDialog } from '../../components/add-document-dialog/add-document-dialog';
 import { AuthService } from '../../../../modules/auth/services/auth';
 import { PERMISSIONS } from '../../../../shared/constants/permissions';

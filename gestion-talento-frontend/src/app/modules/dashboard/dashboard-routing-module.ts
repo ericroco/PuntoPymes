@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { IaAssistantComponent } from './pages/ia-assistant/ia-assistant';
 
 const routes: Routes = [
   {
@@ -171,6 +172,11 @@ const routes: Routes = [
     path: 'expenses/:id', // Detalle de un Reporte (Para Empleados - Agregar Facturas)
     loadComponent: () => import('./pages/expenses-detail/expenses-detail')
       .then(c => c.ExpensesDetailPage)
+  },
+  {
+    path: 'ia-assistant',
+    loadComponent: () => import('./pages/ia-assistant/ia-assistant')
+      .then(c => c.IaAssistantComponent),
   },
 
   // 👇 SIEMPRE AL FINAL 👇

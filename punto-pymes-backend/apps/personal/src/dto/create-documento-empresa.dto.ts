@@ -7,7 +7,7 @@ export class CreateDocumentoEmpresaDto {
 
     @IsNotEmpty()
     @IsString()
-    url: string; // La URL que te devuelve tu servicio de subida de archivos
+    url: string;
 
     @IsOptional()
     @IsString()
@@ -19,5 +19,5 @@ export class CreateDocumentoEmpresaDto {
 
     @IsOptional()
     @IsUUID()
-    sucursalId?: string; // Si viene vacío, es Global
+    sucursalId?: string;
 }

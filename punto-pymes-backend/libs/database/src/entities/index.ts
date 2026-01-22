@@ -54,3 +54,4 @@ export * from './anuncio.entity';
 export * from './encuesta.entity';
 export * from './voto.entity';
 export * from './saldo-vacaciones.entity';
+export * from './documento-embedding.entity';

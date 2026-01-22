@@ -1,6 +1,13 @@
 // ==========================================
 // MODO FLOTANTE (Para el Layout Principal)
 // ==========================================
+
+:host {
+    display: block; // Hace que el componente se comporte como un bloque
+    width: 100%; // Llena todo el ancho del sidebar (360px)
+    height: 100%; // Llena todo el alto del sidebar
+}
+
 .floating-wrapper {
     z-index: 1000; // Asegura que flote sobre todo
 }

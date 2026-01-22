@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
@@ -8,8 +8,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDivider } from '@angular/material/divider';
 
-// 👇 IMPORTANTE: Importar forkJoin para unir las peticiones
 import { forkJoin } from 'rxjs';
 
 import { VacationService } from '../../services/vacation';
@@ -21,21 +22,25 @@ import { ExpensesService } from '../../services/expenses';
   imports: [
     CommonModule, MatTabsModule, MatTableModule,
     MatButtonModule, MatIconModule, MatChipsModule,
-    MatMenuModule, MatTooltipModule
+    MatMenuModule, MatTooltipModule, MatDialogModule, MatDivider
   ],
   templateUrl: './approvals.html',
   styleUrls: ['./approvals.scss']
 })
 export class ApprovalsPage implements OnInit {
   private vacationService = inject(VacationService);
-  private expensesService = inject(ExpensesService); // 👈 Inyectamos gastos
+  private expensesService = inject(ExpensesService);
   private snackBar = inject(MatSnackBar);
+  public dialog = inject(MatDialog);
+
+  // Referencia al template del modal de detalles que pondremos en el HTML
+  @ViewChild('detailsDialog') detailsDialog!: TemplateRef<any>;
 
   pendingRequests: any[] = [];
   historyRequests: any[] = [];
   isLoading = false;
+  selectedRequest: any = null; // Para guardar la solicitud que se está viendo
 
-  // Actualizamos columnas para mostrar "Info Extra" (Días o Monto)
   displayedColumns: string[] = ['empleado', 'tipo', 'fechas', 'info', 'acciones'];
   historyColumns: string[] = ['empleado', 'tipo', 'fechas', 'estado', 'respuesta'];
 
@@ -46,74 +51,90 @@ export class ApprovalsPage implements OnInit {
   loadData() {
     this.isLoading = true;
 
-    // 🚀 MAGIA: Pedimos Vacaciones y Gastos al mismo tiempo
     forkJoin({
       vacaciones: this.vacationService.getRequests(),
       gastos: this.expensesService.getReports()
     }).subscribe({
       next: (results) => {
-        // 1. Normalizamos los datos de VACACIONES
-        const listaVacaciones = results.vacaciones.map(v => ({
-          ...v,
-          tipoSolicitud: 'VACACION', // Etiqueta para saber qué servicio llamar
-          fechaOrden: v.fechaInicio, // Estandarizamos fecha para ordenar
-          infoExtra: `${v.diasSolicitados} días` // Dato clave para mostrar
-        }));
+        // 1. Normalizamos VACACIONES / AUSENCIAS
+        const listaVacaciones = results.vacaciones.map(v => {
 
-        // 2. Normalizamos los datos de GASTOS
+          // Detectamos si es Vacación real o Ausencia
+          const tipoReal = v.tipo || 'VACACIONES'; // Backend field
+          const esVacacion = tipoReal === 'VACACIONES';
+
+          return {
+            ...v,
+            tipoSolicitud: 'VACACION', // Para saber qué servicio usar al aprobar (VacationService)
+
+            // 👇 VARIABLES VISUALES DINÁMICAS
+            displayLabel: this.formatType(tipoReal),
+            displayIcon: esVacacion ? 'beach_access' : 'local_hospital',
+            displayClass: esVacacion ? 'vacation' : 'absence', // CSS diferente para cada uno
+
+            fechaOrden: v.fechaInicio,
+            infoExtra: `${v.diasSolicitados} días`,
+
+            // Guardamos la justificación para el modal
+            fullDescription: v.comentario || 'Sin justificación adjunta.'
+          };
+        });
+
+        // 2. Normalizamos GASTOS
         const listaGastos = results.gastos.map(g => ({
           ...g,
-          tipoSolicitud: 'GASTO', // Etiqueta
+          tipoSolicitud: 'GASTO',
+
+          // Visuales
+          displayLabel: 'Reembolso',
+          displayIcon: 'attach_money',
+          displayClass: 'expense',
+
           fechaOrden: g.createdAt || g.fechaReporte,
-          infoExtra: `$${g.total}` // Dato clave (Dinero)
+          infoExtra: `$${g.total}`,
+          fullDescription: g.descripcion || 'Sin descripción.'
         }));
 
-        // 3. Unimos todo en una sola lista gigante
         const listaCompleta = [...listaVacaciones, ...listaGastos];
 
-        // 4. Ordenamos por fecha (del más nuevo al más viejo)
+        // Ordenar
         listaCompleta.sort((a, b) => new Date(b.fechaOrden).getTime() - new Date(a.fechaOrden).getTime());
 
-        // 5. Filtramos Pendientes vs Historial
-        // Nota: En gastos usas 'BORRADOR' o 'ENVIADO'? Ajusta según tu lógica backend.
-        // Asumiremos que 'PENDIENTE' es el estado por defecto para aprobaciones.
-        // Si gastos usa 'BORRADOR', filtraremos eso también.
-
-        this.pendingRequests = listaCompleta.filter(r =>
-          r.estado === 'PENDIENTE' || r.estado === 'ENVIADO'
-        );
-
-        this.historyRequests = listaCompleta.filter(r =>
-          r.estado !== 'PENDIENTE' && r.estado !== 'ENVIADO' && r.estado !== 'BORRADOR'
-        );
+        // Filtrar
+        this.pendingRequests = listaCompleta.filter(r => r.estado === 'PENDIENTE' || r.estado === 'ENVIADO');
+        this.historyRequests = listaCompleta.filter(r => r.estado !== 'PENDIENTE' && r.estado !== 'ENVIADO' && r.estado !== 'BORRADOR');
 
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error cargando aprobaciones:', err);
-        this.snackBar.open('Error cargando datos', 'Cerrar');
+        console.error(err);
         this.isLoading = false;
       }
     });
   }
 
+  // 👇 Función para abrir el modal de detalles
+  openRequestDetails(request: any) {
+    this.selectedRequest = request;
+    this.dialog.open(this.detailsDialog, {
+      width: '450px',
+      panelClass: 'custom-dialog-container'
+    });
+  }
+
   processRequest(req: any, decision: 'APROBADA' | 'RECHAZADA') {
-    const comentario = decision === 'APROBADA' ? 'Aprobado desde Centro' : 'Rechazado';
+    const comentario = decision === 'APROBADA' ? 'Aprobado' : 'Rechazado';
 
-    // 👇 DECISIÓN INTELIGENTE: ¿A quién llamo?
+    // Si estamos en el modal, lo cerramos antes de procesar
+    this.dialog.closeAll();
+
     if (req.tipoSolicitud === 'VACACION') {
-
       this.vacationService.respondRequest(req.id, decision, comentario).subscribe({
         next: () => this.handleSuccess(decision),
         error: () => this.handleError()
       });
-
     } else if (req.tipoSolicitud === 'GASTO') {
-
-      // El backend de gastos espera 'APROBADO' (sin A final) o según tu enum?
-      // Ajusta el string si tu Enum backend es diferente (ej: APROBADO vs APROBADA)
       const estadoGasto = decision === 'APROBADA' ? 'APROBADO' : 'RECHAZADO';
-
       this.expensesService.updateStatus(req.id, estadoGasto as any, comentario).subscribe({
         next: () => this.handleSuccess(decision),
         error: () => this.handleError()
@@ -128,6 +149,11 @@ export class ApprovalsPage implements OnInit {
 
   private handleError() {
     this.snackBar.open('Error procesando la solicitud', 'Cerrar');
+  }
+
+  // Helper para formatear texto (Ej: CALAMIDAD_DOMESTICA -> Calamidad Domestica)
+  private formatType(tipo: string): string {
+    return tipo.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
   }
 
   getStatusClass(status: string): string {

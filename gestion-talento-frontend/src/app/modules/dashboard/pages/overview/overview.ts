@@ -29,6 +29,9 @@ import { AuthService } from '../../../auth/services/auth';
 import { VacationService } from '../../services/vacation';
 import { VoteDialogComponent } from '../../components/vote-dialog/vote-dialog';
 import { ProductivityService, Anuncio, Encuesta } from '../../services/productivity';
+import { TipoSolicitud } from '../../services/vacation';
+import { RequestAbsenceDialog } from '../../components/request-absence-dialog/request-absence-dialog';
+
 
 // Interfaces
 interface AdminKPI { title: string; value: string; trend: string; isPositive: boolean; color: string; }
@@ -297,16 +300,28 @@ export class Overview implements OnInit {
   loadPendingApprovals() {
     this.vacationService.getRequests().subscribe({
       next: (data) => {
+        // Filtramos solo las pendientes
         const pendientes = data.filter(req => req.estado === 'PENDIENTE');
+
         this.pendingApprovals = pendientes.map(req => ({
           id: req.id,
-          type: 'Vacaciones',
-          // Manejo seguro de empleado nulo
+          // ✅ CORRECCIÓN: Usamos el tipo real, o 'Vacaciones' si viene nulo
+          // Usamos una función simple para formatear el texto bonito (ej: CALAMIDAD_DOMESTICA -> Calamidad Domestica)
+          type: this.formatType(req.tipo || 'VACACIONES'),
+
           description: `${req.empleado?.nombre || 'Empleado'} ${req.empleado?.apellido || ''} (${req.diasSolicitados} días)`
         }));
       },
       error: (err) => console.error(err)
     });
+  }
+
+  // Helper pequeño para que "CALAMIDAD_DOMESTICA" se vea bonito como "Calamidad Domestica"
+  private formatType(tipo: string): string {
+    return tipo
+      .replace(/_/g, ' ') // Quita guiones bajos
+      .toLowerCase()
+      .replace(/\b\w/g, l => l.toUpperCase()); // Primera letra mayúscula
   }
 
   // ============================================================
@@ -427,6 +442,60 @@ export class Overview implements OnInit {
         // Al recargar, la encuesta votada dejará de ser "pendiente" 
         // y pasará al siguiente item de la lista.
         this.loadEncuestas();
+      }
+    });
+  }
+
+  // ============================================================
+  // 🟢 NUEVO: ABRIR MODAL DE AUSENCIAS (Calamidad, Salud, etc.)
+  // ============================================================
+  openAbsenceModal() {
+    const currentUser = this.authService.getUser();
+
+    if (!currentUser || !currentUser.empleadoId) {
+      this.snackBar.open('No se pudo identificar al empleado. Recarga la página.', 'Cerrar');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(RequestAbsenceDialog, {
+      width: '500px',
+      disableClose: true, // Evita que se cierre si hacen clic afuera por error
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Si result existe, es que el usuario le dio a "Enviar"
+      if (result) {
+
+        // Armamos el payload reciclando la estructura que ya espera el servicio
+        const payload = {
+          empleadoId: currentUser.empleadoId,
+          tipo: result.tipo, // Ej: 'CALAMIDAD_DOMESTICA'
+          fechaInicio: result.fechaInicio, // Ya viene formateada del dialog YYYY-MM-DD
+          fechaFin: result.fechaFin,
+          comentario: result.justificacion // 🔥 Mapeamos 'justificacion' a 'comentario'
+        };
+
+        console.log('Enviando ausencia:', payload);
+        this.isLoading = true;
+
+        this.vacationService.requestLeave(payload).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.snackBar.open('✅ Solicitud de permiso enviada correctamente', 'Cerrar', { duration: 4000 });
+
+            // Si soy admin, refresco la lista de pendientes para verla aparecer
+            if (this.viewingAsAdmin) {
+              this.loadPendingApprovals();
+            }
+          },
+          error: (err) => {
+            this.isLoading = false;
+            console.error('Error enviando ausencia:', err);
+            const msg = err.error?.message || 'Error al procesar la solicitud';
+            this.snackBar.open(`❌ ${msg}`, 'Cerrar');
+          }
+        });
       }
     });
   }

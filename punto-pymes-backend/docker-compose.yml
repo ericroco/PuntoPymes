@@ -23,7 +23,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${GATEWAY_PORT}/health || exit 1"]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${GATEWAY_PORT}/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -47,7 +47,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}" 
+      - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -60,7 +60,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${AUTH_SERVICE_PORT}/health || exit 1"]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${AUTH_SERVICE_PORT}/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -84,7 +84,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${PERSONAL_SERVICE_PORT}:${PERSONAL_SERVICE_PORT}" 
+      - "${PERSONAL_SERVICE_PORT}:${PERSONAL_SERVICE_PORT}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -98,7 +98,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PERSONAL_SERVICE_PORT}/health || exit 1"]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PERSONAL_SERVICE_PORT}/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -122,7 +122,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${NOMINA_SERVICE_PORT}:${NOMINA_SERVICE_PORT}" 
+      - "${NOMINA_SERVICE_PORT}:${NOMINA_SERVICE_PORT}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -135,7 +135,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${NOMINA_SERVICE_PORT}/health || exit 1"]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${NOMINA_SERVICE_PORT}/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -159,7 +159,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${PRODUCTIVIDAD_SERVICE_PORT}:${PRODUCTIVIDAD_SERVICE_PORT}" 
+      - "${PRODUCTIVIDAD_SERVICE_PORT}:${PRODUCTIVIDAD_SERVICE_PORT}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -172,7 +172,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PRODUCTIVIDAD_SERVICE_PORT}/health || exit 1"]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PRODUCTIVIDAD_SERVICE_PORT}/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -186,9 +186,39 @@ services:
     environment:
       - NODE_OPTIONS=--max-old-space-size=768
 
-  # --- Base de Datos PostgreSQL ---
+  # --- Aplicación: Microservicio IA (NUEVO) ---
+  ia_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    command: npm run start:dev ia
+    env_file:
+      - .env
+    ports:
+      - "${IA_SERVICE_PORT}:${IA_SERVICE_PORT}" # Asegúrate de definir esto en .env (ej. 3005)
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - puntopymes_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=768
+
+  # --- Base de Datos PostgreSQL (ACTUALIZADA CON PGVECTOR) ---
   postgres_db:
-    image: postgres:15-alpine
+    # CAMBIO IMPORTANTE: Usamos la imagen oficial con pgvector basada en Postgres 16
+    image: pgvector/pgvector:pg16
     container_name: puntopymes_postgres
     environment:
       POSTGRES_USER: ${DB_POSTGRES_USER}
@@ -202,7 +232,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ${DB_POSTGRES_DATABASE}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ${DB_POSTGRES_DATABASE}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -229,7 +259,7 @@ services:
       - puntopymes_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 5s
       retries: 5
