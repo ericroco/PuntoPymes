@@ -3143,6 +3143,12 @@ let AppController = class AppController {
         console.log('API Gateway recibió solicitud de login');
         return this.authService.send({ cmd: 'login' }, loginDto);
     }
+    async forgotPassword(email) {
+        return this.authService.send({ cmd: 'request_reset_password' }, { email });
+    }
+    async resetPassword(body) {
+        return this.authService.send({ cmd: 'reset_password' }, body);
+    }
     uploadLogo(file) {
         if (!file)
             throw new common_1.BadRequestException('Archivo requerido');
@@ -3184,7 +3190,6 @@ let AppController = class AppController {
     getEmpleados(req, headerSucursalId) {
         const { empresaId, sucursalId, permisos } = req.user;
         const idParaFiltrar = (sucursalId) ? sucursalId : headerSucursalId;
-        console.log(`Gateway: Pidiendo empleados. Filtro final: ${idParaFiltrar || 'TODOS'}`);
         return this.personalService.send({ cmd: 'get_empleados' }, {
             empresaId: empresaId,
             filtroSucursalId: idParaFiltrar
@@ -3198,7 +3203,6 @@ let AppController = class AppController {
         else if (headerSucursalId) {
             dto.sucursalId = headerSucursalId;
         }
-        console.log(`Gateway: Creando empleado en sucursal: ${dto.sucursalId || 'Global'}`);
         return this.personalService.send({ cmd: 'create_empleado' }, {
             empresaId: empresaId,
             dto: dto,
@@ -3216,7 +3220,6 @@ let AppController = class AppController {
     }
     updateEmpleado(req, empleadoId, dto) {
         const { empresaId } = req.user;
-        console.log(`Gateway: Petición PATCH /empleados/${empleadoId} para empresaId: ${empresaId}`);
         return this.personalService.send({ cmd: 'update_empleado' }, {
             empresaId: empresaId,
             empleadoId: empleadoId,
@@ -4040,6 +4043,22 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "login", null);
 __decorate([
+    (0, common_1.Post)('auth/forgot-password'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Body)('email')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)('auth/reset-password'),
+    openapi.ApiResponse({ status: 201, type: Object }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "resetPassword", null);
+__decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('empresa/upload-logo'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', (0, multer_config_util_1.createMulterOptions)('logos-empresa', 2))),
@@ -4098,7 +4117,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getEmpleados", null);
 __decorate([
-    openapi.ApiOperation({ summary: "Crea un nuevo empleado (RF-01-01)" }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('empleados'),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
@@ -4139,7 +4157,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "getEmpleado", null);
 __decorate([
-    openapi.ApiOperation({ summary: "Actualiza un empleado (RF-01-03)" }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Patch)('empleados/:id'),
     (0, common_1.UsePipes)(new common_1.ValidationPipe()),
@@ -4152,7 +4169,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AppController.prototype, "updateEmpleado", null);
 __decorate([
-    openapi.ApiOperation({ summary: "Desactiva (Soft Delete) un empleado (RF-01-04)" }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Delete)('empleados/:id'),
     openapi.ApiResponse({ status: 200, type: Object }),

@@ -112,10 +112,8 @@
         <p>Ingresa tus credenciales para acceder a tu panel de control</p>
       </div>
 
-      <!-- Formulario -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-        <!-- Campo Email -->
         <div class="form-group">
           <mat-form-field appearance="outline">
             <mat-label>Correo Electrónico</mat-label>
@@ -131,7 +129,6 @@
           </mat-form-field>
         </div>
 
-        <!-- Campo Contraseña -->
         <div class="form-group">
           <mat-form-field appearance="outline">
             <mat-label>Contraseña</mat-label>
@@ -150,35 +147,16 @@
             </mat-error>
           </mat-form-field>
         </div>
-
-        <!-- Link Olvidé Contraseña -->
         <div class="forgot-password">
-          <a routerLink="/auth/change-password" class="link">
+          <a (click)="openForgotPassword()" class="link" style="cursor: pointer;">
             ¿Olvidaste tu contraseña?
           </a>
         </div>
-
-        <!-- Botón Submit Principal -->
         <button mat-flat-button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading">
           <span *ngIf="!isLoading">Iniciar Sesión</span>
           <mat-spinner diameter="24" *ngIf="isLoading">
           </mat-spinner>
         </button>
-
-        <!-- Divisor -->
-        <div class="divider">
-          <span>O continúa con</span>
-        </div>
-
-        <!-- Botones Social Login -->
-        <div class="social-buttons">
-          <button type="button" class="social-btn">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo" width="22" height="22">
-            <span>Continuar con Google</span>
-          </button>
-        </div>
-
-        <!-- Redirect a Registro -->
         <div class="register-redirect">
           ¿No tienes una cuenta?
           <a routerLink="/auth/register" class="link">Regístrate gratis</a>

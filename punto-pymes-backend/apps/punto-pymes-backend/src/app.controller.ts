@@ -127,6 +127,16 @@ export class AppController {
     return this.authService.send({ cmd: 'login' }, loginDto);
   }
 
+
+  @Post('auth/forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.send({ cmd: 'request_reset_password' }, { email });
+  }
+
+  @Post('auth/reset-password')
+  async resetPassword(@Body() body: any) {
+    return this.authService.send({ cmd: 'reset_password' }, body);
+  }
   // =======================================================
   // 1. SUBIR LOGO (Solo guarda el archivo y devuelve URL) 📸
   // =======================================================
@@ -225,14 +235,7 @@ export class AppController {
   ) {
     const { empresaId, sucursalId, permisos } = req.user;
 
-    // LOGICA DE FILTRO:
-    // Si soy Admin (tengo '*'), puedo usar el filtro del Header.
-    // Si soy Gerente (tengo sucursalId en el token), ignoro el header y uso mi token.
-
-    // Determinamos qué ID mandar al microservicio
     const idParaFiltrar = (sucursalId) ? sucursalId : headerSucursalId;
-
-    console.log(`Gateway: Pidiendo empleados. Filtro final: ${idParaFiltrar || 'TODOS'}`);
 
     return this.personalService.send(
       { cmd: 'get_empleados' },
@@ -242,9 +245,6 @@ export class AppController {
       },
     );
   }
-  /**
-   * Crea un nuevo empleado (RF-01-01)
-   */
   @UseGuards(JwtAuthGuard)
   @Post('empleados')
   @UsePipes(new ValidationPipe())
@@ -255,24 +255,18 @@ export class AppController {
   ) {
     const { empresaId, sucursalId, permisos } = req.user;
 
-    // --- REGLA DE ASIGNACIÓN DE SUCURSAL ---
-
     if (sucursalId) {
       dto.sucursalId = sucursalId;
     }
     else if (headerSucursalId) {
-      // CASO 2: Soy Super Admin y estoy filtrando por una sede (Contexto Global)
-      // Asignamos el empleado a la sede que estoy viendo actualmente.
       dto.sucursalId = headerSucursalId;
     }
-
-    console.log(`Gateway: Creando empleado en sucursal: ${dto.sucursalId || 'Global'}`);
 
     return this.personalService.send(
       { cmd: 'create_empleado' },
       {
         empresaId: empresaId,
-        dto: dto, // El DTO ya va "curado" con la sucursal correcta
+        dto: dto,
       },
     );
   }
@@ -295,8 +289,7 @@ export class AppController {
     );
   }
 
-  // NUEVO: Obtener un empleado por ID
-  @UseGuards(JwtAuthGuard) // Protegido, pero accesible para empleados (si ajustas permisos)
+  @UseGuards(JwtAuthGuard)
   @Get('empleados/:id')
   getEmpleado(
     @Request() req,
@@ -308,26 +301,16 @@ export class AppController {
       { empresaId, empleadoId },
     );
   }
-  /**
-   * Actualiza un empleado (RF-01-03)
-   * @param id El ID del empleado a actualizar (de la URL)
-   */
-  @UseGuards(JwtAuthGuard) // 1. Protegido por "la cerradura"
-  @Patch('empleados/:id') // 2. Escucha en PATCH /empleados/abc-123
+  @UseGuards(JwtAuthGuard)
+  @Patch('empleados/:id')
   @UsePipes(new ValidationPipe())
   updateEmpleado(
-    @Request() req, // 3. Para obtener el req.user (con el empresaId)
-    @Param('id') empleadoId: string, // 4. Para obtener el ID de la URL
-    @Body() dto: UpdateEmpleadoDto, // 5. Para obtener el body (con los datos a cambiar)
+    @Request() req,
+    @Param('id') empleadoId: string,
+    @Body() dto: UpdateEmpleadoDto,
   ) {
-    // 6. Extraemos el 'empresaId' del token del admin
     const { empresaId } = req.user;
 
-    console.log(
-      `Gateway: Petición PATCH /empleados/${empleadoId} para empresaId: ${empresaId}`,
-    );
-
-    // 7. Enviamos TODO (el empresaId, el empleadoId y el DTO) al microservicio
     return this.personalService.send(
       { cmd: 'update_empleado' },
       {
@@ -337,14 +320,11 @@ export class AppController {
       },
     );
   }
-  /**
-   * Desactiva (Soft Delete) un empleado (RF-01-04)
-   */
   @UseGuards(JwtAuthGuard)
-  @Delete('empleados/:id') // <-- Escucha en DELETE /empleados/abc-123
+  @Delete('empleados/:id')
   deleteEmpleado(
     @Request() req,
-    @Param('id') empleadoId: string, // <-- Lee el ID de la URL
+    @Param('id') empleadoId: string,
   ) {
     const { empresaId } = req.user;
     console.log(

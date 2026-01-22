@@ -5,6 +5,7 @@ import { CreateCompanyComponent } from './pages/create-company/create-company';
 import { RegisterComponent } from './pages/register/register';
 import { CompanySelectorComponent } from './pages/company-selector/company-selector';
 import { ChangePasswordComponent } from './pages/change-password/change-password';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password';
 
 const routes: Routes = [
   // Rutas Públicas
@@ -23,6 +24,10 @@ const routes: Routes = [
   {
     path: 'change-password',
     component: ChangePasswordComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
 
   { path: '**', redirectTo: 'login' }

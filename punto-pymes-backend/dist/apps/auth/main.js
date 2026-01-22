@@ -41,22 +41,15 @@ let AuthController = class AuthController {
         return 'Pong desde el Microservicio Auth';
     }
     register(registerDto) {
-        console.log('Registro recibido en el microservicio Auth');
         return this.authService.register(registerDto);
     }
     login(loginDto) {
-        console.log('Login recibido en el microservicio Auth para:', loginDto.email);
         return this.authService.login(loginDto);
     }
     async createUserAuto(data) {
         return this.authService.createUserForEmployee(data);
     }
     async createCompanyExisting(data) {
-        console.log('═══════════════════════════════════════');
-        console.log('📨 MICROSERVICIO AUTH - Recibido cmd create_company_existing');
-        console.log('👤 UsuarioId recibido:', data.usuarioId);
-        console.log('📦 Datos completos:', data);
-        console.log('═══════════════════════════════════════');
         if (!data.usuarioId) {
             throw new microservices_2.RpcException('usuarioId es requerido');
         }
@@ -84,13 +77,17 @@ let AuthController = class AuthController {
         return this.authService.updateUserConfig(data.usuarioId, data.config);
     }
     async changePassword(data) {
-        console.log('📨 Microservicio recibió solicitud de cambio de contraseña');
         return this.authService.changePassword(data.userId, data.dto);
+    }
+    async requestReset(data) {
+        return this.authService.requestPasswordReset(data.email);
+    }
+    async resetPassword(data) {
+        return this.authService.resetPassword(data.token, data.newPassword);
     }
 };
 exports.AuthController = AuthController;
 __decorate([
-    openapi.ApiOperation({ summary: "Escucha el patr\u00F3n 'ping' (para pruebas)" }),
     (0, microservices_1.MessagePattern)({ cmd: 'ping' }),
     openapi.ApiResponse({ status: 200, type: String }),
     __metadata("design:type", Function),
@@ -195,6 +192,22 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "changePassword", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'request_reset_password' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "requestReset", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'reset_password' }),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "resetPassword", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
@@ -224,6 +237,7 @@ const auth_controller_1 = __webpack_require__(/*! ./auth.controller */ "./apps/a
 const auth_service_1 = __webpack_require__(/*! ./auth.service */ "./apps/auth/src/auth.service.ts");
 const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
 const database_1 = __webpack_require__(/*! default/database */ "./libs/database/src/index.ts");
 let AuthModule = class AuthModule {
 };
@@ -241,6 +255,20 @@ exports.AuthModule = AuthModule = __decorate([
                 database_1.Cargo,
                 database_1.Contrato,
             ]),
+            mailer_1.MailerModule.forRoot({
+                transport: {
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: 'erickrodas559@gmail.com',
+                        pass: 'tqhl basq ufjw vyor',
+                    },
+                },
+                defaults: {
+                    from: '"Soporte PuntoPymes" <noreply@puntopymes.com>',
+                },
+            }),
             jwt_1.JwtModule.registerAsync({
                 imports: [
                     config_1.ConfigModule.forRoot({
@@ -327,6 +355,7 @@ const bcrypt = __importStar(__webpack_require__(/*! bcrypt */ "bcrypt"));
 const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
 const permissions_1 = __webpack_require__(/*! ../../../libs/common/src/constants/permissions */ "./libs/common/src/constants/permissions.ts");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const mailer_1 = __webpack_require__(/*! @nestjs-modules/mailer */ "@nestjs-modules/mailer");
 let AuthService = class AuthService {
     usuarioRepository;
     empresaRepository;
@@ -337,8 +366,9 @@ let AuthService = class AuthService {
     contratoRepository;
     entityManager;
     jwtService;
+    mailerService;
     saltRounds = 10;
-    constructor(usuarioRepository, empresaRepository, rolRepository, empleadoRepository, deptoRepository, cargoRepository, contratoRepository, entityManager, jwtService) {
+    constructor(usuarioRepository, empresaRepository, rolRepository, empleadoRepository, deptoRepository, cargoRepository, contratoRepository, entityManager, jwtService, mailerService) {
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
         this.rolRepository = rolRepository;
@@ -348,6 +378,7 @@ let AuthService = class AuthService {
         this.contratoRepository = contratoRepository;
         this.entityManager = entityManager;
         this.jwtService = jwtService;
+        this.mailerService = mailerService;
     }
     async hashPassword(password) {
         return bcrypt.hash(password, this.saltRounds);
@@ -673,7 +704,6 @@ let AuthService = class AuthService {
                 nombre: 'Gerente General',
             });
             await manager.save(cargoGerente);
-            console.log('🏗️ Estructura base creada');
             const nuevoEmpleado = manager.create(database_1.Empleado, {
                 empresaId: nuevaEmpresa.id,
                 usuario: usuarioEnTransaccion,
@@ -704,10 +734,6 @@ let AuthService = class AuthService {
                 estado: 'Vigente',
             });
             await manager.save(nuevoContrato);
-            console.log('📄 Contrato creado');
-            console.log('═══════════════════════════════════════');
-            console.log('✅ TRANSACCIÓN COMPLETADA CON ÉXITO');
-            console.log('═══════════════════════════════════════');
             return {
                 status: 'success',
                 message: 'Organización creada y configurada correctamente.',
@@ -757,7 +783,6 @@ let AuthService = class AuthService {
         const passwordValida = await this.comparePassword(password, usuario.passwordHash);
         if (!passwordValida)
             throw new common_1.UnauthorizedException('Credenciales inválidas');
-        console.log(`🔍 Buscando membresías para Usuario ID: ${usuario.id}`);
         const membresias = await this.empleadoRepository.find({
             where: {
                 usuario: { id: usuario.id }
@@ -770,7 +795,6 @@ let AuthService = class AuthService {
                 createdAt: 'DESC'
             }
         });
-        console.log(`✅ Membresías encontradas: ${membresias.length}`);
         if (membresias.length < 2 && process.env.NODE_ENV === 'development') {
             console.warn('⚠️ Alerta: Se esperaba más de 1 empresa. Verifica la tabla "empleados".');
         }
@@ -857,9 +881,7 @@ let AuthService = class AuthService {
             fotoUrl: membresia.fotoUrl,
             sucursalId: membresia.sucursalId
         };
-        console.log('📝 Payload a firmar:', payload);
         const accessToken = await this.jwtService.signAsync(payload);
-        console.log('✅ Token generado correctamente');
         return {
             accessToken,
             usuario: {
@@ -932,7 +954,7 @@ let AuthService = class AuthService {
         return empresa;
     }
     async updateCompanyBranding(empresaId, brandingData) {
-        console.log('🎨 INTENTO DE UPDATE BRANDING:', brandingData);
+        console.log('INTENTO DE UPDATE BRANDING:', brandingData);
         const empresa = await this.empresaRepository.findOne({ where: { id: empresaId } });
         if (!empresa)
             throw new microservices_1.RpcException('Empresa no encontrada');
@@ -995,6 +1017,39 @@ let AuthService = class AuthService {
         await this.usuarioRepository.save(usuario);
         return usuario.configuracion;
     }
+    async requestPasswordReset(email) {
+        const user = await this.usuarioRepository.findOne({ where: { email } });
+        if (!user) {
+            return { message: 'Si el correo existe, se han enviado las instrucciones.' };
+        }
+        const token = this.jwtService.sign({ sub: user.id, type: 'recovery' }, { secret: 'TU_SECRETO_DE_RECOVERY', expiresIn: '15m' });
+        const url = `http://localhost:4200/auth/reset-password?token=${token}`;
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Recuperación de Contraseña - PuntoPymes',
+            html: `
+        <h3>Hola,</h3>
+        <p>Has solicitado restablecer tu contraseña para la cuenta asociada a ${email}.</p>
+        <p>Haz clic en el siguiente enlace para continuar (válido por 15 minutos):</p>
+        <br>
+        <a href="${url}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Recuperar Contraseña</a>
+        <br><br>
+        <p>Si no fuiste tú, ignora este mensaje.</p>
+      `,
+        });
+        return { message: 'Correo enviado' };
+    }
+    async resetPassword(token, newPassword) {
+        try {
+            const payload = this.jwtService.verify(token, { secret: 'TU_SECRETO_DE_RECOVERY' });
+            const passwordHash = await this.hashPassword(newPassword);
+            await this.usuarioRepository.update(payload.sub, { passwordHash });
+            return { message: 'Contraseña actualizada correctamente' };
+        }
+        catch (error) {
+            throw new microservices_1.RpcException('El enlace es inválido o ha expirado.');
+        }
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
@@ -1014,7 +1069,8 @@ exports.AuthService = AuthService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.EntityManager,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        mailer_1.MailerService])
 ], AuthService);
 
 
@@ -5972,6 +6028,16 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(/*! ./database.module */ "./libs/database/src/database.module.ts"), exports);
 __exportStar(__webpack_require__(/*! ./entities */ "./libs/database/src/entities/index.ts"), exports);
 
+
+/***/ }),
+
+/***/ "@nestjs-modules/mailer":
+/*!*****************************************!*\
+  !*** external "@nestjs-modules/mailer" ***!
+  \*****************************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs-modules/mailer");
 
 /***/ }),
 

@@ -20,6 +20,7 @@ import { RpcException } from '@nestjs/microservices';
 import { UpdateConfiguracionEmpresaDto } from './dto/update-configuracion.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { BadRequestException } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
 
 
 @Injectable()
@@ -45,6 +46,7 @@ export class AuthService {
 
     private readonly entityManager: EntityManager,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) { }
 
   async hashPassword(password: string): Promise<string> {
@@ -486,12 +488,9 @@ export class AuthService {
       });
       await manager.save(cargoGerente);
 
-      console.log('🏗️ Estructura base creada');
-
-      // D. CREAR EMPLEADO ✅
       const nuevoEmpleado = manager.create(Empleado, {
         empresaId: nuevaEmpresa.id,
-        usuario: usuarioEnTransaccion,  // 👈 Usar el usuario de la transacción
+        usuario: usuarioEnTransaccion,
         rolId: rolSuperAdminId,
         cargoId: cargoGerente.id,
         nombre: nombreAdmin || 'Admin',
@@ -499,7 +498,6 @@ export class AuthService {
         estado: 'Activo',
       });
 
-      // 🔥 LOG ANTES DE GUARDAR
       console.log('💼 Empleado a crear:', {
         empresaId: nuevoEmpleado.empresaId,
         usuarioEmail: usuarioEnTransaccion.email,
@@ -509,7 +507,6 @@ export class AuthService {
 
       const empleadoGuardado = await manager.save(nuevoEmpleado);
 
-      // 🔥 LOG DESPUÉS DE GUARDAR
       console.log('✅ Empleado GUARDADO:', {
         id: empleadoGuardado.id,
         nombre: empleadoGuardado.nombre,
@@ -527,12 +524,7 @@ export class AuthService {
       });
       await manager.save(nuevoContrato);
 
-      console.log('📄 Contrato creado');
-      console.log('═══════════════════════════════════════');
-      console.log('✅ TRANSACCIÓN COMPLETADA CON ÉXITO');
-      console.log('═══════════════════════════════════════');
 
-      // 3. RETORNO DE ÉXITO
       return {
         status: 'success',
         message: 'Organización creada y configurada correctamente.',
@@ -550,13 +542,9 @@ export class AuthService {
     });
   }
 
-  /**
-   * Cambiar contraseña de un usuario logueado
-   */
   async changePassword(userId: string, dto: ChangePasswordDto) {
     const { passwordActual, nuevaPassword } = dto;
 
-    // 1. Buscar usuario (con passwordHash oculto)
     const usuario = await this.usuarioRepository
       .createQueryBuilder('usuario')
       .addSelect('usuario.passwordHash')
@@ -564,35 +552,27 @@ export class AuthService {
       .getOne();
 
     if (!usuario) {
-      // En microservicios se suele usar RpcException
       throw new RpcException({ message: 'Usuario no encontrado', status: 404 });
     }
 
-    // 2. Validar contraseña actual
     const isMatch = await this.comparePassword(passwordActual, usuario.passwordHash);
     if (!isMatch) {
       throw new RpcException({ message: 'La contraseña actual es incorrecta', status: 400 });
     }
 
-    // 3. Validar que no repita la misma
     if (passwordActual === nuevaPassword) {
       throw new RpcException({ message: 'La nueva contraseña debe ser diferente', status: 400 });
     }
 
-    // 4. Hashear y guardar
     usuario.passwordHash = await this.hashPassword(nuevaPassword);
     await this.usuarioRepository.save(usuario);
 
     return { status: 'success', message: 'Contraseña actualizada correctamente.' };
   }
-  /**
-   * Lógica de Login de Usuario
-   * @param loginDto Los datos del formulario de login
-   */
+
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
-    // --- a. Encontrar al usuario ---
     const usuario = await this.usuarioRepository
       .createQueryBuilder('usuario')
       .addSelect('usuario.passwordHash')
@@ -601,15 +581,8 @@ export class AuthService {
 
     if (!usuario) throw new UnauthorizedException('Credenciales inválidas');
 
-    // --- b. Comparar contraseñas ---
     const passwordValida = await this.comparePassword(password, usuario.passwordHash);
     if (!passwordValida) throw new UnauthorizedException('Credenciales inválidas');
-
-    // ==========================================================
-    // --- c. (CORREGIDO) Buscar las membresías COMPLETAS ---
-    // ==========================================================
-
-    console.log(`🔍 Buscando membresías para Usuario ID: ${usuario.id}`);
 
     const membresias = await this.empleadoRepository.find({
       where: {
@@ -620,18 +593,14 @@ export class AuthService {
         'rol'
       ],
       order: {
-        createdAt: 'DESC' // Para que la empresa más nueva salga primero
+        createdAt: 'DESC'
       }
     });
 
-    console.log(`✅ Membresías encontradas: ${membresias.length}`);
-
-    // Debug: Si sale 1 y esperas 2, imprime los IDs para ver qué está pasando
     if (membresias.length < 2 && process.env.NODE_ENV === 'development') {
       console.warn('⚠️ Alerta: Se esperaba más de 1 empresa. Verifica la tabla "empleados".');
     }
 
-    // --- d. Validaciones y Payload ---
     if (membresias.length === 0) {
       throw new UnauthorizedException('Este usuario no tiene membresías activas.');
     }
@@ -650,13 +619,12 @@ export class AuthService {
       fotoUrl: membresiaActiva.empresa?.branding?.logoUrl
     };
 
-    // --- e. Firmar y devolver ---
     const accessToken = await this.jwtService.signAsync(payload);
 
     return {
       message: 'Login exitoso',
       accessToken: accessToken,
-      membresias: membresias, // Ahora sí incluye branding y cargo
+      membresias: membresias,
     };
   }
   async createUserForEmployee(data: {
@@ -667,15 +635,12 @@ export class AuthService {
   }) {
     console.log(`AUTH: Procesando acceso para ${data.email}`);
 
-    // 1. BUSCAR SI YA EXISTE UN USUARIO CON ESTE EMAIL
     let usuario = await this.usuarioRepository.findOneBy({ email: data.email });
     let esNuevo = false;
     let randomPassword = '';
 
     if (!usuario) {
-      // --- CASO A: NO EXISTE -> LO CREAMOS ---
       esNuevo = true;
-      // Generar contraseña aleatoria segura
       randomPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
 
       const salt = await bcrypt.genSalt(10);
@@ -685,34 +650,27 @@ export class AuthService {
         email: data.email,
         passwordHash: hashedPassword,
         emailVerificado: true,
-        // isActive: true // Descomenta si tu entidad tiene este campo
       });
 
       await this.usuarioRepository.save(usuario);
       console.log('AUTH: Usuario nuevo creado exitosamente.');
     } else {
-      // --- CASO B: YA EXISTE -> SOLO VINCULAMOS ---
       console.log('AUTH: Usuario existente detectado. Vinculando cuenta...');
     }
 
-    // 2. VINCULAR EL EMPLEADO AL USUARIO (Sea nuevo o viejo)
-    // Esto es lo vital: Actualizamos la tabla 'empleados' con el ID del usuario
     await this.empleadoRepository.update(data.empleadoId, {
       usuarioId: usuario.id
     });
 
-    // 3. RETORNAR RESULTADO
-    // El microservicio de Personal usará 'isNew' para saber qué correo enviar
     return {
       isNew: esNuevo,
       email: data.email,
-      password: randomPassword // Solo tendrá valor si es nuevo, si no, va vacío
+      password: randomPassword
     };
   }
   async switchCompany(dto: { usuarioId: string; empresaId: string }) {
     console.log('🔍 DTO recibido:', dto);
 
-    // 1. Buscar la membresía del usuario en esa empresa
     const membresia = await this.empleadoRepository.findOne({
       where: {
         usuarioId: dto.usuarioId,
@@ -735,9 +693,8 @@ export class AuthService {
       throw new UnauthorizedException('El empleado no tiene un rol asignado');
     }
 
-    // 2. Crear payload con TODOS los campos necesarios (incluyendo sub)
     const payload = {
-      sub: dto.usuarioId,  // ✅ ID del usuario (CRÍTICO)
+      sub: dto.usuarioId,
       email: membresia.usuario?.email || membresia.emailPersonal,
       empresaId: membresia.empresaId,
       empleadoId: membresia.id,
@@ -748,12 +705,7 @@ export class AuthService {
       sucursalId: membresia.sucursalId
     };
 
-    console.log('📝 Payload a firmar:', payload);
-
-    // 3. Generar el token
     const accessToken = await this.jwtService.signAsync(payload);
-
-    console.log('✅ Token generado correctamente');
 
     return {
       accessToken,
@@ -764,12 +716,10 @@ export class AuthService {
     };
   }
   async createCompanyForUser(usuarioId: string, data: { nombre: string; plan: string; branding: any }) {
-    // 1. Buscar usuario
     const usuario = await this.usuarioRepository.findOneBy({ id: usuarioId });
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
 
     return this.entityManager.transaction(async (manager) => {
-      // a. Crear Empresa
       const nuevaEmpresa = manager.create(Empresa, {
         nombre: data.nombre,
         planSuscripcion: data.plan,
@@ -777,7 +727,6 @@ export class AuthService {
       });
       await manager.save(nuevaEmpresa);
 
-      // b. Crear Rol Admin
       const rolAdmin = manager.create(Rol, {
         empresaId: nuevaEmpresa.id,
         nombre: 'Administrador',
@@ -786,25 +735,22 @@ export class AuthService {
       });
       await manager.save(rolAdmin);
 
-      // c. Depto/Cargo Default
       const depto = manager.create(Departamento, { empresaId: nuevaEmpresa.id, nombre: 'Gerencia' });
       await manager.save(depto);
       const cargo = manager.create(Cargo, { departamentoId: depto.id, nombre: 'CEO' });
       await manager.save(cargo);
 
-      // d. Crear Empleado (Vinculado al usuario existente)
       const nuevoEmpleado = manager.create(Empleado, {
         empresaId: nuevaEmpresa.id,
-        usuarioId: usuario.id, // <--- VINCULACIÓN CLAVE
+        usuarioId: usuario.id,
         rolId: rolAdmin.id,
         cargoId: cargo.id,
-        nombre: 'Admin', // Puedes pedir estos datos o tomarlos del usuario si los tuviera
+        nombre: 'Admin',
         apellido: 'Principal',
         estado: 'Activo'
       });
       await manager.save(nuevoEmpleado);
 
-      // e. Contrato
       const contrato = manager.create(Contrato, {
         empleadoId: nuevoEmpleado.id,
         tipo: 'Fundador',
@@ -823,22 +769,14 @@ export class AuthService {
   async getCompanyDetail(empresaId: string, userId: string) {
     let empresa: Empresa | null = null;
 
-    // ESCENARIO 1: Tenemos el ID de la empresa (Lo ideal y más rápido)
     if (empresaId) {
       empresa = await this.empresaRepository.findOne({
         where: { id: empresaId }
-        // ¡OJO! NO cargamos 'relations' aquí para evitar datos innecesarios
       });
     }
-
-    // ESCENARIO 2: Solo tenemos el UserID (Fallback)
-    // Usamos QueryBuilder para evitar errores de ORM complejos
     else if (userId) {
       empresa = await this.empresaRepository.createQueryBuilder('empresa')
-        // Unimos con empleados para filtrar
         .innerJoin('empresa.empleados', 'empleado')
-        // Unimos con usuario (asumiendo que empleado tiene relación 'usuario')
-        // Si tu relación en empleado se llama diferente, ajusta 'empleado.usuario'
         .innerJoin('empleado.usuario', 'usuario')
         .where('usuario.id = :userId', { userId })
         .getOne();
@@ -848,31 +786,23 @@ export class AuthService {
       throw new RpcException(new NotFoundException('Empresa no encontrada para este usuario'));
     }
 
-    // Retornamos la empresa limpia. 
-    // Al no haber usado 'relations', no hay riesgo de bucle infinito.
     return empresa;
   }
 
   // 2. Actualizar Branding
   async updateCompanyBranding(empresaId: string, brandingData: any) {
-    // 1. LOG DE DEPURACIÓN (Míralo en la consola del backend al guardar)
-    console.log('🎨 INTENTO DE UPDATE BRANDING:', brandingData);
+    console.log('INTENTO DE UPDATE BRANDING:', brandingData);
 
     const empresa = await this.empresaRepository.findOne({ where: { id: empresaId } });
     if (!empresa) throw new RpcException('Empresa no encontrada');
 
-    // 2. Obtener lo que ya existe (o objeto vacío si es null)
     const currentBranding = empresa.branding || { logoUrl: null, primaryColor: null };
 
-    // 3. ASIGNACIÓN SEGURA (Operador ??)
-    // Esto significa: "Si viene un dato nuevo, úsalo. Si viene null/undefined, mantén el viejo".
     empresa.branding = {
       logoUrl: brandingData.logoUrl ?? currentBranding.logoUrl,
       primaryColor: brandingData.primaryColor ?? currentBranding.primaryColor
     };
 
-    // 4. FORZAR ACTUALIZACIÓN
-    // A veces TypeORM se lía con los JSON. Esto ayuda a confirmar que el campo cambió.
     this.empresaRepository.merge(empresa, { branding: empresa.branding });
 
     const resultado = await this.empresaRepository.save(empresa);
@@ -881,19 +811,13 @@ export class AuthService {
     return resultado;
   }
 
-  // --- LÓGICA DE ACTUALIZACIÓN DE CONFIGURACIÓN ---
   async updateCompanyConfig(empresaId: string, updateDto: UpdateConfiguracionEmpresaDto) {
     const empresa = await this.empresaRepository.findOneBy({ id: empresaId });
     if (!empresa) throw new NotFoundException('Empresa no encontrada');
-
-    // 1. Obtener config actual o iniciar vacía
     const configActual = empresa.configuracion || {};
 
-    // 2. MERGE MANUAL (Deep Merge)
-    // Esto es crucial: Si mandas solo 'asistencia', mantienes 'nomina' intacta.
     const nuevaConfig: ConfiguracionEmpresa = {
-      ...configActual, // Copia base
-
+      ...configActual,
       modulos: {
         ...configActual.modulos,
         ...updateDto.modulos,
@@ -923,36 +847,68 @@ export class AuthService {
   async getCompanyConfig(empresaId: string) {
     const empresa = await this.empresaRepository.findOne({
       where: { id: empresaId },
-      select: ['configuracion'] // Solo traemos el JSON
+      select: ['configuracion']
     });
     return empresa?.configuracion || {};
   }
 
-  /**
-   * Actualiza la configuración del usuario haciendo un merge con lo existente.
-   */
   async updateUserConfig(usuarioId: string, nuevaConfig: any) {
-    // 1. Buscamos al usuario
     const usuario = await this.usuarioRepository.findOneBy({ id: usuarioId });
 
     if (!usuario) {
-      // En microservicios usamos RpcException en lugar de NotFoundException
-      // o simplemente retornamos null y que el controller decida.
       throw new Error('Usuario no encontrado');
     }
 
-    // 2. Fusionar configuraciones (Merge)
-    // Si usuario.configuracion es null, usamos {}
     const configActual = usuario.configuracion || {};
-
-    // Sobrescribimos solo las llaves que vienen en nuevaConfig
     const configFinal = { ...configActual, ...nuevaConfig };
 
-    // 3. Guardar
     usuario.configuracion = configFinal;
     await this.usuarioRepository.save(usuario);
 
-    // Retornamos la config actualizada
     return usuario.configuracion;
   }
+
+  async requestPasswordReset(email: string) {
+    const user = await this.usuarioRepository.findOne({ where: { email } });
+
+    if (!user) {
+      return { message: 'Si el correo existe, se han enviado las instrucciones.' };
+    }
+
+    const token = this.jwtService.sign(
+      { sub: user.id, type: 'recovery' },
+      { secret: 'TU_SECRETO_DE_RECOVERY', expiresIn: '15m' }
+    );
+
+    const url = `http://localhost:4200/auth/reset-password?token=${token}`;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Recuperación de Contraseña - PuntoPymes',
+      html: `
+        <h3>Hola,</h3>
+        <p>Has solicitado restablecer tu contraseña para la cuenta asociada a ${email}.</p>
+        <p>Haz clic en el siguiente enlace para continuar (válido por 15 minutos):</p>
+        <br>
+        <a href="${url}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Recuperar Contraseña</a>
+        <br><br>
+        <p>Si no fuiste tú, ignora este mensaje.</p>
+      `,
+    });
+
+    return { message: 'Correo enviado' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      const payload = this.jwtService.verify(token, { secret: 'TU_SECRETO_DE_RECOVERY' });
+      const passwordHash = await this.hashPassword(newPassword);
+      await this.usuarioRepository.update(payload.sub, { passwordHash });
+
+      return { message: 'Contraseña actualizada correctamente' };
+    } catch (error) {
+      throw new RpcException('El enlace es inválido o ha expirado.');
+    }
+  }
+
 }

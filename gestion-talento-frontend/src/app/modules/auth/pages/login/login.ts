@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-// 1. Importamos lo necesario para notificaciones y el servicio
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth';
 import { MatSpinner } from '@angular/material/progress-spinner';
@@ -13,6 +12,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { ForgotPasswordDialogComponent } from '../../components/forgot-password-dialog/forgot-password-dialog';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +29,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatFormFieldModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatDialogModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -42,13 +45,13 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 })
 export class Login implements OnInit {
   loginForm!: FormGroup;
-  isLoading = false; // Para deshabilitar el botón mientras carga
+  isLoading = false;
+  private dialog = inject(MatDialog);
   hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    // 2. Inyectamos el Servicio de Auth y el SnackBar
     private authService: AuthService,
     private snackBar: MatSnackBar
   ) { }
@@ -65,7 +68,7 @@ export class Login implements OnInit {
       return;
     }
 
-    this.isLoading = true; // Activar estado de carga
+    this.isLoading = true;
     const credentials = this.loginForm.value;
 
     this.authService.login(credentials).subscribe({
@@ -78,13 +81,19 @@ export class Login implements OnInit {
         console.error('Error de login:', error);
         this.isLoading = false;
 
-        // Mostrar error al usuario
         this.snackBar.open('Credenciales incorrectas o error de servidor', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'bottom'
         });
       }
+    });
+  }
+  openForgotPassword() {
+    this.dialog.open(ForgotPasswordDialogComponent, {
+      width: '400px',
+      panelClass: 'custom-dialog-container',
+      disableClose: false
     });
   }
 }

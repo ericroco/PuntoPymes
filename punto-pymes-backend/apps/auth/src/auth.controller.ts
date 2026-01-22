@@ -14,36 +14,20 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
-  /**
-   * Escucha el patrón 'ping' (para pruebas)
-   */
   @MessagePattern({ cmd: 'ping' })
   ping(_data: any) {
     console.log('¡Ping recibido en el microservicio Auth!');
     return 'Pong desde el Microservicio Auth';
   }
 
-  // --- ¡ESTE ES EL BLOQUE NUEVO QUE FALTABA! ---
-
-  /**
-   * Escucha el patrón 'register' desde el API Gateway.
-   * @param registerDto Los datos validados
-   */
   @MessagePattern({ cmd: 'register' })
-  // Habilitamos la validación del DTO (Paso 8.A)
-  // Esto comprueba el DTO contra las reglas (@IsEmail, @MinLength, etc.)
   @UsePipes(new ValidationPipe())
   register(@Payload() registerDto: RegisterDto) {
-    console.log('Registro recibido en el microservicio Auth');
-
-    // Llama a la lógica de negocio que escribimos en el AuthService
-    // (la que crea la Empresa, Usuario, Rol, Depto, Cargo y Empleado)
     return this.authService.register(registerDto);
   }
   @MessagePattern({ cmd: 'login' })
   @UsePipes(new ValidationPipe())
   login(@Payload() loginDto: LoginDto) {
-    console.log('Login recibido en el microservicio Auth para:', loginDto.email);
     return this.authService.login(loginDto);
   }
   @MessagePattern({ cmd: 'create_user_auto' })
@@ -53,13 +37,6 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'create_company_existing' })
   async createCompanyExisting(@Payload() data: any) {
-    // 🔥 LOGS DE DEBUGGING
-    console.log('═══════════════════════════════════════');
-    console.log('📨 MICROSERVICIO AUTH - Recibido cmd create_company_existing');
-    console.log('👤 UsuarioId recibido:', data.usuarioId);
-    console.log('📦 Datos completos:', data);
-    console.log('═══════════════════════════════════════');
-
     if (!data.usuarioId) {
       throw new RpcException('usuarioId es requerido');
     }
@@ -78,7 +55,6 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'get_company_detail' })
   async getCompanyDetail(@Payload() data: { empresaId: string, userId: string }) {
-    // Si tienes empresaId, busca por eso. Si no, busca por usuario.
     return this.authService.getCompanyDetail(data.empresaId, data.userId);
   }
 
@@ -94,7 +70,6 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'update_company_config' })
   async updateCompanyConfig(@Payload() data: { empresaId: string, config: any }) {
-    // data.config es el DTO que mandaste desde el Gateway
     return this.authService.updateCompanyConfig(data.empresaId, data.config);
   }
 
@@ -103,10 +78,17 @@ export class AuthController {
     return this.authService.updateUserConfig(data.usuarioId, data.config);
   }
 
-  // 👇 ESTO ES LO QUE BUSCA EL GATEWAY
   @MessagePattern({ cmd: 'change_password' })
   async changePassword(@Payload() data: { userId: string, dto: any }) {
-    console.log('📨 Microservicio recibió solicitud de cambio de contraseña'); // <--- Añade este log
     return this.authService.changePassword(data.userId, data.dto);
+  }
+  @MessagePattern({ cmd: 'request_reset_password' })
+  async requestReset(@Payload() data: { email: string }) {
+    return this.authService.requestPasswordReset(data.email);
+  }
+
+  @MessagePattern({ cmd: 'reset_password' })
+  async resetPassword(@Payload() data: { token: string; newPassword: string }) {
+    return this.authService.resetPassword(data.token, data.newPassword);
   }
 }
